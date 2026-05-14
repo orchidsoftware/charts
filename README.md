@@ -3,7 +3,8 @@
 > Lightweight PHP-first SVG charting library with zero JavaScript output
 
 Orchid Charts is a server-side charting library that generates clean, accessible SVG charts directly in PHP — no JS, no
-hydration, no runtime dependencies.
+hydration, no runtime dependencies. Includes built-in support for dark themes, making it easy to create charts that
+seamlessly adapt to light and dark interfaces.
 
 <img src=".github/demo.gif">
 

@@ -17,6 +17,10 @@ use Orchid\Charts\SVG\SvgDocument;
 
 final readonly class RadialRenderer extends AbstractRenderer implements Renderer
 {
+    private const float PANEL_WIDTH = 140.0;
+
+    private const float PANEL_HEIGHT = 58.0;
+
     public function render(Chart $chart): SvgDocument
     {
         $chart->data()->requireDatasets();
@@ -30,8 +34,6 @@ final readonly class RadialRenderer extends AbstractRenderer implements Renderer
         $angle = -90.0;
         $sliceChildren = [];
         $hoverSlots = [];
-        $panelWidth = 140.0;
-        $panelHeight = 58.0;
 
         foreach ($values as $index => $value) {
             $portion = $total <= 0 ? 0 : abs((float) $value) / $total;
@@ -43,19 +45,21 @@ final readonly class RadialRenderer extends AbstractRenderer implements Renderer
                 'data-label' => $labels[$index] ?? (string) $index,
             ]);
             $tooltip = $this->sliceTooltip(
-                $cx,
-                $cy,
-                $radius,
-                $angle,
-                $next,
-                $chart->widthValue(),
-                $chart->heightValue(),
-                $labels[$index] ?? (string) $index,
-                $this->formatPercentage($portion),
-                $dataset->formatValue($value),
-                $this->color($chart, $index),
-                $panelWidth,
-                $panelHeight,
+                [
+                    'cx' => $cx,
+                    'cy' => $cy,
+                    'radius' => $radius,
+                    'start' => $angle,
+                    'end' => $next,
+                    'width' => $chart->widthValue(),
+                    'height' => $chart->heightValue(),
+                ],
+                [
+                    'label' => $labels[$index] ?? (string) $index,
+                    'formattedValue' => $this->formatPercentage($portion),
+                    'absoluteValue' => $dataset->formatValue($value),
+                    'color' => $this->color($chart, $index),
+                ],
             );
             $hoverSlots[] = new Group([
                 Path::make($arc, ['class' => 'chart-hover-target chart-radial-target']),
@@ -74,35 +78,50 @@ final readonly class RadialRenderer extends AbstractRenderer implements Renderer
         return new SvgDocument($chart->widthValue(), $chart->heightValue(), $elements, $this->css($chart), $this->background());
     }
 
-    private function sliceTooltip(
-        float $cx,
-        float $cy,
-        float $radius,
-        float $start,
-        float $end,
-        int $width,
-        int $height,
-        string $label,
-        string $formattedValue,
-        string $absoluteValue,
-        string $color,
-        float $panelWidth,
-        float $panelHeight,
-    ): Group {
+    /**
+     * @param  array{
+     *     cx: float,
+     *     cy: float,
+     *     radius: float,
+     *     start: float,
+     *     end: float,
+     *     width: int,
+     *     height: int
+     * }  $slice
+     * @param  array{
+     *     label: string,
+     *     formattedValue: string,
+     *     absoluteValue: string,
+     *     color: string
+     * }  $tooltip
+     */
+    private function sliceTooltip(array $slice, array $tooltip): Group
+    {
+        $cx = $slice['cx'];
+        $cy = $slice['cy'];
+        $radius = $slice['radius'];
+        $start = $slice['start'];
+        $end = $slice['end'];
+        $width = $slice['width'];
+        $height = $slice['height'];
+        $label = $tooltip['label'];
+        $formattedValue = $tooltip['formattedValue'];
+        $absoluteValue = $tooltip['absoluteValue'];
+        $color = $tooltip['color'];
         $mid = $start + (($end - $start) / 2);
         [$anchorX, $anchorY] = $this->point($cx, $cy, $radius + 8, $mid);
-        $tooltipX = max(8.0, min($width - $panelWidth - 8.0, $anchorX - ($panelWidth / 2)));
-        $tooltipY = max(8.0, min($height - $panelHeight - 20.0, $anchorY - $panelHeight - 10.0));
-        $pointerX = max($tooltipX + 10.0, min($tooltipX + $panelWidth - 10.0, $anchorX));
+        $tooltipX = max(8.0, min($width - self::PANEL_WIDTH - 8.0, $anchorX - (self::PANEL_WIDTH / 2)));
+        $tooltipY = max(8.0, min($height - self::PANEL_HEIGHT - 20.0, $anchorY - self::PANEL_HEIGHT - 10.0));
+        $pointerX = max($tooltipX + 10.0, min($tooltipX + self::PANEL_WIDTH - 10.0, $anchorX));
 
         return new Group([
-            Rect::make($tooltipX, $tooltipY, $panelWidth, $panelHeight, ['class' => 'chart-tooltip-panel', 'rx' => 6]),
+            Rect::make($tooltipX, $tooltipY, self::PANEL_WIDTH, self::PANEL_HEIGHT, ['class' => 'chart-tooltip-panel', 'rx' => 6]),
             Path::make(
-                sprintf('M %.2F %.2F L %.2F %.2F L %.2F %.2F Z', $pointerX - 5, $tooltipY + $panelHeight, $pointerX, $tooltipY + $panelHeight + 7, $pointerX + 5, $tooltipY + $panelHeight),
+                sprintf('M %.2F %.2F L %.2F %.2F L %.2F %.2F Z', $pointerX - 5, $tooltipY + self::PANEL_HEIGHT, $pointerX, $tooltipY + self::PANEL_HEIGHT + 7, $pointerX + 5, $tooltipY + self::PANEL_HEIGHT),
                 ['class' => 'chart-tooltip-pointer']
             ),
             Text::make($label, $tooltipX + 8, $tooltipY + 15, ['class' => 'chart-tooltip-title']),
-            Line::make($tooltipX + 8, $tooltipY + 22, $tooltipX + $panelWidth - 8, $tooltipY + 22, ['class' => 'chart-tooltip-marker', 'stroke' => $color]),
+            Line::make($tooltipX + 8, $tooltipY + 22, $tooltipX + self::PANEL_WIDTH - 8, $tooltipY + 22, ['class' => 'chart-tooltip-marker', 'stroke' => $color]),
             Text::make($formattedValue, $tooltipX + 8, $tooltipY + 36, ['class' => 'chart-tooltip-value']),
             Text::make($absoluteValue, $tooltipX + 8, $tooltipY + 50, ['class' => 'chart-tooltip-meta']),
         ], ['class' => 'chart-tooltip']);

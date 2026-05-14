@@ -15,6 +15,10 @@ use Orchid\Charts\SVG\SvgDocument;
 
 final readonly class PercentageRenderer extends AbstractRenderer implements Renderer
 {
+    private const float PANEL_WIDTH = 152.0;
+
+    private const float PANEL_HEIGHT = 58.0;
+
     public function render(Chart $chart): SvgDocument
     {
         $chart->data()->requireDatasets();
@@ -36,16 +40,20 @@ final readonly class PercentageRenderer extends AbstractRenderer implements Rend
             $color = $this->color($chart, $index);
             $children[] = Rect::make($segmentX, $y, $segment, $barHeight, ['class' => 'chart-bar chart-series', 'fill' => $color]);
             $slots[] = $this->segmentTooltip(
-                $segmentX,
-                $segment,
-                $y,
-                $barHeight,
-                $chart->widthValue(),
-                $chart->heightValue(),
-                $chart->data()->labels[$index] ?? (string) $index,
-                $this->formatPercentage($portion),
-                $dataset->formatValue($value),
-                $color
+                [
+                    'segmentX' => $segmentX,
+                    'segmentWidth' => $segment,
+                    'barY' => $y,
+                    'barHeight' => $barHeight,
+                    'chartWidth' => $chart->widthValue(),
+                    'chartHeight' => $chart->heightValue(),
+                ],
+                [
+                    'label' => $chart->data()->labels[$index] ?? (string) $index,
+                    'formattedValue' => $this->formatPercentage($portion),
+                    'absoluteValue' => $dataset->formatValue($value),
+                    'color' => $color,
+                ],
             );
             $offset += $segment;
         }
@@ -55,39 +63,54 @@ final readonly class PercentageRenderer extends AbstractRenderer implements Rend
         return new SvgDocument($chart->widthValue(), $chart->heightValue(), $elements, $this->css($chart), $this->background());
     }
 
-    private function segmentTooltip(
-        float $segmentX,
-        float $segmentWidth,
-        float $barY,
-        float $barHeight,
-        int $chartWidth,
-        int $chartHeight,
-        string $label,
-        string $formattedValue,
-        string $absoluteValue,
-        string $color,
-    ): Group {
+    /**
+     * @param  array{
+     *     segmentX: float,
+     *     segmentWidth: float,
+     *     barY: float,
+     *     barHeight: float,
+     *     chartWidth: int,
+     *     chartHeight: int
+     * }  $segment
+     * @param  array{
+     *     label: string,
+     *     formattedValue: string,
+     *     absoluteValue: string,
+     *     color: string
+     * }  $tooltip
+     */
+    private function segmentTooltip(array $segment, array $tooltip): Group
+    {
+        $segmentX = $segment['segmentX'];
+        $segmentWidth = $segment['segmentWidth'];
+
         if ($segmentWidth <= 0.0) {
             return new Group([], ['class' => 'chart-hover-slot']);
         }
 
-        $panelWidth = 152.0;
-        $panelHeight = 58.0;
+        $barY = $segment['barY'];
+        $barHeight = $segment['barHeight'];
+        $chartWidth = $segment['chartWidth'];
+        $chartHeight = $segment['chartHeight'];
+        $label = $tooltip['label'];
+        $formattedValue = $tooltip['formattedValue'];
+        $absoluteValue = $tooltip['absoluteValue'];
+        $color = $tooltip['color'];
         $center = $segmentX + ($segmentWidth / 2);
-        $tooltipX = max(8.0, min($chartWidth - $panelWidth - 8.0, $center - ($panelWidth / 2)));
-        $tooltipY = max(8.0, min(($barY - 10.0) - $panelHeight, $chartHeight - $panelHeight - 20.0));
-        $pointerX = max($tooltipX + 10.0, min($tooltipX + $panelWidth - 10.0, $center));
+        $tooltipX = max(8.0, min($chartWidth - self::PANEL_WIDTH - 8.0, $center - (self::PANEL_WIDTH / 2)));
+        $tooltipY = max(8.0, min(($barY - 10.0) - self::PANEL_HEIGHT, $chartHeight - self::PANEL_HEIGHT - 20.0));
+        $pointerX = max($tooltipX + 10.0, min($tooltipX + self::PANEL_WIDTH - 10.0, $center));
 
         return new Group([
             Rect::make($segmentX, $barY, max(1.0, $segmentWidth), $barHeight, ['class' => 'chart-hover-target']),
             new Group([
-                Rect::make($tooltipX, $tooltipY, $panelWidth, $panelHeight, ['class' => 'chart-tooltip-panel', 'rx' => 6]),
+                Rect::make($tooltipX, $tooltipY, self::PANEL_WIDTH, self::PANEL_HEIGHT, ['class' => 'chart-tooltip-panel', 'rx' => 6]),
                 Path::make(
-                    sprintf('M %.2F %.2F L %.2F %.2F L %.2F %.2F Z', $pointerX - 5, $tooltipY + $panelHeight, $pointerX, $tooltipY + $panelHeight + 7, $pointerX + 5, $tooltipY + $panelHeight),
+                    sprintf('M %.2F %.2F L %.2F %.2F L %.2F %.2F Z', $pointerX - 5, $tooltipY + self::PANEL_HEIGHT, $pointerX, $tooltipY + self::PANEL_HEIGHT + 7, $pointerX + 5, $tooltipY + self::PANEL_HEIGHT),
                     ['class' => 'chart-tooltip-pointer']
                 ),
                 Text::make($label, $tooltipX + 8, $tooltipY + 15, ['class' => 'chart-tooltip-title']),
-                Line::make($tooltipX + 8, $tooltipY + 22, $tooltipX + $panelWidth - 8, $tooltipY + 22, ['class' => 'chart-tooltip-marker', 'stroke' => $color]),
+                Line::make($tooltipX + 8, $tooltipY + 22, $tooltipX + self::PANEL_WIDTH - 8, $tooltipY + 22, ['class' => 'chart-tooltip-marker', 'stroke' => $color]),
                 Text::make($formattedValue, $tooltipX + 8, $tooltipY + 36, ['class' => 'chart-tooltip-value']),
                 Text::make($absoluteValue, $tooltipX + 8, $tooltipY + 50, ['class' => 'chart-tooltip-meta']),
             ], ['class' => 'chart-tooltip']),

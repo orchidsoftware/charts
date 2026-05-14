@@ -30,7 +30,7 @@ final class CoreClassesTest extends TestCase
             ],
         );
 
-        self::assertSame([1, 2, 3, 4], $data->allValues());
+        self::assertSame([1, 2, 3, 4], $data->values());
         self::assertCount(2, $data->collection());
     }
 

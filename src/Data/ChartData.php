@@ -54,7 +54,7 @@ final readonly class ChartData
     /**
      * @return list<int|float>
      */
-    public function allValues(): array
+    public function values(): array
     {
         return $this->collection()->values();
     }

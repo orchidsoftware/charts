@@ -24,7 +24,7 @@ final readonly class AxisRenderer extends AbstractRenderer implements Renderer
     {
         $chart->data()->requireDatasets();
         $area = $this->padding()->plotArea($chart->widthValue(), $chart->heightValue());
-        $values = $chart->data()->allValues();
+        $values = $chart->data()->values();
         if ($values === []) {
             throw new InvalidChartData('Axis chart values cannot be empty.');
         }
@@ -204,39 +204,7 @@ final readonly class AxisRenderer extends AbstractRenderer implements Renderer
             return [''];
         }
 
-        $words = explode(' ', $text);
-        $lines = [];
-        $current = '';
-
-        foreach ($words as $word) {
-            while (strlen($word) > $maxChars) {
-                $chunk = substr($word, 0, $maxChars);
-                $word = substr($word, $maxChars);
-                if ($current !== '') {
-                    $lines[] = $current;
-                    $current = '';
-                }
-
-                $lines[] = $chunk;
-            }
-
-            $candidate = $current === '' ? $word : $current.' '.$word;
-            if (strlen($candidate) <= $maxChars) {
-                $current = $candidate;
-
-                continue;
-            }
-
-            if ($current !== '') {
-                $lines[] = $current;
-            }
-
-            $current = $word;
-        }
-
-        if ($current !== '') {
-            $lines[] = $current;
-        }
+        $lines = explode("\n", wordwrap($text, $maxChars, "\n", true));
 
         if (count($lines) <= $maxLines) {
             return $lines;

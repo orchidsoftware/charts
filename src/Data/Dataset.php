@@ -33,31 +33,13 @@ final readonly class Dataset
             throw new InvalidChartData('Dataset label cannot be empty.');
         }
 
-        if ($values === []) {
-            throw new InvalidChartData('Dataset values cannot be empty.');
-        }
-
-        $validatedValues = [];
-
-        foreach ($values as $value) {
-            if (! is_int($value) && ! is_float($value)) {
-                throw new InvalidChartData('Dataset values must be numeric.');
-            }
-
-            if (! is_finite((float) $value) || is_nan((float) $value)) {
-                throw new InvalidChartData('Dataset values cannot contain NaN or INF.');
-            }
-
-            $validatedValues[] = $value;
-        }
-
         if ($color !== null && ! Color::isValid($color)) {
             throw new InvalidChartData(sprintf('Invalid dataset color [%s].', $color));
         }
 
         $this->formatter = $formatter !== null ? Closure::fromCallable($formatter) : null;
         $this->label = $label;
-        $this->values = $validatedValues;
+        $this->values = $this->normalizeValues($values);
         $this->color = $color;
     }
 
@@ -68,7 +50,7 @@ final readonly class Dataset
 
     public function formatValue(int|float $value): string
     {
-        if (!$this->formatter instanceof \Closure) {
+        if (! $this->formatter instanceof Closure) {
             return (string) $value;
         }
 
@@ -78,5 +60,37 @@ final readonly class Dataset
         }
 
         return (string) $formatted;
+    }
+
+    /**
+     * @param  list<mixed>  $values
+     * @return list<int|float>
+     */
+    private function normalizeValues(array $values): array
+    {
+        if ($values === []) {
+            throw new InvalidChartData('Dataset values cannot be empty.');
+        }
+
+        $validatedValues = [];
+
+        foreach ($values as $value) {
+            $validatedValues[] = $this->normalizeValue($value);
+        }
+
+        return $validatedValues;
+    }
+
+    private function normalizeValue(mixed $value): int|float
+    {
+        if (! is_int($value) && ! is_float($value)) {
+            throw new InvalidChartData('Dataset values must be numeric.');
+        }
+
+        if (! is_finite((float) $value) || is_nan((float) $value)) {
+            throw new InvalidChartData('Dataset values cannot contain NaN or INF.');
+        }
+
+        return $value;
     }
 }

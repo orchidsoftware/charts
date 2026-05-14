@@ -5,7 +5,7 @@
 Orchid Charts is a server-side charting library that generates clean, accessible SVG charts directly in PHP — no JS, no
 hydration, no runtime dependencies.
 
-<img src=".github/line-chart.png">
+<img src=".github/demo.gif">
 
 ## Installation
 

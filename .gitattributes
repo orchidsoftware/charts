@@ -1,0 +1,10 @@
+# Exclude development-only files from source archives
+/.github export-ignore
+/tests export-ignore
+/vendor export-ignore
+/example.php export-ignore
+/phpunit.xml export-ignore
+/phpstan.neon export-ignore
+/pint.json export-ignore
+/rector.php export-ignore
+/infection.json5 export-ignore

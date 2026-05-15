@@ -72,20 +72,4 @@ final readonly class TooltipPanelLayout
             Text::make($tooltip->absoluteValue, $this->x + 8, $this->y + 50, ['class' => 'chart-tooltip-meta']),
         ], ['class' => 'chart-tooltip']);
     }
-
-    /**
-     * @deprecated Use buildPointerPath().
-     */
-    public function pointerPath(float $halfWidth = 5.0, float $pointerHeight = 7.0): string
-    {
-        return $this->buildPointerPath($halfWidth, $pointerHeight);
-    }
-
-    /**
-     * @deprecated Use toTooltipGroup().
-     */
-    public function toGroup(TooltipContent $tooltip): Group
-    {
-        return $this->toTooltipGroup($tooltip);
-    }
 }

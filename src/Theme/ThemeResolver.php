@@ -21,6 +21,7 @@ final readonly class ThemeResolver
             return $theme->light();
         }
 
+        $this->ensureThemeClassExists($theme);
         $resolved = new $theme;
 
         return $resolved instanceof Theme ? $resolved : $resolved->light();
@@ -41,34 +42,21 @@ final readonly class ThemeResolver
             return null;
         }
 
+        $this->ensureThemeClassExists($theme);
         $resolved = new $theme;
 
         return $resolved instanceof AdaptiveTheme ? $resolved->dark() : null;
     }
 
     /**
-     * @deprecated Use resolveLight().
+     * Ensure a theme class-string points to an existing class.
+     *
+     * @param  class-string<Theme|AdaptiveTheme>  $theme
      */
-    public function light(string|Theme|AdaptiveTheme $theme): Theme
+    private function ensureThemeClassExists(string $theme): void
     {
-        if (is_string($theme) && ! class_exists($theme)) {
+        if (! class_exists($theme)) {
             throw new \InvalidArgumentException(sprintf('Theme class [%s] does not exist.', $theme));
         }
-
-        /** @var class-string<Theme|AdaptiveTheme>|Theme|AdaptiveTheme $theme */
-        return $this->resolveLight($theme);
-    }
-
-    /**
-     * @deprecated Use resolveDark().
-     */
-    public function dark(string|Theme|AdaptiveTheme $theme): ?Theme
-    {
-        if (is_string($theme) && ! class_exists($theme)) {
-            throw new \InvalidArgumentException(sprintf('Theme class [%s] does not exist.', $theme));
-        }
-
-        /** @var class-string<Theme|AdaptiveTheme>|Theme|AdaptiveTheme $theme */
-        return $this->resolveDark($theme);
     }
 }

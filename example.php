@@ -2,16 +2,13 @@
 
 require 'vendor/autoload.php';
 
-use Orchid\Charts\Charts\BarChart;
-use Orchid\Charts\Charts\DonutChart;
-use Orchid\Charts\Charts\HeatmapChart;
-use Orchid\Charts\Charts\LineChart;
-use Orchid\Charts\Charts\PercentageChart;
-use Orchid\Charts\Charts\PieChart;
-use Orchid\Charts\Charts\ScatterChart;
-use Orchid\Charts\Themes\LightTheme;
+use Orchid\Charts\BarChart;
+use Orchid\Charts\DonutChart;
+use Orchid\Charts\LineChart;
+use Orchid\Charts\PercentageChart;
+use Orchid\Charts\PieChart;
 
-$classes = [
+$charts = [
     LineChart::class,
     BarChart::class,
     PieChart::class,
@@ -19,22 +16,45 @@ $classes = [
     PercentageChart::class,
 ];
 
-echo "<style>svg{width:100%; height:auto;}</style>";
-
-echo "<div class='container' style='max-widht:800px;'>";
-foreach ($classes as $class) {
-
-    echo "<div class='chart'>";
-    $chart = $class::make()
+$charts = array_map(function (string $chart) {
+    $chart = $chart::make()
         ->labels(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'])
         ->dataset('Sales', [1240, 1890, 1650, 2340, 2780, 3120])
         ->dataset('Profit', [890, 1340, 980, 1670, 2010, 2450]);
 
-    echo $chart;
+    if ($chart instanceof PercentageChart) {
+        $chart = $chart->height(150);
+    }
 
+    return $chart;
+}, $charts);
 
-    echo "</div>";
+echo <<<'HTML'
+<style>
+    svg {
+        width: 100%;
+        height: auto;
+    }
 
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2em;
+    }
+</style>
+
+<div class="container">
+HTML;
+
+foreach ($charts as $chart) {
+    echo <<<HTML
+    <div class="chart">
+        {$chart}
+    </div>
+
+    HTML;
 }
 
-echo "</div>";
+echo '</div>';

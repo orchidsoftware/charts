@@ -97,36 +97,4 @@ final readonly class ChartData
             throw new InvalidChartData('At least one dataset is required.');
         }
     }
-
-    /**
-     * @deprecated Use firstDataset().
-     */
-    public function primaryDataset(): Dataset
-    {
-        return $this->firstDataset();
-    }
-
-    /**
-     * @deprecated Use label().
-     */
-    public function labelAt(int $index): string
-    {
-        return $this->label($index);
-    }
-
-    /**
-     * @deprecated Use datasets().
-     */
-    public function collection(): DatasetCollection
-    {
-        return $this->datasets();
-    }
-
-    /**
-     * @deprecated Use ensureDatasets().
-     */
-    public function requireDatasets(): void
-    {
-        $this->ensureDatasets();
-    }
 }

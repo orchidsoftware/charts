@@ -8,5 +8,6 @@
   "logs": {
     "text": "infection.log"
   },
-  "minMsi": 80
+  "initialTestsPhpOptions": "-d pcov.enabled=1 -d pcov.directory=src",
+  "minMsi": 90
 }

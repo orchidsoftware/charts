@@ -1,6 +1,6 @@
 {
     "name": "orchid/charts",
-    "description": "Beautiful SVG charting library for PHP. Server-side, no JavaScript.",
+    "description": "PHP-first server-side SVG charts for dashboards. Zero JavaScript runtime.",
     "keywords": [
         "charts", "svg", "chart", "dashboard", "visualization",
         "laravel", "orchid", "server-side", "svg-charts"
@@ -40,7 +40,7 @@
         "phpstan": "phpstan analyse --level=max src tests",
         "psalm": "psalm --no-cache",
         "rector": "rector process --dry-run",
-        "infection": "infection --min-msi=80 --initial-tests-php-options='-d pcov.enabled=1 -d pcov.directory=$PWD/src'"
+        "infection": "infection --initial-tests-php-options='-d pcov.enabled=1 -d pcov.directory=$PWD/src'"
     },
     "config": {
         "allow-plugins": {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Orchid\Charts\Tests;
 
-use Orchid\Charts\Charts\LineChart;
+use Orchid\Charts\LineChart;
 use Orchid\Charts\Tests\Concerns\MatchesSvgSnapshots;
 use PHPUnit\Framework\TestCase;
 

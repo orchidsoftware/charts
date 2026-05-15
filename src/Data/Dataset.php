@@ -21,6 +21,8 @@ final readonly class Dataset
     private ?Closure $formatter;
 
     /**
+     * Create a new dataset instance.
+     *
      * @param  list<mixed>  $values
      */
     public function __construct(
@@ -43,11 +45,17 @@ final readonly class Dataset
         $this->color = $color;
     }
 
+    /**
+     * Return a new dataset with the given color.
+     */
     public function withColor(string $color): self
     {
         return new self($this->label, $this->values, $color, $this->formatter);
     }
 
+    /**
+     * Format a value using the dataset formatter.
+     */
     public function formatValue(int|float $value): string
     {
         if (! $this->formatter instanceof Closure) {
@@ -63,6 +71,8 @@ final readonly class Dataset
     }
 
     /**
+     * Normalize raw dataset values to numeric values.
+     *
      * @param  list<mixed>  $values
      * @return list<int|float>
      */
@@ -81,6 +91,9 @@ final readonly class Dataset
         return $validatedValues;
     }
 
+    /**
+     * Normalize a single raw value to a number.
+     */
     private function normalizeValue(mixed $value): int|float
     {
         if (! is_int($value) && ! is_float($value)) {

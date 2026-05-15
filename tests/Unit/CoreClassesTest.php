@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Orchid\Charts\Tests;
 
+use Orchid\Charts\BarChart;
 use Orchid\Charts\Data\ChartData;
 use Orchid\Charts\Data\Dataset;
-use Orchid\Charts\Enums\ChartType;
+use Orchid\Charts\DonutChart;
 use Orchid\Charts\Exceptions\InvalidChartData;
-use Orchid\Charts\Layout\LinearScale;
-use Orchid\Charts\Layout\PlotArea;
-use Orchid\Charts\Rendering\AxisRenderer;
-use Orchid\Charts\Rendering\PercentageRenderer;
-use Orchid\Charts\Rendering\RadialRenderer;
-use Orchid\Charts\Rendering\RendererFactory;
+use Orchid\Charts\LineChart;
+use Orchid\Charts\PercentageChart;
+use Orchid\Charts\PieChart;
+use Orchid\Charts\Renderers\Axis\LinearScale;
+use Orchid\Charts\Renderers\Axis\PlotArea;
 use Orchid\Charts\Support\Color;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -31,14 +31,14 @@ final class CoreClassesTest extends TestCase
         );
 
         self::assertSame([1, 2, 3, 4], $data->values());
-        self::assertCount(2, $data->collection());
+        self::assertCount(2, $data->datasets());
     }
 
     public function test_chart_data_requires_at_least_one_dataset(): void
     {
         $this->expectException(InvalidChartData::class);
 
-        (new ChartData(labels: ['A'], datasets: []))->requireDatasets();
+        (new ChartData(labels: ['A'], datasets: []))->ensureDatasets();
     }
 
     public function test_plot_area_computed_edges_are_correct(): void
@@ -72,15 +72,20 @@ final class CoreClassesTest extends TestCase
         yield 'flat-zero-range-is-expanded' => [[0, 0], -1.0, 1.0];
     }
 
-    public function test_renderer_factory_resolves_expected_renderer_classes(): void
+    public function test_chart_classes_use_expected_default_rendering_strategy(): void
     {
-        $factory = new RendererFactory;
+        $line = LineChart::make()->labels(['A'])->dataset('One', [1])->render();
+        $bar = BarChart::make()->labels(['A'])->dataset('One', [1])->render();
+        $pie = PieChart::make()->labels(['A'])->dataset('One', [1])->render();
+        $donut = DonutChart::make()->labels(['A'])->dataset('One', [1])->render();
+        $percentage = PercentageChart::make()->labels(['A'])->dataset('One', [1])->render();
 
-        self::assertInstanceOf(AxisRenderer::class, $factory->make(ChartType::Line));
-        self::assertInstanceOf(AxisRenderer::class, $factory->make(ChartType::Bar));
-        self::assertInstanceOf(RadialRenderer::class, $factory->make(ChartType::Pie));
-        self::assertInstanceOf(RadialRenderer::class, $factory->make(ChartType::Donut));
-        self::assertInstanceOf(PercentageRenderer::class, $factory->make(ChartType::Percentage));
+        self::assertStringContainsString('class="chart-point"', $line);
+        self::assertStringNotContainsString('class="chart-point"', $bar);
+        self::assertStringContainsString('class="chart-bar chart-series"', $bar);
+        self::assertStringNotContainsString('<circle cx="400" cy="150"', $pie);
+        self::assertStringContainsString('<circle cx="400" cy="150"', $donut);
+        self::assertStringContainsString('chart-percentage-hover-layer', $percentage);
     }
 
     public function test_color_validation_accepts_and_rejects_expected_formats(): void

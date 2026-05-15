@@ -2,9 +2,9 @@
 
 > Lightweight PHP-first SVG charting library with zero JavaScript output
 
-Orchid Charts is a server-side charting library that generates clean, accessible SVG charts directly in PHP — no JS, no
-hydration, no runtime dependencies. Includes built-in support for dark themes, making it easy to create charts that
-seamlessly adapt to light and dark interfaces.
+Orchid Charts is a server-side charting library that generates clean, accessible SVG charts directly in PHP — no JS,
+no hydration, no runtime dependencies. It includes built-in dark theme support, so charts adapt cleanly to light and
+dark interfaces.
 
 <img src=".github/demo.gif">
 
@@ -17,7 +17,7 @@ composer require orchid/charts
 ## Quick start
 
 ```php
-use Orchid\Charts\Charts\LineChart;
+use Orchid\Charts\LineChart;
 
 $chart = LineChart::make()
     ->labels(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'])
@@ -27,12 +27,12 @@ $chart = LineChart::make()
 echo $chart; // or $chart->render()
 ```
 
-All chart objects are `Stringable`, so you can render with `echo $chart`.
+All chart objects are `Stringable`, so you can render them with `echo $chart`.
 
 ### Bar
 
 ```php
-use Orchid\Charts\Charts\BarChart;
+use Orchid\Charts\BarChart;
 
 echo BarChart::make()
     ->labels(['Mon', 'Tue', 'Wed'])
@@ -42,7 +42,7 @@ echo BarChart::make()
 ### Pie
 
 ```php
-use Orchid\Charts\Charts\PieChart;
+use Orchid\Charts\PieChart;
 
 echo PieChart::make()
     ->labels(['Desktop', 'Mobile', 'Tablet'])
@@ -52,7 +52,7 @@ echo PieChart::make()
 ### Donut
 
 ```php
-use Orchid\Charts\Charts\DonutChart;
+use Orchid\Charts\DonutChart;
 
 echo DonutChart::make()
     ->labels(['Direct', 'Search', 'Referral'])
@@ -62,20 +62,19 @@ echo DonutChart::make()
 ### Percentage
 
 ```php
-use Orchid\Charts\Charts\PercentageChart;
+use Orchid\Charts\PercentageChart;
 
 echo PercentageChart::make()
     ->labels(['Done', 'In progress', 'Backlog'])
     ->dataset('Sprint', [55, 30, 15]);
 ```
 
-
 ## Dataset formatter (tooltip value)
 
-Use callback as the 3rd parameter:
+Use a callback as the third parameter:
 
 ```php
-use Orchid\Charts\Charts\LineChart;
+use Orchid\Charts\LineChart;
 
 echo LineChart::make()
     ->labels(['Jan', 'Feb'])
@@ -85,13 +84,7 @@ echo LineChart::make()
 Or pass both color and formatter:
 
 ```php
-->dataset(
-    'Visitors',
-    [172, 181],
-    '#2563eb',
-    static fn (int|float $value): string => $value.' visits'
-    );
-)
+->dataset('Visitors', [172, 181], '#2563eb', static fn (int|float $value): string => $value.' visits')
 ```
 
 ## Support

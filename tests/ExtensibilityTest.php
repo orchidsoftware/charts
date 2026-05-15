@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Orchid\Charts\Tests;
 
-use Orchid\Charts\Charts\LineChart;
-use Orchid\Charts\Contracts\Chart;
-use Orchid\Charts\Contracts\Renderer;
-use Orchid\Charts\Contracts\Theme;
+use Orchid\Charts\LineChart;
+use Orchid\Charts\Renderers\Renderer;
+use Orchid\Charts\StyledChart;
 use Orchid\Charts\SVG\Elements\Text;
 use Orchid\Charts\SVG\SvgDocument;
+use Orchid\Charts\Theme\Theme;
 use PHPUnit\Framework\TestCase;
 
 final class ExtensibilityTest extends TestCase
@@ -66,12 +66,12 @@ final class ExtensibilityTest extends TestCase
             ->dataset('One', [1])
             ->renderer(new class implements Renderer
             {
-                public function render(Chart $chart): SvgDocument
+                public function render(StyledChart $chart): SvgDocument
                 {
-                    return new SvgDocument(100, 50, [Text::make($chart->type()->value, 10, 20)]);
+                    return new SvgDocument(100, 50, [Text::make('custom', 10, 20)]);
                 }
             });
 
-        self::assertStringContainsString('line', $chart->render());
+        self::assertStringContainsString('custom', $chart->render());
     }
 }

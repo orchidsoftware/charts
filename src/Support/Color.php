@@ -6,6 +6,9 @@ namespace Orchid\Charts\Support;
 
 final readonly class Color
 {
+    /**
+     * Determine whether the given value is a valid CSS color.
+     */
     public static function isValid(string $color): bool
     {
         return preg_match('/^#(?:[0-9a-fA-F]{3}){1,2}$/', $color) === 1

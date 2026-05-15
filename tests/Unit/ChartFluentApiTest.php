@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Orchid\Charts\Tests;
 
-use Orchid\Charts\Charts\LineChart;
-use Orchid\Charts\Themes\DarkTheme;
+use Orchid\Charts\LineChart;
+use Orchid\Charts\Theme\DarkTheme;
 use PHPUnit\Framework\TestCase;
 
 final class ChartFluentApiTest extends TestCase

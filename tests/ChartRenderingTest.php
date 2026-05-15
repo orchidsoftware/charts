@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Orchid\Charts\Tests;
 
-use Orchid\Charts\Charts\BarChart;
-use Orchid\Charts\Charts\DonutChart;
-use Orchid\Charts\Charts\LineChart;
-use Orchid\Charts\Charts\PercentageChart;
-use Orchid\Charts\Charts\PieChart;
+use Orchid\Charts\BarChart;
+use Orchid\Charts\DonutChart;
 use Orchid\Charts\Exceptions\InvalidChartData;
-use Orchid\Charts\Themes\DarkTheme;
+use Orchid\Charts\LineChart;
+use Orchid\Charts\PercentageChart;
+use Orchid\Charts\PieChart;
+use Orchid\Charts\Theme\DarkTheme;
 use PHPUnit\Framework\TestCase;
 
 final class ChartRenderingTest extends TestCase

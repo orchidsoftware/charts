@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Orchid\Charts\Tests;
 
-use Orchid\Charts\Charts\LineChart;
-use Orchid\Charts\Contracts\Theme;
-use Orchid\Charts\Themes\DarkTheme;
-use Orchid\Charts\Themes\LightTheme;
-use Orchid\Charts\Themes\Themes;
+use Orchid\Charts\LineChart;
+use Orchid\Charts\Theme\DarkTheme;
+use Orchid\Charts\Theme\LightTheme;
+use Orchid\Charts\Theme\Theme;
+use Orchid\Charts\Theme\Themes;
 use PHPUnit\Framework\TestCase;
 
 final class ThemeArchitectureTest extends TestCase

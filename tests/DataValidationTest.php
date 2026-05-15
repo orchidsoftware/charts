@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Orchid\Charts\Tests;
 
-use Orchid\Charts\Charts\LineChart;
 use Orchid\Charts\Data\ChartData;
 use Orchid\Charts\Data\Dataset;
 use Orchid\Charts\Exceptions\InvalidChartData;
+use Orchid\Charts\LineChart;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

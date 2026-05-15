@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Orchid\Charts\Tests;
 
-use Orchid\Charts\Axis\AxisTicks;
-use Orchid\Charts\Grid\GridLines;
-use Orchid\Charts\Layout\LinearScale;
-use Orchid\Charts\Layout\PaddingCalculator;
+use Orchid\Charts\Renderers\Axis\AxisTicks;
+use Orchid\Charts\Renderers\Axis\GridLines;
+use Orchid\Charts\Renderers\Axis\LinearScale;
+use Orchid\Charts\Renderers\Axis\PaddingCalculator;
 use PHPUnit\Framework\TestCase;
 
 final class LayoutAndGridTest extends TestCase

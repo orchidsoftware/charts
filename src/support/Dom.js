@@ -1,0 +1,226 @@
+import {
+  SVG_NS,
+  MULTILINE_LABEL_HEIGHT,
+  COMPACT_NUMBER_FORMATTER,
+  SMALL_NUMBER_FORMATTER,
+  STANDARD_NUMBER_FORMATTER,
+} from "./Constants.js";
+
+/**
+ * Creates an SVG element and serializes its initial attributes.
+ *
+ * @param {string} name - SVG tag name to create within the SVG namespace.
+ * @param {Record<string, string | number>} [attributes={}] - Initial attributes applied to the element.
+ * @returns {SVGElement} Newly created, detached SVG element.
+ */
+function svg(name, attributes = {}) {
+  const element = document.createElementNS(SVG_NS, name);
+  for (const [key, value] of Object.entries(attributes)) {
+    element.setAttribute(key, String(value));
+  }
+  return element;
+}
+
+/**
+ * Adds both a native SVG title and tooltip metadata to an element.
+ *
+ * @param {SVGElement} element - SVG node that should expose supplementary text.
+ * @param {string} text - Complete accessible and tooltip description.
+ * @returns {SVGElement} The original element after enrichment.
+ */
+function titled(element, text) {
+  const title = svg("title");
+  title.textContent = text;
+  element.append(title);
+  Object.assign(element.dataset, { tooltip: text });
+  return element;
+}
+
+/**
+ * Formats chart numbers compactly while preserving useful small decimals.
+ *
+ * @param {number} value - Finite numeric value to present to a user.
+ * @returns {string} Locale-aware compact, precise, or standard representation.
+ */
+function formatNumber(value) {
+  const absolute = Math.abs(value);
+  if (absolute >= 10_000) {
+    return COMPACT_NUMBER_FORMATTER.format(value);
+  }
+  if (absolute > 0 && absolute < 0.01) {
+    return SMALL_NUMBER_FORMATTER.format(value);
+  }
+  return STANDARD_NUMBER_FORMATTER.format(value);
+}
+
+/**
+ * Truncates text to a measured pixel budget and adds an ellipsis when needed.
+ *
+ * @param {unknown} value - Value converted to text before measurement.
+ * @param {number} maxWidth - Maximum permitted rendered width in pixels.
+ * @param {number} [fontSize=11] - Font size used by the measurement context.
+ * @returns {string} Original text or the longest fitting ellipsized prefix.
+ */
+function truncateText(value, maxWidth, fontSize = 11) {
+  const text = String(value);
+  if (measuredTextWidth(text, fontSize) <= maxWidth) {
+    return text;
+  }
+  let low = 1;
+  let high = text.length;
+  while (low < high) {
+    const middle = Math.ceil((low + high) / 2);
+    const candidate = `${text.slice(0, middle).trimEnd()}…`;
+    if (measuredTextWidth(candidate, fontSize) <= maxWidth) {
+      low = middle;
+    } else {
+      high = middle - 1;
+    }
+  }
+  return `${text.slice(0, low).trimEnd()}…`;
+}
+
+/**
+ * Creates an SVG text label with truncation and an accessible full-value fallback.
+ *
+ * @param {object} specification - Content and presentation values for one label.
+ * @param {unknown} specification.value - Display value rendered into the text node.
+ * @param {Record<string, string | number>} specification.attributes - SVG positioning and presentation attributes.
+ * @param {number} specification.maxWidth - Maximum permitted rendered width in pixels.
+ * @param {number} [specification.fontSize=11] - Font size used for truncation measurement.
+ * @param {unknown} [specification.originalValue=specification.value] - Unformatted value exposed to assistive technology.
+ * @returns {SVGElement} Detached SVG text element ready for insertion.
+ */
+function labelElement({ value, attributes, maxWidth, fontSize = 11, originalValue = value }) {
+  const element = svg("text", attributes);
+  const visible = truncateText(value, maxWidth, fontSize);
+  element.textContent = visible;
+  if (visible !== String(value)) {
+    const title = svg("title");
+    title.textContent = String(value);
+    element.append(title);
+  }
+  if (String(originalValue) !== String(value) || visible !== String(value)) {
+    element.setAttribute("aria-label", String(originalValue));
+  }
+  return element;
+}
+
+/**
+ * Measures text using the same platform font stack as chart labels.
+ *
+ * @param {unknown} value - Value converted to text before measurement.
+ * @param {number} [fontSize=11] - Font size used by the canvas context.
+ * @returns {number} Measured text width in CSS pixels.
+ */
+function measuredTextWidth(value, fontSize = 11) {
+  const context = document.createElement("canvas").getContext("2d");
+  context.font = `${fontSize}px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif`;
+  return context.measureText(String(value)).width;
+}
+
+/**
+ * Measures legend text with the legend's default typography.
+ *
+ * @param {unknown} value - Legend label converted to text before measurement.
+ * @returns {number} Measured legend-label width in CSS pixels.
+ */
+function measuredLegendTextWidth(value) {
+  return measuredTextWidth(value);
+}
+
+/**
+ * Creates a vertically centered multi-line SVG label with accessible source text.
+ *
+ * @param {object} specification - Content and presentation values for one multi-line label.
+ * @param {string | string[]} specification.value - One or more requested display lines.
+ * @param {Record<string, string | number>} specification.attributes - SVG positioning and presentation attributes.
+ * @param {number} specification.maxWidth - Maximum permitted width for each rendered line.
+ * @param {unknown} [specification.originalValue=specification.value] - Unformatted value exposed to assistive technology.
+ * @returns {SVGElement} Detached SVG text element containing positioned tspan children.
+ */
+function wrappedLabelElement({ value, attributes, maxWidth, originalValue = value }) {
+  const lines = (Array.isArray(value) ? value : [String(value)]).map((line) => line.trim());
+  const text = lines.join(" ");
+
+  const visibleLines = lines.map((line) => truncateText(line, maxWidth));
+  const element = svg("text", { ...attributes, class: `${attributes.class} charts2-multiline-label` });
+  for (const [index, line] of visibleLines.entries()) {
+    const tspan = svg("tspan", {
+      x: attributes.x,
+      dy: index === 0 ? (-MULTILINE_LABEL_HEIGHT * (visibleLines.length - 1)) / 2 : MULTILINE_LABEL_HEIGHT,
+    });
+    tspan.textContent = line;
+    element.append(tspan);
+  }
+  if (visibleLines.some((line, index) => line !== lines[index])) {
+    const title = svg("title");
+    title.textContent = text;
+    element.append(title);
+  }
+  if (
+    Array.isArray(value) ||
+    String(originalValue) !== text ||
+    visibleLines.some((line, index) => line !== lines[index])
+  ) {
+    element.setAttribute("aria-label", String(originalValue));
+  }
+  return element;
+}
+
+/**
+ * Associates an SVG mark with its source series and point positions.
+ *
+ * @param {SVGElement} element - Rendered mark that receives dataset metadata.
+ * @param {number} datasetIndex - Zero-based index of the source dataset.
+ * @param {number} pointIndex - Zero-based index within the source dataset.
+ * @returns {SVGElement} The original mark after metadata assignment.
+ */
+function markMetadata(element, datasetIndex, pointIndex) {
+  Object.assign(element.dataset, {
+    datasetIndex: String(datasetIndex),
+    pointIndex: String(pointIndex),
+  });
+  return element;
+}
+
+/**
+ * Resolves a caller-supplied selector or validates an existing host element.
+ *
+ * @param {string | Element} parent - CSS selector or concrete chart host.
+ * @returns {Element} Valid DOM element that can own generated chart markup.
+ * @throws {TypeError} When a selector has no match or the value is not an element.
+ */
+function resolveParent(parent) {
+  const element = typeof parent === "string" ? document.querySelector(parent) : parent;
+  if (!(element instanceof Element)) {
+    throw new TypeError("Chart parent must be an element or a valid selector");
+  }
+  return element;
+}
+
+/**
+ * Measures an element and supplies a deterministic width in non-layout environments.
+ *
+ * @param {Element} parent - Chart host whose bounding box determines layout width.
+ * @param {number} [fallback=640] - Width used for hidden elements and DOM test environments.
+ * @returns {number} Positive finite layout width in CSS pixels.
+ */
+function measureParentWidth(parent, fallback = 640) {
+  const width = parent.getBoundingClientRect().width;
+  return Number.isFinite(width) && width > 0 ? width : fallback;
+}
+
+export {
+  svg,
+  titled,
+  formatNumber,
+  truncateText,
+  labelElement,
+  measuredTextWidth,
+  measuredLegendTextWidth,
+  wrappedLabelElement,
+  markMetadata,
+  resolveParent,
+  measureParentWidth,
+};

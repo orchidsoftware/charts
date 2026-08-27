@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Charts2 — accessible, dependency-free SVG charts with one consistent JavaScript API"
+    />
+    <title>Charts2 — expressive SVG charts without the ceremony</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main>
+      <!-- Navigation -->
+      <nav>
+        <span class="brand"><i class="brand-mark" aria-hidden="true"></i>Charts2 <small>expressive SVG</small></span
+        ><a href="#supported-charts">See what it can do ↓</a>
+      </nav>
+
+      <!-- Product promise -->
+      <section class="hero">
+        <p class="eyebrow">Expressive SVG charts · zero runtime dependencies</p>
+        <h1>Make the data clear.<br /><em>Keep the charting out of the way.</em></h1>
+        <p class="lede">
+          Twelve visual grammars share one factory, one lifecycle, and one interaction language. Start with the question
+          your product needs to answer; Charts2 takes care of the responsive SVG, accessibility, and details.
+        </p>
+        <div class="actions">
+          <button id="shuffle">Refresh the live data</button><code>npm install @charts2/core</code>
+        </div>
+      </section>
+
+      <!-- Verifiable release metrics -->
+      <section class="metrics" aria-label="Library highlights">
+        <div><strong>76</strong><span>visual baselines</span></div>
+        <div><strong>0</strong><span>runtime dependencies</span></div>
+        <div><strong>100%</strong><span>verified coverage</span></div>
+        <div>
+          <strong class="bundle-size"
+            ><span id="bundle-size-value">49.9 kB</span><small id="bundle-size-gzip">(14.2 kB gzip)</small></strong
+          ><span>ESM + CSS</span>
+        </div>
+      </section>
+
+      <!-- Supported visual grammars -->
+      <section id="supported-charts" class="support-overview" aria-labelledby="supported-charts-title">
+        <header class="support-overview-header">
+          <div>
+            <p class="eyebrow">One public contract</p>
+            <h2 id="supported-charts-title">One API. Four visual families.</h2>
+          </div>
+          <p>
+            Choose the shape that makes the answer obvious. Every type below keeps the same responsive lifecycle,
+            accessible semantics, tooltip, selection, update, and export contract.
+          </p>
+        </header>
+        <div class="support-families">
+          <section class="support-family support-family-cartesian" aria-labelledby="cartesian-family-title">
+            <header>
+              <span>01</span>
+              <h3 id="cartesian-family-title">Cartesian</h3>
+            </header>
+            <div class="support-types">
+              <a href="#line"
+                ><svg viewBox="0 0 64 40" aria-hidden="true">
+                  <path class="support-guide" d="M5 34.5H59" />
+                  <path class="support-primary" d="M6 29 17 23 28 26 42 14 58 7" />
+                  <g class="support-mark">
+                    <circle cx="17" cy="23" r="2" />
+                    <circle cx="42" cy="14" r="2" />
+                    <circle cx="58" cy="7" r="2" />
+                  </g></svg
+                ><span>Line</span></a
+              >
+              <a href="#spark-area"
+                ><svg viewBox="0 0 64 40" aria-hidden="true">
+                  <path class="support-guide" d="M5 34.5H59" />
+                  <path class="support-primary-fill" d="M6 34V29C14 29 17 22 25 23S37 14 43 16 52 9 58 7V34Z" /></svg
+                ><span>Area</span></a
+              >
+              <a href="#bar-vertical"
+                ><svg viewBox="0 0 64 40" aria-hidden="true">
+                  <path class="support-guide" d="M5 34.5H59" />
+                  <g class="support-primary-fill">
+                    <rect x="7" y="25" width="9" height="9" rx="2" />
+                    <rect x="21" y="18" width="9" height="16" rx="2" />
+                    <rect x="35" y="21" width="9" height="13" rx="2" />
+                    <rect x="49" y="8" width="9" height="26" rx="2" />
+                  </g></svg
+                ><span>Bar</span></a
+              >
+              <a href="#bar-horizontal"
+                ><svg viewBox="0 0 64 40" aria-hidden="true">
+                  <g class="support-guide">
+                    <path d="M6 9H58M6 20H58M6 31H58" />
+                  </g>
+                  <g class="support-primary-fill">
+                    <rect x="6" y="6" width="25" height="6" rx="3" />
+                    <rect x="6" y="17" width="39" height="6" rx="3" />
+                    <rect x="6" y="28" width="52" height="6" rx="3" />
+                  </g></svg
+                ><span>Horizontal</span></a
+              >
+              <a href="#axis-mixed"
+                ><svg viewBox="0 0 64 40" aria-hidden="true">
+                  <path class="support-guide" d="M5 34.5H59" />
+                  <g class="support-primary-fill">
+                    <rect x="8" y="22" width="9" height="12" rx="2" />
+                    <rect x="28" y="15" width="9" height="19" rx="2" />
+                    <rect x="48" y="19" width="9" height="15" rx="2" />
+                  </g>
+                  <path class="support-secondary" d="M7 27 13 24 33 18 53 9 58 11" />
+                  <g class="support-secondary-mark">
+                    <circle cx="33" cy="18" r="2" />
+                    <circle cx="53" cy="9" r="2" />
+                  </g></svg
+                ><span>Mixed</span></a
+              >
+              <a href="#scatter"
+                ><svg viewBox="0 0 64 40" aria-hidden="true">
+                  <path class="support-guide" d="M6 5V34.5H59" />
+                  <g class="support-mark">
+                    <circle cx="13" cy="29" r="2.5" />
+                    <circle cx="25" cy="22" r="2.5" />
+                    <circle cx="35" cy="26" r="2.5" />
+                    <circle cx="46" cy="14" r="2.5" />
+                    <circle cx="56" cy="8" r="2.5" />
+                  </g></svg
+                ><span>Scatter</span></a
+              >
+              <a href="#bubble"
+                ><svg viewBox="0 0 64 40" aria-hidden="true">
+                  <path class="support-guide" d="M6 5V34.5H59" />
+                  <g class="support-primary-fill">
+                    <circle cx="15" cy="28" r="4" />
+                    <circle cx="32" cy="21" r="7" />
+                    <circle cx="51" cy="12" r="10" />
+                  </g></svg
+                ><span>Bubble</span></a
+              >
+            </div>
+          </section>
+          <section class="support-family support-family-radial" aria-labelledby="radial-family-title">
+            <header>
+              <span>02</span>
+              <h3 id="radial-family-title">Radial</h3>
+            </header>
+            <div class="support-types">
+              <a href="#pie"
+                ><svg viewBox="0 0 64 40" aria-hidden="true">
+                  <circle class="support-primary-fill" cx="32" cy="20" r="16" />
+                  <path class="support-secondary-fill" d="M32 20V4A16 16 0 0 1 47 14Z" /></svg
+                ><span>Pie</span></a
+              >
+              <a href="#donut"
+                ><svg viewBox="0 0 64 40" aria-hidden="true">
+                  <circle class="support-guide-ring" cx="32" cy="20" r="14" />
+                  <circle class="support-primary-ring" cx="32" cy="20" r="14" pathLength="100" />
+                  <circle class="support-secondary-ring" cx="32" cy="20" r="14" pathLength="100" /></svg
+                ><span>Donut</span></a
+              >
+              <a href="#polar"
+                ><svg viewBox="0 0 64 40" aria-hidden="true">
+                  <circle class="support-guide-ring support-thin-ring" cx="32" cy="20" r="16" />
+                  <path class="support-secondary-fill" d="M32 20V5A15 15 0 0 1 45 12Z" />
+                  <path class="support-primary-fill" d="M32 20 45 12A15 15 0 0 1 27 34Z" />
+                  <path class="support-primary-soft-fill" d="M32 20 27 34A15 15 0 0 1 18 20Z" /></svg
+                ><span>Polar area</span></a
+              >
+              <a href="#radar"
+                ><svg viewBox="0 0 64 40" aria-hidden="true">
+                  <polygon class="support-guide" points="32,4 49,13 49,29 32,36 15,29 15,13" />
+                  <path class="support-guide" d="M32 4V36M15 13 49 29M49 13 15 29" />
+                  <polygon class="support-primary-fill" points="32,8 44,15 42,28 31,31 20,27 18,15" /></svg
+                ><span>Radar</span></a
+              >
+              <a href="#percentage"
+                ><svg viewBox="0 0 64 40" aria-hidden="true">
+                  <rect class="support-guide-fill" x="5" y="14" width="54" height="12" rx="6" />
+                  <path class="support-primary-fill" d="M5 20a6 6 0 0 1 6-6h13v12H11a6 6 0 0 1-6-6Z" />
+                  <rect class="support-secondary-fill" x="26" y="14" width="11" height="12" />
+                  <path class="support-primary-soft-fill" d="M39 14h14a6 6 0 0 1 0 12H39Z" /></svg
+                ><span>Percentage</span></a
+              >
+            </div>
+          </section>
+          <section class="support-family support-family-small" aria-labelledby="time-family-title">
+            <header>
+              <span>03</span>
+              <h3 id="time-family-title">Time</h3>
+            </header>
+            <div class="support-types">
+              <a href="#timesheet"
+                ><svg viewBox="0 0 64 40" aria-hidden="true">
+                  <path class="support-guide" d="M7 9.5H57M7 20H57M7 30.5H57" />
+                  <g class="support-primary-fill">
+                    <rect x="10" y="6" width="22" height="7" rx="3.5" />
+                    <rect x="23" y="16.5" width="27" height="7" rx="3.5" />
+                    <rect x="37" y="27" width="18" height="7" rx="3.5" />
+                  </g></svg
+                ><span>Timesheet</span></a
+              >
+            </div>
+          </section>
+          <section class="support-family support-family-small" aria-labelledby="calendar-family-title">
+            <header>
+              <span>04</span>
+              <h3 id="calendar-family-title">Calendar</h3>
+            </header>
+            <div class="support-types">
+              <a href="#heatmap"
+                ><svg viewBox="0 0 64 40" aria-hidden="true">
+                  <g class="support-heatmap">
+                    <rect class="level-1" x="7" y="5" width="10" height="8" rx="2" />
+                    <rect class="level-3" x="20" y="5" width="10" height="8" rx="2" />
+                    <rect class="level-2" x="33" y="5" width="10" height="8" rx="2" />
+                    <rect class="level-4" x="46" y="5" width="10" height="8" rx="2" />
+                    <rect class="level-2" x="7" y="16" width="10" height="8" rx="2" />
+                    <rect class="level-4" x="20" y="16" width="10" height="8" rx="2" />
+                    <rect class="level-1" x="33" y="16" width="10" height="8" rx="2" />
+                    <rect class="level-3" x="46" y="16" width="10" height="8" rx="2" />
+                    <rect class="level-3" x="7" y="27" width="10" height="8" rx="2" />
+                    <rect class="level-1" x="20" y="27" width="10" height="8" rx="2" />
+                    <rect class="level-4" x="33" y="27" width="10" height="8" rx="2" />
+                    <rect class="level-2" x="46" y="27" width="10" height="8" rx="2" />
+                  </g></svg
+                ><span>Heatmap</span></a
+              >
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <!-- Product-oriented chart gallery -->
+      <section class="section-copy showcase-intro" aria-labelledby="showcase-title">
+        <p class="eyebrow">Recognizable product patterns</p>
+        <h2 id="showcase-title">Charts with a job to do.</h2>
+        <p>Familiar scenarios make each chart’s purpose clear before you inspect an individual value.</p>
+      </section>
+
+      <!-- Trends and time -->
+      <section id="gallery" class="showcase-group" aria-labelledby="trends-title">
+        <header class="showcase-group-header">
+          <span>01</span>
+          <div>
+            <h3 id="trends-title">Trends and targets</h3>
+            <p>Change over time, plans, and operational limits.</p>
+          </div>
+        </header>
+        <div class="gallery">
+          <article class="wide">
+            <header>
+              <div>
+                <span class="tag">LINE</span>
+                <h2>App Store downloads</h2>
+              </div>
+              <strong>84.2k</strong>
+            </header>
+            <div id="line"></div>
+          </article>
+          <article class="wide">
+            <header>
+              <div>
+                <span class="tag">LINE · GRADIENT · MULTI</span>
+                <h2>Subscription growth</h2>
+              </div>
+              <strong>3 plans</strong>
+            </header>
+            <div id="line-gradient"></div>
+          </article>
+          <article class="wide">
+            <header>
+              <div>
+                <span class="tag">MIXED · BAR + 2 LINES</span>
+                <h2>Store visits, plan, and capacity</h2>
+              </div>
+              <strong>8 weeks</strong>
+            </header>
+            <div id="axis-mixed"></div>
+          </article>
+          <article class="wide">
+            <header>
+              <div>
+                <span class="tag">MIXED · SIGNED · RIGHT Y-AXIS</span>
+                <h2>Account balance movement</h2>
+              </div>
+              <strong>+$28</strong>
+            </header>
+            <div id="axis-mixed-signed"></div>
+          </article>
+          <article id="timesheet-card" class="wide">
+            <header>
+              <div>
+                <span class="tag">TIME SHEET BAR</span>
+                <h2>App release plan</h2>
+              </div>
+              <strong>12 days</strong>
+            </header>
+            <div id="timesheet"></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Comparisons and relationships -->
+      <section class="showcase-group" aria-labelledby="comparison-title">
+        <header class="showcase-group-header">
+          <span>02</span>
+          <div>
+            <h3 id="comparison-title">Compare and diagnose</h3>
+            <p>Categories, alternatives, correlation, and multidimensional profiles.</p>
+          </div>
+        </header>
+        <div class="gallery">
+          <article>
+            <header>
+              <div>
+                <span class="tag">BAR · VERTICAL</span>
+                <h2>Notifications by app</h2>
+              </div>
+              <strong>1 week</strong>
+            </header>
+            <div id="bar-vertical"></div>
+          </article>
+          <article>
+            <header>
+              <div>
+                <span class="tag">BAR · HORIZONTAL · GROUPED</span>
+                <h2>Delivery time by region</h2>
+              </div>
+              <strong>hours</strong>
+            </header>
+            <div id="bar-horizontal"></div>
+          </article>
+          <article>
+            <header>
+              <div>
+                <span class="tag">BAR · HORIZONTAL · STACKED</span>
+                <h2>Order fulfillment</h2>
+              </div>
+              <strong>214 orders</strong>
+            </header>
+            <div id="bar-horizontal-stacked"></div>
+          </article>
+          <article>
+            <header>
+              <div>
+                <span class="tag">SCATTER</span>
+                <h2>Price and battery life</h2>
+              </div>
+              <strong>hours</strong>
+            </header>
+            <div id="scatter"></div>
+          </article>
+          <article>
+            <header>
+              <div>
+                <span class="tag">BUBBLE</span>
+                <h2>App portfolio</h2>
+              </div>
+              <strong>reach × size</strong>
+            </header>
+            <div id="bubble"></div>
+          </article>
+          <article>
+            <header>
+              <div>
+                <span class="tag">RADAR</span>
+                <h2>Phone comparison</h2>
+              </div>
+              <strong>2 models</strong>
+            </header>
+            <div id="radar"></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Composition and recurring activity -->
+      <section class="showcase-group" aria-labelledby="composition-title">
+        <header class="showcase-group-header">
+          <span>03</span>
+          <div>
+            <h3 id="composition-title">Composition and activity</h3>
+            <p>Parts of a whole, allocation, and recurring behavior.</p>
+          </div>
+        </header>
+        <div class="gallery">
+          <article>
+            <header>
+              <div>
+                <span class="tag">POLAR AREA</span>
+                <h2>Screen Time</h2>
+              </div>
+              <strong>4 h 37 m</strong>
+            </header>
+            <div id="polar"></div>
+          </article>
+          <article>
+            <header>
+              <div>
+                <span class="tag">PIE</span>
+                <h2>Website traffic</h2>
+              </div>
+              <strong>100%</strong>
+            </header>
+            <div id="pie"></div>
+          </article>
+          <article>
+            <header>
+              <div>
+                <span class="tag">DONUT</span>
+                <h2>Subscription plans</h2>
+              </div>
+              <strong>10k members</strong>
+            </header>
+            <div id="donut"></div>
+          </article>
+          <article>
+            <header>
+              <div>
+                <span class="tag">PERCENTAGE</span>
+                <h2>iPhone storage</h2>
+              </div>
+              <strong>192 GB used</strong>
+            </header>
+            <div id="percentage"></div>
+          </article>
+          <article class="wide">
+            <header>
+              <div>
+                <span class="tag">HEATMAP</span>
+                <h2>Daily contributions</h2>
+              </div>
+              <strong>365 days</strong>
+            </header>
+            <div id="heatmap"></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Reliability proof; demanding fixtures stay available without dominating the showroom -->
+      <section class="reliability" aria-labelledby="reliability-title">
+        <div class="reliability-copy">
+          <p class="eyebrow">Production resilience</p>
+          <h2 id="reliability-title">Built for data that refuses to be tidy.</h2>
+          <p>
+            Precision near zero, signed values, dense timelines, and multilingual labels are verified alongside the
+            polished examples above—not left for applications to discover later.
+          </p>
+        </div>
+        <ul class="reliability-points" aria-label="Reliability guarantees">
+          <li><strong>Every state</strong><span>Pointer, keyboard, focus, selection, light, and dark.</span></li>
+          <li><strong>Every scale</strong><span>Fractions, millions, flat series, and values crossing zero.</span></li>
+          <li><strong>Every viewport</strong><span>Responsive SVG with mobile baselines and overflow checks.</span></li>
+        </ul>
+        <details id="quality-lab" class="quality-lab">
+          <summary><span>Explore the quality lab</span><small>7 demanding datasets</small></summary>
+          <div class="gallery edge-gallery" aria-label="Chart reliability examples">
+            <article class="wide">
+              <header>
+                <div>
+                  <span class="tag">PRECISION</span>
+                  <h2>Small measurements, clear context</h2>
+                </div>
+              </header>
+              <div id="fractions"></div>
+            </article>
+            <article class="wide">
+              <header>
+                <div>
+                  <span class="tag">LARGE SCALE</span>
+                  <h2>Millions without losing the labels</h2>
+                </div>
+              </header>
+              <div id="large-values"></div>
+            </article>
+            <article class="wide">
+              <header>
+                <div>
+                  <span class="tag">LOCALIZATION</span>
+                  <h2>Multilingual enterprise categories</h2>
+                </div>
+              </header>
+              <div id="absurd-labels"></div>
+            </article>
+            <article>
+              <header>
+                <div>
+                  <span class="tag">SIGNED BARS</span>
+                  <h2>Losses, zero, and gains</h2>
+                </div>
+              </header>
+              <div id="negative-bars"></div>
+            </article>
+            <article>
+              <header>
+                <div>
+                  <span class="tag">ZERO CROSSING</span>
+                  <h2>Signals moving through baseline</h2>
+                </div>
+              </header>
+              <div id="signed-lines"></div>
+            </article>
+            <article class="wide">
+              <header>
+                <div>
+                  <span class="tag">DENSE SERIES</span>
+                  <h2>Forty-eight readable categories</h2>
+                </div>
+              </header>
+              <div id="dense-line"></div>
+            </article>
+            <article class="wide">
+              <header>
+                <div>
+                  <span class="tag">FLAT SERIES</span>
+                  <h2>Stable output when nothing changes</h2>
+                </div>
+              </header>
+              <div id="flat-values"></div>
+            </article>
+          </div>
+        </details>
+      </section>
+
+      <!-- Explicitly frameless variants -->
+      <section class="spark-section">
+        <div class="section-copy">
+          <p class="eyebrow">Explicit when it matters</p>
+          <h2>Less chrome. Same chart.</h2>
+          <p>
+            Every omitted element is visible in configuration: axes, grid, labels, legend, dots, and tooltip are each
+            set to <code>false</code>.
+          </p>
+        </div>
+        <div class="spark-grid">
+          <article>
+            <header><span>Revenue · line</span><strong>$84k</strong></header>
+            <div id="spark-line"></div>
+          </article>
+          <article>
+            <header><span>Users · area</span><strong>12.8k</strong></header>
+            <div id="spark-area"></div>
+          </article>
+          <article>
+            <header><span>Deploys · bar</span><strong>248</strong></header>
+            <div id="spark-bar"></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Public API -->
+      <section class="snippet">
+        <div>
+          <p class="eyebrow">The happy path is the whole path</p>
+          <h2>One factory.<br />Every chart.</h2>
+          <p>
+            Choose the visual grammar. The same lifecycle handles responsive rendering, updates, interaction,
+            accessibility, export, and cleanup.
+          </p>
+        </div>
+        <pre><code>import { createChart } from "@charts2/core";
+import "@charts2/core/style.css";
+
+const chart = createChart("#revenue", {
+  type: "bar",
+  orientation: "horizontal",
+  data: { datasets: [{ values: [18, 31, 44] }] }
+});
+
+chart.update(nextData);
+chart.destroy();</code></pre>
+      </section>
+    </main>
+
+    <!-- Release identity and page navigation -->
+    <footer class="site-footer">
+      <span>Charts2 1.0.0 · SVG-native · Accessible by design</span>
+      <a href="#supported-charts">Back to chart index ↑</a>
+    </footer>
+    <script type="module" src="./Main.js"></script>
+  </body>
+</html>

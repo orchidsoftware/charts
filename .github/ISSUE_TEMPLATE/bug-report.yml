@@ -1,0 +1,41 @@
+name: Bug report
+description: Report reproducible incorrect behavior in Charts2.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to provide a small reproduction.
+  - type: input
+    id: version
+    attributes:
+      label: Charts2 version
+      placeholder: 1.0.0
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include the chart options, data, and a link or self-contained snippet.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and operating system
+      placeholder: Chrome 140, macOS 15
+    validations:
+      required: true

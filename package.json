@@ -1,0 +1,105 @@
+{
+  "name": "@charts2/core",
+  "version": "1.0.0",
+  "description": "Expressive, accessible SVG charts with one factory and zero runtime dependencies",
+  "type": "module",
+  "packageManager": "npm@11.16.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./dist/charts2.js",
+      "require": "./dist/charts2.cjs",
+      "default": "./dist/charts2.js"
+    },
+    "./style.css": "./dist/charts2.css",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/charts2.cjs",
+  "module": "./dist/charts2.js",
+  "types": "./src/index.d.ts",
+  "style": "./dist/charts2.css",
+  "files": [
+    "dist",
+    "docs",
+    "src/index.d.ts",
+    "CHANGELOG.md",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "dev": "vite --open /demo/",
+    "build": "vite build && node scripts/WriteBuildSize.mjs",
+    "preview": "vite preview",
+    "format": "prettier --write \"**/*.{js,mjs,cjs,ts,css,html,md,json,yml,yaml}\" --ignore-unknown",
+    "format:check": "prettier --check \"**/*.{js,mjs,cjs,ts,css,html,md,json,yml,yaml}\" --ignore-unknown",
+    "lint": "npm run lint:js && npm run lint:css",
+    "lint:fix": "npm run lint:js:fix && npm run lint:css:fix",
+    "lint:js": "eslint . --max-warnings 0",
+    "lint:js:fix": "eslint . --fix --max-warnings 0",
+    "lint:css": "stylelint \"{src,demo}/**/*.css\" --max-warnings 0",
+    "lint:css:fix": "stylelint \"{src,demo}/**/*.css\" --fix --max-warnings 0",
+    "typecheck": "tsc -p tsconfig.types.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:visual": "vitest run test/VisualRegression.test.js",
+    "test:visual:update": "vitest run test/VisualRegression.test.js --update",
+    "test:performance": "vitest run test/Performance.test.js",
+    "coverage": "vitest run --coverage --exclude test/Performance.test.js",
+    "audit": "npm audit --audit-level=high",
+    "pack:check": "npm pack --dry-run",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run coverage && npm run test:performance && npm run build",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run check"
+  },
+  "engines": {
+    "node": ">=22.12"
+  },
+  "keywords": [
+    "accessible",
+    "charting-library",
+    "charts",
+    "data-visualization",
+    "dependency-free",
+    "bubble-chart",
+    "gantt-chart",
+    "javascript",
+    "radar-chart",
+    "scatter-plot",
+    "svg",
+    "svg-charts",
+    "typescript",
+    "visualization"
+  ],
+  "author": {
+    "name": "Alexander Chernyaev",
+    "url": "https://github.com/tabuna"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@vitest/browser-playwright": "^4.1.11",
+    "@vitest/coverage-v8": "^4.1.11",
+    "eslint": "^10.9.0",
+    "eslint-plugin-import-x": "^4.17.1",
+    "eslint-plugin-jsdoc": "^64.2.1",
+    "eslint-plugin-n": "^18.3.0",
+    "eslint-plugin-promise": "^7.3.0",
+    "eslint-plugin-security": "^4.0.1",
+    "eslint-plugin-sonarjs": "^4.2.0",
+    "eslint-plugin-unicorn": "^73.0.0",
+    "globals": "^17.11.0",
+    "playwright": "^1.62.1",
+    "prettier": "^3.9.6",
+    "sass": "^1.103.1",
+    "stylelint": "^17.14.1",
+    "stylelint-config-recess-order": "^7.8.0",
+    "stylelint-config-standard": "^40.0.0",
+    "typescript": "^5.9.3",
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
+  }
+}

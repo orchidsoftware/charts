@@ -1,0 +1,6 @@
+coverage/
+dist/
+node_modules/
+test/__screenshots__/
+.vitest-attachments/
+demo/BuildSize.js

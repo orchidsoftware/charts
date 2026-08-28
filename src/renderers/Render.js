@@ -31,9 +31,11 @@ function renderChart(snapshot, type) {
   const chart = Object.freeze(chartState);
   const surface = new SvgSurface(element);
   const Renderer = RENDERERS[type];
+
   if (!Renderer) {
     throw new TypeError(`No render strategy for chart type: ${type}`);
   }
+
   new Renderer({ chart, surface }).render();
   if (![ChartType.HEATMAP, ChartType.TIMESHEET, ...AGGREGATION_TYPES].includes(type)) {
     new LegendRenderer({ chart, surface }).render();

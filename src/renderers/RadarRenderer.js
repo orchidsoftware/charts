@@ -2,6 +2,28 @@ import { formatNumber, labelElement, markMetadata, svg, titled } from "../suppor
 import { polarPoint } from "../support/Math.js";
 import { datasetSummary, legendLayout } from "../support/Presentation.js";
 
+const LEGEND_TOP = 20;
+const LEGEND_ROW_HEIGHT = 20;
+const RADAR_RADIUS_RATIO = 0.38;
+const LABEL_OFFSET = 12;
+const MINIMUM_LABEL_WIDTH = 54;
+const LABEL_WIDTH_RATIO = 0.16;
+
+/**
+ * Resolves the vertical space consumed by an optional radar legend.
+ *
+ * @param {object} chart - Frozen radar data and options.
+ * @param {Array<object>} items - Legend items for the datasets.
+ * @returns {number} Top edge of the drawable radar region.
+ */
+function radarContentTop(chart, items) {
+  if (!chart.options.showLegend || chart.datasets.length < 2) {
+    return 0;
+  }
+
+  return LEGEND_TOP + legendLayout(chart.options.width, items).rows * LEGEND_ROW_HEIGHT;
+}
+
 /**
  * Resolves the text anchor for one radar label direction.
  *
@@ -12,6 +34,7 @@ function radarAnchor(directionX) {
   if (Math.abs(directionX) < 1) {
     return "middle";
   }
+
   return directionX < 0 ? "end" : "start";
 }
 
@@ -42,26 +65,29 @@ export default class RadarRenderer {
   render() {
     const { height, width } = this.#chart.options;
     const legendItems = this.#chart.datasets.map((dataset) => ({ label: dataset.name, color: dataset.color }));
-    const legendRows =
-      this.#chart.options.showLegend && this.#chart.datasets.length >= 2 ? legendLayout(width, legendItems).rows : 0;
-    const contentTop = legendRows > 0 ? 20 + legendRows * 20 : 0;
+
+    const contentTop = radarContentTop(this.#chart, legendItems);
     const contentHeight = height - contentTop;
-    const centerX = width / 2;
-    const centerY = contentTop + contentHeight / 2;
-    const radius = Math.min(width, contentHeight) * 0.38;
-    const count = this.#chart.datasets[0].points.length;
-    const maximum = Math.max(...this.#chart.datasets.flatMap((dataset) => dataset.points.map((point) => point.y)), 1);
-    const frame = Array.from({ length: count }, (_, index) =>
+    const center = { x: width / 2, y: contentTop + contentHeight / 2 };
+
+    const scale = {
+      radius: Math.min(width, contentHeight) * RADAR_RADIUS_RATIO,
+      count: this.#chart.datasets[0].points.length,
+      maximum: Math.max(...this.#chart.datasets.flatMap((dataset) => dataset.points.map((point) => point.y)), 1),
+    };
+
+    const frame = Array.from({ length: scale.count }, (_, index) =>
       polarPoint({
-        cx: centerX,
-        cy: centerY,
-        radius,
-        angle: -Math.PI / 2 + (index / count) * Math.PI * 2,
+        cx: center.x,
+        cy: center.y,
+        radius: scale.radius,
+        angle: -Math.PI / 2 + (index / scale.count) * Math.PI * 2,
       }),
     );
-    this.#renderFrame({ frame, centerX, centerY });
-    this.#renderDatasets({ frame, centerX, centerY, radius, maximum, count });
-    this.#renderLabels({ frame, centerX, centerY, width });
+
+    this.#renderFrame({ frame, centerX: center.x, centerY: center.y });
+    this.#renderDatasets(center, scale);
+    this.#renderLabels({ frame, centerX: center.x, centerY: center.y, width });
   }
 
   /**
@@ -86,24 +112,21 @@ export default class RadarRenderer {
   /**
    * Draws every normalized dataset as one interactive radar polygon.
    *
-   * @param {object} geometry - Scale and center shared by all datasets.
-   * @param {number} geometry.centerX - Horizontal radial center.
-   * @param {number} geometry.centerY - Vertical radial center.
-   * @param {number} geometry.radius - Maximum polygon radius.
-   * @param {number} geometry.maximum - Maximum normalized dataset value.
-   * @param {number} geometry.count - Number of axes in every dataset.
+   * @param {{x: number, y: number}} center - Shared radial center.
+   * @param {object} scale - Radius, maximum value, and axis count.
    * @returns {void} Dataset polygons and tooltip metadata are appended.
    */
-  #renderDatasets({ centerX, centerY, radius, maximum, count }) {
+  #renderDatasets(center, scale) {
     for (const [datasetIndex, dataset] of this.#chart.datasets.entries()) {
       const shape = dataset.points.map((point, index) =>
         polarPoint({
-          cx: centerX,
-          cy: centerY,
-          radius: (radius * Math.max(0, point.y)) / maximum,
-          angle: -Math.PI / 2 + (index / count) * Math.PI * 2,
+          cx: center.x,
+          cy: center.y,
+          radius: (scale.radius * Math.max(0, point.y)) / scale.maximum,
+          angle: -Math.PI / 2 + (index / scale.count) * Math.PI * 2,
         }),
       );
+
       const polygon = titled(
         markMetadata(
           svg("polygon", {
@@ -120,16 +143,25 @@ export default class RadarRenderer {
         ),
         datasetSummary(dataset, this.#chart.labels),
       );
+
       polygon.dataset.tooltipHeading = dataset.name;
-      polygon.dataset.tooltipItems = JSON.stringify(
-        dataset.points.map((point, index) => ({
-          name: this.#chart.labels[index] ?? `Value ${index + 1}`,
-          value: formatNumber(point.y),
-          color: dataset.color,
-        })),
-      );
+      polygon.dataset.tooltipItems = JSON.stringify(this.#tooltipItems(dataset));
       this.#surface.append(polygon);
     }
+  }
+
+  /**
+   * Formats the category values exposed by a radar dataset tooltip.
+   *
+   * @param {object} dataset - Normalized radar dataset.
+   * @returns {Array<object>} Display-ready tooltip rows.
+   */
+  #tooltipItems(dataset) {
+    return dataset.points.map((point, index) => ({
+      name: this.#chart.labels[index] ?? `Value ${index + 1}`,
+      value: formatNumber(point.y),
+      color: dataset.color,
+    }));
   }
 
   /**
@@ -146,6 +178,7 @@ export default class RadarRenderer {
     if (this.#chart.labels.length === 0) {
       return;
     }
+
     for (const [index, point] of frame.slice(0, this.#chart.labels.length).entries()) {
       const directionX = point.x - centerX;
       const directionY = point.y - centerY;
@@ -154,12 +187,12 @@ export default class RadarRenderer {
         labelElement({
           value: this.#chart.labels[index],
           attributes: {
-            x: point.x + (directionX / length) * 12,
-            y: point.y + (directionY / length) * 12,
+            x: point.x + (directionX / length) * LABEL_OFFSET,
+            y: point.y + (directionY / length) * LABEL_OFFSET,
             class: "charts2-label",
             "text-anchor": radarAnchor(directionX),
           },
-          maxWidth: Math.max(54, width * 0.16),
+          measurement: { maxWidth: Math.max(MINIMUM_LABEL_WIDTH, width * LABEL_WIDTH_RATIO) },
         }),
       );
     }

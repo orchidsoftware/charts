@@ -11,6 +11,11 @@ import globals from "globals";
 const JAVASCRIPT_FILES = ["**/*.{js,mjs,cjs}"];
 const SOURCE_FILES = ["src/**/*.js"];
 const NODE_FILES = ["scripts/**/*.mjs", "*.config.js"];
+const MAX_CONSECUTIVE_DECLARATIONS = 8;
+const declarationSequence = Array.from({ length: MAX_CONSECUTIVE_DECLARATIONS + 1 }, () => "VariableDeclaration").join(
+  " + ",
+);
+const declarationWallSelector = `:matches(FunctionDeclaration, FunctionExpression, ArrowFunctionExpression) BlockStatement > ${declarationSequence}`;
 
 const correctnessRules = {
   ...eslint.configs.recommended.rules,
@@ -35,6 +40,36 @@ const correctnessRules = {
   "no-param-reassign": ["error", { props: true }],
   "no-promise-executor-return": "error",
   "no-return-assign": "error",
+  "no-restricted-syntax": [
+    "error",
+    {
+      selector: "IfStatement[alternate]",
+      message: "Do not use else or else-if. Use guard clauses, early returns, or an explicit strategy.",
+    },
+    {
+      selector: "ConditionalExpression > LogicalExpression",
+      message: "Do not combine ternary expressions with logical or nullish expressions. Extract a named decision.",
+    },
+    {
+      selector: declarationWallSelector,
+      message: `Do not declare more than ${MAX_CONSECUTIVE_DECLARATIONS} local variables in sequence. Extract a named calculation or policy.`,
+    },
+    {
+      selector:
+        ":matches(FunctionDeclaration, FunctionExpression, ArrowFunctionExpression) > ObjectPattern.params[properties.length>4]",
+      message:
+        "Object parameters may expose at most 4 fields. Introduce a named value object or split the responsibility.",
+    },
+    {
+      selector:
+        'CallExpression[callee.type="MemberExpression"][callee.property.type="PrivateIdentifier"] > ObjectExpression[properties.length>4]',
+      message: "Do not pass wide anonymous objects to private methods. Introduce a named collaborator or value object.",
+    },
+    {
+      selector: "ReturnStatement > ObjectExpression[properties.length>6]",
+      message: "Do not return wide anonymous objects. Introduce a named result type or behavioral object.",
+    },
+  ],
   "no-shadow": "error",
   "no-throw-literal": "error",
   "no-unneeded-ternary": "error",
@@ -78,6 +113,7 @@ const correctnessRules = {
   "unicorn/consistent-class-member-order": "off",
   "unicorn/max-nested-calls": "off",
   "unicorn/prefer-iterator-to-array": "off",
+  "unicorn/prefer-ternary": "off",
   "unicorn/prefer-scoped-selector": "off",
   "unicorn/prefer-simple-condition-first": "off",
   "unicorn/filename-case": [
@@ -112,11 +148,35 @@ const maintainabilityRules = {
   complexity: ["error", 12],
   "max-depth": ["error", 3],
   "max-lines": ["error", { max: 500, skipBlankLines: true, skipComments: true }],
-  "max-lines-per-function": ["error", { max: 90, skipBlankLines: true, skipComments: true }],
+  "max-lines-per-function": ["error", { max: 35, skipBlankLines: true, skipComments: true }],
   "max-nested-callbacks": ["error", 3],
   "max-params": ["error", 3],
-  "max-statements": ["error", 30],
+  "max-statements": ["error", 20],
+  "no-magic-numbers": [
+    "error",
+    {
+      ignore: [-1, 0, 1, 2],
+      ignoreArrayIndexes: true,
+      ignoreDefaultValues: true,
+      ignoreClassFieldInitialValues: true,
+      enforceConst: true,
+      detectObjects: false,
+    },
+  ],
+  "padding-line-between-statements": [
+    "error",
+    { blankLine: "always", prev: "*", next: "multiline-const" },
+    { blankLine: "always", prev: "multiline-const", next: "*" },
+    {
+      blankLine: "always",
+      prev: ["const", "let", "var"],
+      next: ["if", "for", "while", "switch", "try"],
+    },
+    { blankLine: "always", prev: "block-like", next: "*" },
+    { blankLine: "always", prev: "*", next: ["return", "throw"] },
+  ],
   "sonarjs/cognitive-complexity": ["error", 15],
+  "sonarjs/expression-complexity": ["error", { max: 2 }],
   "sonarjs/no-duplicate-string": ["error", { threshold: 3 }],
 };
 
@@ -166,6 +226,10 @@ export default [
     plugins: { jsdoc: jsdocPlugin },
     rules: { ...maintainabilityRules, ...jsdocRules },
     settings: { jsdoc: { mode: "typescript" } },
+  },
+  {
+    files: ["src/support/Constants.js"],
+    rules: { "no-magic-numbers": "off" },
   },
   {
     files: NODE_FILES,

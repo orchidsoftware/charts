@@ -5,6 +5,38 @@ import { aggregationLayout, tooltipText } from "../support/Presentation.js";
 import Composition from "./Composition.js";
 import LegendRenderer from "./LegendRenderer.js";
 
+const PERCENTAGE_INSET = 16;
+const MINIMUM_SEGMENT_HEIGHT = 28;
+const SEGMENT_HEIGHT_RATIO = 0.72;
+const FULL_PERCENTAGE = 100;
+const MINIMUM_SECTOR_RADIUS = 8;
+const SECTOR_RADIUS_RATIO = 0.44;
+const DONUT_LABEL_OFFSET = 5;
+
+/**
+ * Names the resolved geometry of one horizontal percentage strip.
+ */
+class PercentageStrip {
+  /**
+   * Resolves strip bounds and clipping policy.
+   *
+   * @param {number} width - Available chart width.
+   * @param {object} layout - Vertical aggregation layout.
+   * @param {object} clipping - Radius and unique clip identifier.
+   */
+  constructor(width, layout, clipping) {
+    this.x = PERCENTAGE_INSET;
+    this.width = width - PERCENTAGE_INSET * 2;
+    this.height = Math.min(
+      layout.contentHeight,
+      Math.max(MINIMUM_SEGMENT_HEIGHT, layout.contentHeight * SEGMENT_HEIGHT_RATIO),
+    );
+    this.y = layout.contentTop + (layout.contentHeight - this.height) / 2;
+    this.radius = Math.min(clipping.radius, this.height / 2, this.width / 2);
+    this.clipId = clipping.id;
+  }
+}
+
 /**
  * Renders the chart types that aggregate categories into parts of one whole.
  */
@@ -33,21 +65,31 @@ export default class AggregationRenderer {
     const { height, type, width } = this.#chart.options;
     const composition = new Composition(this.#chart);
     const colors = this.#chart.options.colors;
+
     const legendItems = composition.parts.map((part, index) => ({
       label: part.label,
       color: colors[index % colors.length],
     }));
+
     const layout = aggregationLayout({
       width,
       height,
       items: legendItems,
       showLegend: this.#chart.options.showLegend,
     });
+
     if (type === ChartType.PERCENTAGE) {
       this.#renderPercentage(composition, { colors, layout, width });
-    } else {
-      this.#renderSectors(composition, { colors, layout, width, type });
+
+      if (layout.legendBaseline !== null) {
+        this.#renderItemLegend(composition.parts, colors, layout.legendBaseline);
+      }
+
+      return;
     }
+
+    this.#renderSectors(composition, { colors, layout, width, type });
+
     if (layout.legendBaseline !== null) {
       this.#renderItemLegend(composition.parts, colors, layout.legendBaseline);
     }
@@ -64,35 +106,42 @@ export default class AggregationRenderer {
    * @returns {void} Percentage segments are appended to the chart SVG.
    */
   #renderPercentage(composition, { colors, layout, width }) {
-    let x = 16;
-    const available = width - 32;
-    const segmentHeight = Math.min(layout.contentHeight, Math.max(28, layout.contentHeight * 0.72));
-    const segmentY = layout.contentTop + (layout.contentHeight - segmentHeight) / 2;
-    const percentageRadius = Math.min(
-      this.#chart.options.barOptions?.radius ?? DEFAULT_PERCENTAGE_RADIUS,
-      segmentHeight / 2,
-      available / 2,
-    );
-    const clipId = `charts2-percentage-clip-${this.#chart.id}`;
-    if (percentageRadius > 0) {
-      const clip = svg("clipPath", { id: clipId });
-      clip.append(svg("rect", { x: 16, y: segmentY, width: available, height: segmentHeight, rx: percentageRadius }));
-      const defs = svg("defs");
-      defs.append(clip);
-      this.#surface.append(defs);
+    const strip = new PercentageStrip(width, layout, {
+      radius: this.#chart.options.barOptions?.radius ?? DEFAULT_PERCENTAGE_RADIUS,
+      id: `charts2-percentage-clip-${this.#chart.id}`,
+    });
+
+    if (strip.radius > 0) {
+      this.#appendPercentageClip(strip);
     }
+
+    this.#renderPercentageSegments(composition, colors, strip);
+  }
+
+  /**
+   * Renders each proportional segment from left to right.
+   *
+   * @param {Composition} composition - Normalized parts and their positive total.
+   * @param {string[]} colors - Cyclic segment palette.
+   * @param {PercentageStrip} strip - Resolved strip geometry.
+   * @returns {void} Percentage marks are appended to the chart SVG.
+   */
+  #renderPercentageSegments(composition, colors, strip) {
+    let x = strip.x;
+
     for (const [index, part] of composition.parts.entries()) {
-      const segmentWidth = available * composition.shareOf(part);
+      const segmentWidth = strip.width * composition.shareOf(part);
+
       this.#surface.mark(
         "rect",
         {
           x,
-          y: segmentY,
+          y: strip.y,
           width: segmentWidth,
-          height: segmentHeight,
+          height: strip.height,
           fill: colors[index % colors.length],
           class: "charts2-percentage-segment charts2-mark",
-          ...(percentageRadius > 0 && { "clip-path": `url(#${clipId})` }),
+          ...(strip.radius > 0 && { "clip-path": `url(#${strip.clipId})` }),
         },
         {
           dataset: 0,
@@ -101,12 +150,36 @@ export default class AggregationRenderer {
             options: this.#chart.options,
             label: part.label,
             value: part.value,
-            suffix: ` (${Math.round(composition.shareOf(part) * 100)}%)`,
+            suffix: ` (${Math.round(composition.shareOf(part) * FULL_PERCENTAGE)}%)`,
           }),
         },
       );
       x += segmentWidth;
     }
+  }
+
+  /**
+   * Appends the rounded clipping boundary shared by all percentage segments.
+   *
+   * @param {PercentageStrip} strip - Resolved strip geometry and clip identifier.
+   * @returns {void} A clip definition is appended to the surface.
+   */
+  #appendPercentageClip(strip) {
+    const clip = svg("clipPath", { id: strip.clipId });
+
+    const boundary = svg("rect", {
+      x: strip.x,
+      y: strip.y,
+      width: strip.width,
+      height: strip.height,
+      rx: strip.radius,
+    });
+
+    clip.append(boundary);
+
+    const defs = svg("defs");
+    defs.append(clip);
+    this.#surface.append(defs);
   }
 
   /**
@@ -123,8 +196,14 @@ export default class AggregationRenderer {
   #renderSectors(composition, { colors, layout, width, type }) {
     const cx = width / 2;
     const cy = layout.contentTop + layout.contentHeight / 2;
-    const radius = Math.max(8, Math.min(width - AGGREGATION_INSET * 2, layout.contentHeight) * 0.44);
-    const sectors = composition.sectors({ cx, cy, radius, type, colors });
+
+    const radius = Math.max(
+      MINIMUM_SECTOR_RADIUS,
+      Math.min(width - AGGREGATION_INSET * 2, layout.contentHeight) * SECTOR_RADIUS_RATIO,
+    );
+
+    const sectors = composition.sectors({ x: cx, y: cy }, radius, { type, colors });
+
     for (const { attributes, index, name, part } of sectors) {
       this.#surface.mark(
         name,
@@ -135,14 +214,15 @@ export default class AggregationRenderer {
         {
           dataset: 0,
           point: index,
-          title: `${part.label}: ${formatNumber(part.value)} (${Math.round(composition.shareOf(part) * 100)}%)`,
+          title: `${part.label}: ${formatNumber(part.value)} (${Math.round(composition.shareOf(part) * FULL_PERCENTAGE)}%)`,
         },
       );
     }
+
     if (type === ChartType.DONUT) {
       this.#surface.text(formatNumber(composition.total), {
         x: cx,
-        y: cy + 5,
+        y: cy + DONUT_LABEL_OFFSET,
         class: "charts2-direct-value",
         "text-anchor": "middle",
       });

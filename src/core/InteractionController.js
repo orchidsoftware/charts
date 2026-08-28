@@ -5,6 +5,54 @@ const PRESSED_CLASS = "is-pressed";
 const PRESSED_ATTRIBUTE = "aria-pressed";
 
 /**
+ * Resolves a valid initial selection without exposing partial conditions.
+ *
+ * @param {Element[]} items - Ordered interactive marks.
+ * @param {number} activeIndex - Requested active mark index.
+ * @param {boolean} selectable - Whether persistent selection is enabled.
+ * @returns {number} Valid selected index or `-1` when selection starts empty.
+ */
+function initialSelection(items, activeIndex, selectable) {
+  if (!selectable || activeIndex < 0) {
+    return -1;
+  }
+
+  if (activeIndex >= items.length) {
+    return -1;
+  }
+
+  return activeIndex;
+}
+
+/**
+ * Resolves keyboard navigation into a requested focus index.
+ *
+ * @param {string} key - Browser keyboard key.
+ * @param {number} index - Current mark index.
+ * @param {number} itemCount - Number of navigable marks.
+ * @returns {number | null} Requested index, or null for a non-navigation key.
+ */
+function focusIndexFor(key, index, itemCount) {
+  if (FORWARD_KEYS.has(key)) {
+    return index + 1;
+  }
+
+  if (BACKWARD_KEYS.has(key)) {
+    return index - 1;
+  }
+
+  if (key === "Home") {
+    return 0;
+  }
+
+  if (key === "End") {
+    return itemCount - 1;
+  }
+
+  return null;
+}
+
+/**
  * Owns the transient preview, focus, pressed, and persistent selection state
  * for one rendered collection of SVG marks.
  */
@@ -22,39 +70,23 @@ export default class InteractionController {
   /**
    * Binds one roving-tabindex interaction model to ordered SVG marks.
    *
-   * @param {object} configuration - Interaction callbacks and eligible SVG marks.
-   * @param {Iterable<Element>} configuration.marks - Marks ordered by keyboard navigation position.
-   * @param {number} [configuration.activeIndex=-1] - Initially selected mark index, or `-1` for no selection.
-   * @param {(mark: Element, index: number) => string} configuration.labelFor - Builds an accessible label for a mark.
-   * @param {(index: number, mark: Element | null) => void} configuration.onActiveChange - Receives persistent selection changes.
-   * @param {(mark?: Element) => void} configuration.onHide - Hides a preview or restores the unselected state.
-   * @param {(mark: Element, label: string, index: number) => void} configuration.onShow - Presents a mark preview or selection.
-   * @param {boolean} [configuration.allowPointerPan=false] - Allows gestures to pass through non-selectable marks.
-   * @param {boolean} [configuration.previewable=true] - Enables transient pointer and focus previews.
-   * @param {boolean} [configuration.selectable=true] - Enables persistent click and keyboard selection.
+   * @param {Iterable<Element>} marks - Marks ordered by keyboard navigation position.
+   * @param {object} behavior - Initial selection and enabled interaction modes.
+   * @param {object} callbacks - Label, preview, and persistent-selection effects.
    */
-  constructor({
-    marks,
-    activeIndex = -1,
-    labelFor,
-    onActiveChange,
-    onHide,
-    onShow,
-    allowPointerPan = false,
-    previewable = true,
-    selectable = true,
-  }) {
+  constructor(marks, behavior, callbacks) {
     this.#items = [...marks];
-    this.#labelFor = labelFor;
-    this.#onActiveChange = onActiveChange;
-    this.#onHide = onHide;
-    this.#onShow = onShow;
-    this.#allowPointerPan = allowPointerPan;
-    this.#previewable = previewable;
-    this.#selectable = selectable;
-    this.#selectedIndex = selectable && activeIndex >= 0 && activeIndex < this.#items.length ? activeIndex : -1;
+    this.#labelFor = callbacks.labelFor;
+    this.#onActiveChange = callbacks.onActiveChange;
+    this.#onHide = callbacks.onHide;
+    this.#onShow = callbacks.onShow;
+    this.#allowPointerPan = behavior.allowPointerPan ?? false;
+    this.#previewable = behavior.previewable ?? true;
+    this.#selectable = behavior.selectable ?? true;
+    this.#selectedIndex = initialSelection(this.#items, behavior.activeIndex ?? -1, this.#selectable);
 
     const initialFocusIndex = Math.max(this.#selectedIndex, 0);
+
     for (const [index, item] of this.#items.entries()) {
       this.#bindItem(item, index, initialFocusIndex);
     }
@@ -74,9 +106,11 @@ export default class InteractionController {
   dismiss() {
     if (this.#selectedIndex >= 0) {
       this.#updateSelection(-1);
-    } else {
-      this.#onHide();
+
+      return;
     }
+
+    this.#onHide();
   }
 
   /**
@@ -101,19 +135,23 @@ export default class InteractionController {
     if (nextIndex === this.#selectedIndex) {
       return;
     }
+
     this.#selectedIndex = nextIndex;
     for (const [index, item] of this.#items.entries()) {
       const isSelected = index === this.#selectedIndex;
       item.classList.toggle(ACTIVE_CLASS, isSelected);
       InteractionController.#reflectBoolean(item, PRESSED_ATTRIBUTE, isSelected);
     }
+
     this.#onActiveChange(this.#selectedIndex, this.#selectedIndex >= 0 ? this.#items[this.#selectedIndex] : null);
     if (this.#selectedIndex >= 0) {
       const selected = this.#items[this.#selectedIndex];
       this.#onShow(selected, this.#labelFor(selected, this.#selectedIndex), this.#selectedIndex);
-    } else {
-      this.#onHide();
+
+      return;
     }
+
+    this.#onHide();
   }
 
   /**
@@ -139,9 +177,11 @@ export default class InteractionController {
     if (this.#selectedIndex >= 0) {
       const selected = this.#items[this.#selectedIndex];
       this.#onShow(selected, this.#labelFor(selected, this.#selectedIndex), this.#selectedIndex);
-    } else {
-      this.#onHide(item);
+
+      return;
     }
+
+    this.#onHide(item);
   }
 
   /**
@@ -167,7 +207,23 @@ export default class InteractionController {
    * @returns {void} Attributes and event listeners are attached in place.
    */
   #bindItem(item, index, initialFocusIndex) {
+    this.#configureItem(item, index, initialFocusIndex);
+    this.#bindPreview(item, index);
+    this.#bindSelection(item, index);
+    this.#bindKeyboard(item, index);
+  }
+
+  /**
+   * Applies static accessibility and state attributes to one mark.
+   *
+   * @param {Element} item - SVG mark receiving attributes.
+   * @param {number} index - Mark position in the ordered collection.
+   * @param {number} initialFocusIndex - Initial owner of the roving tab stop.
+   * @returns {void} The mark reflects its current interaction capabilities.
+   */
+  #configureItem(item, index, initialFocusIndex) {
     const label = this.#labelFor(item, index);
+
     item.classList.add("charts2-interactive-mark");
     item.classList.toggle("charts2-previewable-mark", this.#previewable);
     item.classList.toggle("charts2-selectable-mark", this.#selectable);
@@ -177,26 +233,64 @@ export default class InteractionController {
     item.setAttribute("aria-label", label);
     if (this.#selectable) {
       InteractionController.#reflectBoolean(item, PRESSED_ATTRIBUTE, index === this.#selectedIndex);
-    } else {
+    }
+
+    if (!this.#selectable) {
       item.removeAttribute(PRESSED_ATTRIBUTE);
     }
-    item.classList.toggle(ACTIVE_CLASS, index === this.#selectedIndex);
 
-    if (this.#previewable) {
-      item.addEventListener("pointerenter", () => this.#showPreview(item, index));
-      item.addEventListener("pointerleave", () => this.#hidePreview(item));
-      item.addEventListener("pointerdown", () => this.#showPreview(item, index));
-      item.addEventListener("focus", () => this.#showPreview(item, index));
-      item.addEventListener("blur", () => this.#hidePreview(item));
+    item.classList.toggle(ACTIVE_CLASS, index === this.#selectedIndex);
+  }
+
+  /**
+   * Binds transient pointer and focus preview behavior.
+   *
+   * @param {Element} item - SVG mark receiving preview listeners.
+   * @param {number} index - Mark position used by callbacks.
+   * @returns {void} Preview listeners are attached when enabled.
+   */
+  #bindPreview(item, index) {
+    if (!this.#previewable) {
+      return;
     }
+
+    item.addEventListener("pointerenter", () => this.#showPreview(item, index));
+    item.addEventListener("pointerleave", () => this.#hidePreview(item));
+    item.addEventListener("pointerdown", () => this.#showPreview(item, index));
+    item.addEventListener("focus", () => this.#showPreview(item, index));
+    item.addEventListener("blur", () => this.#hidePreview(item));
+  }
+
+  /**
+   * Binds persistent selection or pointer-pan behavior.
+   *
+   * @param {Element} item - SVG mark receiving pointer listeners.
+   * @param {number} index - Mark position used by selection callbacks.
+   * @returns {void} The appropriate pointer policy is attached.
+   */
+  #bindSelection(item, index) {
     if (this.#selectable) {
       item.addEventListener("pointerdown", () => item.classList.add(PRESSED_CLASS));
       item.addEventListener("pointerup", () => item.classList.remove(PRESSED_CLASS));
       item.addEventListener("pointercancel", () => item.classList.remove(PRESSED_CLASS));
       item.addEventListener("click", () => this.#updateSelection(index));
-    } else if (!this.#allowPointerPan) {
+
+      return;
+    }
+
+    if (!this.#allowPointerPan) {
       item.addEventListener("pointerdown", (event) => event.preventDefault());
     }
+  }
+
+  /**
+   * Binds keyboard navigation and release behavior.
+   *
+   * @param {Element} item - SVG mark receiving keyboard listeners.
+   * @param {number} index - Mark position used by navigation commands.
+   * @returns {void} Keyboard listeners are attached.
+   */
+  #bindKeyboard(item, index) {
     item.addEventListener("keydown", (event) => this.#handleKeydown(event, index));
     item.addEventListener("keyup", () => item.classList.remove(PRESSED_CLASS));
   }
@@ -209,24 +303,26 @@ export default class InteractionController {
    * @returns {void} Recognized commands prevent default behavior and update state.
    */
   #handleKeydown(event, index) {
-    if (FORWARD_KEYS.has(event.key)) {
+    const focusIndex = focusIndexFor(event.key, index, this.#items.length);
+
+    if (focusIndex !== null) {
       event.preventDefault();
-      this.#moveFocus(index, index + 1);
-    } else if (BACKWARD_KEYS.has(event.key)) {
-      event.preventDefault();
-      this.#moveFocus(index, index - 1);
-    } else if (event.key === "Home") {
-      event.preventDefault();
-      this.#moveFocus(index, 0);
-    } else if (event.key === "End") {
-      event.preventDefault();
-      this.#moveFocus(index, this.#items.length - 1);
-    } else if (this.#selectable && (event.key === "Enter" || event.key === " ")) {
+      this.#moveFocus(index, focusIndex);
+
+      return;
+    }
+
+    if (this.#selectable && (event.key === "Enter" || event.key === " ")) {
       event.preventDefault();
       this.#items[index].classList.add(PRESSED_CLASS);
       this.#updateSelection(index);
-    } else if (event.key === "Escape") {
+
+      return;
+    }
+
+    if (event.key === "Escape") {
       event.preventDefault();
+
       if (this.#selectedIndex >= 0) {
         this.#updateSelection(-1);
       }

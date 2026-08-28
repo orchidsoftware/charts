@@ -1,5 +1,49 @@
 import { DEFAULT_COLORS } from "../support/Constants.js";
 
+const TOOLTIP_ANCHOR_OFFSET = 8;
+const TOOLTIP_EDGE_GAP = 4;
+const TOOLTIP_MINIMUM_VIEWPORT_WIDTH = 24;
+const TOOLTIP_SEPARATOR = ": ";
+const TOOLTIP_SEPARATOR_LENGTH = TOOLTIP_SEPARATOR.length;
+
+/**
+ * Creates one text-only tooltip heading.
+ *
+ * @param {string} text - Heading content supplied by normalized metadata.
+ * @returns {HTMLDivElement} Safe heading node.
+ */
+function tooltipHeading(text) {
+  const heading = document.createElement("div");
+
+  heading.className = "charts2-tooltip-heading";
+  heading.textContent = text;
+
+  return heading;
+}
+
+/**
+ * Creates one structured tooltip row.
+ *
+ * @param {{name: string, value: string, color: string}} item - Display-ready series item.
+ * @returns {HTMLDivElement} Safe row containing swatch, name, and value nodes.
+ */
+function tooltipRow(item) {
+  const row = document.createElement("div");
+  const swatch = document.createElement("i");
+  const name = document.createElement("span");
+  const value = document.createElement("strong");
+
+  row.className = "charts2-tooltip-row";
+  swatch.className = "charts2-series-swatch";
+  swatch.setAttribute("aria-hidden", "true");
+  swatch.style.background = item.color;
+  name.textContent = item.name;
+  value.textContent = item.value;
+  row.append(swatch, name, value);
+
+  return row;
+}
+
 /**
  * Owns tooltip DOM, safe content construction, and viewport-aware placement for
  * one chart surface.
@@ -48,29 +92,62 @@ export default class ChartTooltip {
   show(mark, label, { width, height }) {
     const hostBox = this.#host.getBoundingClientRect();
     const markBox = mark.getBoundingClientRect();
+
     this.#renderContent(mark, label);
+
     const hasAnchor = mark.dataset.tooltipAnchorX !== undefined;
     const svgBox = hasAnchor ? this.#svg.getBoundingClientRect() : null;
-    const requestedLeft = hasAnchor
-      ? svgBox.left -
-        hostBox.left +
-        this.#host.scrollLeft +
-        (Number(mark.dataset.tooltipAnchorX) / width) * svgBox.width
-      : markBox.left - hostBox.left + this.#host.scrollLeft + markBox.width / 2;
-    let requestedTop = Math.max(0, markBox.top - hostBox.top + this.#host.scrollTop - 8);
-    if (hasAnchor) {
-      requestedTop = Math.max(
-        0,
-        svgBox.top -
-          hostBox.top +
-          this.#host.scrollTop +
-          (Number(mark.dataset.tooltipAnchorY) / height) * svgBox.height -
-          8,
-      );
-    } else if (mark.classList.contains("charts2-x-hit")) {
-      requestedTop = markBox.top - hostBox.top + this.#host.scrollTop + markBox.height / 2;
-    }
+    const anchor = { mark, hasSvgCoordinates: hasAnchor };
+    const boxes = { host: hostBox, mark: markBox, svg: svgBox };
+    const requestedLeft = this.#requestedLeft(anchor, boxes, width);
+    const requestedTop = this.#requestedTop(anchor, boxes, height);
+
     this.#positionWithinViewport(requestedLeft, requestedTop, hostBox);
+  }
+
+  /**
+   * Resolves the preferred horizontal tooltip anchor.
+   *
+   * @param {object} anchor - Mark and its coordinate-system policy.
+   * @param {object} boxes - Measured host, mark, and optional SVG bounds.
+   * @param {number} width - Logical SVG width.
+   * @returns {number} Preferred horizontal center in host coordinates.
+   */
+  #requestedLeft(anchor, boxes, width) {
+    if (!anchor.hasSvgCoordinates) {
+      return boxes.mark.left - boxes.host.left + this.#host.scrollLeft + boxes.mark.width / 2;
+    }
+
+    const anchorRatio = Number(anchor.mark.dataset.tooltipAnchorX) / width;
+    const projectedAnchor = anchorRatio * boxes.svg.width;
+
+    return boxes.svg.left - boxes.host.left + this.#host.scrollLeft + projectedAnchor;
+  }
+
+  /**
+   * Resolves the preferred vertical tooltip anchor.
+   *
+   * @param {object} anchor - Mark and its coordinate-system policy.
+   * @param {object} boxes - Measured host, mark, and optional SVG bounds.
+   * @param {number} height - Logical SVG height.
+   * @returns {number} Preferred tooltip bottom edge in host coordinates.
+   */
+  #requestedTop(anchor, boxes, height) {
+    if (anchor.hasSvgCoordinates) {
+      const anchorRatio = Number(anchor.mark.dataset.tooltipAnchorY) / height;
+      const projectedAnchor = anchorRatio * boxes.svg.height;
+
+      return Math.max(
+        0,
+        boxes.svg.top - boxes.host.top + this.#host.scrollTop + projectedAnchor - TOOLTIP_ANCHOR_OFFSET,
+      );
+    }
+
+    if (anchor.mark.classList.contains("charts2-x-hit")) {
+      return boxes.mark.top - boxes.host.top + this.#host.scrollTop + boxes.mark.height / 2;
+    }
+
+    return Math.max(0, boxes.mark.top - boxes.host.top + this.#host.scrollTop - TOOLTIP_ANCHOR_OFFSET);
   }
 
   /**
@@ -102,20 +179,54 @@ export default class ChartTooltip {
   #positionWithinViewport(requestedLeft, requestedTop, hostBox) {
     this.#element.hidden = false;
     const tooltipBounds = this.#element.getBoundingClientRect();
-    const halfWidth = Math.max(this.#element.offsetWidth, tooltipBounds.width) / 2;
-    const viewportLeft = this.#host.scrollLeft;
-    const left =
-      hostBox.width > 24
-        ? Math.min(viewportLeft + hostBox.width - halfWidth - 4, Math.max(viewportLeft + halfWidth + 4, requestedLeft))
-        : requestedLeft;
-    const tooltipHeight = Math.max(this.#element.offsetHeight, tooltipBounds.height);
-    const viewportTop = this.#host.scrollTop;
-    const minimumTop = viewportTop + tooltipHeight + 4;
-    const maximumTop = Math.max(minimumTop, viewportTop + hostBox.height - 4);
-    const top =
-      hostBox.height > tooltipHeight + 8 ? Math.min(maximumTop, Math.max(minimumTop, requestedTop)) : minimumTop;
+    const left = this.#clampedLeft(requestedLeft, hostBox, tooltipBounds);
+    const top = this.#clampedTop(requestedTop, hostBox, tooltipBounds);
+
     this.#element.style.left = `${left}px`;
     this.#element.style.top = `${top}px`;
+  }
+
+  /**
+   * Clamps a horizontal tooltip center to the visible host width.
+   *
+   * @param {number} requestedLeft - Preferred horizontal center.
+   * @param {DOMRect} hostBox - Current host bounds.
+   * @param {DOMRect} tooltipBounds - Current tooltip bounds.
+   * @returns {number} Visible horizontal center in host coordinates.
+   */
+  #clampedLeft(requestedLeft, hostBox, tooltipBounds) {
+    if (hostBox.width <= TOOLTIP_MINIMUM_VIEWPORT_WIDTH) {
+      return requestedLeft;
+    }
+
+    const halfWidth = Math.max(this.#element.offsetWidth, tooltipBounds.width) / 2;
+    const viewportLeft = this.#host.scrollLeft;
+    const maximumLeft = viewportLeft + hostBox.width - halfWidth - TOOLTIP_EDGE_GAP;
+    const minimumLeft = viewportLeft + halfWidth + TOOLTIP_EDGE_GAP;
+
+    return Math.min(maximumLeft, Math.max(minimumLeft, requestedLeft));
+  }
+
+  /**
+   * Clamps a vertical tooltip edge to the visible host height.
+   *
+   * @param {number} requestedTop - Preferred bottom edge.
+   * @param {DOMRect} hostBox - Current host bounds.
+   * @param {DOMRect} tooltipBounds - Current tooltip bounds.
+   * @returns {number} Visible bottom edge in host coordinates.
+   */
+  #clampedTop(requestedTop, hostBox, tooltipBounds) {
+    const tooltipHeight = Math.max(this.#element.offsetHeight, tooltipBounds.height);
+    const viewportTop = this.#host.scrollTop;
+    const minimumTop = viewportTop + tooltipHeight + TOOLTIP_EDGE_GAP;
+
+    if (hostBox.height <= tooltipHeight + TOOLTIP_ANCHOR_OFFSET) {
+      return minimumTop;
+    }
+
+    const maximumTop = Math.max(minimumTop, viewportTop + hostBox.height - TOOLTIP_EDGE_GAP);
+
+    return Math.min(maximumTop, Math.max(minimumTop, requestedTop));
   }
 
   /**
@@ -127,39 +238,28 @@ export default class ChartTooltip {
    */
   #renderContent(mark, label) {
     const rawLabel = String(label ?? "");
-    const separator = rawLabel.lastIndexOf(": ");
+    const separator = rawLabel.lastIndexOf(TOOLTIP_SEPARATOR);
+
     const fallbackItems =
       separator === -1
         ? []
         : [
             {
               name: rawLabel.slice(0, separator),
-              value: rawLabel.slice(separator + 2),
+              value: rawLabel.slice(separator + TOOLTIP_SEPARATOR_LENGTH),
               color: this.#colorForMark(mark),
             },
           ];
+
     const items = mark.dataset.tooltipItems ? JSON.parse(mark.dataset.tooltipItems) : fallbackItems;
     const headingText = mark.dataset.tooltipHeading ?? (separator === -1 ? rawLabel : "");
-    const heading = headingText ? document.createElement("div") : null;
-    if (heading) {
-      heading.className = "charts2-tooltip-heading";
-      heading.textContent = headingText;
+    const children = items.map((item) => tooltipRow(item));
+
+    if (headingText) {
+      children.unshift(tooltipHeading(headingText));
     }
-    const rows = items.map((item) => {
-      const row = document.createElement("div");
-      row.className = "charts2-tooltip-row";
-      const swatch = document.createElement("i");
-      swatch.className = "charts2-series-swatch";
-      swatch.setAttribute("aria-hidden", "true");
-      swatch.style.background = item.color;
-      const value = document.createElement("strong");
-      value.textContent = item.value;
-      const name = document.createElement("span");
-      name.textContent = item.name;
-      row.append(swatch, name, value);
-      return row;
-    });
-    this.#element.replaceChildren(...(heading ? [heading] : []), ...rows);
+
+    this.#element.replaceChildren(...children);
   }
 
   /**
@@ -170,6 +270,7 @@ export default class ChartTooltip {
    */
   #colorForMark(mark) {
     const candidates = [mark.getAttribute("fill"), mark.getAttribute("stroke"), mark.style.color];
+
     return candidates.find((color) => color && !["none", "transparent"].includes(color)) ?? DEFAULT_COLORS[0];
   }
 }

@@ -5,60 +5,113 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Charts2 — accessible, dependency-free SVG charts with one consistent JavaScript API"
+      content="Charts2 turns everyday product data into clear, responsive SVG charts with one small JavaScript API."
     />
-    <title>Charts2 — expressive SVG charts without the ceremony</title>
+    <title>Charts2 — charts that belong in your product</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
     <main>
       <!-- Navigation -->
-      <nav>
-        <span class="brand"><i class="brand-mark" aria-hidden="true"></i>Charts2 <small>expressive SVG</small></span
-        ><a href="#supported-charts">See what it can do ↓</a>
-      </nav>
+      <header class="site-header">
+        <a class="brand" href="#top" aria-label="Charts2 home"
+          ><i class="brand-mark" aria-hidden="true"></i><span>Charts2</span></a
+        >
+        <nav aria-label="Primary navigation">
+          <a href="#supported-charts">Chart types</a>
+          <a href="./lab.html">Lab</a>
+          <a href="https://github.com/tabuna/charts2">GitHub</a>
+          <a class="header-cta" href="#install">Get started</a>
+        </nav>
+      </header>
 
       <!-- Product promise -->
-      <section class="hero">
-        <p class="eyebrow">Expressive SVG charts · zero runtime dependencies</p>
-        <h1>Make the data clear.<br /><em>Keep the charting out of the way.</em></h1>
-        <p class="lede">
-          Twelve visual grammars share one factory, one lifecycle, and one interaction language. Start with the question
-          your product needs to answer; Charts2 takes care of the responsive SVG, accessibility, and details.
-        </p>
-        <div class="actions">
-          <button id="shuffle">Refresh the live data</button><code>npm install @charts2/core</code>
+      <section id="top" class="hero">
+        <div class="hero-rail">
+          <div class="hero-copy">
+            <h1>Charts that belong in your product.</h1>
+            <p class="lede">
+              Turn everyday product data into clear, interactive charts without turning chart configuration into a
+              project. One small API covers trends, comparisons, composition, activity, and planning.
+            </p>
+            <div class="actions">
+              <a class="primary-action" href="#install">Start building</a>
+              <button id="shuffle" class="text-action">Refresh the demo ↻</button>
+            </div>
+          </div>
         </div>
+        <aside class="hero-preview" aria-label="Live revenue chart rendered by Charts2">
+          <div class="preview-toolbar">
+            <span class="preview-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <strong>Acme workspace</strong>
+            <span class="preview-live">Live demo</span>
+          </div>
+          <div class="preview-workspace">
+            <div class="preview-sidebar" aria-hidden="true">
+              <strong>Analytics</strong>
+              <span class="is-active"><i></i>Overview</span>
+              <span><i></i>Revenue</span>
+              <span><i></i>Customers</span>
+              <span><i></i>Plans</span>
+              <small>Workspace</small>
+              <span><i></i>Reports</span>
+              <span><i></i>Exports</span>
+            </div>
+            <div class="preview-main">
+              <div class="preview-heading">
+                <div><small>Overview</small><strong>Revenue</strong></div>
+                <span>Last 12 months⌄</span>
+              </div>
+              <div class="preview-summary">
+                <div>
+                  <span>Monthly recurring revenue</span>
+                  <strong>$84,240</strong>
+                </div>
+                <small>↑ 18.4% this year</small>
+              </div>
+              <div class="preview-chart-card">
+                <div class="preview-chart-title"><strong>Revenue and plan</strong><span>USD, thousands</span></div>
+                <div id="hero-revenue"></div>
+                <div class="preview-footer">
+                  <span><i class="preview-key preview-key-current" aria-hidden="true"></i>Revenue</span>
+                  <span><i class="preview-key preview-key-plan" aria-hidden="true"></i>Plan</span>
+                  <small>Updated just now</small>
+                </div>
+              </div>
+              <div class="preview-insights" aria-hidden="true">
+                <div><span>Customers</span><strong>12,840</strong><small>+724 this month</small></div>
+                <div><span>Avg. revenue</span><strong>$72.40</strong><small>+$4.10 this year</small></div>
+                <div><span>Churn</span><strong>1.8%</strong><small>−0.3% this year</small></div>
+              </div>
+              <div class="preview-library" aria-label="Library highlights">
+                <strong>Small library. Serious range.</strong>
+                <span><b>12</b> chart types</span>
+                <span><b>0</b> dependencies</span>
+                <span><b>1</b> consistent API</span>
+                <span class="preview-library-bundle">
+                  <b id="bundle-size-value">49.9 kB</b><small id="bundle-size-gzip">(14.2 kB gzip)</small>
+                  <i>ESM + CSS bundle</i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </aside>
       </section>
 
-      <!-- Verifiable release metrics -->
-      <section class="metrics" aria-label="Library highlights">
-        <div><strong>76</strong><span>visual baselines</span></div>
-        <div><strong>0</strong><span>runtime dependencies</span></div>
-        <div><strong>100%</strong><span>verified coverage</span></div>
-        <div>
-          <strong class="bundle-size"
-            ><span id="bundle-size-value">49.9 kB</span><small id="bundle-size-gzip">(14.2 kB gzip)</small></strong
-          ><span>ESM + CSS</span>
-        </div>
-      </section>
-
-      <!-- Supported visual grammars -->
+      <!-- Supported chart types -->
       <section id="supported-charts" class="support-overview" aria-labelledby="supported-charts-title">
         <header class="support-overview-header">
           <div>
-            <p class="eyebrow">One public contract</p>
-            <h2 id="supported-charts-title">One API. Four visual families.</h2>
+            <h2 id="supported-charts-title">The charts product work needs.</h2>
           </div>
           <p>
             Choose the shape that makes the answer obvious. Every type below keeps the same responsive lifecycle,
-            accessible semantics, tooltip, selection, update, and export contract.
+            tooltip, selection, update, and export contract.
           </p>
         </header>
         <div class="support-families">
           <section class="support-family support-family-cartesian" aria-labelledby="cartesian-family-title">
             <header>
-              <span>01</span>
               <h3 id="cartesian-family-title">Cartesian</h3>
             </header>
             <div class="support-types">
@@ -143,7 +196,6 @@
           </section>
           <section class="support-family support-family-radial" aria-labelledby="radial-family-title">
             <header>
-              <span>02</span>
               <h3 id="radial-family-title">Radial</h3>
             </header>
             <div class="support-types">
@@ -187,7 +239,6 @@
           </section>
           <section class="support-family support-family-small" aria-labelledby="time-family-title">
             <header>
-              <span>03</span>
               <h3 id="time-family-title">Time</h3>
             </header>
             <div class="support-types">
@@ -205,7 +256,6 @@
           </section>
           <section class="support-family support-family-small" aria-labelledby="calendar-family-title">
             <header>
-              <span>04</span>
               <h3 id="calendar-family-title">Calendar</h3>
             </header>
             <div class="support-types">
@@ -232,70 +282,54 @@
         </div>
       </section>
 
-      <!-- Product-oriented chart gallery -->
-      <section class="section-copy showcase-intro" aria-labelledby="showcase-title">
-        <p class="eyebrow">Recognizable product patterns</p>
-        <h2 id="showcase-title">Charts with a job to do.</h2>
-        <p>Familiar scenarios make each chart’s purpose clear before you inspect an individual value.</p>
-      </section>
-
       <!-- Trends and time -->
-      <section id="gallery" class="showcase-group" aria-labelledby="trends-title">
+      <section id="gallery" class="showcase-group showcase-group-trends" aria-labelledby="trends-title">
         <header class="showcase-group-header">
-          <span>01</span>
-          <div>
-            <h3 id="trends-title">Trends and targets</h3>
-            <p>Change over time, plans, and operational limits.</p>
-          </div>
+          <h3 id="trends-title">Is the product moving in the right direction?</h3>
         </header>
         <div class="gallery">
-          <article class="wide">
+          <article class="wide spotlight-card">
             <header>
               <div>
                 <span class="tag">LINE</span>
                 <h2>App Store downloads</h2>
               </div>
-              <strong>84.2k</strong>
             </header>
             <div id="line"></div>
           </article>
-          <article class="wide">
+          <article>
             <header>
               <div>
-                <span class="tag">LINE · GRADIENT · MULTI</span>
+                <span class="tag">MULTI-SERIES LINE</span>
                 <h2>Subscription growth</h2>
               </div>
-              <strong>3 plans</strong>
             </header>
             <div id="line-gradient"></div>
           </article>
-          <article class="wide">
+          <article>
             <header>
               <div>
-                <span class="tag">MIXED · BAR + 2 LINES</span>
+                <span class="tag">MIXED</span>
                 <h2>Store visits, plan, and capacity</h2>
               </div>
-              <strong>8 weeks</strong>
             </header>
             <div id="axis-mixed"></div>
           </article>
-          <article class="wide">
+          <article>
             <header>
               <div>
-                <span class="tag">MIXED · SIGNED · RIGHT Y-AXIS</span>
+                <span class="tag">MIXED · DUAL AXIS</span>
                 <h2>Account balance movement</h2>
               </div>
-              <strong>+$28</strong>
             </header>
             <div id="axis-mixed-signed"></div>
           </article>
-          <article id="timesheet-card" class="wide">
+          <article id="timesheet-card">
             <header>
               <div>
-                <span class="tag">TIME SHEET BAR</span>
+                <span class="tag">TIMESHEET</span>
                 <h2>App release plan</h2>
               </div>
-              <strong>12 days</strong>
             </header>
             <div id="timesheet"></div>
           </article>
@@ -303,42 +337,35 @@
       </section>
 
       <!-- Comparisons and relationships -->
-      <section class="showcase-group" aria-labelledby="comparison-title">
+      <section class="showcase-group showcase-group-compare" aria-labelledby="comparison-title">
         <header class="showcase-group-header">
-          <span>02</span>
-          <div>
-            <h3 id="comparison-title">Compare and diagnose</h3>
-            <p>Categories, alternatives, correlation, and multidimensional profiles.</p>
-          </div>
+          <h3 id="comparison-title">Where should the team look first?</h3>
         </header>
         <div class="gallery">
           <article>
             <header>
               <div>
-                <span class="tag">BAR · VERTICAL</span>
+                <span class="tag">BAR</span>
                 <h2>Notifications by app</h2>
               </div>
-              <strong>1 week</strong>
             </header>
             <div id="bar-vertical"></div>
           </article>
           <article>
             <header>
               <div>
-                <span class="tag">BAR · HORIZONTAL · GROUPED</span>
+                <span class="tag">GROUPED BAR</span>
                 <h2>Delivery time by region</h2>
               </div>
-              <strong>hours</strong>
             </header>
             <div id="bar-horizontal"></div>
           </article>
           <article>
             <header>
               <div>
-                <span class="tag">BAR · HORIZONTAL · STACKED</span>
+                <span class="tag">STACKED BAR</span>
                 <h2>Order fulfillment</h2>
               </div>
-              <strong>214 orders</strong>
             </header>
             <div id="bar-horizontal-stacked"></div>
           </article>
@@ -348,7 +375,6 @@
                 <span class="tag">SCATTER</span>
                 <h2>Price and battery life</h2>
               </div>
-              <strong>hours</strong>
             </header>
             <div id="scatter"></div>
           </article>
@@ -358,7 +384,6 @@
                 <span class="tag">BUBBLE</span>
                 <h2>App portfolio</h2>
               </div>
-              <strong>reach × size</strong>
             </header>
             <div id="bubble"></div>
           </article>
@@ -368,7 +393,6 @@
                 <span class="tag">RADAR</span>
                 <h2>Phone comparison</h2>
               </div>
-              <strong>2 models</strong>
             </header>
             <div id="radar"></div>
           </article>
@@ -376,13 +400,9 @@
       </section>
 
       <!-- Composition and recurring activity -->
-      <section class="showcase-group" aria-labelledby="composition-title">
+      <section class="showcase-group showcase-group-compose" aria-labelledby="composition-title">
         <header class="showcase-group-header">
-          <span>03</span>
-          <div>
-            <h3 id="composition-title">Composition and activity</h3>
-            <p>Parts of a whole, allocation, and recurring behavior.</p>
-          </div>
+          <h3 id="composition-title">What is the whole made of?</h3>
         </header>
         <div class="gallery">
           <article>
@@ -391,7 +411,6 @@
                 <span class="tag">POLAR AREA</span>
                 <h2>Screen Time</h2>
               </div>
-              <strong>4 h 37 m</strong>
             </header>
             <div id="polar"></div>
           </article>
@@ -401,7 +420,6 @@
                 <span class="tag">PIE</span>
                 <h2>Website traffic</h2>
               </div>
-              <strong>100%</strong>
             </header>
             <div id="pie"></div>
           </article>
@@ -411,17 +429,15 @@
                 <span class="tag">DONUT</span>
                 <h2>Subscription plans</h2>
               </div>
-              <strong>10k members</strong>
             </header>
             <div id="donut"></div>
           </article>
-          <article>
+          <article class="percentage-card">
             <header>
               <div>
                 <span class="tag">PERCENTAGE</span>
                 <h2>iPhone storage</h2>
               </div>
-              <strong>192 GB used</strong>
             </header>
             <div id="percentage"></div>
           </article>
@@ -431,102 +447,15 @@
                 <span class="tag">HEATMAP</span>
                 <h2>Daily contributions</h2>
               </div>
-              <strong>365 days</strong>
             </header>
             <div id="heatmap"></div>
           </article>
         </div>
       </section>
 
-      <!-- Reliability proof; demanding fixtures stay available without dominating the showroom -->
-      <section class="reliability" aria-labelledby="reliability-title">
-        <div class="reliability-copy">
-          <p class="eyebrow">Production resilience</p>
-          <h2 id="reliability-title">Built for data that refuses to be tidy.</h2>
-          <p>
-            Precision near zero, signed values, dense timelines, and multilingual labels are verified alongside the
-            polished examples above—not left for applications to discover later.
-          </p>
-        </div>
-        <ul class="reliability-points" aria-label="Reliability guarantees">
-          <li><strong>Every state</strong><span>Pointer, keyboard, focus, selection, light, and dark.</span></li>
-          <li><strong>Every scale</strong><span>Fractions, millions, flat series, and values crossing zero.</span></li>
-          <li><strong>Every viewport</strong><span>Responsive SVG with mobile baselines and overflow checks.</span></li>
-        </ul>
-        <details id="quality-lab" class="quality-lab">
-          <summary><span>Explore the quality lab</span><small>7 demanding datasets</small></summary>
-          <div class="gallery edge-gallery" aria-label="Chart reliability examples">
-            <article class="wide">
-              <header>
-                <div>
-                  <span class="tag">PRECISION</span>
-                  <h2>Small measurements, clear context</h2>
-                </div>
-              </header>
-              <div id="fractions"></div>
-            </article>
-            <article class="wide">
-              <header>
-                <div>
-                  <span class="tag">LARGE SCALE</span>
-                  <h2>Millions without losing the labels</h2>
-                </div>
-              </header>
-              <div id="large-values"></div>
-            </article>
-            <article class="wide">
-              <header>
-                <div>
-                  <span class="tag">LOCALIZATION</span>
-                  <h2>Multilingual enterprise categories</h2>
-                </div>
-              </header>
-              <div id="absurd-labels"></div>
-            </article>
-            <article>
-              <header>
-                <div>
-                  <span class="tag">SIGNED BARS</span>
-                  <h2>Losses, zero, and gains</h2>
-                </div>
-              </header>
-              <div id="negative-bars"></div>
-            </article>
-            <article>
-              <header>
-                <div>
-                  <span class="tag">ZERO CROSSING</span>
-                  <h2>Signals moving through baseline</h2>
-                </div>
-              </header>
-              <div id="signed-lines"></div>
-            </article>
-            <article class="wide">
-              <header>
-                <div>
-                  <span class="tag">DENSE SERIES</span>
-                  <h2>Forty-eight readable categories</h2>
-                </div>
-              </header>
-              <div id="dense-line"></div>
-            </article>
-            <article class="wide">
-              <header>
-                <div>
-                  <span class="tag">FLAT SERIES</span>
-                  <h2>Stable output when nothing changes</h2>
-                </div>
-              </header>
-              <div id="flat-values"></div>
-            </article>
-          </div>
-        </details>
-      </section>
-
       <!-- Explicitly frameless variants -->
       <section class="spark-section">
         <div class="section-copy">
-          <p class="eyebrow">Explicit when it matters</p>
           <h2>Less chrome. Same chart.</h2>
           <p>
             Every omitted element is visible in configuration: axes, grid, labels, legend, dots, and tooltip are each
@@ -550,14 +479,17 @@
       </section>
 
       <!-- Public API -->
-      <section class="snippet">
+      <section id="install" class="snippet">
         <div>
-          <p class="eyebrow">The happy path is the whole path</p>
-          <h2>One factory.<br />Every chart.</h2>
+          <h2>Learn it once.<br />Use it everywhere.</h2>
           <p>
-            Choose the visual grammar. The same lifecycle handles responsive rendering, updates, interaction,
-            accessibility, export, and cleanup.
+            Choose the chart type. The same lifecycle handles responsive rendering, updates, interaction, export, and
+            cleanup.
           </p>
+          <div class="snippet-actions">
+            <a class="primary-action" href="https://github.com/tabuna/charts2#readme">Read the quick start</a>
+            <a href="https://github.com/tabuna/charts2">View on GitHub ↗</a>
+          </div>
         </div>
         <pre><code>import { createChart } from "@charts2/core";
 import "@charts2/core/style.css";
@@ -575,7 +507,7 @@ chart.destroy();</code></pre>
 
     <!-- Release identity and page navigation -->
     <footer class="site-footer">
-      <span>Charts2 1.0.0 · SVG-native · Accessible by design</span>
+      <span>Charts2 1.0.0 · Product-ready SVG charts</span>
       <a href="#supported-charts">Back to chart index ↑</a>
     </footer>
     <script type="module" src="./Main.js"></script>

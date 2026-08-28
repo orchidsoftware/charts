@@ -35,6 +35,7 @@ export default class CartesianRenderer {
     new CartesianSeriesRenderer(rendering).render();
     axes.renderForeground();
     const interactive = this.#chart.options.showTooltip || typeof this.#chart.options.onSelect === "function";
+
     if (layout.usesInspector && interactive) {
       new CartesianInspectorRenderer(rendering).render();
     }

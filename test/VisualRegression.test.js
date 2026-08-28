@@ -30,13 +30,6 @@ const demoCards = [
   ["donut", "#donut"],
   ["percentage", "#percentage"],
   ["timesheet", "#timesheet"],
-  ["fractions", "#fractions"],
-  ["large-values", "#large-values"],
-  ["absurd-labels", "#absurd-labels"],
-  ["negative-bars", "#negative-bars"],
-  ["signed-lines", "#signed-lines"],
-  ["dense-line", "#dense-line"],
-  ["flat-values", "#flat-values"],
   ["heatmap", "#heatmap"],
   ["spark-line", "#spark-line"],
   ["spark-area", "#spark-area"],
@@ -57,18 +50,7 @@ const demoSections = [
   ["trends-and-targets", "#gallery"],
   ["compare-and-diagnose", "section[aria-labelledby='comparison-title']"],
   ["composition-and-activity", "section[aria-labelledby='composition-title']"],
-  ["quality-proof", ".reliability"],
 ];
-
-const qualityCardSelectors = new Set([
-  "#fractions",
-  "#large-values",
-  "#absurd-labels",
-  "#negative-bars",
-  "#signed-lines",
-  "#dense-line",
-  "#flat-values",
-]);
 
 const stateFixtures = [
   [
@@ -330,7 +312,6 @@ beforeAll(async () => {
 beforeEach(async () => {
   await page.viewport(1280, 900);
   setTheme("light");
-  document.querySelector("#quality-lab").open = false;
   resetInteractionState();
   await settle();
 });
@@ -359,10 +340,6 @@ describe.sequential("visual regression baselines", () => {
 
   for (const [name, selector] of demoCards) {
     it(`keeps the desktop ${name} card stable`, async () => {
-      if (qualityCardSelectors.has(selector)) {
-        document.querySelector("#quality-lab").open = true;
-        await settle();
-      }
       await matchScreenshot(demoCard(selector), `demo-desktop-light-${name}`);
     });
   }

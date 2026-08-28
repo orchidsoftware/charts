@@ -1,6 +1,160 @@
 import { AGGREGATION_TYPES, ChartType } from "../support/Constants.js";
 
 /**
+ * Names one selected heatmap cell.
+ */
+class HeatmapPointSelection {
+  /**
+   * Creates a public single-cell payload.
+   *
+   * @param {number} index - Selected cell index.
+   * @param {object} point - Normalized heatmap entry.
+   */
+  constructor(index, point) {
+    this.type = ChartType.HEATMAP;
+    this.index = index;
+    this.date = point.date;
+    this.key = point.key;
+    this.value = point.value;
+  }
+}
+
+/**
+ * Names one inspected heatmap range.
+ */
+class HeatmapRangeSelection {
+  /**
+   * Creates a public heatmap-range payload.
+   *
+   * @param {number} index - First selected cell index.
+   * @param {Array<object>} points - Range entries.
+   */
+  constructor(index, points) {
+    this.type = ChartType.HEATMAP;
+    this.index = index;
+    this.key = points[0].key;
+    this.value = points[0].value;
+    this.values = points.map((point) => point.value);
+    this.points = points;
+    this.range = { start: points[0].key, end: points.at(-1).key };
+  }
+}
+
+/**
+ * Names one selected timesheet task.
+ */
+class TimesheetSelection {
+  /**
+   * Creates a public task payload with defensive dates.
+   *
+   * @param {number} index - Selected task index.
+   * @param {object} task - Normalized task.
+   */
+  constructor(index, task) {
+    this.type = ChartType.TIMESHEET;
+    this.index = index;
+    this.label = task.label;
+    this.start = new Date(task.start);
+    this.end = new Date(task.end);
+    this.duration = task.end - task.start;
+    this.group = task.group;
+    this.color = task.color;
+    this.task = { ...task };
+  }
+}
+
+/**
+ * Names a multi-series category inspection.
+ */
+class CategorySelection {
+  /**
+   * Creates a public category payload.
+   *
+   * @param {string} type - Chart type.
+   * @param {number} index - Position shared by every inspected series.
+   * @param {object} category - Category values.
+   */
+  constructor(type, index, category) {
+    this.type = type;
+    this.index = index;
+    this.label = category.label;
+    this.x = category.points[0]?.x;
+    this.values = category.values;
+    this.points = category.points;
+  }
+}
+
+/**
+ * Names a complete radar dataset selection.
+ */
+class RadarSelection {
+  /**
+   * Creates a public radar-dataset payload.
+   *
+   * @param {number} index - Dataset index.
+   * @param {object} dataset - Normalized series supplying the polygon values.
+   * @param {Array<object>} points - Selected points.
+   */
+  constructor(index, dataset, points) {
+    this.type = ChartType.RADAR;
+    this.index = index;
+    this.label = dataset.name;
+    this.datasetIndex = index;
+    this.dataset = dataset.name;
+    this.values = points.map((point) => point.y);
+    this.points = points;
+  }
+}
+
+/**
+ * Names a single aggregation selection.
+ */
+class AggregationSelection {
+  /**
+   * Creates a public aggregation payload.
+   *
+   * @param {string} type - Chart type.
+   * @param {number} index - Point index.
+   * @param {object} point - Selected point.
+   */
+  constructor(type, index, point) {
+    this.type = type;
+    this.index = index;
+    this.label = point.label;
+    this.x = point.x;
+    this.y = point.y;
+    this.value = point.y;
+    this.values = [point.y];
+    this.points = [point];
+  }
+}
+
+/**
+ * Names a single Cartesian series-point selection.
+ */
+class SeriesPointSelection {
+  /**
+   * Creates a public series-point payload.
+   *
+   * @param {string} type - Chart type.
+   * @param {object} identity - Dataset and point identity.
+   * @param {object} point - Selected point.
+   */
+  constructor(type, identity, point) {
+    this.type = type;
+    this.index = identity.pointIndex;
+    this.datasetIndex = identity.datasetIndex;
+    this.dataset = identity.dataset?.name;
+    this.label = point.label;
+    this.x = point.x;
+    this.y = point.y;
+    this.value = point.y;
+    this.values = [point.y];
+    this.points = [point];
+  }
+}
+
+/**
  * Translates renderer mark metadata into stable public selection payloads.
  * It reads one normalized model snapshot and owns no update or rendering state.
  */
@@ -14,19 +168,15 @@ export default class ChartSelection {
   /**
    * Captures the normalized collections required to resolve one selection.
    *
-   * @param {object} model - Current normalized chart model snapshot.
-   * @param {string} model.type - Immutable chart type controlling payload shape.
-   * @param {Array<object>} model.datasets - Normalized series datasets.
-   * @param {unknown[]} model.labels - Normalized category labels.
-   * @param {Array<object>} model.heatmap - Normalized heatmap entries.
-   * @param {object | null} model.timesheet - Normalized timesheet state.
+   * @param {string} type - Immutable chart type controlling payload shape.
+   * @param {object} collections - Current normalized chart collections.
    */
-  constructor({ type, datasets, labels, heatmap, timesheet }) {
+  constructor(type, collections) {
     this.#type = type;
-    this.#datasets = datasets;
-    this.#labels = labels;
-    this.#heatmap = heatmap;
-    this.#timesheet = timesheet;
+    this.#datasets = collections.datasets;
+    this.#labels = collections.labels;
+    this.#heatmap = collections.heatmap;
+    this.#timesheet = collections.timesheet;
   }
 
   /**
@@ -38,21 +188,27 @@ export default class ChartSelection {
   from(mark) {
     const pointIndex = Number(mark.dataset.pointIndex);
     const datasetIndex = Number(mark.dataset.datasetIndex);
+
     if (this.#type === ChartType.HEATMAP) {
       return this.#selectHeatmap(mark, pointIndex);
     }
+
     if (this.#type === ChartType.TIMESHEET) {
       return this.#selectTimesheet(pointIndex);
     }
+
     if (datasetIndex === -1) {
       return this.#selectCategory(pointIndex);
     }
+
     if (this.#type === ChartType.RADAR) {
       return this.#selectRadarDataset(datasetIndex);
     }
+
     if (AGGREGATION_TYPES.includes(this.#type) || this.#type === ChartType.POLAR_AREA) {
       return this.#selectAggregation(pointIndex);
     }
+
     return this.#selectSeriesPoint(datasetIndex, pointIndex);
   }
 
@@ -68,9 +224,11 @@ export default class ChartSelection {
    */
   #buildPoint({ dataset, datasetIndex, pointIndex, label = this.#labels[pointIndex] }) {
     const point = dataset?.points[pointIndex];
+
     if (!point) {
       return null;
     }
+
     return {
       datasetIndex,
       dataset: dataset.name,
@@ -90,19 +248,14 @@ export default class ChartSelection {
    */
   #selectHeatmap(mark, pointIndex) {
     const rangeLength = Number(mark.dataset.heatmapRangeLength ?? 0);
+
     if (rangeLength <= 0) {
-      return { type: ChartType.HEATMAP, index: pointIndex, ...this.#heatmap[pointIndex] };
+      return new HeatmapPointSelection(pointIndex, this.#heatmap[pointIndex]);
     }
+
     const points = this.#heatmap.slice(pointIndex, pointIndex + rangeLength);
-    return {
-      type: ChartType.HEATMAP,
-      index: pointIndex,
-      key: points[0].key,
-      value: points[0].value,
-      values: points.map((point) => point.value),
-      points,
-      range: { start: points[0].key, end: points.at(-1).key },
-    };
+
+    return new HeatmapRangeSelection(pointIndex, points);
   }
 
   /**
@@ -113,17 +266,8 @@ export default class ChartSelection {
    */
   #selectTimesheet(pointIndex) {
     const task = this.#timesheet.tasks[pointIndex];
-    return {
-      type: ChartType.TIMESHEET,
-      index: pointIndex,
-      label: task.label,
-      start: new Date(task.start),
-      end: new Date(task.end),
-      duration: task.end - task.start,
-      group: task.group,
-      color: task.color,
-      task: { ...task },
-    };
+
+    return new TimesheetSelection(pointIndex, task);
   }
 
   /**
@@ -136,14 +280,11 @@ export default class ChartSelection {
     const points = this.#datasets
       .map((dataset, datasetIndex) => this.#buildPoint({ dataset, datasetIndex, pointIndex }))
       .filter(Boolean);
-    return {
-      type: this.#type,
-      index: pointIndex,
-      label: this.#labels[pointIndex] ?? this.#datasets[0].points[pointIndex]?.x,
-      x: points[0]?.x,
-      values: this.#datasets.map((dataset) => dataset.points[pointIndex]?.y),
-      points,
-    };
+
+    const label = this.#labels[pointIndex] ?? this.#datasets[0].points[pointIndex]?.x;
+    const values = this.#datasets.map((dataset) => dataset.points[pointIndex]?.y);
+
+    return new CategorySelection(this.#type, pointIndex, { label, values, points });
   }
 
   /**
@@ -154,6 +295,7 @@ export default class ChartSelection {
    */
   #selectRadarDataset(datasetIndex) {
     const dataset = this.#datasets[datasetIndex];
+
     const points = dataset.points.map((_point, pointIndex) =>
       this.#buildPoint({
         dataset,
@@ -162,15 +304,8 @@ export default class ChartSelection {
         label: this.#labels[pointIndex],
       }),
     );
-    return {
-      type: ChartType.RADAR,
-      index: datasetIndex,
-      label: dataset.name,
-      datasetIndex,
-      dataset: dataset.name,
-      values: points.map((point) => point.y),
-      points,
-    };
+
+    return new RadarSelection(datasetIndex, dataset, points);
   }
 
   /**
@@ -181,16 +316,8 @@ export default class ChartSelection {
    */
   #selectAggregation(pointIndex) {
     const point = this.#buildPoint({ dataset: this.#datasets[0], datasetIndex: 0, pointIndex });
-    return {
-      type: this.#type,
-      index: pointIndex,
-      label: point.label,
-      x: point.x,
-      y: point.y,
-      value: point.y,
-      values: [point.y],
-      points: [point],
-    };
+
+    return new AggregationSelection(this.#type, pointIndex, point);
   }
 
   /**
@@ -203,17 +330,7 @@ export default class ChartSelection {
   #selectSeriesPoint(datasetIndex, pointIndex) {
     const dataset = this.#datasets[datasetIndex];
     const point = this.#buildPoint({ dataset, datasetIndex, pointIndex });
-    return {
-      type: this.#type,
-      index: pointIndex,
-      datasetIndex,
-      dataset: dataset?.name,
-      label: point.label,
-      x: point.x,
-      y: point.y,
-      value: point.y,
-      values: [point.y],
-      points: [point],
-    };
+
+    return new SeriesPointSelection(this.#type, { pointIndex, datasetIndex, dataset }, point);
   }
 }

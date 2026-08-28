@@ -1,6 +1,12 @@
 import { ChartType, DEFAULT_SECTOR_CORNER_RADIUS } from "../support/Constants.js";
 import { paddedSector, roundedSectorPath } from "../support/Math.js";
 
+const DEGREES_PER_HALF_CIRCLE = 180;
+const DEFAULT_MAXIMUM_SLICES = 20;
+const DONUT_STROKE_RADIUS_RATIO = 0.72;
+const DONUT_STROKE_WIDTH_RATIO = 0.56;
+const DONUT_INNER_RADIUS_RATIO = 0.48;
+
 /**
  * Owns normalized part-to-whole values and their non-DOM sector geometry.
  */
@@ -20,6 +26,7 @@ export default class Composition {
     if (this.total <= 0) {
       throw new TypeError(`${chart.options.type} chart requires a positive total`);
     }
+
     Object.freeze(this);
   }
 
@@ -36,25 +43,29 @@ export default class Composition {
   /**
    * Resolves ordered pie or donut shapes without creating SVG nodes.
    *
-   * @param {object} frame - Radial center, radius, type, and palette.
-   * @param {number} frame.cx - Horizontal radial center.
-   * @param {number} frame.cy - Vertical radial center.
-   * @param {number} frame.radius - Maximum sector radius.
-   * @param {string} frame.type - Pie or donut chart type.
-   * @param {string[]} frame.colors - Cyclic sector palette.
+   * @param {{x: number, y: number}} center - Radial center.
+   * @param {number} radius - Maximum sector radius.
+   * @param {object} presentation - Chart type and cyclic palette.
    * @returns {Array<object>} Ordered circle or path descriptors for positive parts.
    */
-  sectors({ cx, cy, radius, type, colors }) {
-    let angle = -Math.PI / 2 + ((this.#chart.options.startAngle ?? 0) * Math.PI) / 180;
+  sectors(center, radius, presentation) {
+    let angle = -Math.PI / 2 + ((this.#chart.options.startAngle ?? 0) * Math.PI) / DEGREES_PER_HALF_CIRCLE;
     const positiveCount = this.parts.filter((part) => part.value > 0).length;
     const sectors = [];
+
     for (const [index, part] of this.parts.entries()) {
       const next = angle + this.shareOf(part) * Math.PI * 2;
+
       if (part.value > 0) {
-        sectors.push(this.#sector({ part, index, angle, next, cx, cy, radius, type, colors, positiveCount }));
+        const identity = { part, index };
+        const geometry = { center, radius, angles: { start: angle, end: next }, positiveCount };
+
+        sectors.push(this.#sector(identity, geometry, presentation));
       }
+
       angle = next;
     }
+
     return sectors;
   }
 
@@ -70,63 +81,107 @@ export default class Composition {
         value: this.#chart.datasets.reduce((sum, dataset) => sum + (dataset.points[index]?.y ?? 0), 0),
       }))
       .filter((part) => part.value >= 0);
-    const maximum = this.#chart.options.maxSlices ?? 20;
+
+    const maximum = this.#chart.options.maxSlices ?? DEFAULT_MAXIMUM_SLICES;
+
     if (candidates.length <= maximum) {
       return candidates;
     }
+
     const sorted = candidates.toSorted((left, right) => right.value - left.value);
     const visible = sorted.slice(0, maximum - 1);
     const rest = sorted.slice(maximum - 1).reduce((sum, part) => sum + part.value, 0);
+
     return [...visible, { label: "Rest", value: rest }];
   }
 
   /**
    * Resolves one positive part into a circle or rounded path descriptor.
    *
-   * @param {object} state - Part, angular, radial, and palette values.
+   * @param {object} identity - Composition part and stable index.
+   * @param {object} geometry - Center, radius, interval, and positive count.
+   * @param {object} presentation - Chart type and cyclic palette.
    * @returns {object} SVG-independent sector descriptor.
    */
-  #sector(state) {
-    const { part, index, angle, next, cx, cy, radius, type, colors, positiveCount } = state;
-    const color = colors[index % colors.length];
-    if (type === ChartType.DONUT && this.parts.length === 1) {
-      return {
-        part,
-        index,
-        name: "circle",
-        attributes: { cx, cy, r: radius * 0.72, fill: "none", stroke: color, "stroke-width": radius * 0.56 },
-      };
+  #sector(identity, geometry, presentation) {
+    const color = presentation.colors[identity.index % presentation.colors.length];
+    const circle = { center: geometry.center, radius: geometry.radius, color };
+
+    if (presentation.type === ChartType.DONUT && this.parts.length === 1) {
+      return this.#donutCircle(identity, circle);
     }
-    if (type === ChartType.PIE && positiveCount === 1) {
-      return { part, index, name: "circle", attributes: { cx, cy, r: radius, fill: color } };
+
+    if (presentation.type === ChartType.PIE && geometry.positiveCount === 1) {
+      return this.#pieCircle(identity, circle);
     }
-    const innerRadius = type === ChartType.DONUT ? radius * 0.48 : 0;
+
+    return this.#pathSector(identity, geometry, { type: presentation.type, color });
+  }
+
+  /**
+   * Describes a multi-part pie or donut sector as a padded path.
+   *
+   * @param {object} identity - Composition part and stable index.
+   * @param {object} geometry - Center, radius, interval, and positive count.
+   * @param {object} presentation - Chart type and resolved color.
+   * @returns {object} SVG-independent path descriptor.
+   */
+  #pathSector(identity, geometry, presentation) {
+    const innerRadius = presentation.type === ChartType.DONUT ? geometry.radius * DONUT_INNER_RADIUS_RATIO : 0;
+    const radii = { outer: geometry.radius, inner: innerRadius };
+
     const sector = paddedSector({
-      startAngle: angle,
-      endAngle: next,
-      padAngle: this.#chart.options.padAngle,
-      outerRadius: radius,
-      innerRadius,
-      sectorCount: positiveCount,
+      angles: geometry.angles,
+      radii,
+      padding: { angle: this.#chart.options.padAngle, count: geometry.positiveCount },
     });
+
+    const d = roundedSectorPath({
+      center: geometry.center,
+      radii,
+      angles: { outer: sector.outer, inner: sector.inner },
+      cornerRadius: this.#chart.options.sectorOptions?.cornerRadius ?? DEFAULT_SECTOR_CORNER_RADIUS,
+    });
+
+    return { part: identity.part, index: identity.index, name: "path", attributes: { d, fill: presentation.color } };
+  }
+
+  /**
+   * Describes the single-part donut as one stroked circle.
+   *
+   * @param {object} identity - Composition part and stable index.
+   * @param {object} circle - Center, radius, and resolved color.
+   * @returns {object} SVG-independent circle descriptor.
+   */
+  #donutCircle(identity, circle) {
     return {
-      part,
-      index,
-      name: "path",
+      part: identity.part,
+      index: identity.index,
+      name: "circle",
       attributes: {
-        d: roundedSectorPath({
-          cx,
-          cy,
-          outerRadius: radius,
-          innerRadius,
-          outerStartAngle: sector.outerStart,
-          outerEndAngle: sector.outerEnd,
-          innerStartAngle: sector.innerStart,
-          innerEndAngle: sector.innerEnd,
-          cornerRadius: this.#chart.options.sectorOptions?.cornerRadius ?? DEFAULT_SECTOR_CORNER_RADIUS,
-        }),
-        fill: color,
+        cx: circle.center.x,
+        cy: circle.center.y,
+        r: circle.radius * DONUT_STROKE_RADIUS_RATIO,
+        fill: "none",
+        stroke: circle.color,
+        "stroke-width": circle.radius * DONUT_STROKE_WIDTH_RATIO,
       },
+    };
+  }
+
+  /**
+   * Describes the single-part pie as a filled circle.
+   *
+   * @param {object} identity - Composition part and stable index.
+   * @param {object} circle - Center, radius, and resolved color.
+   * @returns {object} SVG-independent circle descriptor.
+   */
+  #pieCircle(identity, circle) {
+    return {
+      part: identity.part,
+      index: identity.index,
+      name: "circle",
+      attributes: { cx: circle.center.x, cy: circle.center.y, r: circle.radius, fill: circle.color },
     };
   }
 }

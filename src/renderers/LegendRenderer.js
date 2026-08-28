@@ -2,6 +2,8 @@ import { SERIES_SWATCH_DIAMETER } from "../support/Constants.js";
 import { svg, labelElement } from "../support/Dom.js";
 import { legendLayout } from "../support/Presentation.js";
 
+const DEFAULT_LEGEND_BASELINE = 16;
+
 /**
  * Renders shared series and item legends from measured layout policies.
  */
@@ -30,9 +32,10 @@ export default class LegendRenderer {
     if (!this.#chart.options.showLegend || this.#chart.datasets.length < 2) {
       return;
     }
+
     this.renderItems(
       this.#chart.datasets.map((dataset) => ({ label: dataset.name, color: dataset.color })),
-      16,
+      DEFAULT_LEGEND_BASELINE,
     );
   }
 
@@ -46,6 +49,7 @@ export default class LegendRenderer {
   renderItems(items, baseline) {
     const { labelOffset, positions } = legendLayout(this.#chart.options.width, items);
     const group = svg("g", { class: "charts2-legend-group", "aria-label": "Legend" });
+
     for (const [index, item] of items.entries()) {
       const { labelMaxWidth, x, yOffset } = positions[index];
       const y = baseline + yOffset;
@@ -63,10 +67,11 @@ export default class LegendRenderer {
         labelElement({
           value: item.label,
           attributes: { x: x + labelOffset, y, class: "charts2-legend" },
-          maxWidth: labelMaxWidth,
+          measurement: { maxWidth: labelMaxWidth },
         }),
       );
     }
+
     this.#surface.append(group);
   }
 }

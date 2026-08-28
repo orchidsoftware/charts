@@ -32,6 +32,7 @@ export default class CartesianInspectorRenderer {
       const rawLabel = this.#chart.labels[index] ?? this.#chart.datasets[0].points[index]?.x ?? index + 1;
       const label = this.#chart.options.tooltipOptions?.formatTooltipX?.(rawLabel) ?? rawLabel;
       const items = this.#itemsAt(index);
+
       const hitTarget = markMetadata(
         svg("rect", {
           ...this.#layout.inspectorAt(index),
@@ -41,6 +42,7 @@ export default class CartesianInspectorRenderer {
         -1,
         index,
       );
+
       Object.assign(hitTarget.dataset, {
         tooltipHeading: String(label),
         tooltipItems: JSON.stringify(items),
@@ -59,10 +61,13 @@ export default class CartesianInspectorRenderer {
   #itemsAt(index) {
     return this.#chart.datasets.flatMap((dataset) => {
       const point = dataset.points[index];
+
       if (!point) {
         return [];
       }
+
       const value = this.#chart.options.tooltipOptions?.formatTooltipY?.(point.y) ?? formatNumber(point.y);
+
       return [{ name: dataset.name, value: String(value), color: dataset.color }];
     });
   }

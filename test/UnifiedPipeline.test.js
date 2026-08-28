@@ -1101,7 +1101,9 @@ describe("unified public pipeline", () => {
       if (index === 4) {
         expect(chart.element.querySelector(".charts2-timesheet-tick")).toBeNull();
         expect(chart.element.querySelector(".charts2-timesheet-task-label")).toBeNull();
-      } else {
+      }
+
+      if (index !== 4) {
         expect(chart.element.querySelector(".charts2-timesheet-tick")).not.toBeNull();
       }
       expect(chart.element.querySelector(".charts2-timesheet-hit").dataset.tooltip).toMatch(

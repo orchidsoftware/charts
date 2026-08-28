@@ -14,6 +14,10 @@ import {
   verticalValuePadding,
 } from "../support/Presentation.js";
 
+const BAR_SLOT_RATIO = 0.64;
+const STANDARD_FRAME_PADDING = 28;
+const SLOT_MIDPOINT = 0.5;
+
 /**
  * Sums positive and negative stacked values independently for scale calculation.
  *
@@ -24,21 +28,29 @@ function stackedBarValues(datasets) {
   if (datasets.length === 0) {
     return [];
   }
+
   const pointCount = Math.max(...datasets.map((dataset) => dataset.points.length));
   const totals = [];
+
   for (let pointIndex = 0; pointIndex < pointCount; pointIndex += 1) {
     let positive = 0;
     let negative = 0;
+
     for (const dataset of datasets) {
       const value = dataset.points[pointIndex]?.y ?? 0;
+
       if (value > 0) {
         positive += value;
-      } else if (value < 0) {
+      }
+
+      if (value < 0) {
         negative += value;
       }
     }
+
     totals.push(positive, negative);
   }
+
   return totals;
 }
 
@@ -61,11 +73,9 @@ export default class CartesianLayout {
   constructor(chart) {
     this.#chart = chart;
     const state = this.#resolveState();
-    const scales = this.#scalesFor(state);
-    this.#x = scales.x;
-    this.#y = scales.y;
-    this.#valuePosition = scales.value;
-    this.#pointX = scales.pointX;
+
+    this.#bindScales(state);
+
     this.orientation = state.orientation;
     this.type = state.type;
     this.isHorizontal = state.isHorizontal;
@@ -78,6 +88,29 @@ export default class CartesianLayout {
     this.bars = Object.freeze({ datasets: state.barDatasets, isStacked: state.isStacked });
     this.#inspectorBands = this.#resolveInspectorBands();
     Object.freeze(this);
+  }
+
+  /**
+   * Binds internal scale functions from resolved layout state.
+   *
+   * @param {object} state - Resolved Cartesian frame and data collections.
+   * @returns {void} Private scale functions are assigned for the snapshot.
+   */
+  #bindScales(state) {
+    const scaleData = { points: state.points, values: state.values };
+
+    const categoryScale = {
+      count: state.count,
+      orientation: state.orientation,
+      isHorizontal: state.isHorizontal,
+      hasBars: state.barDatasets.length > 0,
+    };
+
+    const scales = this.#scalesFor(state.frame, scaleData, categoryScale);
+    this.#x = scales.x;
+    this.#y = scales.y;
+    this.#valuePosition = scales.value;
+    this.#pointX = scales.pointX;
   }
 
   /**
@@ -136,12 +169,14 @@ export default class CartesianLayout {
     const available = this.orientation === ChartOrientation.VERTICAL ? right - left : bottom - top;
     const slot = available / this.categories.count;
     const groupCount = this.bars.isStacked ? 1 : Math.max(1, this.bars.datasets.length);
-    const thickness = Math.max(2, (slot * 0.64) / groupCount);
+    const thickness = Math.max(2, (slot * BAR_SLOT_RATIO) / groupCount);
     const groupOffset = (slot - thickness * groupCount) / 2;
     const datasetOffset = (this.bars.isStacked ? 0 : series) * thickness;
+
     if (this.isHorizontal) {
       const zero = this.valueAt(base);
       const value = this.valueAt(base + point.y);
+
       return {
         x: Math.min(zero, value),
         y: top + category * slot + groupOffset + datasetOffset,
@@ -150,8 +185,10 @@ export default class CartesianLayout {
         thickness,
       };
     }
+
     const zero = this.yAt(base);
     const value = this.yAt(base + point.y);
+
     return {
       x: left + category * slot + groupOffset + datasetOffset,
       y: Math.min(zero, value),
@@ -178,63 +215,95 @@ export default class CartesianLayout {
    */
   #resolveState() {
     const { height, orientation, type, width } = this.#chart.options;
+    const presentation = this.#presentationState({ orientation, type, width });
+    const data = this.#dataState({ ...presentation, type, width });
+    const left = presentation.isYAxisRight ? presentation.padding : data.gutter;
+    const right = width - (presentation.isYAxisRight ? data.gutter : presentation.padding);
+
+    const frame = {
+      width,
+      height,
+      padding: presentation.padding,
+      top: presentation.top,
+      right,
+      bottom: height - presentation.padding,
+      left,
+    };
+
+    const supportsInspector = this.#supportsInspector(type);
+
+    const usesInspector =
+      data.count <= MAX_INDIVIDUAL_LINE_POINTS || (supportsInspector && data.count <= MAX_X_INSPECTOR_POINTS);
+
+    return { orientation, type, ...presentation, ...data, frame, usesInspector };
+  }
+
+  /**
+   * Resolves presentation flags and formatted categories.
+   *
+   * @param {object} source - Orientation, type, and viewport width.
+   * @param {string} source.orientation - Direction used for bar category slots.
+   * @param {string} source.type - Current Cartesian chart type.
+   * @param {number} source.width - Total chart width.
+   * @returns {object} Frame padding, legend offset, axis direction, and labels.
+   */
+  #presentationState({ orientation, type, width }) {
     const isFrameless =
       !this.#chart.options.showAxes && !this.#chart.options.showGrid && !this.#chart.options.showLabels;
-    const padding = isFrameless ? Math.max(this.#chart.options.strokeWidth, 1) : 28;
+
+    const padding = isFrameless ? Math.max(this.#chart.options.strokeWidth, 1) : STANDARD_FRAME_PADDING;
     const top = padding + Math.max(0, this.#legendRows(width) - 1) * LEGEND_ROW_HEIGHT;
     const isHorizontal = type === ChartType.BAR && orientation === ChartOrientation.HORIZONTAL;
     const labels = this.#chart.labels.map((label, index) => formatCategoryLabel(this.#chart.options, label, index));
+    const isYAxisRight = this.#chart.options.axisOptions?.yAxisPosition === YAxisPosition.RIGHT;
+
+    return { isFrameless, padding, top, isHorizontal, labels, isYAxisRight };
+  }
+
+  /**
+   * Resolves flattened points, bar policy, value scale, and label gutter.
+   *
+   * @param {object} state - Presentation state plus chart type and width.
+   * @returns {object} Collections and scale data needed by the layout.
+   */
+  #dataState(state) {
     const points = this.#chart.datasets.flatMap((dataset) => dataset.points);
     const count = Math.max(...this.#chart.datasets.map((dataset) => dataset.points.length));
-    const barDatasets = this.#barDatasets(type);
+    const barDatasets = this.#barDatasets(state.type);
     const isStacked = Boolean(this.#chart.options.barOptions?.stacked);
-    const values = this.#valueScale({ points, barDatasets, isStacked, isFrameless, type });
-    const gutter = this.#valueGutter({ isHorizontal, isFrameless, labels, values, padding, width });
-    const isYAxisRight = this.#chart.options.axisOptions?.yAxisPosition === YAxisPosition.RIGHT;
-    const left = isYAxisRight ? padding : gutter;
-    const right = width - (isYAxisRight ? gutter : padding);
-    const frame = { width, height, padding, top, right, bottom: height - padding, left };
-    const supportsInspector = this.#supportsInspector(type);
-    const usesInspector = count <= MAX_INDIVIDUAL_LINE_POINTS || (supportsInspector && count <= MAX_X_INSPECTOR_POINTS);
-    return {
-      orientation,
-      type,
-      isHorizontal,
-      isYAxisRight,
-      labels,
-      points,
-      count,
-      barDatasets,
-      isStacked,
-      values,
-      gutter,
-      frame,
-      usesInspector,
-    };
+    const values = this.#valueScale(points, { datasets: barDatasets, isStacked }, state);
+    const gutter = this.#valueGutter(state.labels, values, state);
+
+    return { points, count, barDatasets, isStacked, values, gutter };
   }
 
   /**
    * Creates bound scale functions from resolved immutable state.
    *
-   * @param {object} state - Resolved frame, points, bars, and orientation.
-   * @param {object} state.frame - Plot boundaries.
-   * @param {Array<object>} state.points - Flattened normalized points.
-   * @param {number} state.count - Maximum category count.
-   * @param {string} state.orientation - Direction used to choose category-slot geometry.
-   * @param {boolean} state.isHorizontal - Whether values run horizontally.
-   * @param {Array<object>} state.barDatasets - Bar-rendered datasets.
-   * @param {object} state.values - Value domain and ticks.
+   * @param {object} frame - Plot boundaries.
+   * @param {object} data - Flattened points and value scale.
+   * @param {object} category - Category count, direction, and slot policy.
    * @returns {object} Bound x, y, value, and point-position functions.
    */
-  #scalesFor({ frame, points, count, orientation, isHorizontal, barDatasets, values }) {
-    const xDomain = extent(points.map((point) => point.x));
+  #scalesFor(frame, data, category) {
+    const xDomain = extent(data.points.map((point) => point.x));
     const x = (value) => scale(value, xDomain, [frame.left, frame.right]);
-    const y = (value) => scale(value, values.domain, [frame.bottom, frame.top]);
-    const value = isHorizontal ? (entry) => scale(entry, values.domain, [frame.left, frame.right]) : y;
-    const slot = (frame.right - frame.left) / count;
-    const center = (index) => frame.left + (index + 0.5) * slot;
-    const hasCategorySlots = orientation === ChartOrientation.VERTICAL && barDatasets.length > 0;
-    const pointX = hasCategorySlots ? (_point, index) => center(index) : (point) => x(point.x);
+    const y = (value) => scale(value, data.values.domain, [frame.bottom, frame.top]);
+    let value = y;
+
+    if (category.isHorizontal) {
+      value = (entry) => scale(entry, data.values.domain, [frame.left, frame.right]);
+    }
+
+    const slot = (frame.right - frame.left) / category.count;
+    const center = (index) => frame.left + (index + SLOT_MIDPOINT) * slot;
+    const hasCategorySlots = category.orientation === ChartOrientation.VERTICAL && category.hasBars;
+    let pointX = (point) => x(point.x);
+
+    if (hasCategorySlots) {
+      pointX = (_point, index) => center(index);
+    }
+
     return { x, y, value, pointX };
   }
 
@@ -248,7 +317,9 @@ export default class CartesianLayout {
     if (!this.#chart.options.showLegend || this.#chart.datasets.length < 2) {
       return 0;
     }
+
     const items = this.#chart.datasets.map((dataset) => ({ label: dataset.name, color: dataset.color }));
+
     return legendLayout(width, items).rows;
   }
 
@@ -259,50 +330,52 @@ export default class CartesianLayout {
    * @returns {Array<object>} Ordered bar-rendered datasets.
    */
   #barDatasets(type) {
-    return this.#chart.datasets.filter(
-      (dataset) =>
-        type === ChartType.BAR ||
-        (type === ChartType.AXIS_MIXED && (dataset.chartType ?? ChartType.LINE) === ChartType.BAR),
-    );
+    return this.#chart.datasets.filter((dataset) => {
+      if (type === ChartType.BAR) {
+        return true;
+      }
+
+      if (type !== ChartType.AXIS_MIXED) {
+        return false;
+      }
+
+      return (dataset.chartType ?? ChartType.LINE) === ChartType.BAR;
+    });
   }
 
   /**
    * Resolves a value domain that includes zero and signed stacks when required.
    *
-   * @param {object} state - Points, bars, and presentation flags.
-   * @param {Array<object>} state.points - Flattened normalized points.
-   * @param {Array<object>} state.barDatasets - Bar-rendered datasets.
-   * @param {boolean} state.isStacked - Whether bars accumulate by sign.
-   * @param {boolean} state.isFrameless - Whether surrounding presentation is hidden.
-   * @param {string} state.type - Current Cartesian chart type.
+   * @param {Array<object>} points - Flattened normalized points.
+   * @param {object} bars - Bar datasets and stacking policy.
+   * @param {object} presentation - Frameless flag and chart type.
    * @returns {{domain: [number, number], ticks: number[]}} Numeric domain and visible ticks.
    */
-  #valueScale({ points, barDatasets, isStacked, isFrameless, type }) {
-    const stackValues = isStacked ? stackedBarValues(barDatasets) : [];
+  #valueScale(points, bars, presentation) {
+    const stackValues = bars.isStacked ? stackedBarValues(bars.datasets) : [];
     let data = [...points.map((point) => point.y), ...stackValues, 0];
-    if (isFrameless && type === ChartType.LINE) {
+
+    if (presentation.isFrameless && presentation.type === ChartType.LINE) {
       data = points.map((point) => point.y);
     }
-    return isFrameless ? { domain: extent(data), ticks: [] } : niceValueScale(data);
+
+    return presentation.isFrameless ? { domain: extent(data), ticks: [] } : niceValueScale(data);
   }
 
   /**
    * Reserves horizontal space for category or numeric labels.
    *
-   * @param {object} state - Orientation, labels, scale, and viewport values.
-   * @param {boolean} state.isHorizontal - Whether categories are arranged as rows.
-   * @param {boolean} state.isFrameless - Whether surrounding presentation is hidden.
-   * @param {Array<string | string[]>} state.labels - Formatted category labels.
-   * @param {object} state.values - Value domain and ticks.
-   * @param {number} state.padding - Outer plot padding.
-   * @param {number} state.width - Total chart width.
+   * @param {Array<string | string[]>} labels - Formatted category labels.
+   * @param {object} values - Value domain and ticks.
+   * @param {object} presentation - Orientation, frame, and viewport policy.
    * @returns {number} Horizontal label gutter in pixels.
    */
-  #valueGutter({ isHorizontal, isFrameless, labels, values, padding, width }) {
-    if (isHorizontal && this.#chart.labels.length > 0) {
-      return horizontalCategoryPadding(labels, width);
+  #valueGutter(labels, values, presentation) {
+    if (presentation.isHorizontal && this.#chart.labels.length > 0) {
+      return horizontalCategoryPadding(labels, presentation.width);
     }
-    return isFrameless ? padding : verticalValuePadding(values.ticks, padding);
+
+    return presentation.isFrameless ? presentation.padding : verticalValuePadding(values.ticks, presentation.padding);
   }
 
   /**
@@ -313,7 +386,12 @@ export default class CartesianLayout {
    */
   #supportsInspector(type) {
     return this.#chart.datasets.every((dataset) => {
-      const datasetType = type === ChartType.AXIS_MIXED ? (dataset.chartType ?? ChartType.LINE) : type;
+      let datasetType = type;
+
+      if (type === ChartType.AXIS_MIXED) {
+        datasetType = dataset.chartType ?? ChartType.LINE;
+      }
+
       return [ChartType.LINE, ChartType.BAR].includes(datasetType);
     });
   }
@@ -325,26 +403,34 @@ export default class CartesianLayout {
    */
   #resolveInspectorBands() {
     const { bottom, left, right, top } = this.frame;
+
     const centers = Array.from({ length: this.categories.count }, (_, index) => {
       if (this.isHorizontal) {
-        return top + ((index + 0.5) * (bottom - top)) / this.categories.count;
+        return top + ((index + SLOT_MIDPOINT) * (bottom - top)) / this.categories.count;
       }
+
       const point = this.#chart.datasets[0].points[index];
+
       return this.#pointX(point ?? { x: index }, index);
     });
+
     return Object.freeze(
       centers.map((center, index) => {
         let start = (centers[index - 1] + center) / 2;
         let end = (center + centers[index + 1]) / 2;
+
         if (index === 0) {
           start = this.isHorizontal ? top : left;
         }
+
         if (index === centers.length - 1) {
           end = this.isHorizontal ? bottom : right;
         }
+
         const rectangle = this.isHorizontal
           ? { x: left, y: start, width: right - left, height: Math.max(1, end - start) }
           : { x: start, y: top, width: Math.max(1, end - start), height: bottom - top };
+
         return Object.freeze(rectangle);
       }),
     );

@@ -1,4 +1,5 @@
 const SVG_NS = "http://www.w3.org/2000/svg";
+
 const ChartType = Object.freeze({
   LINE: "line",
   BAR: "bar",
@@ -13,18 +14,22 @@ const ChartType = Object.freeze({
   HEATMAP: "heatmap",
   TIMESHEET: "timesheet",
 });
+
 const ChartOrientation = Object.freeze({
   HORIZONTAL: "horizontal",
   VERTICAL: "vertical",
 });
+
 const YAxisPosition = Object.freeze({
   LEFT: "left",
   RIGHT: "right",
 });
+
 const CHART_ORIENTATIONS = Object.freeze(Object.values(ChartOrientation));
 const Y_AXIS_POSITIONS = Object.freeze(Object.values(YAxisPosition));
 const DEFAULT_COLORS = Object.freeze(["#007AFF", "#AF52DE", "#FF3B30", "#FF9500", "#248A3D", "#5856D6", "#008C95"]);
 const HEATMAP_COLORS = Object.freeze(["#E5E5EA", "#B7E4C7", "#74C69D", "#40916C", "#1B6B47"]);
+
 const CARTESIAN_TYPES = Object.freeze([
   ChartType.LINE,
   ChartType.BAR,
@@ -32,7 +37,9 @@ const CARTESIAN_TYPES = Object.freeze([
   ChartType.AXIS_MIXED,
   ChartType.BUBBLE,
 ]);
+
 const AGGREGATION_TYPES = Object.freeze([ChartType.PIE, ChartType.DONUT, ChartType.PERCENTAGE]);
+
 const TYPES = Object.freeze([
   ...CARTESIAN_TYPES,
   ...AGGREGATION_TYPES,
@@ -41,6 +48,7 @@ const TYPES = Object.freeze([
   ChartType.HEATMAP,
   ChartType.TIMESHEET,
 ]);
+
 const MAJOR_GRID_DIVISIONS = 4;
 const MAX_INDIVIDUAL_LINE_POINTS = 40;
 const MAX_X_INSPECTOR_POINTS = 64;
@@ -66,6 +74,7 @@ const HEATMAP_COMPACT_WIDTH = 400;
 const HEATMAP_MIN_CELL_WIDTH = 16;
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
+
 const TIME_TICK_STEPS = Object.freeze([
   HOUR,
   3 * HOUR,
@@ -79,6 +88,7 @@ const TIME_TICK_STEPS = Object.freeze([
   90 * DAY,
   365 * DAY,
 ]);
+
 const COMPACT_NUMBER_FORMATTER = new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 });
 const SMALL_NUMBER_FORMATTER = new Intl.NumberFormat(undefined, { maximumSignificantDigits: 3 });
 const STANDARD_NUMBER_FORMATTER = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });

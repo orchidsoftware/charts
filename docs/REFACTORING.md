@@ -97,7 +97,8 @@ Laravel-like constructor collaboration и polymorphic dispatch Мартина б
 
 ### ADR-003 — Pure inward rules
 
-Pure modules `support/Normalize.js`, `support/Math.js` и
+Pure modules `support/Normalize.js`, `support/Math.js`, `support/Scale.js`,
+`support/CartesianGeometry.js`, `support/SectorGeometry.js` и
 `support/Presentation.js` не импортируют `core` или browser interaction.
 Это применяет Dependency Rule Мартина там, где в библиотеке действительно есть
 архитектурная граница, без интерфейсов «на всякий случай».
@@ -279,30 +280,46 @@ trusted publishing и release automation добавляются как отде�
 внутренними формулировками `stress`, `edge case` и `absurd labels`. Они хорошо
 описывали назначение теста, но плохо представляли библиотеку пользователю.
 Showroom теперь ведёт от обещания и каталога типов к реальным продуктовым
-сценариям, reliability guarantees, frameless examples и полному public API
-snippet.
+сценариям, frameless examples и полному public API snippet.
 
-Семь сложных наборов данных не удалены и visual coverage не уменьшен. Они
-находятся в нативном disclosure `Quality Lab`: закрыты в основном чтении,
-раскрываются клавиатурой и продолжают иметь отдельные desktop baselines. Это
-сохраняет доказательство precision, localization, density, signed/flat values,
-но не заставляет QA-терминологию быть главным итогом demo.
+Семь сложных наборов данных не удалены. Вместе со всеми product fixtures они
+находятся на отдельной странице `demo/lab.html`, сгруппированы по renderer type
+и проверяются `test/Lab.test.js`. Это сохраняет доказательство precision,
+localization, density и signed/flat values, не смешивая QA-терминологию с demo.
 
-### ADR-020 — Маркетинг продаёт позицию и happy path, а не список internals
+### ADR-020 — Маркетинг продаёт место в продукте, а не список internals
 
-README, npm description и hero используют одно обещание: `Make the data clear.
-Keep the charting out of the way.` Это применение, а не приписывание личного
-одобрения DHH или Taylor Otwell. Из позиции DHH взяты conceptual compression и
-требование выбирать содержательную ценность (`clear`, `useful`) вместо пустого
-слова `simple`. Из Laravel-style DX взяты expressive entry point, useful
-defaults, progressive disclosure и документация, начинающаяся с рабочего
-happy path.
+README, npm description и hero используют одну позицию: `Charts that belong in
+your product.` Это применение, а не приписывание личного одобрения DHH или
+Taylor Otwell. Из позиции DHH взяты conceptual compression и право библиотеки
+иметь мнение о хорошем результате. Из Laravel-style DX взяты один happy path,
+product-ready defaults, progressive disclosure и документация, начинающаяся с
+рабочего вызова. Frappe Charts подтверждает саму нишу небольших responsive SVG
+charts, но Charts2 не заявляет совместимость и не копирует его публичный язык.
 
-Поэтому README сначала показывает install и полный `createChart` call site,
-затем объясняет пять причин выбора, визуальные задачи, interaction и измеримые
-quality guarantees. Architecture, naming policy и release mechanics остаются
-доступны, но не стоят между пользователем и первым полезным графиком. Никакая
-маркетинговая формулировка не заявляет личного endorsement названных авторов.
+Поэтому README сначала называет аудиторию и показывает install с полным
+`createChart` call site, затем объясняет продуктовые задачи и только после них —
+interaction и измеримые quality guarantees. SVG, zero dependencies,
+accessibility и MIT являются доказательствами законченности и низкого риска, а
+не главным обещанием. Architecture, naming policy и release mechanics остаются
+доступны, но не стоят между пользователем и первым полезным графиком. Полная
+иерархия сообщений и план выхода закреплены в [POSITIONING.md](./POSITIONING.md).
+
+### ADR-021 — Object bag не считается архитектурным контрактом
+
+`max-params` нельзя обходить переносом семи аргументов в анонимный `state`.
+Внутренний object parameter содержит не более четырёх cohesive полей; более
+широкая потребность означает, что расчёт нужно разделить или назвать отдельным
+value/layout object. Private method не принимает inline object шире четырёх
+полей, а функция не возвращает анонимный record шире шести полей.
+
+Plain objects остаются уместны на честных границах: SVG attributes, public
+configuration и небольшие сериализуемые records. Повторно используемая
+геометрия группируется предметными понятиями `center`, `radii`, `angles` и
+`rounding`. Selection payloads, percentage strip, polar layout, heatmap
+dimensions и timesheet task placement получили именованные типы, потому что у
+них есть стабильная форма и самостоятельный смысл. Эти ограничения закреплены
+AST selectors в ESLint и не допускают обхода перестановкой object parameter.
 
 ## Оценка public API по линзе Taylor Otwell / Laravel
 

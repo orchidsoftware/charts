@@ -9,6 +9,9 @@ import { labelElement, markMetadata, svg, titled } from "../support/Dom.js";
 import { paddedSector, polarPoint, roundedSectorPath } from "../support/Math.js";
 import { tooltipText } from "../support/Presentation.js";
 
+const MINIMUM_POLAR_RADIUS = 8;
+const POLAR_RADIUS_RATIO = 0.42;
+
 /**
  * Chooses text alignment from a label's position relative to the radial center.
  *
@@ -20,9 +23,11 @@ function radialAnchor(labelX, centerX) {
   if (labelX < centerX - 2) {
     return "end";
   }
+
   if (labelX > centerX + 2) {
     return "start";
   }
+
   return "middle";
 }
 
@@ -39,10 +44,41 @@ function polarLabelWidth({ labelX, anchor, width }) {
   if (anchor === "end") {
     return labelX - POLAR_LABEL_EDGE_INSET;
   }
+
   if (anchor === "start") {
     return width - POLAR_LABEL_EDGE_INSET - labelX;
   }
+
   return 2 * Math.min(labelX - POLAR_LABEL_EDGE_INSET, width - POLAR_LABEL_EDGE_INSET - labelX);
+}
+
+/**
+ * Names the shared scale and viewport geometry of a polar-area render.
+ */
+class PolarAreaLayout {
+  /**
+   * Resolves the radial frame from one frozen chart snapshot.
+   *
+   * @param {object} chart - Frozen polar-area chart data and options.
+   */
+  constructor(chart) {
+    this.width = chart.options.width;
+    this.height = chart.options.height;
+    this.values = chart.datasets[0].points;
+    this.maximum = Math.max(...this.values.map((point) => point.y), 1);
+    this.center = { x: this.width / 2, y: this.height / 2 };
+
+    const radiusLimits = {
+      horizontal: this.width / 2 - POLAR_LABEL_EDGE_INSET - POLAR_LABEL_GAP - POLAR_LABEL_MIN_WIDTH,
+      vertical: this.height / 2 - POLAR_LABEL_EDGE_INSET - POLAR_LABEL_GAP,
+    };
+
+    this.maximumRadius = Math.max(
+      MINIMUM_POLAR_RADIUS,
+      Math.min(Math.min(this.width, this.height) * POLAR_RADIUS_RATIO, radiusLimits.horizontal, radiusLimits.vertical),
+    );
+    this.slice = (Math.PI * 2) / this.values.length;
+  }
 }
 
 /**
@@ -70,64 +106,35 @@ export default class PolarAreaRenderer {
    * @returns {void} Polar-area content is appended to the chart SVG.
    */
   render() {
-    const { height, width } = this.#chart.options;
-    const values = this.#chart.datasets[0].points;
-    const maximum = Math.max(...values.map((point) => point.y), 1);
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const horizontalRadius = width / 2 - POLAR_LABEL_EDGE_INSET - POLAR_LABEL_GAP - POLAR_LABEL_MIN_WIDTH;
-    const verticalRadius = height / 2 - POLAR_LABEL_EDGE_INSET - POLAR_LABEL_GAP;
-    const maximumRadius = Math.max(8, Math.min(Math.min(width, height) * 0.42, horizontalRadius, verticalRadius));
-    const slice = (Math.PI * 2) / values.length;
-    for (const [index, point] of values.entries()) {
-      this.#renderSector({ point, index, values, maximum, centerX, centerY, maximumRadius, slice, width, height });
+    const layout = new PolarAreaLayout(this.#chart);
+
+    for (const [index, point] of layout.values.entries()) {
+      this.#renderSector(point, index, layout);
     }
   }
 
   /**
    * Draws one polar sector and its optional category label.
    *
-   * @param {object} state - Geometry and data required for one sector.
-   * @param {{y: number}} state.point - Normalized polar value.
-   * @param {number} state.index - Zero-based sector index.
-   * @param {Array<object>} state.values - Complete normalized polar dataset.
-   * @param {number} state.maximum - Maximum positive scale value.
-   * @param {number} state.centerX - Horizontal radial center.
-   * @param {number} state.centerY - Vertical radial center.
-   * @param {number} state.maximumRadius - Largest permitted sector radius.
-   * @param {number} state.slice - Angle allocated to every category.
-   * @param {number} state.width - Total chart width.
-   * @param {number} state.height - Total chart height.
+   * @param {{y: number}} point - Normalized polar value.
+   * @param {number} index - Zero-based sector index.
+   * @param {PolarAreaLayout} layout - Shared radial frame and scale.
    * @returns {void} One interactive sector and optional label are appended.
    */
-  #renderSector({ point, index, values, maximum, centerX, centerY, maximumRadius, slice, width, height }) {
-    const radius = maximumRadius * Math.sqrt(Math.max(0, point.y) / maximum);
-    const start = -Math.PI / 2 + index * slice;
+  #renderSector(point, index, layout) {
+    const radius = layout.maximumRadius * Math.sqrt(Math.max(0, point.y) / layout.maximum);
+    const start = -Math.PI / 2 + index * layout.slice;
+
     const sector = paddedSector({
-      startAngle: start,
-      endAngle: start + slice,
-      padAngle: this.#chart.options.padAngle,
-      outerRadius: radius,
-      innerRadius: 0,
-      sectorCount: values.length,
+      angles: { start, end: start + layout.slice },
+      radii: { outer: radius, inner: 0 },
+      padding: { angle: this.#chart.options.padAngle, count: layout.values.length },
     });
+
     const cornerRadius = this.#chart.options.sectorOptions?.cornerRadius ?? DEFAULT_SECTOR_CORNER_RADIUS;
-    const sectorElement =
-      values.length === 1
-        ? svg("circle", { cx: centerX, cy: centerY, r: radius })
-        : svg("path", {
-            d: roundedSectorPath({
-              cx: centerX,
-              cy: centerY,
-              outerRadius: radius,
-              innerRadius: 0,
-              outerStartAngle: sector.outerStart,
-              outerEndAngle: sector.outerEnd,
-              innerStartAngle: sector.innerStart,
-              innerEndAngle: sector.innerEnd,
-              cornerRadius,
-            }),
-          });
+
+    const sectorElement = this.#sectorElement(layout, { radius, sector, cornerRadius });
+
     sectorElement.setAttribute("fill", DEFAULT_COLORS[index % DEFAULT_COLORS.length]);
     sectorElement.classList.add("charts2-polar-area", "charts2-mark");
     this.#surface.append(
@@ -140,41 +147,59 @@ export default class PolarAreaRenderer {
         }),
       ),
     );
-    this.#renderLabel({ index, start, slice, centerX, centerY, maximumRadius, width, height });
+    this.#renderLabel(index, { start, slice: layout.slice }, layout);
+  }
+
+  /**
+   * Creates the primitive representing one polar-area value.
+   *
+   * @param {PolarAreaLayout} layout - Shared radial frame and scale.
+   * @param {object} shape - Sector radius, padded angles, and corner radius.
+   * @returns {SVGElement} Circle for a sole value, otherwise a sector path.
+   */
+  #sectorElement(layout, shape) {
+    if (layout.values.length === 1) {
+      return svg("circle", { cx: layout.center.x, cy: layout.center.y, r: shape.radius });
+    }
+
+    return svg("path", {
+      d: roundedSectorPath({
+        center: layout.center,
+        radii: { outer: shape.radius, inner: 0 },
+        angles: { outer: shape.sector.outer, inner: shape.sector.inner },
+        cornerRadius: shape.cornerRadius,
+      }),
+    });
   }
 
   /**
    * Places one category label within the radial viewport bounds.
    *
-   * @param {object} state - Sector and viewport geometry used for label placement.
-   * @param {number} state.index - Zero-based sector index.
-   * @param {number} state.start - Sector start angle in radians.
-   * @param {number} state.slice - Sector sweep angle in radians.
-   * @param {number} state.centerX - Horizontal radial center.
-   * @param {number} state.centerY - Vertical radial center.
-   * @param {number} state.maximumRadius - Outer label reference radius.
-   * @param {number} state.width - Total chart width.
-   * @param {number} state.height - Total chart height.
+   * @param {number} index - Zero-based sector index.
+   * @param {object} angles - Sector start and sweep angles.
+   * @param {PolarAreaLayout} layout - Shared radial frame and viewport.
    * @returns {void} A label is appended only when the category exists.
    */
-  #renderLabel({ index, start, slice, centerX, centerY, maximumRadius, width, height }) {
+  #renderLabel(index, angles, layout) {
     if (this.#chart.labels[index] === undefined) {
       return;
     }
+
     const point = polarPoint({
-      cx: centerX,
-      cy: centerY,
-      radius: maximumRadius + POLAR_LABEL_GAP,
-      angle: start + slice / 2,
+      cx: layout.center.x,
+      cy: layout.center.y,
+      radius: layout.maximumRadius + POLAR_LABEL_GAP,
+      angle: angles.start + angles.slice / 2,
     });
-    const labelX = Math.min(width - POLAR_LABEL_EDGE_INSET, Math.max(POLAR_LABEL_EDGE_INSET, point.x));
-    const labelY = Math.min(height - POLAR_LABEL_EDGE_INSET, Math.max(POLAR_LABEL_EDGE_INSET, point.y));
-    const anchor = radialAnchor(labelX, centerX);
+
+    const labelX = Math.min(layout.width - POLAR_LABEL_EDGE_INSET, Math.max(POLAR_LABEL_EDGE_INSET, point.x));
+    const labelY = Math.min(layout.height - POLAR_LABEL_EDGE_INSET, Math.max(POLAR_LABEL_EDGE_INSET, point.y));
+    const anchor = radialAnchor(labelX, layout.center.x);
     this.#surface.append(
       labelElement({
         value: this.#chart.labels[index],
         attributes: { x: labelX, y: labelY, class: "charts2-label charts2-polar-label", "text-anchor": anchor },
-        maxWidth: Math.max(1, polarLabelWidth({ labelX, anchor, width })),
+        measurement: { maxWidth: Math.max(1, polarLabelWidth({ labelX, anchor, width: layout.width })) },
       }),
     );
   }

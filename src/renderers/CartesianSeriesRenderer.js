@@ -9,6 +9,13 @@ const CARTESIAN_LAYER = Object.freeze({
   [ChartType.SCATTER]: 2,
 });
 
+const SERIES_CLASS_COUNT = 4;
+const DEFAULT_LINE_MARKER_RADIUS = 4.5;
+const DEFAULT_POINT_RADIUS = 4;
+const BUBBLE_OPACITY = 0.65;
+const MINIMUM_POINT_HIT_RADIUS = 22;
+const MINIMUM_BAR_HIT_THICKNESS = 44;
+
 /**
  * Renders Cartesian data marks after the owning renderer has resolved layout.
  */
@@ -38,13 +45,16 @@ export default class CartesianSeriesRenderer {
    */
   render() {
     let entries = this.#chart.datasets.map((dataset, datasetIndex) => ({ dataset, datasetIndex }));
+
     if (this.#layout.type === ChartType.AXIS_MIXED) {
       entries = entries.toSorted((left, right) => {
         const leftLayer = CARTESIAN_LAYER[left.dataset.chartType ?? ChartType.LINE];
         const rightLayer = CARTESIAN_LAYER[right.dataset.chartType ?? ChartType.LINE];
+
         return leftLayer - rightLayer;
       });
     }
+
     for (const entry of entries) {
       this.#renderDataset(entry);
     }
@@ -59,15 +69,35 @@ export default class CartesianSeriesRenderer {
    * @returns {void} One line, point series, or bar group is rendered.
    */
   #renderDataset({ dataset, datasetIndex }) {
-    const datasetType =
-      this.#layout.type === ChartType.AXIS_MIXED ? (dataset.chartType ?? ChartType.LINE) : this.#layout.type;
+    const datasetType = this.#datasetType(dataset);
+
     if (datasetType === ChartType.LINE) {
       this.#renderLine({ dataset, datasetIndex });
-    } else if ([ChartType.BUBBLE, ChartType.SCATTER].includes(datasetType)) {
-      this.#renderPointSeries({ dataset, datasetIndex, datasetType });
-    } else {
-      this.#renderBars({ dataset, datasetIndex });
+
+      return;
     }
+
+    if ([ChartType.BUBBLE, ChartType.SCATTER].includes(datasetType)) {
+      this.#renderPointSeries({ dataset, datasetIndex, datasetType });
+
+      return;
+    }
+
+    this.#renderBars({ dataset, datasetIndex });
+  }
+
+  /**
+   * Resolves the concrete renderer used by a dataset.
+   *
+   * @param {object} dataset - Normalized Cartesian dataset.
+   * @returns {string} Effective chart type for the dataset.
+   */
+  #datasetType(dataset) {
+    if (this.#layout.type === ChartType.AXIS_MIXED) {
+      return dataset.chartType ?? ChartType.LINE;
+    }
+
+    return this.#layout.type;
   }
 
   /**
@@ -82,10 +112,13 @@ export default class CartesianSeriesRenderer {
     const geometry = dataset.points.map((point, index) => ({
       ...this.#layout.pointAt(point, index),
     }));
+
     const path = linePath(geometry, this.#chart.options.lineOptions?.spline !== false);
+
     if (this.#chart.options.gradient || this.#chart.options.lineOptions?.regionFill) {
       this.#renderArea({ dataset, datasetIndex, path });
     }
+
     if (!this.#chart.options.lineOptions?.hideLine) {
       const lineClass = this.#layout.usesInspector ? "charts2-line" : "charts2-line charts2-mark";
       this.#surface.mark(
@@ -95,7 +128,7 @@ export default class CartesianSeriesRenderer {
           fill: "none",
           stroke: dataset.color,
           "stroke-width": this.#chart.options.strokeWidth,
-          class: `${lineClass} charts2-series-${datasetIndex % 4}`,
+          class: `${lineClass} charts2-series-${datasetIndex % SERIES_CLASS_COUNT}`,
         },
         {
           dataset: datasetIndex,
@@ -104,6 +137,7 @@ export default class CartesianSeriesRenderer {
         },
       );
     }
+
     if (
       this.#layout.showsIndividualMarks &&
       this.#chart.options.showDots !== false &&
@@ -152,8 +186,9 @@ export default class CartesianSeriesRenderer {
         label: this.#chart.labels[pointIndex] ?? point.x,
         value: point.y,
       })}`;
+
       const { x: markerX, y: markerY } = this.#layout.pointAt(point, pointIndex);
-      const markerRadius = this.#chart.options.lineOptions?.dotSize ?? 4.5;
+      const markerRadius = this.#chart.options.lineOptions?.dotSize ?? DEFAULT_LINE_MARKER_RADIUS;
       this.#surface.append("circle", {
         cx: markerX,
         cy: markerY,
@@ -169,7 +204,7 @@ export default class CartesianSeriesRenderer {
             r: markerRadius,
             fill: "var(--charts-point-fill)",
             stroke: dataset.color,
-            class: `charts2-point charts2-visual-mark charts2-series-${datasetIndex % 4}`,
+            class: `charts2-point charts2-visual-mark charts2-series-${datasetIndex % SERIES_CLASS_COUNT}`,
             "aria-hidden": "true",
           }),
           label,
@@ -181,59 +216,74 @@ export default class CartesianSeriesRenderer {
   /**
    * Draws scatter or bubble values and fallback point-sized hit targets.
    *
-   * @param {object} entry - Dataset, source index, and point-series type.
-   * @param {object} entry.dataset - Normalized scatter or bubble dataset.
-   * @param {number} entry.datasetIndex - Stable dataset position used in metadata.
-   * @param {"scatter" | "bubble"} entry.datasetType - Concrete point renderer policy.
+   * @param {object} series - Dataset, source index, and point-series type.
    * @returns {void} Point marks and optional hit targets are appended to the chart SVG.
    */
-  #renderPointSeries({ dataset, datasetIndex, datasetType }) {
-    for (const [pointIndex, point] of dataset.points.entries()) {
-      const radius = datasetType === ChartType.BUBBLE ? point.r : 4;
-      const size = datasetType === ChartType.BUBBLE ? `, size ${formatNumber(point.r)}` : "";
-      const label = `${this.#seriesPrefix(dataset)}${this.#chart.labels[pointIndex] ?? point.x}: ${formatNumber(point.y)}${size}`;
-      const isOutlined = datasetType === ChartType.SCATTER;
-      if (isOutlined) {
-        this.#surface.append("circle", {
-          cx: this.#layout.xAt(point.x),
-          cy: this.#layout.yAt(point.y),
-          r: radius,
-          class: "charts2-point-halo",
-          "aria-hidden": "true",
-        });
-      }
-      this.#surface.append(
-        titled(
-          svg("circle", {
-            cx: this.#layout.xAt(point.x),
-            cy: this.#layout.yAt(point.y),
-            r: radius,
-            fill: isOutlined ? "var(--charts-point-fill)" : dataset.color,
-            stroke: isOutlined ? dataset.color : "none",
-            opacity: isOutlined ? 1 : 0.65,
-            class: `charts2-${datasetType} charts2-visual-mark charts2-series-${datasetIndex % 4}`,
-            "aria-hidden": "true",
-          }),
-          label,
-        ),
-      );
-      if (!this.#layout.usesInspector) {
-        const hit = markMetadata(
-          svg("circle", {
-            cx: this.#layout.xAt(point.x),
-            cy: this.#layout.yAt(point.y),
-            r: Math.max(22, radius),
-            fill: "transparent",
-            stroke: "transparent",
-            class: `charts2-point-hit charts2-mark charts2-series-${datasetIndex % 4}`,
-            style: `color:${dataset.color}`,
-          }),
-          datasetIndex,
-          pointIndex,
-        );
-        this.#surface.append(titled(hit, label));
-      }
+  #renderPointSeries(series) {
+    for (const [pointIndex, point] of series.dataset.points.entries()) {
+      this.#renderPoint(series, point, pointIndex);
     }
+  }
+
+  /**
+   * Draws one scatter or bubble point and its optional hit target.
+   *
+   * @param {object} series - Dataset, source index, and concrete type.
+   * @param {object} source - Normalized scatter or bubble point.
+   * @param {number} pointIndex - Stable point index.
+   * @returns {void} One visible point and interaction target are appended.
+   */
+  #renderPoint(series, source, pointIndex) {
+    const radius = series.datasetType === ChartType.BUBBLE ? source.r : DEFAULT_POINT_RADIUS;
+    const size = series.datasetType === ChartType.BUBBLE ? `, size ${formatNumber(source.r)}` : "";
+    const category = this.#chart.labels[pointIndex] ?? source.x;
+    const label = `${this.#seriesPrefix(series.dataset)}${category}: ${formatNumber(source.y)}${size}`;
+    const isOutlined = series.datasetType === ChartType.SCATTER;
+    const coordinates = { cx: this.#layout.xAt(source.x), cy: this.#layout.yAt(source.y) };
+
+    if (isOutlined) {
+      this.#surface.append("circle", { ...coordinates, r: radius, class: "charts2-point-halo", "aria-hidden": "true" });
+    }
+
+    const point = svg("circle", {
+      ...coordinates,
+      r: radius,
+      fill: isOutlined ? "var(--charts-point-fill)" : series.dataset.color,
+      stroke: isOutlined ? series.dataset.color : "none",
+      opacity: isOutlined ? 1 : BUBBLE_OPACITY,
+      class: `charts2-${series.datasetType} charts2-visual-mark charts2-series-${series.datasetIndex % SERIES_CLASS_COUNT}`,
+      "aria-hidden": "true",
+    });
+
+    this.#surface.append(titled(point, label));
+
+    if (!this.#layout.usesInspector) {
+      this.#renderPointHit(series, { coordinates, radius, label, pointIndex });
+    }
+  }
+
+  /**
+   * Draws the accessible interaction target around a point.
+   *
+   * @param {object} series - Dataset, source index, and concrete type.
+   * @param {object} target - Point index, coordinates, radius, and label.
+   * @returns {void} One transparent hit circle is appended.
+   */
+  #renderPointHit(series, target) {
+    const hit = markMetadata(
+      svg("circle", {
+        ...target.coordinates,
+        r: Math.max(MINIMUM_POINT_HIT_RADIUS, target.radius),
+        fill: "transparent",
+        stroke: "transparent",
+        class: `charts2-point-hit charts2-mark charts2-series-${series.datasetIndex % SERIES_CLASS_COUNT}`,
+        style: `color:${series.dataset.color}`,
+      }),
+      series.datasetIndex,
+      target.pointIndex,
+    );
+
+    this.#surface.append(titled(hit, target.label));
   }
 
   /**
@@ -246,14 +296,17 @@ export default class CartesianSeriesRenderer {
    */
   #renderBars({ dataset, datasetIndex }) {
     const barDatasetIndex = Math.max(0, this.#layout.bars.datasets.indexOf(dataset));
+
     for (const [pointIndex, point] of dataset.points.entries()) {
       const base = this.#stackedBase({ point, pointIndex, barDatasetIndex });
       const hasLaterSegment = this.#hasLaterStackedSegment({ point, pointIndex, barDatasetIndex });
+
       const geometry = this.#layout.barFor(point, {
         category: pointIndex,
         series: barDatasetIndex,
         base,
       });
+
       this.#renderBar(dataset, point, {
         datasetIndex,
         pointIndex,
@@ -276,13 +329,17 @@ export default class CartesianSeriesRenderer {
     if (!this.#layout.bars.isStacked) {
       return 0;
     }
+
     let base = 0;
+
     for (const dataset of this.#layout.bars.datasets.slice(0, barDatasetIndex)) {
       const value = dataset.points[pointIndex]?.y ?? 0;
+
       if (Math.sign(value) === Math.sign(point.y)) {
         base += value;
       }
     }
+
     return base;
   }
 
@@ -300,6 +357,7 @@ export default class CartesianSeriesRenderer {
       this.#layout.bars.isStacked &&
       this.#layout.bars.datasets.slice(barDatasetIndex + 1).some((dataset) => {
         const value = dataset.points[pointIndex]?.y ?? 0;
+
         return value !== 0 && Math.sign(value) === Math.sign(point.y);
       })
     );
@@ -322,16 +380,19 @@ export default class CartesianSeriesRenderer {
       "path",
       {
         d: roundedBarPath({
-          ...geometry,
-          orientation: this.#layout.orientation,
-          value: point.y,
-          radius: this.#chart.options.barOptions?.radius ?? DEFAULT_BAR_RADIUS,
-          shouldRoundValueEnd,
+          rectangle: geometry,
+          direction: { orientation: this.#layout.orientation, value: point.y },
+          rounding: {
+            radius: this.#chart.options.barOptions?.radius ?? DEFAULT_BAR_RADIUS,
+            shouldRoundValueEnd,
+          },
         }),
         fill: dataset.color,
         stroke: "transparent",
-        "stroke-width": this.#layout.usesInspector ? 0 : Math.max(0, (44 - geometry.thickness) / 2),
-        class: `charts2-bar ${this.#layout.usesInspector ? "charts2-visual-mark" : "charts2-mark"} charts2-series-${datasetIndex % 4}`,
+        "stroke-width": this.#layout.usesInspector
+          ? 0
+          : Math.max(0, (MINIMUM_BAR_HIT_THICKNESS - geometry.thickness) / 2),
+        class: `charts2-bar ${this.#layout.usesInspector ? "charts2-visual-mark" : "charts2-mark"} charts2-series-${datasetIndex % SERIES_CLASS_COUNT}`,
       },
       {
         dataset: datasetIndex,

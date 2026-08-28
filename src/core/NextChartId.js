@@ -7,5 +7,6 @@ const chartIdSequence = { latest: 0 };
  */
 export function nextChartId() {
   chartIdSequence.latest += 1;
+
   return chartIdSequence.latest;
 }

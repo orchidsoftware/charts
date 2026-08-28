@@ -2,6 +2,60 @@ import { HEATMAP_COLORS, HEATMAP_COMPACT_WIDTH, HEATMAP_MIN_CELL_WIDTH } from ".
 import { formatNumber, markMetadata, measuredTextWidth, svg, titled } from "../support/Dom.js";
 import { extent, scale } from "../support/Math.js";
 
+const GRID_PADDING = 24;
+const MINIMUM_HORIZONTAL_PADDING = 4;
+const HORIZONTAL_PADDING_RATIO = 0.08;
+const GRID_TOP = 24;
+const PREFERRED_CELL_GAP = 3;
+const LEGEND_HEIGHT = 11;
+const LEGEND_GAP = 12;
+const DAYS_PER_WEEK = 7;
+const INSPECTOR_WEEK_THRESHOLD = 20;
+const MINIMUM_COLUMN_CALCULATION_WIDTH = 4;
+const LEGEND_TOP_GAP = 12;
+const LEGEND_BASELINE_OFFSET = 10;
+const LEGEND_LABEL_GAP = 8;
+const DESIRED_SWATCH_WIDTH = 11;
+const DESIRED_SWATCH_GAP = 3;
+const MINIMUM_SWATCH_WIDTH = 5;
+const MINIMUM_SWATCH_GAP = 2;
+
+/**
+ * Calculates responsive horizontal padding for the heatmap grid.
+ *
+ * @param {number} width - Requested chart width.
+ * @returns {number} Bounded horizontal padding.
+ */
+function heatmapHorizontalPadding(width) {
+  return Math.min(GRID_PADDING, Math.max(MINIMUM_HORIZONTAL_PADDING, width * HORIZONTAL_PADDING_RATIO));
+}
+
+/**
+ * Names the viewport and overflow dimensions shared by heatmap rendering.
+ */
+class HeatmapDimensions {
+  /**
+   * Resolves grid bounds from chart dimensions and data density.
+   *
+   * @param {number} width - Requested chart width.
+   * @param {number} height - Requested chart height.
+   * @param {object} chart - Frozen chart snapshot.
+   */
+  constructor(width, height, chart) {
+    this.horizontalPadding = heatmapHorizontalPadding(width);
+    this.weeks = Math.max(1, Math.ceil(chart.heatmap.length / DAYS_PER_WEEK));
+    this.rows = Math.min(DAYS_PER_WEEK, Math.max(1, chart.heatmap.length));
+    this.hasWeekInspector = this.weeks > INSPECTOR_WEEK_THRESHOLD && width < HEATMAP_COMPACT_WIDTH;
+
+    const minimumScrollableWidth =
+      this.horizontalPadding * 2 + this.weeks * HEATMAP_MIN_CELL_WIDTH + (this.weeks - 1) * PREFERRED_CELL_GAP;
+
+    this.layoutWidth = this.hasWeekInspector ? Math.max(width, minimumScrollableWidth) : width;
+    this.gridTop = GRID_TOP;
+    this.gridBottom = height - GRID_PADDING - (chart.options.showLegend ? LEGEND_HEIGHT + LEGEND_GAP : 0);
+  }
+}
+
 /**
  * Renders calendar heatmaps and owns their overflow presentation policy.
  */
@@ -32,6 +86,7 @@ export default class HeatmapRenderer {
     if (layout.hasWeekInspector) {
       this.#renderWeekInspectors(layout);
     }
+
     if (this.#chart.options.showLegend) {
       this.#renderLegend(layout);
     }
@@ -44,56 +99,95 @@ export default class HeatmapRenderer {
    */
   #layout() {
     const { height, width } = this.#chart.options;
-    const padding = 24;
-    const horizontalPadding = Math.min(padding, Math.max(4, width * 0.08));
-    const gridTop = 24;
-    const preferredCellGap = 3;
-    const legendHeight = this.#chart.options.showLegend ? 11 : 0;
-    const legendGap = this.#chart.options.showLegend ? 12 : 0;
-    const weeks = Math.max(1, Math.ceil(this.#chart.heatmap.length / 7));
-    const rows = Math.min(7, Math.max(1, this.#chart.heatmap.length));
-    const hasWeekInspector = weeks > 20 && width < HEATMAP_COMPACT_WIDTH;
-    const minimumScrollableWidth =
-      horizontalPadding * 2 + weeks * HEATMAP_MIN_CELL_WIDTH + (weeks - 1) * preferredCellGap;
-    const layoutWidth = hasWeekInspector ? Math.max(width, minimumScrollableWidth) : width;
-    this.#chart.host.classList.toggle("charts2-scrollable-heatmap", hasWeekInspector);
-    this.#surface.attribute("viewBox", `0 0 ${layoutWidth} ${height}`);
-    this.#surface.styles({
-      width: hasWeekInspector ? `${layoutWidth}px` : "100%",
-      maxWidth: hasWeekInspector ? "none" : "100%",
-    });
+    const dimensions = this.#dimensions(width, height);
 
-    const availableGridWidth = Math.max(1, layoutWidth - horizontalPadding * 2);
-    const gridBottom = height - padding - legendHeight - legendGap;
-    const availableGridHeight = Math.max(rows, gridBottom - gridTop);
-    const rowGap = Math.min(preferredCellGap, Math.max(0, (availableGridHeight - rows) / Math.max(1, rows - 1)));
-    const columnGap = Math.min(
-      preferredCellGap,
-      Math.max(0, (availableGridWidth - weeks * 4) / Math.max(1, weeks - 1)),
+    this.#configureSurface(dimensions, height);
+
+    const cells = this.#cellGeometry(dimensions);
+    const palette = this.#palette();
+
+    return {
+      height,
+      ...dimensions,
+      ...cells,
+      ...palette,
+    };
+  }
+
+  /**
+   * Resolves viewport, grid, and overflow dimensions.
+   *
+   * @param {number} width - Requested chart width.
+   * @param {number} height - Requested chart height.
+   * @returns {object} Stable heatmap dimensions.
+   */
+  #dimensions(width, height) {
+    return new HeatmapDimensions(width, height, this.#chart);
+  }
+
+  /**
+   * Applies horizontal overflow policy to the host and SVG surface.
+   *
+   * @param {object} dimensions - Resolved viewport dimensions.
+   * @param {number} height - Requested chart height.
+   * @returns {void} Host class and SVG sizing are updated.
+   */
+  #configureSurface(dimensions, height) {
+    this.#chart.host.classList.toggle("charts2-scrollable-heatmap", dimensions.hasWeekInspector);
+    this.#surface.attribute("viewBox", `0 0 ${dimensions.layoutWidth} ${height}`);
+    this.#surface.styles({
+      width: dimensions.hasWeekInspector ? `${dimensions.layoutWidth}px` : "100%",
+      maxWidth: dimensions.hasWeekInspector ? "none" : "100%",
+    });
+  }
+
+  /**
+   * Resolves gaps and cell sizes inside the drawable grid.
+   *
+   * @param {object} dimensions - Resolved viewport dimensions.
+   * @returns {object} Row, column, and cell geometry.
+   */
+  #cellGeometry(dimensions) {
+    const availableGridWidth = Math.max(1, dimensions.layoutWidth - dimensions.horizontalPadding * 2);
+    const availableGridHeight = Math.max(dimensions.rows, dimensions.gridBottom - dimensions.gridTop);
+
+    const rowGap = Math.min(
+      PREFERRED_CELL_GAP,
+      Math.max(0, (availableGridHeight - dimensions.rows) / Math.max(1, dimensions.rows - 1)),
     );
-    const cellWidth = Math.max(Number.EPSILON, (availableGridWidth - (weeks - 1) * columnGap) / weeks);
-    const cellHeight = Math.max(1, (availableGridHeight - (rows - 1) * rowGap) / rows);
+
+    const columnGap = Math.min(
+      PREFERRED_CELL_GAP,
+      Math.max(
+        0,
+        (availableGridWidth - dimensions.weeks * MINIMUM_COLUMN_CALCULATION_WIDTH) / Math.max(1, dimensions.weeks - 1),
+      ),
+    );
+
+    const cellWidth = Math.max(
+      Number.EPSILON,
+      (availableGridWidth - (dimensions.weeks - 1) * columnGap) / dimensions.weeks,
+    );
+
+    const cellHeight = Math.max(1, (availableGridHeight - (dimensions.rows - 1) * rowGap) / dimensions.rows);
+
+    return { availableGridHeight, rowGap, columnGap, cellWidth, cellHeight };
+  }
+
+  /**
+   * Resolves the active palette and its value-to-color mapping.
+   *
+   * @returns {object} Palette and bounded color-level function.
+   */
+  #palette() {
     const values = this.#chart.heatmap.map((item) => item.value);
     const [minimum, maximum] = values.length > 0 ? extent(values) : [0, 1];
     const colors = this.#chart.hasCustomColors ? this.#chart.options.colors : HEATMAP_COLORS;
+
     const colorLevel = (value) =>
       Math.min(colors.length - 1, Math.max(0, Math.round(scale(value, [minimum, maximum], [0, colors.length - 1]))));
-    return {
-      height,
-      horizontalPadding,
-      gridTop,
-      weeks,
-      hasWeekInspector,
-      layoutWidth,
-      availableGridHeight,
-      gridBottom,
-      rowGap,
-      columnGap,
-      cellWidth,
-      cellHeight,
-      colors,
-      colorLevel,
-    };
+
+    return { colors, colorLevel };
   }
 
   /**
@@ -104,10 +198,12 @@ export default class HeatmapRenderer {
    */
   #renderCells(layout) {
     const suffix = this.#countSuffix();
+
     for (const [index, item] of this.#chart.heatmap.entries()) {
       const level = layout.colorLevel(item.value);
-      const column = Math.floor(index / 7);
-      const row = index % 7;
+      const column = Math.floor(index / DAYS_PER_WEEK);
+      const row = index % DAYS_PER_WEEK;
+
       const cell = svg("rect", {
         x: layout.horizontalPadding + column * (layout.cellWidth + layout.columnGap),
         y: layout.gridTop + row * (layout.cellHeight + layout.rowGap),
@@ -117,9 +213,11 @@ export default class HeatmapRenderer {
         fill: layout.colors[level],
         class: `charts2-heat-cell ${layout.hasWeekInspector ? "charts2-visual-mark" : "charts2-mark"}`,
       });
+
       const visibleCell = layout.hasWeekInspector
         ? cell
         : titled(markMetadata(cell, 0, index), `${item.key}: ${formatNumber(item.value)}${suffix}`);
+
       this.#surface.append(visibleCell);
     }
   }
@@ -132,18 +230,22 @@ export default class HeatmapRenderer {
    */
   #renderWeekInspectors(layout) {
     const weeks = Array.from({ length: layout.weeks }, (_, columnIndex) =>
-      this.#chart.heatmap.slice(columnIndex * 7, columnIndex * 7 + 7),
+      this.#chart.heatmap.slice(columnIndex * DAYS_PER_WEEK, columnIndex * DAYS_PER_WEEK + DAYS_PER_WEEK),
     );
+
     const suffix = this.#countSuffix();
+
     for (const [columnIndex, items] of weeks.entries()) {
       const firstLabel = this.#formatKey(items[0].key);
       const lastLabel = this.#formatKey(items.at(-1).key);
       const heading = firstLabel === lastLabel ? firstLabel : `${firstLabel} – ${lastLabel}`;
+
       const tooltipItems = items.map((item) => ({
         name: this.#formatKey(item.key),
         value: `${this.#formatValue(item.value)}${suffix}`,
         color: layout.colors[layout.colorLevel(item.value)],
       }));
+
       const hit = markMetadata(
         svg("rect", {
           x: layout.horizontalPadding + columnIndex * (layout.cellWidth + layout.columnGap) - layout.columnGap / 2,
@@ -154,8 +256,9 @@ export default class HeatmapRenderer {
           class: "charts2-x-hit charts2-heat-week-hit charts2-mark",
         }),
         -1,
-        columnIndex * 7,
+        columnIndex * DAYS_PER_WEEK,
       );
+
       Object.assign(hit.dataset, {
         heatmapRangeLength: String(items.length),
         tooltipHeading: heading,
@@ -173,49 +276,101 @@ export default class HeatmapRenderer {
    * @returns {void} The intensity legend is appended to the chart SVG.
    */
   #renderLegend(layout) {
-    const legendTop = layout.gridBottom + 12;
-    const legendBaseline = legendTop + 10;
-    const labelGap = 8;
-    const lessWidth = measuredTextWidth("Less");
-    const moreWidth = measuredTextWidth("More");
-    const scaleX = layout.horizontalPadding + lessWidth + labelGap;
-    const maximumScaleWidth = Math.max(
-      layout.colors.length,
-      layout.layoutWidth - layout.horizontalPadding - scaleX - moreWidth - labelGap,
-    );
-    const desiredScaleWidth = layout.colors.length * 11 + Math.max(0, layout.colors.length - 1) * 3;
-    const scaleWidth = Math.min(desiredScaleWidth, maximumScaleWidth);
-    const swatchGap = scaleWidth >= layout.colors.length * 5 + Math.max(0, layout.colors.length - 1) * 2 ? 2 : 0;
-    const swatchWidth = (scaleWidth - swatchGap * (layout.colors.length - 1)) / layout.colors.length;
+    const geometry = this.#legendGeometry(layout);
     const legend = svg("g", { class: "charts2-heat-legend", "aria-label": "Heatmap intensity: Less to More" });
+
     const less = svg("text", {
       x: layout.horizontalPadding,
-      y: legendBaseline,
+      y: geometry.baseline,
       class: "charts2-legend charts2-heat-legend-less",
     });
+
     less.textContent = "Less";
     legend.append(less);
-    for (const [index, color] of layout.colors.entries()) {
+
+    this.#appendLegendSwatches(legend, layout.colors, geometry);
+
+    const more = svg("text", {
+      x: geometry.scaleX + geometry.scaleWidth + LEGEND_LABEL_GAP,
+      y: geometry.baseline,
+      class: "charts2-legend charts2-heat-legend-more",
+    });
+
+    more.textContent = "More";
+    legend.append(more);
+    this.#surface.append(legend);
+  }
+
+  /**
+   * Calculates bounded legend label and swatch geometry.
+   *
+   * @param {object} layout - Heatmap dimensions and palette.
+   * @returns {object} Legend baseline, scale bounds, and swatch sizing.
+   */
+  #legendGeometry(layout) {
+    const vertical = { top: layout.gridBottom + LEGEND_TOP_GAP };
+    const labelWidths = { less: measuredTextWidth("Less"), more: measuredTextWidth("More") };
+    const scaleX = layout.horizontalPadding + labelWidths.less + LEGEND_LABEL_GAP;
+    const scaleWidth = this.#legendScaleWidth(layout, scaleX, labelWidths.more);
+
+    const minimumGappedWidth =
+      layout.colors.length * MINIMUM_SWATCH_WIDTH + Math.max(0, layout.colors.length - 1) * MINIMUM_SWATCH_GAP;
+
+    const swatchGap = scaleWidth >= minimumGappedWidth ? MINIMUM_SWATCH_GAP : 0;
+    const swatchWidth = (scaleWidth - swatchGap * (layout.colors.length - 1)) / layout.colors.length;
+
+    return {
+      top: vertical.top,
+      baseline: vertical.top + LEGEND_BASELINE_OFFSET,
+      scaleX,
+      scaleWidth,
+      swatchGap,
+      swatchWidth,
+    };
+  }
+
+  /**
+   * Bounds the desired swatch scale between palette and viewport widths.
+   *
+   * @param {object} layout - Heatmap dimensions and palette.
+   * @param {number} scaleX - Horizontal start of the swatch scale.
+   * @param {number} moreWidth - Measured width of the trailing label.
+   * @returns {number} Drawable width allocated to all swatches.
+   */
+  #legendScaleWidth(layout, scaleX, moreWidth) {
+    const maximumScaleWidth = Math.max(
+      layout.colors.length,
+      layout.layoutWidth - layout.horizontalPadding - scaleX - moreWidth - LEGEND_LABEL_GAP,
+    );
+
+    const desiredScaleWidth =
+      layout.colors.length * DESIRED_SWATCH_WIDTH + Math.max(0, layout.colors.length - 1) * DESIRED_SWATCH_GAP;
+
+    return Math.min(desiredScaleWidth, maximumScaleWidth);
+  }
+
+  /**
+   * Appends the ordered palette swatches to the legend group.
+   *
+   * @param {SVGElement} legend - Parent legend group.
+   * @param {string[]} colors - Ordered heatmap palette.
+   * @param {object} geometry - Resolved legend geometry.
+   * @returns {void} Palette rectangles are appended.
+   */
+  #appendLegendSwatches(legend, colors, geometry) {
+    for (const [index, color] of colors.entries()) {
       legend.append(
         svg("rect", {
-          x: scaleX + index * (swatchWidth + swatchGap),
-          y: legendTop,
-          width: swatchWidth,
-          height: 11,
-          rx: Math.min(2, swatchWidth / 2),
+          x: geometry.scaleX + index * (geometry.swatchWidth + geometry.swatchGap),
+          y: geometry.top,
+          width: geometry.swatchWidth,
+          height: LEGEND_HEIGHT,
+          rx: Math.min(2, geometry.swatchWidth / 2),
           fill: color,
           class: "charts2-heat-legend-swatch",
         }),
       );
     }
-    const more = svg("text", {
-      x: scaleX + scaleWidth + labelGap,
-      y: legendBaseline,
-      class: "charts2-legend charts2-heat-legend-more",
-    });
-    more.textContent = "More";
-    legend.append(more);
-    this.#surface.append(legend);
   }
 
   /**

@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Charts2 technical chart laboratory: every renderer and demanding QA fixture on one reference page."
+    />
+    <title>Charts2 laboratory — complete QA fixture reference</title>
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./lab.css" />
+  </head>
+  <body class="lab-page">
+    <main id="top" class="lab-main">
+      <header class="site-header lab-header">
+        <a class="brand" href="./index.html" aria-label="Charts2 demo"
+          ><i class="brand-mark" aria-hidden="true"></i><span>Charts2</span></a
+        >
+        <nav aria-label="Laboratory navigation">
+          <a href="#fixture-index">Fixture index</a>
+          <a href="./index.html">Product demo</a>
+          <a href="https://github.com/tabuna/charts2">GitHub</a>
+        </nav>
+      </header>
+
+      <section class="lab-intro" aria-labelledby="lab-title">
+        <div>
+          <p class="lab-kicker">QA reference surface · 26 deterministic fixtures</p>
+          <h1 id="lab-title">Chart laboratory</h1>
+        </div>
+        <div class="lab-intro-copy">
+          <p>
+            Every production example and demanding dataset, grouped by renderer. Use this page for exploratory QA,
+            responsive inspection, interaction checks, and visual regression review.
+          </p>
+          <button id="shuffle" type="button">Exercise update lifecycle</button>
+        </div>
+      </section>
+
+      <nav id="fixture-index" class="lab-index" aria-label="Fixture groups">
+        <a href="#line-fixtures"><strong>08</strong><span>Line &amp; area</span></a>
+        <a href="#bar-fixtures"><strong>07</strong><span>Bar</span></a>
+        <a href="#mixed-fixtures"><strong>02</strong><span>Mixed axes</span></a>
+        <a href="#xy-fixtures"><strong>02</strong><span>XY plots</span></a>
+        <a href="#radial-fixtures"><strong>05</strong><span>Radial</span></a>
+        <a href="#time-fixtures"><strong>02</strong><span>Time &amp; calendar</span></a>
+      </nav>
+
+      <section id="line-fixtures" class="lab-group" data-fixture-group="line" aria-labelledby="line-title">
+        <header class="lab-group-header">
+          <h2 id="line-title">Line &amp; area</h2>
+          <p>Standard, filled, signed, fractional, dense, flat, and frameless line rendering.</p>
+        </header>
+        <div class="lab-grid">
+          <article class="lab-fixture lab-fixture-wide" data-fixture="line">
+            <header>
+              <div>
+                <span class="tag">LINE · MULTI-SERIES</span>
+                <h3>Standard product trend</h3>
+              </div>
+              <code>#line</code>
+            </header>
+            <div id="line"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="line-gradient">
+            <header>
+              <div>
+                <span class="tag">LINE · REGION FILL</span>
+                <h3>Gradient multi-series</h3>
+              </div>
+              <code>#line-gradient</code>
+            </header>
+            <div id="line-gradient"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="fractions">
+            <header>
+              <div>
+                <span class="tag">EDGE · PRECISION</span>
+                <h3>Small fractional values</h3>
+              </div>
+              <code>#fractions</code>
+            </header>
+            <div id="fractions"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="signed-lines">
+            <header>
+              <div>
+                <span class="tag">EDGE · ZERO CROSSING</span>
+                <h3>Signed signals</h3>
+              </div>
+              <code>#signed-lines</code>
+            </header>
+            <div id="signed-lines"></div>
+          </article>
+          <article class="lab-fixture lab-fixture-wide" data-fixture="dense-line">
+            <header>
+              <div>
+                <span class="tag">EDGE · DENSE</span>
+                <h3>Forty-eight categories</h3>
+              </div>
+              <code>#dense-line</code>
+            </header>
+            <div id="dense-line"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="flat-values">
+            <header>
+              <div>
+                <span class="tag">EDGE · FLAT + ZERO</span>
+                <h3>Unchanging series</h3>
+              </div>
+              <code>#flat-values</code>
+            </header>
+            <div id="flat-values"></div>
+          </article>
+          <article class="lab-fixture lab-fixture-compact" data-fixture="spark-line">
+            <header>
+              <div>
+                <span class="tag">FRAMELESS · LINE</span>
+                <h3>No chart chrome</h3>
+              </div>
+              <code>#spark-line</code>
+            </header>
+            <div id="spark-line"></div>
+          </article>
+          <article class="lab-fixture lab-fixture-compact" data-fixture="spark-area">
+            <header>
+              <div>
+                <span class="tag">FRAMELESS · AREA</span>
+                <h3>Filled, no chart chrome</h3>
+              </div>
+              <code>#spark-area</code>
+            </header>
+            <div id="spark-area"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="bar-fixtures" class="lab-group" data-fixture-group="bar" aria-labelledby="bar-title">
+        <header class="lab-group-header">
+          <h2 id="bar-title">Bar</h2>
+          <p>Vertical, horizontal, grouped, stacked, signed, large-value, localized, and frameless bars.</p>
+        </header>
+        <div class="lab-grid">
+          <article class="lab-fixture" data-fixture="bar-vertical">
+            <header>
+              <div>
+                <span class="tag">BAR · VERTICAL</span>
+                <h3>Weekly categories</h3>
+              </div>
+              <code>#bar-vertical</code>
+            </header>
+            <div id="bar-vertical"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="bar-horizontal">
+            <header>
+              <div>
+                <span class="tag">BAR · HORIZONTAL</span>
+                <h3>Grouped regions</h3>
+              </div>
+              <code>#bar-horizontal</code>
+            </header>
+            <div id="bar-horizontal"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="bar-horizontal-stacked">
+            <header>
+              <div>
+                <span class="tag">BAR · STACKED</span>
+                <h3>Stacked workflow</h3>
+              </div>
+              <code>#bar-horizontal-stacked</code>
+            </header>
+            <div id="bar-horizontal-stacked"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="negative-bars">
+            <header>
+              <div>
+                <span class="tag">EDGE · SIGNED</span>
+                <h3>Losses, zero, and gains</h3>
+              </div>
+              <code>#negative-bars</code>
+            </header>
+            <div id="negative-bars"></div>
+          </article>
+          <article class="lab-fixture lab-fixture-wide" data-fixture="large-values">
+            <header>
+              <div>
+                <span class="tag">EDGE · LARGE SCALE</span>
+                <h3>Millions and long labels</h3>
+              </div>
+              <code>#large-values</code>
+            </header>
+            <div id="large-values"></div>
+          </article>
+          <article class="lab-fixture lab-fixture-wide" data-fixture="absurd-labels">
+            <header>
+              <div>
+                <span class="tag">EDGE · LOCALIZATION</span>
+                <h3>Multilingual categories</h3>
+              </div>
+              <code>#absurd-labels</code>
+            </header>
+            <div id="absurd-labels"></div>
+          </article>
+          <article class="lab-fixture lab-fixture-compact" data-fixture="spark-bar">
+            <header>
+              <div>
+                <span class="tag">FRAMELESS · BAR</span>
+                <h3>No chart chrome</h3>
+              </div>
+              <code>#spark-bar</code>
+            </header>
+            <div id="spark-bar"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="mixed-fixtures" class="lab-group" data-fixture-group="mixed" aria-labelledby="mixed-title">
+        <header class="lab-group-header">
+          <h2 id="mixed-title">Mixed axes</h2>
+          <p>Bar and line series sharing a plot, including signed data and a secondary axis.</p>
+        </header>
+        <div class="lab-grid">
+          <article class="lab-fixture" data-fixture="axis-mixed">
+            <header>
+              <div>
+                <span class="tag">MIXED · BAR + LINES</span>
+                <h3>Plan and capacity</h3>
+              </div>
+              <code>#axis-mixed</code>
+            </header>
+            <div id="axis-mixed"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="axis-mixed-signed">
+            <header>
+              <div>
+                <span class="tag">MIXED · DUAL AXIS</span>
+                <h3>Signed movement</h3>
+              </div>
+              <code>#axis-mixed-signed</code>
+            </header>
+            <div id="axis-mixed-signed"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="xy-fixtures" class="lab-group" data-fixture-group="xy" aria-labelledby="xy-title">
+        <header class="lab-group-header">
+          <h2 id="xy-title">XY plots</h2>
+          <p>Coordinate relationships with and without a third magnitude dimension.</p>
+        </header>
+        <div class="lab-grid">
+          <article class="lab-fixture" data-fixture="scatter">
+            <header>
+              <div>
+                <span class="tag">SCATTER</span>
+                <h3>Two-dimensional relationship</h3>
+              </div>
+              <code>#scatter</code>
+            </header>
+            <div id="scatter"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="bubble">
+            <header>
+              <div>
+                <span class="tag">BUBBLE</span>
+                <h3>Relationship with magnitude</h3>
+              </div>
+              <code>#bubble</code>
+            </header>
+            <div id="bubble"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="radial-fixtures" class="lab-group" data-fixture-group="radial" aria-labelledby="radial-title">
+        <header class="lab-group-header">
+          <h2 id="radial-title">Radial</h2>
+          <p>Comparison and composition across radar, polar area, pie, donut, and percentage renderers.</p>
+        </header>
+        <div class="lab-grid">
+          <article class="lab-fixture" data-fixture="radar">
+            <header>
+              <div>
+                <span class="tag">RADAR</span>
+                <h3>Multidimensional comparison</h3>
+              </div>
+              <code>#radar</code>
+            </header>
+            <div id="radar"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="polar">
+            <header>
+              <div>
+                <span class="tag">POLAR AREA</span>
+                <h3>Radial magnitude</h3>
+              </div>
+              <code>#polar</code>
+            </header>
+            <div id="polar"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="pie">
+            <header>
+              <div>
+                <span class="tag">PIE</span>
+                <h3>Composition</h3>
+              </div>
+              <code>#pie</code>
+            </header>
+            <div id="pie"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="donut">
+            <header>
+              <div>
+                <span class="tag">DONUT</span>
+                <h3>Composition with center</h3>
+              </div>
+              <code>#donut</code>
+            </header>
+            <div id="donut"></div>
+          </article>
+          <article class="lab-fixture lab-fixture-wide lab-fixture-percentage" data-fixture="percentage">
+            <header>
+              <div>
+                <span class="tag">PERCENTAGE</span>
+                <h3>Compact allocation</h3>
+              </div>
+              <code>#percentage</code>
+            </header>
+            <div id="percentage"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="time-fixtures" class="lab-group" data-fixture-group="time" aria-labelledby="time-title">
+        <header class="lab-group-header">
+          <h2 id="time-title">Time &amp; calendar</h2>
+          <p>Scheduled intervals and a full year of calendar activity.</p>
+        </header>
+        <div class="lab-grid">
+          <article class="lab-fixture lab-fixture-wide" data-fixture="timesheet">
+            <header>
+              <div>
+                <span class="tag">TIMESHEET</span>
+                <h3>Overlapping release tasks</h3>
+              </div>
+              <code>#timesheet</code>
+            </header>
+            <div id="timesheet"></div>
+          </article>
+          <article class="lab-fixture lab-fixture-wide" data-fixture="heatmap">
+            <header>
+              <div>
+                <span class="tag">HEATMAP</span>
+                <h3>Full-year activity</h3>
+              </div>
+              <code>#heatmap</code>
+            </header>
+            <div id="heatmap"></div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer lab-footer">
+      <span>Charts2 QA laboratory · 26 fixtures · public API only</span>
+      <a href="#top">Back to top ↑</a>
+    </footer>
+    <script type="module" src="./Main.js"></script>
+  </body>
+</html>

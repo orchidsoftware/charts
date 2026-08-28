@@ -6,6 +6,10 @@ import {
   STANDARD_NUMBER_FORMATTER,
 } from "./Constants.js";
 
+const COMPACT_NUMBER_THRESHOLD = 10_000;
+const SMALL_NUMBER_THRESHOLD = 0.01;
+const DEFAULT_LABEL_FONT_SIZE = 11;
+
 /**
  * Creates an SVG element and serializes its initial attributes.
  *
@@ -15,9 +19,11 @@ import {
  */
 function svg(name, attributes = {}) {
   const element = document.createElementNS(SVG_NS, name);
+
   for (const [key, value] of Object.entries(attributes)) {
     element.setAttribute(key, String(value));
   }
+
   return element;
 }
 
@@ -33,6 +39,7 @@ function titled(element, text) {
   title.textContent = text;
   element.append(title);
   Object.assign(element.dataset, { tooltip: text });
+
   return element;
 }
 
@@ -44,12 +51,15 @@ function titled(element, text) {
  */
 function formatNumber(value) {
   const absolute = Math.abs(value);
-  if (absolute >= 10_000) {
+
+  if (absolute >= COMPACT_NUMBER_THRESHOLD) {
     return COMPACT_NUMBER_FORMATTER.format(value);
   }
-  if (absolute > 0 && absolute < 0.01) {
+
+  if (absolute > 0 && absolute < SMALL_NUMBER_THRESHOLD) {
     return SMALL_NUMBER_FORMATTER.format(value);
   }
+
   return STANDARD_NUMBER_FORMATTER.format(value);
 }
 
@@ -63,20 +73,27 @@ function formatNumber(value) {
  */
 function truncateText(value, maxWidth, fontSize = 11) {
   const text = String(value);
+
   if (measuredTextWidth(text, fontSize) <= maxWidth) {
     return text;
   }
+
   let low = 1;
   let high = text.length;
+
   while (low < high) {
     const middle = Math.ceil((low + high) / 2);
     const candidate = `${text.slice(0, middle).trimEnd()}…`;
+
     if (measuredTextWidth(candidate, fontSize) <= maxWidth) {
       low = middle;
-    } else {
-      high = middle - 1;
+
+      continue;
     }
+
+    high = middle - 1;
   }
+
   return `${text.slice(0, low).trimEnd()}…`;
 }
 
@@ -86,23 +103,24 @@ function truncateText(value, maxWidth, fontSize = 11) {
  * @param {object} specification - Content and presentation values for one label.
  * @param {unknown} specification.value - Display value rendered into the text node.
  * @param {Record<string, string | number>} specification.attributes - SVG positioning and presentation attributes.
- * @param {number} specification.maxWidth - Maximum permitted rendered width in pixels.
- * @param {number} [specification.fontSize=11] - Font size used for truncation measurement.
+ * @param {object} specification.measurement - Width and typography used for truncation.
  * @param {unknown} [specification.originalValue=specification.value] - Unformatted value exposed to assistive technology.
  * @returns {SVGElement} Detached SVG text element ready for insertion.
  */
-function labelElement({ value, attributes, maxWidth, fontSize = 11, originalValue = value }) {
+function labelElement({ value, attributes, measurement, originalValue = value }) {
   const element = svg("text", attributes);
-  const visible = truncateText(value, maxWidth, fontSize);
+  const visible = truncateText(value, measurement.maxWidth, measurement.fontSize ?? DEFAULT_LABEL_FONT_SIZE);
   element.textContent = visible;
   if (visible !== String(value)) {
     const title = svg("title");
     title.textContent = String(value);
     element.append(title);
   }
+
   if (String(originalValue) !== String(value) || visible !== String(value)) {
     element.setAttribute("aria-label", String(originalValue));
   }
+
   return element;
 }
 
@@ -116,6 +134,7 @@ function labelElement({ value, attributes, maxWidth, fontSize = 11, originalValu
 function measuredTextWidth(value, fontSize = 11) {
   const context = document.createElement("canvas").getContext("2d");
   context.font = `${fontSize}px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif`;
+
   return context.measureText(String(value)).width;
 }
 
@@ -145,19 +164,23 @@ function wrappedLabelElement({ value, attributes, maxWidth, originalValue = valu
 
   const visibleLines = lines.map((line) => truncateText(line, maxWidth));
   const element = svg("text", { ...attributes, class: `${attributes.class} charts2-multiline-label` });
+
   for (const [index, line] of visibleLines.entries()) {
     const tspan = svg("tspan", {
       x: attributes.x,
       dy: index === 0 ? (-MULTILINE_LABEL_HEIGHT * (visibleLines.length - 1)) / 2 : MULTILINE_LABEL_HEIGHT,
     });
+
     tspan.textContent = line;
     element.append(tspan);
   }
+
   if (visibleLines.some((line, index) => line !== lines[index])) {
     const title = svg("title");
     title.textContent = text;
     element.append(title);
   }
+
   if (
     Array.isArray(value) ||
     String(originalValue) !== text ||
@@ -165,6 +188,7 @@ function wrappedLabelElement({ value, attributes, maxWidth, originalValue = valu
   ) {
     element.setAttribute("aria-label", String(originalValue));
   }
+
   return element;
 }
 
@@ -181,6 +205,7 @@ function markMetadata(element, datasetIndex, pointIndex) {
     datasetIndex: String(datasetIndex),
     pointIndex: String(pointIndex),
   });
+
   return element;
 }
 
@@ -193,9 +218,11 @@ function markMetadata(element, datasetIndex, pointIndex) {
  */
 function resolveParent(parent) {
   const element = typeof parent === "string" ? document.querySelector(parent) : parent;
+
   if (!(element instanceof Element)) {
     throw new TypeError("Chart parent must be an element or a valid selector");
   }
+
   return element;
 }
 
@@ -208,7 +235,12 @@ function resolveParent(parent) {
  */
 function measureParentWidth(parent, fallback = 640) {
   const width = parent.getBoundingClientRect().width;
-  return Number.isFinite(width) && width > 0 ? width : fallback;
+
+  if (Number.isFinite(width) && width > 0) {
+    return width;
+  }
+
+  return fallback;
 }
 
 export {

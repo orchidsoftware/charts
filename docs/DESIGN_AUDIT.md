@@ -62,11 +62,27 @@ fixtures in addition to every chart family.
 
 ## Demo narrative
 
-- The page opens with an exact promise—one API and zero runtime dependencies—
-  instead of implying that twelve visual grammars share one implementation
-  renderer.
+- The page opens with a product promise—charts that belong in the surrounding
+  interface—before SVG, dependencies, accessibility, or implementation details.
+- The exact positioning line, `Charts that belong in your product`, is repeated
+  in the document title and hero instead of being diluted into a neighboring
+  claim. The page doesn't restate it in a second manifesto section; the live
+  product preview supplies the proof.
+- The hero follows an editorial rather than generic SaaS composition: concise
+  product copy forms one rail, while a complete live analytics workspace
+  occupies the larger canvas. The product is evidence, not decoration.
+- The direct language and asymmetric product-first composition borrow
+  Basecamp's character; system typography, adaptive color, clear hierarchy,
+  legible controls, and restrained depth follow Apple platform norms.
+- Library facts live inside the product preview as a compact technical footer:
+  proof for the curious, not another marketing section competing for attention.
+- Navigation stays visually quiet and product surfaces remain opaque. Blur and
+  translucency don't compete with labels, axes, or chart marks.
 - Product examples are grouped by the question they answer: trends,
   comparisons, composition, activity, and explicitly frameless presentation.
+  Their chapter headings are written as real product questions rather than
+  chart taxonomy. Numbers and explanatory subtitles are omitted so the user's
+  job stays ahead of the implementation type without creating extra hierarchy.
 - The type index presents the four real visual families in one desktop row.
   Family width follows the number of contained forms, while section height and
   per-type density remain consistent; the families share one outer surface
@@ -76,12 +92,14 @@ fixtures in addition to every chart family.
   color, corner treatment, and primary/secondary palette. All links and icons
   have identical rendered dimensions; hover changes color and position without
   enclosing long type names in undersized cards.
-- Reliability evidence remains discoverable in a native `details` disclosure.
-  Its closed state keeps the public page concise; its open state renders all
-  seven difficult datasets without horizontal overflow.
+- The separate chart laboratory removes QA evidence and terminology from the
+  product narrative entirely. It groups
+  all 26 product and edge-case fixtures by renderer, exposes stable fixture IDs,
+  and serves as the canonical surface for QA and regression inspection.
 - The final developer block names the real public primitive (`createChart`) as a
   factory, shows imports, update, and destruction, then closes with the 1.0.0
-  release identity.
+  release identity. Quick-start and source links sit beside that real API example
+  instead of creating a second promotional ending.
 
 ## Apple HIG alignment
 

@@ -1,1 +1,1 @@
-export default { rawBytes: 76_442, gzipBytes: 21_551 };
+export default { rawBytes: 83_884, gzipBytes: 23_634 };

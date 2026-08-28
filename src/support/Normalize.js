@@ -1,5 +1,10 @@
 import { ChartType, DEFAULT_COLORS } from "./Constants.js";
 
+const DEFAULT_POINT_RADIUS = 5;
+const ISO_DATE_LENGTH = 10;
+const MILLISECONDS_PER_SECOND = 1000;
+const UNIX_SECONDS_THRESHOLD = 100_000;
+
 /**
  * Verifies that a value is safe to use in geometry calculations.
  *
@@ -12,6 +17,7 @@ function requireFiniteNumber(value, name) {
   if (!Number.isFinite(value)) {
     throw new TypeError(`${name} must be a finite number`);
   }
+
   return value;
 }
 
@@ -27,13 +33,15 @@ function normalizePoint(point, index) {
   if (typeof point === "number") {
     return { x: index, y: requireFiniteNumber(point, "Point") };
   }
+
   if (!point || typeof point !== "object") {
     throw new TypeError("Each point must be a number or an object");
   }
+
   return {
     x: requireFiniteNumber(point.x ?? index, "Point x"),
     y: requireFiniteNumber(point.y, "Point y"),
-    r: requireFiniteNumber(point.r ?? 5, "Point radius"),
+    r: requireFiniteNumber(point.r ?? DEFAULT_POINT_RADIUS, "Point radius"),
   };
 }
 
@@ -48,10 +56,12 @@ function normalizeDatasets(data) {
   if (!data || !Array.isArray(data.datasets) || data.datasets.length === 0) {
     throw new TypeError("Chart data requires at least one dataset");
   }
+
   return data.datasets.map((dataset, datasetIndex) => {
     if (!dataset || !Array.isArray(dataset.values) || dataset.values.length === 0) {
       throw new TypeError("Each dataset requires a non-empty values array");
     }
+
     return {
       name: dataset.name ?? `Series ${datasetIndex + 1}`,
       color: dataset.color ?? DEFAULT_COLORS[datasetIndex % DEFAULT_COLORS.length],
@@ -72,17 +82,35 @@ function normalizeHeatmapData(data = {}) {
   if (data.start && data.end && new Date(data.start) > new Date(data.end)) {
     throw new TypeError("Heatmap start date cannot be after end date");
   }
+
   const entries = Object.entries(data.dataPoints ?? {}).map(([key, value]) => {
     requireFiniteNumber(value, "Heatmap value");
-    const numeric = Number(key);
-    const date =
-      Number.isFinite(numeric) && numeric > 100_000 ? new Date(numeric * 1000) : new Date(`${key}T00:00:00Z`);
+    const date = heatmapDate(key);
+
     if (Number.isNaN(date.valueOf())) {
       throw new TypeError(`Invalid heatmap date: ${key}`);
     }
-    return { date, key: date.toISOString().slice(0, 10), value };
+
+    return { date, key: date.toISOString().slice(0, ISO_DATE_LENGTH), value };
   });
+
   return entries.toSorted((left, right) => left.date - right.date);
+}
+
+/**
+ * Interprets a heatmap key as Unix seconds or an ISO calendar date.
+ *
+ * @param {string} key - Caller-supplied heatmap date key.
+ * @returns {Date} Candidate date for subsequent validity checking.
+ */
+function heatmapDate(key) {
+  const numeric = Number(key);
+
+  if (Number.isFinite(numeric) && numeric > UNIX_SECONDS_THRESHOLD) {
+    return new Date(numeric * MILLISECONDS_PER_SECOND);
+  }
+
+  return new Date(`${key}T00:00:00Z`);
 }
 
 /**
@@ -95,9 +123,11 @@ function normalizeHeatmapData(data = {}) {
  */
 function normalizeDate(value, name) {
   const date = value instanceof Date ? new Date(value.valueOf()) : new Date(value);
+
   if (Number.isNaN(date.valueOf())) {
     throw new TypeError(`${name} must be a valid date`);
   }
+
   return date;
 }
 
@@ -112,15 +142,19 @@ function normalizeTimesheetData(data = {}) {
   if (!Array.isArray(data.tasks) || data.tasks.length === 0) {
     throw new TypeError("Timesheet data requires a non-empty tasks array");
   }
+
   const tasks = data.tasks.map((task, index) => {
     if (!task || typeof task !== "object") {
       throw new TypeError("Each timesheet task must be an object");
     }
+
     const start = normalizeDate(task.start, `Task ${index + 1} start`);
     const end = normalizeDate(task.end, `Task ${index + 1} end`);
+
     if (end <= start) {
       throw new TypeError("Timesheet task end must be after start");
     }
+
     return {
       label: String(task.label ?? `Task ${index + 1}`),
       start,
@@ -129,16 +163,20 @@ function normalizeTimesheetData(data = {}) {
       color: task.color ?? DEFAULT_COLORS[index % DEFAULT_COLORS.length],
     };
   });
+
   const taskStart = new Date(Math.min(...tasks.map((task) => task.start.valueOf())));
   const taskEnd = new Date(Math.max(...tasks.map((task) => task.end.valueOf())));
   const start = data.start === undefined ? taskStart : normalizeDate(data.start, "Timesheet start");
   const end = data.end === undefined ? taskEnd : normalizeDate(data.end, "Timesheet end");
+
   if (end <= start) {
     throw new TypeError("Timesheet end must be after start");
   }
+
   if (start > taskStart || end < taskEnd) {
     throw new TypeError("Timesheet bounds must contain every task");
   }
+
   return { start, end, tasks };
 }
 
@@ -155,12 +193,15 @@ function validateChartData(type, datasets, labels) {
   if (!Array.isArray(labels)) {
     throw new TypeError("Chart labels must be an array");
   }
+
   if (type === ChartType.RADAR && datasets.some((dataset) => dataset.points.length !== datasets[0].points.length)) {
     throw new TypeError("Radar datasets must have equal lengths");
   }
+
   if (type === ChartType.POLAR_AREA && datasets.length !== 1) {
     throw new TypeError(`${type} requires exactly one dataset`);
   }
+
   if (type === ChartType.BUBBLE && datasets.some((dataset) => dataset.points.some((point) => point.r < 0))) {
     throw new TypeError("Bubble radii cannot be negative");
   }

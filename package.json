@@ -1,7 +1,7 @@
 {
   "name": "@charts2/core",
   "version": "1.0.0",
-  "description": "Expressive, accessible SVG charts with one factory and zero runtime dependencies",
+  "description": "Clear, responsive SVG charts for product interfaces with one small JavaScript API",
   "type": "module",
   "packageManager": "npm@11.16.0",
   "sideEffects": [
@@ -21,6 +21,14 @@
   "module": "./dist/charts2.js",
   "types": "./src/index.d.ts",
   "style": "./dist/charts2.css",
+  "homepage": "https://github.com/tabuna/charts2#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tabuna/charts2.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tabuna/charts2/issues"
+  },
   "files": [
     "dist",
     "docs",
@@ -44,6 +52,7 @@
     "lint:css:fix": "stylelint \"{src,demo}/**/*.css\" --fix --max-warnings 0",
     "typecheck": "tsc -p tsconfig.types.json",
     "test": "vitest run",
+    "test:lab": "vitest run test/Lab.test.js",
     "test:watch": "vitest",
     "test:visual": "vitest run test/VisualRegression.test.js",
     "test:visual:update": "vitest run test/VisualRegression.test.js --update",
@@ -60,17 +69,21 @@
   },
   "keywords": [
     "accessible",
+    "calendar-heatmap",
     "charting-library",
     "charts",
+    "dashboard",
     "data-visualization",
     "dependency-free",
     "bubble-chart",
-    "gantt-chart",
     "javascript",
+    "product-analytics",
     "radar-chart",
+    "responsive-charts",
     "scatter-plot",
     "svg",
     "svg-charts",
+    "timeline-chart",
     "typescript",
     "visualization"
   ],

@@ -11,12 +11,11 @@ define the public contract, Vite produces ESM/CommonJS/CSS artifacts, and the
 demo sources, coverage, credentials, and local tooling are never part of the
 published archive.
 
-The demo has two presentation layers in one document. The primary showroom
-explains chart families through recognizable product questions. The collapsed
-Quality Lab preserves demanding fixtures for engineering review without making
-internal stress terminology the closing message of the product page. Both
-layers use the same public `createChart` entry; no demo-only renderer or private
-hook exists.
+The demo and laboratory have separate jobs. The primary showroom explains chart
+families through recognizable product questions. `demo/lab.html` groups all
+product and edge-case fixtures by renderer for QA, responsive inspection, and
+regression tests. Both pages use the same `Main.js` fixture definitions and the
+public `createChart` entry; no demo-only renderer or private hook exists.
 
 ## Source map
 
@@ -51,7 +50,10 @@ src
 │  └─ LegendRenderer.js             # Shared series and item legends
 └─ support
    ├─ Normalize.js                  # Pure validation and normalization rules
-   ├─ Math.js                       # Pure scales, paths, arcs, and bar geometry
+   ├─ Math.js                       # Stable public facade for mathematical helpers
+   ├─ Scale.js                      # Numeric extents, interpolation, and nice ticks
+   ├─ CartesianGeometry.js          # Line and rounded-bar path geometry
+   ├─ SectorGeometry.js             # Polar points, sectors, rings, and padding
    ├─ Presentation.js               # Label, legend, and layout calculations
    ├─ Constants.js                  # Frozen enums and immutable design values
    ├─ Dom.js                        # Small SVG, text, and host primitives
@@ -292,6 +294,10 @@ There is no public constructor hierarchy, default export, mutable `options`,
     JavaScript quality, while Stylelint owns CSS correctness, kebab-case
     selectors, and logical property order. Stylesheets use comments to mark
     cohesive visual sections.
+17. Internal object parameters expose at most four cohesive fields. Wider
+    contracts become named value/layout objects or are split by responsibility;
+    large anonymous return records and private-method object bags are rejected
+    by ESLint.
 
 The opinion matrix, rejected alternatives, and implementation record are in
 [REFACTORING.md](./REFACTORING.md). The per-module vocabulary decisions are in

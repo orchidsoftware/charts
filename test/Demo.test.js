@@ -71,13 +71,11 @@ describe("real-world demo", () => {
     expect(showcaseSpecs).toHaveLength(15);
     expect(qualitySpecs).toHaveLength(7);
     expect(document.querySelectorAll(".selection-status")).toHaveLength(1);
-    expect(document.querySelector(".selection-status").textContent).toBe(
-      "Click a value, or press Enter, to keep its tooltip open.",
-    );
+    expect(document.querySelector(".selection-status").textContent).toBe("");
     expect(document.querySelector("#bundle-size-value").textContent).toMatch(/^\d+\.\d kB$/);
     expect(document.querySelector("#bundle-size-gzip").textContent).toMatch(/^\(\d+\.\d kB gzip\)$/);
     expect(document.querySelector("#line svg").getAttribute("height")).toBe("320");
-    expect(document.querySelector("#percentage svg").getAttribute("height")).toBe("240");
+    expect(document.querySelector("#percentage svg").getAttribute("height")).toBe("140");
     expect(document.querySelector("#radar svg").getAttribute("height")).toBe("320");
     expect(document.querySelector("#fractions svg").getAttribute("height")).toBe("280");
 

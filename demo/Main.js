@@ -33,6 +33,21 @@ const denseValues = denseLabels.map((_, index) =>
   Math.round(42 + Math.sin(index / 3) * 18 + Math.cos(index / 7) * 9 + index * 0.6),
 );
 const updatableCharts = [];
+const heroRevenueSource = {
+  labels: months,
+  datasets: [
+    {
+      name: "Revenue",
+      color: "var(--charts2-demo-blue)",
+      values: [42, 47, 45, 53, 58, 61, 60, 68, 72, 76, 79, 84],
+    },
+    {
+      name: "Plan",
+      color: "var(--charts2-demo-coral)",
+      values: [44, 47, 49, 53, 56, 60, 63, 67, 71, 75, 80, 85],
+    },
+  ],
+};
 
 /**
  * Formats values consistently across chart labels, tooltips, and selections.
@@ -62,7 +77,6 @@ function selectionReporter(selector) {
   const status = document.createElement("p");
   status.className = "selection-status";
   status.setAttribute("aria-live", "polite");
-  status.textContent = "Click a value, or press Enter, to keep its tooltip open.";
   host.after(status);
   return (detail) => {
     const series = detail.dataset ? `${detail.dataset} · ` : "";
@@ -125,7 +139,7 @@ export const showcaseSpecs = [
     "#bar-vertical",
     {
       type: "bar",
-      height: 260,
+      height: 220,
       ariaLabel: "Notifications received from Messages Calendar and Home this week",
       data: {
         labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
@@ -354,7 +368,7 @@ export const showcaseSpecs = [
     "#percentage",
     {
       type: "percentage",
-      height: 240,
+      height: 140,
       tooltipOptions: { formatTooltipY: (value) => `${formatDemoValue(value)} GB` },
       ariaLabel: "iPhone storage usage by category",
       colors: ["#ff9f0a", "#0a84ff", "#30d158", "#8e8e93", "#bf5af2", "#d1d1d6"],
@@ -543,11 +557,28 @@ function mountChart(selector, options) {
   return { chart, source: options.data };
 }
 
+const heroRevenueHost = document.querySelector("#hero-revenue");
+
+if (heroRevenueHost) {
+  updatableCharts.push(
+    mountChart(heroRevenueHost, {
+      type: "line",
+      height: 220,
+      showLegend: false,
+      showDots: false,
+      ariaLabel: "Monthly recurring revenue and plan",
+      data: heroRevenueSource,
+    }),
+  );
+}
+
 for (const [selector, options] of showcaseSpecs) {
   updatableCharts.push(mountChart(selector, options));
 }
 for (const [selector, options] of qualitySpecs) {
-  mountChart(selector, options);
+  if (document.querySelector(selector)) {
+    mountChart(selector, options);
+  }
 }
 
 /*
@@ -569,7 +600,9 @@ createChart("#heatmap", {
         const date = new Date(Date.UTC(2026, 0, index + 1));
         const weekday = date.getUTCDay();
         const seasonal = Math.sin(index / 19) * 4 + 5;
-        const workday = weekday > 0 && weekday < 6 ? 4 : 0;
+        const isWorkday = weekday > 0 && weekday < 6;
+        const workday = isWorkday ? 4 : 0;
+
         return [date.toISOString().slice(0, 10), Math.max(0, Math.round(seasonal + workday + ((index * 7) % 5)))];
       }),
     ),
@@ -622,7 +655,7 @@ function varyValue(value) {
   return typeof value === "number" ? value * factor : { ...value, y: value.y * factor };
 }
 
-document.querySelector("#shuffle").addEventListener("click", () => {
+document.querySelector("#shuffle")?.addEventListener("click", () => {
   for (const chartEntry of updatableCharts) {
     if (!chartEntry.source.datasets) {
       continue;

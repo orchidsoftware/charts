@@ -12,6 +12,18 @@ import {
 import { formatNumber, truncateText, measuredTextWidth, measuredLegendTextWidth } from "./Dom.js";
 import { extent } from "./Math.js";
 
+const AGGREGATION_MINIMUM_CONTENT_HEIGHT = 8;
+const HORIZONTAL_LABEL_MAXIMUM_PADDING = 160;
+const HORIZONTAL_LABEL_MINIMUM_PADDING = 24;
+const HORIZONTAL_LABEL_WIDTH_RATIO = 0.42;
+const INITIAL_LEGEND_ROW_COUNT = 1;
+const LEGEND_ITEM_GAP = 16;
+const LEGEND_LEFT_INSET = 12;
+const LEGEND_MAXIMUM_LABEL_WIDTH = 160;
+const LEGEND_RIGHT_INSET = 8;
+const VALUE_LABEL_TRAILING_INSET = 4;
+const DATASET_SUMMARY_LIMIT = 12;
+
 /**
  * Applies the optional category formatter and validates its display contract.
  *
@@ -23,16 +35,21 @@ import { extent } from "./Math.js";
  */
 function formatCategoryLabel(options, label, index) {
   const formatter = options.axisOptions?.formatLabel;
+
   if (!formatter) {
     return String(label);
   }
+
   const formatted = formatter(label, index, { orientation: options.orientation, type: options.type });
+
   if (typeof formatted === "string") {
     return formatted;
   }
+
   if (Array.isArray(formatted) && formatted.length > 0 && formatted.every((line) => typeof line === "string")) {
     return [...formatted];
   }
+
   throw new TypeError("axisOptions.formatLabel must return a string or a non-empty string array");
 }
 
@@ -44,14 +61,21 @@ function formatCategoryLabel(options, label, index) {
  * @returns {number} Clamped left padding required by the widest visible label.
  */
 function horizontalCategoryPadding(labels, width) {
-  const maximum = Math.max(24, Math.min(160, width * 0.42));
+  const maximum = Math.max(
+    HORIZONTAL_LABEL_MINIMUM_PADDING,
+    Math.min(HORIZONTAL_LABEL_MAXIMUM_PADDING, width * HORIZONTAL_LABEL_WIDTH_RATIO),
+  );
+
   const maximumLabelWidth = maximum - HORIZONTAL_LABEL_EDGE_INSET - HORIZONTAL_LABEL_GAP;
+
   const displayedWidths = labels.map((label) => {
     const lines = Array.isArray(label) ? label : [String(label)];
+
     return Math.min(maximumLabelWidth, Math.ceil(Math.max(...lines.map((line) => measuredTextWidth(line.trim())))));
   });
+
   return Math.max(
-    24,
+    HORIZONTAL_LABEL_MINIMUM_PADDING,
     Math.min(maximum, HORIZONTAL_LABEL_EDGE_INSET + Math.max(0, ...displayedWidths) + HORIZONTAL_LABEL_GAP),
   );
 }
@@ -65,7 +89,8 @@ function horizontalCategoryPadding(labels, width) {
  */
 function verticalValuePadding(ticks, basePadding) {
   const maximumLabelWidth = Math.max(0, ...ticks.map((value) => measuredTextWidth(formatNumber(value))));
-  return Math.max(basePadding, Math.ceil(maximumLabelWidth + VALUE_LABEL_GAP + 4));
+
+  return Math.max(basePadding, Math.ceil(maximumLabelWidth + VALUE_LABEL_GAP + VALUE_LABEL_TRAILING_INSET));
 }
 
 /**
@@ -76,24 +101,27 @@ function verticalValuePadding(ticks, basePadding) {
  * @returns {{labelOffset: number, positions: Array<object>, rows: number}} Shared label offset, item positions, and occupied row count.
  */
 function legendLayout(width, items) {
-  const left = 12;
-  const right = 8;
+  const left = LEGEND_LEFT_INSET;
+  const right = LEGEND_RIGHT_INSET;
   const labelOffset = SERIES_SWATCH_DIAMETER + LEGEND_LABEL_GAP;
-  const itemGap = 16;
+  const itemGap = LEGEND_ITEM_GAP;
   const maximumItemWidth = Math.max(1, width - left - right);
-  let x = 12;
-  let rows = 1;
+  let x = LEGEND_LEFT_INSET;
+  let rows = INITIAL_LEGEND_ROW_COUNT;
+
   const positions = items.map((item) => {
-    const labelMaxWidth = Math.max(1, Math.min(160, maximumItemWidth - labelOffset));
+    const labelMaxWidth = Math.max(1, Math.min(LEGEND_MAXIMUM_LABEL_WIDTH, maximumItemWidth - labelOffset));
     const visibleLabel = truncateText(item.label, labelMaxWidth);
     const itemWidth = Math.min(maximumItemWidth, labelOffset + measuredLegendTextWidth(visibleLabel));
 
-    if (x + itemWidth > width - 8 && x > 12) {
+    if (x + itemWidth > width - LEGEND_RIGHT_INSET && x > LEGEND_LEFT_INSET) {
       x = left;
       rows += 1;
     }
+
     const position = { itemWidth, labelMaxWidth, x, yOffset: (rows - 1) * LEGEND_ROW_HEIGHT };
     x += itemWidth + itemGap;
+
     return position;
   });
 
@@ -112,12 +140,16 @@ function legendLayout(width, items) {
  */
 function aggregationLayout({ width, height, items, showLegend }) {
   const legendRows = showLegend ? legendLayout(width, items).rows : 0;
+
   const legendBaseline =
     legendRows > 0 ? height - AGGREGATION_LEGEND_BASELINE_INSET - (legendRows - 1) * LEGEND_ROW_HEIGHT : null;
+
   const contentTop = AGGREGATION_INSET;
+
   const requestedBottom =
     legendBaseline === null ? height - AGGREGATION_INSET : legendBaseline - AGGREGATION_LEGEND_GAP;
-  const contentBottom = Math.max(contentTop + 8, requestedBottom);
+
+  const contentBottom = Math.max(contentTop + AGGREGATION_MINIMUM_CONTENT_HEIGHT, requestedBottom);
 
   return {
     contentTop,
@@ -136,12 +168,15 @@ function aggregationLayout({ width, height, items, showLegend }) {
  */
 function datasetSummary(dataset, labels) {
   const values = dataset.points.map((point, index) => `${labels[index] ?? point.x}: ${point.y}`);
-  if (values.length > 12) {
+
+  if (values.length > DATASET_SUMMARY_LIMIT) {
     const first = dataset.points[0];
     const last = dataset.points.at(-1);
     const [minimum, maximum] = extent(dataset.points.map((point) => point.y));
+
     return `${dataset.name}: ${values.length} points · ${labels[0] ?? first.x}: ${formatNumber(first.y)} · ${labels.at(-1) ?? last.x}: ${formatNumber(last.y)} · range ${formatNumber(minimum)}–${formatNumber(maximum)}`;
   }
+
   return `${dataset.name}: ${values.join(", ")}`;
 }
 
@@ -160,6 +195,7 @@ function tooltipText({ options, label, value, suffix = "" }) {
   const formatY = options.tooltipOptions?.formatTooltipY;
   const x = formatX ? formatX(label) : label;
   const y = formatY ? formatY(value) : formatNumber(value);
+
   return `${x}: ${y}${suffix}`;
 }
 

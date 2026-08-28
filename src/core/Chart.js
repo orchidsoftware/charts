@@ -41,13 +41,29 @@ export default class Chart {
   constructor(parent, options) {
     this.#host = resolveParent(parent);
     const chartConfig = normalizeChartOptions(this.#host, options);
+
     this.#type = chartConfig.options.type;
     this.#hasCustomColors = chartConfig.hasCustomColors;
     this.#id = nextChartId();
     this.#autoWidth = options.width === undefined;
     this.#options = chartConfig.options;
     this.#model = new ChartData(this.#type, options.data);
+    this.#mountElement();
+    this.#bindLifecycle();
+    this.#render();
 
+    if (this.#autoWidth) {
+      this.#boundResize = this.#resize.bind(this);
+      window.addEventListener("resize", this.#boundResize);
+    }
+  }
+
+  /**
+   * Creates and mounts the SVG and tooltip nodes owned by this chart.
+   *
+   * @returns {void} The host contains the initialized chart surface.
+   */
+  #mountElement() {
     this.#element = svg("svg", {
       viewBox: `0 0 ${this.#options.width} ${this.#options.height}`,
       width: "100%",
@@ -60,30 +76,37 @@ export default class Chart {
     this.#element.classList.add("charts2-chart");
     if (this.#type === ChartType.HEATMAP) {
       this.#element.classList.add("charts2-heatmap-chart");
-    } else if (this.#type === ChartType.TIMESHEET) {
+    }
+
+    if (this.#type === ChartType.TIMESHEET) {
       this.#element.classList.add("charts2-timesheet-chart");
-    } else if (this.#type === ChartType.BAR && this.#options.orientation === ChartOrientation.HORIZONTAL) {
+    }
+
+    if (this.#type === ChartType.BAR && this.#options.orientation === ChartOrientation.HORIZONTAL) {
       this.#element.classList.add("charts2-horizontal-bar");
     }
 
     this.#tooltip = new ChartTooltip(this.#host, this.#element, this.#id);
     this.#host.classList.add("charts2-host");
     this.#host.replaceChildren(this.#element, this.#tooltip.element);
+  }
 
+  /**
+   * Registers browser listeners that remain stable across render passes.
+   *
+   * @returns {void} Pointer listeners are bound to their lifecycle owners.
+   */
+  #bindLifecycle() {
     this.#boundPointerMove = this.#showTooltip.bind(this);
     this.#boundPointerLeave = this.#tooltip.hide.bind(this.#tooltip);
     this.#boundDocumentPointerDown = this.#handleDocumentPointerDown.bind(this);
+
     if (this.#options.showTooltip) {
       this.#element.addEventListener("mousemove", this.#boundPointerMove);
     }
+
     this.#element.addEventListener("mouseleave", this.#boundPointerLeave);
     document.addEventListener("pointerdown", this.#boundDocumentPointerDown);
-    this.#render();
-
-    if (this.#autoWidth) {
-      this.#boundResize = this.#resize.bind(this);
-      window.addEventListener("resize", this.#boundResize);
-    }
   }
 
   /**
@@ -105,6 +128,7 @@ export default class Chart {
   update(data) {
     this.#model.update(data);
     this.#render();
+
     return this;
   }
 
@@ -138,6 +162,7 @@ export default class Chart {
     link.download = `${filename}.svg`;
     link.href = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(this.toSvg())}`;
     link.click();
+
     return this;
   }
 
@@ -153,6 +178,7 @@ export default class Chart {
     if (this.#boundResize) {
       window.removeEventListener("resize", this.#boundResize);
     }
+
     this.#element.remove();
     this.#tooltip.destroy();
     this.#host.classList.remove("charts2-host", "charts2-scrollable-heatmap");
@@ -177,10 +203,13 @@ export default class Chart {
    */
   #showTooltip(event) {
     const mark = event.target.closest(MARK_SELECTOR);
+
     if (!mark || !this.#element.contains(mark)) {
       this.#tooltip.hide();
+
       return;
     }
+
     this.#tooltip.show(mark, mark.dataset.tooltip, this.#options);
   }
 
@@ -192,6 +221,7 @@ export default class Chart {
    */
   #handleDocumentPointerDown(event) {
     const mark = event.target.closest(MARK_SELECTOR);
+
     if (!mark || !this.#element.contains(mark)) {
       this.#interactions?.dismiss();
     }
@@ -232,23 +262,31 @@ export default class Chart {
    */
   #bindInteractions() {
     const marks = this.#element.querySelectorAll(MARK_SELECTOR);
+
     for (const mark of marks) {
       mark.querySelector(":scope > title")?.remove();
     }
+
     if (!this.#options.showTooltip && typeof this.#options.onSelect !== "function") {
       const titles = this.#element.querySelectorAll(".charts2-visual-mark > title, .charts2-line > title");
+
       for (const title of titles) {
         title.remove();
       }
+
       this.#interactions = null;
+
       return;
     }
-    this.#interactions = new InteractionController({
-      marks,
+
+    const interactionBehavior = {
       activeIndex: this.#activeMarkIndex,
       allowPointerPan: this.#host.classList.contains("charts2-scrollable-heatmap"),
       previewable: this.#options.showTooltip,
       selectable: typeof this.#options.onSelect === "function",
+    };
+
+    const interactionCallbacks = {
       labelFor: (mark) => mark.dataset.tooltip,
       onShow: this.#options.showTooltip ? (mark, label) => this.#tooltip.show(mark, label, this.#options) : () => {},
       onHide: () => this.#tooltip.hide(),
@@ -260,6 +298,8 @@ export default class Chart {
           this.#options.onSelect?.(detail);
         }
       },
-    });
+    };
+
+    this.#interactions = new InteractionController(marks, interactionBehavior, interactionCallbacks);
   }
 }

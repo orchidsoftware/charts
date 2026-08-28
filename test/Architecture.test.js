@@ -54,9 +54,17 @@ describe("architecture fitness functions", () => {
   });
 
   it("keeps pure policies independent from core and renderers", () => {
+    const policyModules = new Set([
+      "support/CartesianGeometry.js",
+      "support/Math.js",
+      "support/Normalize.js",
+      "support/Presentation.js",
+      "support/Scale.js",
+      "support/SectorGeometry.js",
+    ]);
     const pureModules = Object.keys(sources)
       .map((path) => path.replace("../src/", ""))
-      .filter((path) => ["support/Math.js", "support/Normalize.js", "support/Presentation.js"].includes(path));
+      .filter((path) => policyModules.has(path));
 
     for (const path of pureModules) {
       expect(imports(path), path).not.toContain(expect.stringContaining("/core/"));

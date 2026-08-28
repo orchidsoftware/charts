@@ -25,6 +25,7 @@ export default class SvgSurface {
   append(node, attributes = {}) {
     const element = typeof node === "string" ? svg(node, attributes) : node;
     this.#root.append(element);
+
     return element;
   }
 
@@ -42,6 +43,7 @@ export default class SvgSurface {
   mark(name, attributes, { dataset, point, title }) {
     const element = titled(markMetadata(svg(name, attributes), dataset, point), title);
     this.#root.append(element);
+
     return element;
   }
 
@@ -56,6 +58,7 @@ export default class SvgSurface {
     const element = svg("text", attributes);
     element.textContent = String(value);
     this.#root.append(element);
+
     return element;
   }
 

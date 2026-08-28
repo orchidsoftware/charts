@@ -100,9 +100,11 @@ export default class ChartData {
     if (this.#type === ChartType.HEATMAP) {
       return this.#heatmap[index];
     }
+
     if (this.#type === ChartType.TIMESHEET) {
       return this.#timesheet.tasks[index];
     }
+
     return { index, label: this.#labels[index], values: this.#datasets.map((dataset) => dataset.points[index]?.y) };
   }
 
@@ -126,13 +128,17 @@ export default class ChartData {
     if (this.#type === ChartType.HEATMAP) {
       const heatmap = normalizeHeatmapData(data);
       this.#commitSnapshot(data, { heatmap });
+
       return;
     }
+
     if (this.#type === ChartType.TIMESHEET) {
       const timesheet = normalizeTimesheetData(data);
       this.#commitSnapshot(data, { timesheet, labels: timesheet.tasks.map((task) => task.label) });
+
       return;
     }
+
     const datasets = normalizeDatasets(data);
     const pointCount = Math.max(...datasets.map((dataset) => dataset.points.length));
     const labels = data.labels ?? Array.from({ length: pointCount }, (_, index) => String(index + 1));
@@ -157,6 +163,6 @@ export default class ChartData {
     this.#labels = labels;
     this.#heatmap = heatmap;
     this.#timesheet = timesheet;
-    this.#selection = new ChartSelection({ type: this.#type, datasets, labels, heatmap, timesheet });
+    this.#selection = new ChartSelection(this.#type, { datasets, labels, heatmap, timesheet });
   }
 }

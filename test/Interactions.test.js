@@ -326,21 +326,19 @@ describe("shared chart interaction contract", () => {
     const shown = [];
     const hidden = [];
     const active = [];
-    const setup = (activeIndex) =>
-      new InteractionController({
-        marks,
-        activeIndex,
-        labelFor: (_mark, index) => `Mark ${index + 1}`,
-        onShow: (_mark, label) => {
-          shown.push(label);
-        },
-        onHide: () => {
-          hidden.push(true);
-        },
-        onActiveChange: (index) => {
-          active.push(index);
-        },
-      });
+    const callbacks = {
+      labelFor: (_mark, index) => `Mark ${index + 1}`,
+      onShow: (_mark, label) => {
+        shown.push(label);
+      },
+      onHide: () => {
+        hidden.push(true);
+      },
+      onActiveChange: (index) => {
+        active.push(index);
+      },
+    };
+    const setup = (activeIndex) => new InteractionController(marks, { activeIndex }, callbacks);
 
     const controller = setup(1);
     expect(marks[1].getAttribute("tabindex")).toBe("0");
@@ -382,13 +380,13 @@ describe("shared chart interaction contract", () => {
 
     setup(99);
     expect(marks[0].getAttribute("tabindex")).toBe("0");
-    const emptyController = new InteractionController({
-      marks: [],
+    const emptyCallbacks = {
       labelFor: () => "",
       onShow: () => {},
       onHide: () => {},
       onActiveChange: () => {},
-    });
+    };
+    const emptyController = new InteractionController([], {}, emptyCallbacks);
     emptyController.dismiss();
   });
 

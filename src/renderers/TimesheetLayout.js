@@ -3,6 +3,132 @@ import { measuredTextWidth } from "../support/Dom.js";
 import { scale } from "../support/Math.js";
 import { formatTimeTick, formatTimesheetDate, formatTimesheetDuration, timeTicks } from "../support/Time.js";
 
+const FRAME_INSET = 16;
+const FRAME_TOP = 12;
+const AXIS_HEIGHT = 28;
+const MINIMUM_LABEL_WIDTH = 52;
+const MAXIMUM_LABEL_WIDTH = 160;
+const LABEL_WIDTH_RATIO = 0.36;
+const LABEL_PADDING = 12;
+const MINIMUM_PLOT_WIDTH = 20;
+const MINIMUM_BAR_HEIGHT = 8;
+const MAXIMUM_BAR_HEIGHT = 18;
+const BAR_HEIGHT_RATIO = 0.5;
+const MAXIMUM_TICKS = 7;
+const PIXELS_PER_TICK = 68;
+const MINIMUM_TICK_LABEL_WIDTH = 32;
+const TICK_LABEL_GAP = 4;
+
+/**
+ * Calculates the maximum width available to task labels.
+ *
+ * @param {number} width - Requested chart width.
+ * @returns {number} Bounded task-label width.
+ */
+function availableTaskLabelWidth(width) {
+  return Math.max(MINIMUM_LABEL_WIDTH, Math.min(MAXIMUM_LABEL_WIDTH, width * LABEL_WIDTH_RATIO));
+}
+
+/**
+ * Measures the widest normalized task label with its trailing padding.
+ *
+ * @param {Array<object>} tasks - Normalized timesheet tasks.
+ * @returns {number} Required label-column width.
+ */
+function measuredTaskLabelWidth(tasks) {
+  return Math.ceil(Math.max(...tasks.map((task) => measuredTextWidth(task.label))) + LABEL_PADDING);
+}
+
+/**
+ * Calculates vertical timesheet bounds shared by every row.
+ *
+ * @param {object} chart - Frozen timesheet data and options.
+ * @param {number} height - Requested chart height.
+ * @returns {object} Bottom edge and row height.
+ */
+function timesheetVerticalFrame(chart, height) {
+  return {
+    bottom: height - AXIS_HEIGHT,
+    rowHeight: (height - AXIS_HEIGHT - FRAME_TOP) / chart.timesheet.tasks.length,
+  };
+}
+
+/**
+ * Names the complete drawing and tooltip placement of one timesheet task.
+ */
+class TimesheetTaskPlacement {
+  /**
+   * Combines row, bar, and formatted temporal values.
+   *
+   * @param {object} row - Row top and vertical center.
+   * @param {object} bar - Bar x position, width, and corner radius.
+   * @param {object} text - Formatted start, end, and duration values.
+   */
+  constructor(row, bar, text) {
+    this.rowTop = row.top;
+    this.centerY = row.center;
+    this.barX = bar.x;
+    this.barWidth = bar.width;
+    this.radius = bar.radius;
+    this.dateStart = text.start;
+    this.dateEnd = text.end;
+    this.duration = text.duration;
+  }
+}
+
+/**
+ * Measures the optional task-label column.
+ *
+ * @param {object} chart - Frozen timesheet data and options.
+ * @returns {number} Width reserved for task labels.
+ */
+function taskLabelWidth(chart) {
+  if (!chart.options.showLabels) {
+    return 0;
+  }
+
+  const available = availableTaskLabelWidth(chart.options.width);
+  const measured = measuredTaskLabelWidth(chart.timesheet.tasks);
+
+  return Math.min(available, Math.max(MINIMUM_LABEL_WIDTH, measured));
+}
+
+/**
+ * Resolves the frame and scalar endpoints shared by the layout.
+ *
+ * @param {object} chart - Frozen timesheet data and options.
+ * @returns {object} Frame, timestamps, and tick budget.
+ */
+function timesheetGeometry(chart) {
+  const { height, width } = chart.options;
+  const labelWidth = taskLabelWidth(chart);
+
+  const horizontal = {
+    left: FRAME_INSET + labelWidth,
+    right: Math.max(FRAME_INSET + labelWidth + MINIMUM_PLOT_WIDTH, width - FRAME_INSET),
+  };
+
+  const vertical = timesheetVerticalFrame(chart, height);
+  const plotWidth = horizontal.right - horizontal.left;
+  const values = { start: chart.timesheet.start.valueOf(), end: chart.timesheet.end.valueOf() };
+  const maximumTicks = Math.max(2, Math.min(MAXIMUM_TICKS, Math.floor(plotWidth / PIXELS_PER_TICK) + 1));
+
+  const frame = Object.freeze({
+    width,
+    height,
+    inset: FRAME_INSET,
+    top: FRAME_TOP,
+    ...horizontal,
+    ...vertical,
+    plotWidth,
+    barHeight: Math.max(MINIMUM_BAR_HEIGHT, Math.min(MAXIMUM_BAR_HEIGHT, vertical.rowHeight * BAR_HEIGHT_RATIO)),
+    labelWidth,
+    span: values.end - values.start,
+  });
+
+  return { frame, values, maximumTicks };
+}
+
 /**
  * Owns temporal scaling, row geometry, and bounded label placement for a timesheet.
  */
@@ -19,49 +145,16 @@ export default class TimesheetLayout {
    * @param {object} chart - Frozen timesheet data and options.
    */
   constructor(chart) {
-    const { height, width } = chart.options;
-    const { end, start, tasks } = chart.timesheet;
-    const inset = 16;
-    const top = 12;
-    const axisHeight = 28;
-    const availableLabelWidth = Math.max(52, Math.min(160, width * 0.36));
-    const labelWidth = chart.options.showLabels
-      ? Math.min(
-          availableLabelWidth,
-          Math.max(52, Math.ceil(Math.max(...tasks.map((task) => measuredTextWidth(task.label))) + 12)),
-        )
-      : 0;
-    const left = inset + labelWidth;
-    const right = Math.max(left + 20, width - inset);
-    const plotWidth = right - left;
-    const bottom = height - axisHeight;
-    const rowHeight = (bottom - top) / tasks.length;
-    const barHeight = Math.max(8, Math.min(18, rowHeight * 0.5));
-    const startValue = start.valueOf();
-    const endValue = end.valueOf();
-    const span = endValue - startValue;
-    const maximumTicks = Math.max(2, Math.min(7, Math.floor(plotWidth / 68) + 1));
+    const geometry = timesheetGeometry(chart);
 
     this.#options = chart.options;
-    this.#x = (value) => scale(value, [startValue, endValue], [left, right]);
+    this.#x = (value) =>
+      scale(value, [geometry.values.start, geometry.values.end], [geometry.frame.left, geometry.frame.right]);
     this.#dateFormatter = chart.options.timesheetOptions?.formatDate;
     this.#tickFormatter = chart.options.timesheetOptions?.formatTick ?? this.#dateFormatter;
     this.#durationFormatter = chart.options.timesheetOptions?.formatDuration;
-    this.ticks = Object.freeze(timeTicks(startValue, endValue, maximumTicks));
-    this.frame = Object.freeze({
-      width,
-      height,
-      inset,
-      top,
-      right,
-      bottom,
-      left,
-      plotWidth,
-      rowHeight,
-      barHeight,
-      labelWidth,
-      span,
-    });
+    this.ticks = Object.freeze(timeTicks(geometry.values.start, geometry.values.end, geometry.maximumTicks));
+    this.frame = geometry.frame;
     Object.freeze(this);
   }
 
@@ -78,19 +171,26 @@ export default class TimesheetLayout {
     const isLast = index === this.ticks.length - 1;
     let labelX = position;
     let anchor = "middle";
+
     if (isFirst) {
       labelX += 2;
       anchor = "start";
-    } else if (isLast) {
+    }
+
+    if (isLast) {
       labelX -= 2;
       anchor = "end";
     }
+
     return {
       position,
       label: formatTimeTick(tick, this.frame.span, this.#tickFormatter),
       labelX,
       anchor,
-      maxWidth: Math.max(32, this.frame.plotWidth / Math.max(1, this.ticks.length - 1) - 4),
+      maxWidth: Math.max(
+        MINIMUM_TICK_LABEL_WIDTH,
+        this.frame.plotWidth / Math.max(1, this.ticks.length - 1) - TICK_LABEL_GAP,
+      ),
     };
   }
 
@@ -109,19 +209,17 @@ export default class TimesheetLayout {
     const dateStart = formatTimesheetDate(task.start, this.#dateFormatter);
     const dateEnd = formatTimesheetDate(task.end, this.#dateFormatter);
     const duration = formatTimesheetDuration(task.end - task.start, this.#durationFormatter);
-    return {
-      rowTop,
-      centerY,
-      barX,
-      barWidth,
-      radius: Math.min(
-        this.#options.timesheetOptions?.radius ?? DEFAULT_BAR_RADIUS,
-        barWidth / 2,
-        this.frame.barHeight / 2,
-      ),
-      dateStart,
-      dateEnd,
-      duration,
-    };
+
+    const radius = Math.min(
+      this.#options.timesheetOptions?.radius ?? DEFAULT_BAR_RADIUS,
+      barWidth / 2,
+      this.frame.barHeight / 2,
+    );
+
+    return new TimesheetTaskPlacement(
+      { top: rowTop, center: centerY },
+      { x: barX, width: barWidth, radius },
+      { start: dateStart, end: dateEnd, duration },
+    );
   }
 }

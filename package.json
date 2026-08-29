@@ -10,17 +10,16 @@
   "exports": {
     ".": {
       "types": "./src/index.d.ts",
-      "import": "./dist/charts2.js",
-      "require": "./dist/charts2.cjs",
-      "default": "./dist/charts2.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
-    "./style.css": "./dist/charts2.css",
+    "./style.css": "./src/styles.css",
     "./package.json": "./package.json"
   },
-  "main": "./dist/charts2.cjs",
-  "module": "./dist/charts2.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./src/index.d.ts",
-  "style": "./dist/charts2.css",
+  "style": "./src/styles.css",
   "homepage": "https://github.com/tabuna/charts2#readme",
   "repository": {
     "type": "git",
@@ -33,6 +32,7 @@
     "dist",
     "docs",
     "src/index.d.ts",
+    "src/styles.css",
     "CHANGELOG.md",
     "README.md",
     "LICENSE",
@@ -50,7 +50,7 @@
     "lint:js:fix": "eslint . --fix --max-warnings 0",
     "lint:css": "stylelint \"{src,demo}/**/*.css\" --max-warnings 0",
     "lint:css:fix": "stylelint \"{src,demo}/**/*.css\" --fix --max-warnings 0",
-    "typecheck": "tsc -p tsconfig.types.json",
+    "typecheck": "tsc -p tsconfig.types.json --module ESNext --moduleResolution Bundler && tsc -p tsconfig.types.json --module Node16 --moduleResolution Node16 && tsc -p tsconfig.types.json",
     "test": "vitest run",
     "test:size": "npm run build",
     "test:lab": "vitest run test/Lab.test.js",
@@ -58,10 +58,13 @@
     "test:visual": "vitest run test/VisualRegression.test.js",
     "test:visual:update": "vitest run test/VisualRegression.test.js --update",
     "test:performance": "vitest run test/Performance.test.js",
+    "test:compatibility": "CHARTS2_COMPATIBILITY=1 vitest run test/Compatibility.test.js",
+    "test:no-build": "vite build && node scripts/TestNoBuild.mjs",
+    "test:ssr": "vite build && node --input-type=module --eval \"await import('./dist/index.js')\"",
     "coverage": "vitest run --coverage --exclude test/Performance.test.js",
     "audit": "npm audit --audit-level=high",
-    "pack:check": "npm pack --dry-run",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm run coverage && npm run test:performance && npm run build",
+    "pack:check": "npm pack --dry-run --ignore-scripts",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run coverage && npm run test:performance && npm run test:compatibility && npm run test:no-build && npm run test:ssr && npm run build",
     "prepack": "npm run build",
     "prepublishOnly": "npm run check"
   },

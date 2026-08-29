@@ -12,6 +12,7 @@ import {
   ScatterChart,
   TimesheetChart,
 } from "../../src/index.js";
+import "../../src/styles.css";
 
 const DEFINITIONS = Object.freeze({
   bar: BarChart,

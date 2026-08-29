@@ -1350,7 +1350,7 @@ Public Cartesian series data MUST use the orientation-neutral `markers` and
 The release MUST test:
 
 - exact exports and absence of alternative constructors/factories;
-- ESM, CommonJS, and TypeScript parity;
+- ESM and TypeScript parity;
 - scalar replacement, collection order, single-use, and defensive copying;
 - callback precedence and string-or-callback overloads;
 - maximum argument counts and forbidden aliases;

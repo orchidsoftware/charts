@@ -14,6 +14,7 @@ import {
   ScatterChart,
   TimesheetChart,
 } from "../src/index.js";
+import "../src/styles.css";
 import Composition from "../src/renderers/Composition.js";
 import { intensityLevel } from "../src/renderers/HeatmapRenderer.js";
 import { linePath } from "../src/support/CartesianGeometry.js";

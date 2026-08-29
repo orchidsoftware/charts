@@ -25,16 +25,24 @@ Run the same commands used by CI from a clean checkout:
 
 ```bash
 npm ci
-npx playwright install chromium
+npx playwright install chromium firefox webkit
 npm run check
 npm audit --audit-level=high
 npm run pack:check
 ```
 
-Inspect the archive listing. It must contain the ESM and CommonJS builds, source
-maps, CSS, TypeScript declarations, documentation, license, notice, changelog,
-and package manifest. It must not contain tests, demo code, credentials,
-coverage, or local artifacts.
+The gate includes a native no-build smoke test in Chromium, Firefox, and WebKit.
+It serves `dist` as static files, resolves `@charts2/core` through an import map,
+loads CSS through `<link>`, and exercises render, update, and destroy without a
+bundler transform.
+
+Inspect the archive listing. It must contain the module-preserving ESM build,
+source maps, CSS, TypeScript declarations, documentation, license, notice,
+changelog, and package manifest. It must not contain CommonJS, authored
+JavaScript, tests, demo code, credentials, coverage, or local artifacts.
+
+`npm run pack:check` uses `npm pack --ignore-scripts` so archive inspection does
+not recurse through `prepack → build → size → pack`.
 
 ## Version workflow
 

@@ -14,6 +14,7 @@ import {
   ScatterChart,
   TimesheetChart,
 } from "../src/index.js";
+import "../src/styles.css";
 
 describe("LineChart fluent API", () => {
   beforeEach(() => {

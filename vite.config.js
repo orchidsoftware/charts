@@ -1,33 +1,42 @@
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vite";
 
+const isCompatibility = process.env.CHARTS2_COMPATIBILITY === "1";
+
 export default defineConfig({
   build: {
+    lib: {
+      entry: "src/index.js",
+      formats: ["es"],
+      fileName: "index",
+    },
     minify: "terser",
+    rollupOptions: {
+      output: {
+        entryFileNames: "[name].js",
+        exports: "named",
+        preserveModules: true,
+        preserveModulesRoot: "src",
+      },
+    },
+    sourcemap: "hidden",
     terserOptions: {
-      compress: { passes: 5, module: true, toplevel: true },
+      compress: { module: true, passes: 5, toplevel: true },
       ecma: 2022,
       format: { comments: false },
       module: true,
       toplevel: true,
     },
-    lib: {
-      entry: "src/index.js",
-      name: "Charts2",
-      formats: ["es", "cjs"],
-      cssFileName: "charts2",
-      fileName: (format) => (format === "es" ? "charts2.js" : "charts2.cjs"),
-    },
-    rollupOptions: { output: { exports: "named" } },
-    sourcemap: true,
   },
   test: {
-    include: ["test/**/*.test.js"],
+    include: isCompatibility ? ["test/Compatibility.test.js"] : ["test/**/*.test.js"],
     browser: {
       enabled: true,
       headless: true,
       provider: playwright(),
-      instances: [{ browser: "chromium" }],
+      instances: isCompatibility
+        ? [{ browser: "chromium" }, { browser: "firefox" }, { browser: "webkit" }]
+        : [{ browser: "chromium" }],
       expect: {
         toMatchScreenshot: {
           comparatorName: "pixelmatch",

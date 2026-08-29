@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { page } from "vitest/browser";
 
 import demoMarkup from "../demo/index.html?raw";
+import "../demo/style.css";
 
 const showcaseIds = [
   "line",

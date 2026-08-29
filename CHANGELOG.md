@@ -8,6 +8,15 @@ All notable changes to Charts2 are documented in this file. The format follows
 
 ### Changed
 
+- Switched the unpublished package to ESM-only module-preserving output with
+  closed exports and explicit CSS loading.
+- Bound each named definition directly to its model and renderer functions so
+  root imports can tree-shake unused chart families without subpath imports.
+- Added per-family gzip/source gates, SSR import coverage, and a compact
+  Chromium/Firefox/WebKit lifecycle suite.
+- Added documented no-build/import-map consumption with a native static-server
+  test in Chromium, Firefox, and WebKit.
+
 - Reframed the demo as a concise product story with exact API language,
   verifiable release metrics, a stronger usage ending, and a compact release
   footer.
@@ -33,7 +42,7 @@ All notable changes to Charts2 are documented in this file. The format follows
   timesheet.
 - Responsive rendering, export, updates, destruction, accessible chart
   semantics, roving keyboard navigation, tooltips, and persistent selection.
-- ESM, CommonJS, CSS, and TypeScript package entry points with zero runtime
+- ESM, CSS, and TypeScript package entry points with zero runtime
   dependencies.
 - Browser tests for pointer, hover, pressed, focus, keyboard, selection, mobile,
   dark, full-demo, and individual chart states.

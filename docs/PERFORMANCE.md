@@ -9,7 +9,7 @@ Performance is part of the release gate. `npm run test:performance` runs in Vite
 
 Current budgets:
 
-- keep the combined JavaScript and CSS production bundle at or below 32 kB gzip;
+- keep every single named chart import with CSS at or below 15 kB gzip;
 - render a typical 90-day line chart in less than 50 ms;
 - render a 50,000-point SVG line in less than 1,000 ms;
 - perform 200 live updates of a 100-point line in less than 1,000 ms.
@@ -20,11 +20,16 @@ same limit.
 
 The budgets include input normalization, scale calculation, SVG path generation, and DOM replacement. They run as part of `npm run check`, so a regression blocks release.
 
-The 32 kB gzip ceiling is measured against the complete package entry rather
-than a tree-shaken single-chart application. The pre-fluent checkpoint was
-23.6 kB gzip; the named family builders, scoped formatting, and their shared
-validation add about 7.1 kB. The ceiling therefore leaves roughly four percent
-for deterministic build variance while still rejecting material growth.
+The size gate creates twelve temporary consumer applications. Each imports one
+named definition from `@charts2/core`, imports `@charts2/core/style.css`, uses
+the definition, runs production Vite/Terser tree-shaking, and gzip-compresses JS
+and CSS separately at level 9. Combination builds additionally verify that the
+shared runtime is not duplicated. The complete-package aggregate remains a
+reported diagnostic; it is not presented as a typical chart import.
+
+The same gate rejects production-source growth above 11,094 lines, 348,606
+bytes, 46 files, or 120 static imports. Bundle and maintainability budgets must
+pass together.
 
 The 90-day scenario runs first, without an explicit warm-up, and verifies all 89
 smooth segments. Its 50 ms budget therefore protects the ordinary first-chart

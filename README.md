@@ -28,6 +28,31 @@ revenue.update({
 });
 ```
 
+### No-build usage with import maps
+
+Charts2 can run directly in modern browsers without npm or a bundler. Map the
+same package name to the built ESM entry and load the explicit stylesheet with a
+regular `<link>`:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@charts2/core@1.0.0/src/styles.css" />
+<script type="importmap">
+  {
+    "imports": {
+      "@charts2/core": "https://cdn.jsdelivr.net/npm/@charts2/core@1.0.0/dist/index.js"
+    }
+  }
+</script>
+<script type="module">
+  import { LineChart } from "@charts2/core";
+
+  LineChart.make("#chart").labels(["A", "B"]).dataset("Series", [1, 2]).render();
+</script>
+```
+
+Pin an exact version in production. CSS uses a `<link>` because native browsers
+do not treat `import "…/style.css"` as a standard JavaScript module import.
+
 That is the whole idea. Every chart starts the same way, updates the same way,
 and returns the same small lifecycle. There are no controllers to register,
 constructor hierarchies to learn, or runtime dependencies to coordinate.
@@ -43,8 +68,8 @@ constructor hierarchies to learn, or runtime dependencies to coordinate.
   visualization framework.
 - **Easy to shape.** Axes, grid, labels, dots, legend, and tooltip can be removed
   independently. CSS variables let the chart follow the surrounding product.
-- **Small by design.** Charts2 ships ESM, CommonJS, CSS, source maps, and
-  TypeScript declarations with zero runtime dependencies.
+- **Small by design.** Charts2 ships tree-shakeable ESM, explicit CSS, source
+  maps, and TypeScript declarations with zero runtime dependencies.
 
 Charts2 makes the common case feel finished while keeping the uncommon details
 explicit.

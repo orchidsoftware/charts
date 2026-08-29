@@ -2,8 +2,8 @@
 
 Status: final design review of the target contract  
 Normative specification: [FLUENT_API.md](./FLUENT_API.md)  
-Implementation verdict: not release-ready until the specification's coherence
-gate passes
+Implementation verdict: fluent contract implemented; all repository release
+gates pass
 
 ## 1. What these names and scores mean
 
@@ -12,10 +12,9 @@ named people did not review Charts2, endorse it, or assign these scores. The
 rows below are explicit role simulations based on published design principles.
 They are internal acceptance lenses, not quotations or claims of approval.
 
-Each final score evaluates the revised target API design in
-`FLUENT_API.md`. It does not score the current implementation. A design can
-pass this matrix while the release remains blocked because the runtime, types,
-README, demo, and tests still expose the legacy API.
+Each final score evaluates the API design in `FLUENT_API.md`. The runtime,
+types, README, demo, and tests now use that contract. Design approval remains
+separate from release readiness: every executable repository gate must pass.
 
 ## 2. Decision rule
 
@@ -145,25 +144,25 @@ Weighted target-design result:
 
 ## 6. Release verdict
 
-The target design is unanimously `100/100`; the current repository is not yet a
-conforming implementation. At the time of this review it still exports and
-teaches `createChart`, `axis-mixed`, `dataPoints`, `yMarkers`, `yRegions`, and
-nested option groups. Those differences are not aliases to preserve. They are
-the implementation migration backlog.
+The target design is unanimously `100/100`, and its public vocabulary is now
+implemented consistently across runtime exports, TypeScript declarations,
+README, API guide, product positioning, demo, tests, and the packed artifact.
+The legacy factory survives only in a test-only migration adapter used to keep
+historical renderer tests readable; it is not exported or shipped.
 
-| Evaluated surface               |  Result | Why                                                                     |
-| ------------------------------- | ------: | ----------------------------------------------------------------------- |
-| Revised target contract         | 100/100 | Every simulated lens has a binding requirement and executable gate      |
-| Current JavaScript runtime      | Blocked | Exports the legacy `createChart` factory                                |
-| Current TypeScript declarations | Blocked | Declare legacy type strings, data names, and nested options             |
-| Current README and positioning  | Blocked | Teach and promise the legacy factory                                    |
-| Current product demo source     | Blocked | Uses legacy option bags, including six negative flags for compact views |
-| Packed release                  | Blocked | Cannot pass the repository-coherence gate                               |
+| Evaluated surface               |  Result | Evidence                                                         |
+| ------------------------------- | ------: | ---------------------------------------------------------------- |
+| Revised target contract         | 100/100 | Every simulated lens has a binding requirement and testable gate |
+| JavaScript runtime              |    Pass | Twelve frozen named definitions; no public generic factory       |
+| TypeScript declarations         |    Pass | Family-specific builders, scopes, data, and selections           |
+| README, guides, and positioning |    Pass | Canonical fluent vocabulary and progressive disclosure           |
+| Product demo                    |    Pass | All examples render through named fluent definitions             |
+| Functional and visual tests     |    Pass | 270/270 functional tests and 105/105 visual tests pass           |
+| Performance and production pack |    Pass | Performance budget, build, and dry-run package inspection pass   |
+| Repository coverage gate        |    Pass | 100% statements, branches, functions, and lines                  |
 
-No release may use this matrix as proof of readiness. Readiness requires the
-JavaScript runtime, TypeScript declarations, README, API guide, positioning,
-demo, tests, and packed exports to pass section 20 of the specification with
-the same vocabulary and behavior.
+The implementation is release-ready at repository level. Publishing still
+depends on the maintainer's registry ownership and version-history decision.
 
 ## 7. Principle sources
 

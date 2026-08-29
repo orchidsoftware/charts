@@ -28,7 +28,7 @@ All notable changes to Charts2 are documented in this file. The format follows
 
 ### Added
 
-- One `createChart` factory for twelve SVG chart grammars: line, bar, scatter,
+- Twelve frozen named fluent definitions for SVG chart grammars: line, bar, scatter,
   mixed axis, pie, donut, percentage, heatmap, bubble, radar, polar area, and
   timesheet.
 - Responsive rendering, export, updates, destruction, accessible chart

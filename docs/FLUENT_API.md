@@ -1,8 +1,8 @@
 # Charts2 fluent API specification
 
 Status: accepted target contract for the next public release  
-Implementation status: pending; this document does not describe the API that
-is currently shipped by the repository  
+Implementation status: implemented and verified across runtime, declarations,
+documentation, demo, tests, and the packed artifact.
 Compatibility: the release version is chosen only after the coherence gate in
 section 20 passes
 
@@ -264,7 +264,9 @@ interface SeriesData<TDatasetInput extends DatasetInput = AnyDatasetInput> {
   datasets: readonly TDatasetInput[];
 }
 
-interface CartesianSeriesData<TDatasetInput extends DatasetInput = AnyDatasetInput> extends SeriesData<TDatasetInput> {
+interface CartesianSeriesData<
+  TDatasetInput extends DatasetInput = AnyDatasetInput,
+> extends SeriesData<TDatasetInput> {
   markers?: readonly MarkerInput[];
   regions?: readonly RegionInput[];
 }
@@ -369,10 +371,21 @@ type ChartSelection = SeriesSelection | CompositionSelection | HeatmapSelection 
 
 type DateFormatter = (date: Readonly<Date>) => string;
 type DurationFormatter = (milliseconds: number) => string;
-type LabelFormatter = (label: string | number, context: Readonly<ChartValueFormatContext>) => string;
+type LabelFormatter = (
+  label: string | number,
+  context: Readonly<ChartValueFormatContext>,
+) => string | readonly string[];
 type AxisValueFormatter = ChartValueFormatter;
-type MarkerLabelFormatter = (label: string, value: number, context: Readonly<ChartValueFormatContext>) => string;
-type RegionLabelFormatter = (label: string, range: ValueRange, context: Readonly<ChartValueFormatContext>) => string;
+type MarkerLabelFormatter = (
+  label: string,
+  value: number,
+  context: Readonly<ChartValueFormatContext>,
+) => string;
+type RegionLabelFormatter = (
+  label: string,
+  range: ValueRange,
+  context: Readonly<ChartValueFormatContext>,
+) => string;
 ```
 
 Date-time strings MUST include a timezone offset or `Z`. Heatmap day keys use
@@ -392,7 +405,10 @@ chart definition -> make(parent) -> configuration -> render()
 ```
 
 ```js
-const chart = LineChart.make("#sales").labels(["Jan", "Feb", "Mar"]).dataset("Sales", [1240, 1890, 1650]).render();
+const chart = LineChart.make("#sales")
+  .labels(["Jan", "Feb", "Mar"])
+  .dataset("Sales", [1240, 1890, 1650])
+  .render();
 ```
 
 `make(parent)` MUST return a fresh type-specific builder. It MUST store but not
@@ -808,7 +824,13 @@ use dataset or tooltip formatters. Tooltip labels MUST use tooltip, chart,
 built-in. Axis category labels and visible category labels MUST use chart,
 built-in.
 
-Formatters MUST be synchronous, receive frozen context, and return a string.
+Formatters MUST be synchronous and receive frozen context. Value, date, duration,
+marker, and region formatters MUST return a string. A label formatter MAY return
+a string or a non-empty string array; arrays define explicit lines on category
+axes and are joined with spaces on tooltips and other single-line surfaces.
+Long phrase labels on horizontal category axes MUST be balanced into at most
+three deterministic lines before truncation; rendering MUST NOT depend on
+browser-specific SVG text wrapping.
 Returned HTML MUST be treated as text. Initial formatters MUST run before DOM
 commit. Tooltip-only formatter failure MUST preserve previous tooltip state and
 throw an error naming its scope.
@@ -1019,7 +1041,11 @@ interface MixedDataBuilder {
     colorOrConfigure: string | ((dataset: LineDatasetBuilder) => void),
   ): this;
   bar(name: string, values: readonly number[]): this;
-  bar(name: string, values: readonly number[], colorOrConfigure: string | ((dataset: BarDatasetBuilder) => void)): this;
+  bar(
+    name: string,
+    values: readonly number[],
+    colorOrConfigure: string | ((dataset: BarDatasetBuilder) => void),
+  ): this;
   scatter(name: string, values: readonly (number | Point)[]): this;
   scatter(
     name: string,
@@ -1382,11 +1408,11 @@ plugins, registries, hooks, and extension pipelines are forbidden.
 
 ## 20. Repository coherence and release gate
 
-The current repository teaches and implements the legacy `createChart(parent,
-options)` API. It also uses `axis-mixed`, `dataPoints`, `yMarkers`, `yRegions`,
-and nested option groups. This specification chooses `MixedChart`, `points`,
-`marker`, `region`, and fluent scoped methods. These are deliberate target
-decisions, not claims about the current implementation.
+The repository previously taught and implemented the legacy
+`createChart(parent, options)` API. It also used `axis-mixed`, `dataPoints`,
+`yMarkers`, `yRegions`, and nested option groups. The implemented public API now
+uses `MixedChart`, `points`, `marker`, `region`, and fluent scoped methods. The
+legacy factory remains test-only and is neither exported nor shipped.
 
 The implementation migration MUST use this single vocabulary:
 

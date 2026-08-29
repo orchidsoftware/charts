@@ -11,18 +11,16 @@ npm install @charts2/core
 ```
 
 ```js
-import { createChart } from "@charts2/core";
+import { BarChart } from "@charts2/core";
 import "@charts2/core/style.css";
 
-const revenue = createChart("#revenue", {
-  type: "bar",
-  orientation: "horizontal",
-  title: "Revenue by region",
-  data: {
-    labels: ["Europe", "Americas", "Asia-Pacific"],
-    datasets: [{ name: "Revenue", values: [31, 44, 38] }],
-  },
-});
+const revenue = BarChart.make("#revenue")
+  .title("Revenue by region")
+  .labels(["Europe", "Americas", "Asia-Pacific"])
+  .dataset("Revenue", [31, 44, 38])
+  .horizontal()
+  .height(300)
+  .render();
 
 revenue.update({
   labels: ["Europe", "Americas", "Asia-Pacific"],
@@ -38,8 +36,8 @@ constructor hierarchies to learn, or runtime dependencies to coordinate.
 
 - **Looks at home.** Responsive sizing, balanced labels, legends, tooltips, and
   interaction states arrive together instead of as an assembly task.
-- **One way through.** Line, donut, heatmap, and timesheet charts share the same
-  factory, data replacement, selection, export, and cleanup model.
+- **One fluent language.** Line, donut, heatmap, and timesheet charts use named
+  definitions, concise domain methods, and the same lifecycle.
 - **Enough range for everyday product work.** Twelve chart types cover trends,
   comparisons, composition, activity, and planning without becoming a general
   visualization framework.
@@ -65,8 +63,8 @@ Bar charts can be vertical or horizontal, grouped or stacked. Line and bar
 charts can become compact, frameless views by removing presentation layers;
 they keep the same chart type and lifecycle.
 
-The discriminated TypeScript contract guides options from the selected `type`.
-See the complete option surface in [API.md](./docs/API.md).
+TypeScript autocomplete follows the chosen named definition and exposes only
+methods that make sense for that chart. See [API.md](./docs/API.md).
 
 ## Product details are already included
 
@@ -80,16 +78,11 @@ readable value labels are included automatically. They are part of a finished
 chart, not a separate accessibility setup.
 
 ```js
-const plan = createChart("#release-plan", {
-  type: "timesheet",
-  title: "Version 1.0 release plan",
-  data: {
-    tasks: [
-      { label: "Design review", start: "2026-09-01", end: "2026-09-03", group: "Design" },
-      { label: "Implementation", start: "2026-09-03", end: "2026-09-08", group: "Engineering" },
-    ],
-  },
-});
+const plan = TimesheetChart.make("#release-plan")
+  .title("Version 1.0 release plan")
+  .task({ label: "Design review", start: "2026-09-01", end: "2026-09-03", group: "Design" })
+  .task({ label: "Implementation", start: "2026-09-03", end: "2026-09-08", group: "Engineering" })
+  .render();
 ```
 
 ## One small lifecycle
@@ -103,8 +96,9 @@ chart.download("revenue"); // Download the current SVG
 chart.destroy(); // Release DOM and listeners
 ```
 
-Only `createChart` is exported. Internal renderers are implementation details,
-so application code never has to coordinate the charting machinery.
+The package exports twelve frozen named definitions such as `LineChart`,
+`BarChart`, and `TimesheetChart`. Internal renderers and constructors remain
+implementation details.
 
 ## Built to hold up
 

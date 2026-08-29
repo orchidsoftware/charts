@@ -96,9 +96,9 @@ fixtures in addition to every chart family.
   product narrative entirely. It groups
   all 26 product and edge-case fixtures by renderer, exposes stable fixture IDs,
   and serves as the canonical surface for QA and regression inspection.
-- The final developer block names the real public primitive (`createChart`) as a
-  factory, shows imports, update, and destruction, then closes with the 1.0.0
-  release identity. Quick-start and source links sit beside that real API example
+- The final developer block uses the target named fluent definition, shows the
+  short chart-wide happy path first, and discloses update and destruction only
+  afterward. Quick-start and source links sit beside that real API example
   instead of creating a second promotional ending.
 
 ## Apple HIG alignment
@@ -145,7 +145,7 @@ The resulting contract is explicit:
    explicitly justify a new family.
 3. Block changes that introduce a second tooltip, container, resize listener,
    interaction state machine, or serialization/download path.
-4. Run `npm run check` and the 73-baseline Chromium visual audit
+4. Run `npm run check` and the 105-test Chromium visual audit
    before release.
 
 ## Future plan

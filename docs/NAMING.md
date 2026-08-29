@@ -7,8 +7,10 @@ should read as domain language, expose one obvious path, and avoid ceremony.
 
 ## Rules
 
-1. Public code reads as a short sentence: `createChart(...)`, `chart.point(0)`,
-   `chart.update(data)`, `chart.toSvg()`, `chart.download(name)`.
+1. Public authoring reads as a short sentence:
+   `LineChart.make(parent).dataset(values).gradient().render()`. Mounted
+   lifecycle remains `chart.point(0)`, `chart.update(data)`, `chart.toSvg()`,
+   and `chart.download(name)`.
 2. Application methods never use Java-style `getThing()` or `setThing()` names.
    Native Web API calls such as `getAttribute()` and `setAttribute()` retain the
    browser vocabulary. Property accessors remain nouns, for example
@@ -35,7 +37,9 @@ JSDoc completeness, dependency cycles, and complexity budgets.
 
 | Module                                    | Decision                                                                                | Reason                                                                                                      |
 | ----------------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `index.js`                                | Keep `createChart`                                                                      | One obvious package entry and an honest factory effect                                                      |
+| `index.js`                                | Export frozen named chart definitions                                                   | One obvious definition per visual grammar; autocomplete narrows the valid fluent vocabulary                 |
+| `core/ChartDefinition.js`                 | Add `ChartDefinition`                                                                   | Owns one immutable `make(parent)` entry and creates a fresh type-specific builder                           |
+| `core/Builder.js`                         | Add builder foundation                                                                  | Owns copied authoring state, single-use lifecycle, precedence, and detached scene compilation               |
 | `index.d.ts`                              | Rename `getDataPoint` to `point`; infer its result from chart data                      | `chart.point(0)` is terse domain language and needs no consumer cast                                        |
 | `core/Chart.js`                           | Keep `Chart`; rename `getDataPoint` → `point`, `setupInteractions` → `bindInteractions` | The façade owns one lifecycle; commands and query read naturally                                            |
 | `core/ChartData.js`                       | Keep `ChartData`; rename `getPoint` → `pointAt`                                         | The class owns atomic normalized state; indexed lookup is explicit without `get`                            |

@@ -29,7 +29,7 @@
 | Вопрос           | DHH                                                                                            | Taylor / Laravel                                                                             | Robert Martin                                                          | Александр Черняев                                                                        | Решение Charts2                                                                                                                |
 | ---------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | Форма системы    | Интегрированный majestic monolith; минимум лишних conceptual models                            | Предсказуемая convention-first структура без обязательной ceremony                           | Границы по ответственности, зависимости направлены к правилам          | Жёсткая структура — общий язык команды                                                   | Один пакет и lifecycle, но каталоги являются реальными границами                                                               |
-| Публичный API    | Красивый код и programmer happiness важнее формальной симметрии                                | Один выразительный happy path, хорошие defaults, zero-config где возможно                    | Boundary должен скрывать детали механизмов                             | README обязан сразу отвечать «как пользоваться?»                                         | Только `createChart`; обязательный `type`; пять lifecycle-методов                                                              |
+| Публичный API    | Красивый код и programmer happiness важнее формальной симметрии                                | Один выразительный happy path, хорошие defaults, zero-config где возможно                    | Boundary должен скрывать детали механизмов                             | README обязан сразу отвечать «как пользоваться?»                                         | Named chart definitions, fluent domain methods и пять методов mounted lifecycle                                                |
 | Где нужны классы | «No one paradigm»: объект хорош для связанного поведения и состояния, но не для каждой функции | Почти весь app-код выражен классами; concrete dependencies не требуют ручной DI-конфигурации | Объекты и полиморфизм защищают policy от mechanism и `switch`-магнитов | Класс — игрок, публичный метод — целостный пас; нельзя дробить на пустые прокси          | Классы владеют lifecycle, data state, interaction state и renderer behavior; математика остаётся функциями                     |
 | Видимость        | Sharp knives предполагают доверие, но красивый API не обязан показывать механизм               | Конструктор получает зависимости, наружу выходит только нужное поведение                     | Boundary скрывает детали и не пропускает наружу механизмы              | Объект сам принимает решения; внешний код говорит ему намерение, а не разбирает данные   | Все mutable поля и lifecycle helpers — native `#private`; package API не отдаёт `options`, `tooltip`, `svg` или render methods |
 | Абстракции       | Удалять needless abstraction; не плодить сервисы/классы                                        | Не требовать интерфейс/контейнер без нескольких реализаций                                   | Изолировать чистые правила от UI/DOM                                   | У каждой директории одна объяснимая зона                                                 | Нет base renderer, container и DTO-классов; renderers получают frozen chart state и узкий SVG boundary                         |
@@ -80,7 +80,7 @@
 Удаление constructor/deprecated API не маскируется под patch. Новый узкий
 контракт является первой стабильной major-границей пакета.
 
-### ADR-001 — Один factory вместо constructor zoo
+### ADR-001 — Один factory вместо constructor zoo (заменён ADR-022)
 
 `createChart(parent, options)` — единственная точка создания. Тип графика —
 данные конфигурации, а не наследование. Это уменьшает число понятий и делает
@@ -103,7 +103,7 @@ Pure modules `support/Normalize.js`, `support/Math.js`, `support/Scale.js`,
 Это применяет Dependency Rule Мартина там, где в библиотеке действительно есть
 архитектурная граница, без интерфейсов «на всякий случай».
 
-### ADR-004 — Явность вместо hidden presets
+### ADR-004 — Явность вместо hidden presets (заменён ADR-022)
 
 Frameless chart — обычный line/bar с явными `show…: false`. Читатель видит цену
 каждого решения, а runtime не содержит legacy normalization.
@@ -325,16 +325,42 @@ AST selectors в ESLint и не допускают обхода перестан
 
 Это внутренняя rubric-оценка, **не заявление о личном одобрении Taylor Otwell**.
 
-| Критерий                      |      Вес |    Балл | Доказательство                                                                 |
-| ----------------------------- | -------: | ------: | ------------------------------------------------------------------------------ |
-| Один очевидный happy path     |      2.0 |     2.0 | Один named export и одинаковый вызов для всех типов                            |
-| Convention over configuration |      1.5 |    1.45 | Responsive sizing, цвета, ticks, labels и accessibility defaults               |
-| Выразительность call site     |      2.0 |    1.95 | `createChart`, `point`, `update`, `toSvg`, `download`, `destroy`               |
-| Ошибки и type guidance        |      1.5 |     1.5 | Discriminated union и fail-fast `TypeError`                                    |
-| Минимум ceremony              |      1.5 |     1.5 | Нет public constructors, adapters, container или ручной регистрации strategies |
-| Документация и onboarding     |      1.5 |     1.4 | README, API, tree, owners, visual/update commands                              |
-| **Итого**                     | **10.0** | **9.8** | Порог 9.5 выполнен                                                             |
+| Критерий                      |      Вес |     Балл | Доказательство                                                        |
+| ----------------------------- | -------: | -------: | --------------------------------------------------------------------- |
+| Один очевидный happy path     |      2.0 |      2.0 | Named definition, `make`, data и один `render`                        |
+| Convention over configuration |      1.5 |      1.5 | Responsive sizing, палитра, gradient, labels и accessibility defaults |
+| Выразительность call site     |      2.0 |      2.0 | `dataset`, `colors`, `height`, `gradient`, затем mounted lifecycle    |
+| Ошибки и type guidance        |      1.5 |      1.5 | Discriminated union и fail-fast `TypeError`                           |
+| Минимум ceremony              |      1.5 |      1.5 | Нет options bag, public constructors, adapters, hooks или `.end()`    |
+| Документация и onboarding     |      1.5 |      1.5 | Canonical 95% path, cold-use gate и demo translation fixtures         |
+| **Итого**                     | **10.0** | **10.0** | Taylor/Laravel veto пройден                                           |
 
-Оставшиеся 0.2 — цена широкого option surface, неизбежная для библиотеки с
-двенадцатью визуальными грамматиками. Добавлять fluent builder ради балла было
-бы ceremony и противоречило бы всем четырём позициям.
+Итог относится к принятому target contract. Runtime получает эту оценку только
+после repository-coherence gate из `FLUENT_API.md`.
+
+### ADR-022 — Named fluent definitions вместо generic options protocol
+
+ADR-001 и ADR-004 полезно зафиксировали удаление constructor zoo и legacy
+aliases, но их вывод о лучшей публичной форме заменён полной спецификацией
+[FLUENT_API.md](./FLUENT_API.md). Generic `createChart(parent, options)` и шесть
+отрицательных `show*` flags заставляют обычный product call site говорить на
+языке внутренней конфигурации. Целевой boundary экспортирует двенадцать frozen
+definitions — `LineChart`, `BarChart` и остальные — с одной операцией
+`make(parent)`.
+
+Mutable single-use builders находятся в `core`, копируют входы при fluent-вызове
+и компилируют их в detached scene record. Они не знают DOM, layout, tooltip или
+renderer classes. Только `render()` передаёт готовый snapshot внутреннему
+lifecycle root. Mounted chart по-прежнему предоставляет только `element`,
+`update`, `point`, `toSvg`, `download` и `destroy`.
+
+Chart-wide conventions выражаются прямыми domain methods: `.colors()`,
+`.height()`, `.gradient()`, `.horizontal()`, `.stacked()` и `.frameless()`.
+`frameless()` является законченным product preset с явно определённым
+precedence, а не compatibility alias. Scoped callbacks существуют только для
+локального dataset/tooltip/axis/annotation override и автоматически завершают
+scope без `.end()`.
+
+Этот ADR является целевым. Старый runtime, declarations и tests мигрируют одним
+replacement и не образуют второй постоянный public API. Полный method inventory,
+validation, lifecycle и release gate задаёт только `FLUENT_API.md`.

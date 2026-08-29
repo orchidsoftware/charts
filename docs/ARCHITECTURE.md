@@ -15,17 +15,19 @@ The demo and laboratory have separate jobs. The primary showroom explains chart
 families through recognizable product questions. `demo/lab.html` groups all
 product and edge-case fixtures by renderer for QA, responsive inspection, and
 regression tests. Both pages use the same `Main.js` fixture definitions and the
-public `createChart` entry; no demo-only renderer or private hook exists.
+public named chart definitions; no demo-only renderer or private hook exists.
 
 ## Source map
 
 ```text
 src
-├─ index.js                         # Only package entry: createChart
-├─ index.d.ts                       # Discriminated public TypeScript contract
+├─ index.js                         # Frozen named chart definitions
+├─ index.d.ts                       # Type-specific fluent public contract
 ├─ styles.css                       # Public visual and interaction states
 ├─ core
-│  ├─ Chart.js                      # Public façade; private DOM lifecycle
+│  ├─ ChartDefinition.js            # Immutable make(parent) entry
+│  ├─ Builder.js                    # Detached fluent authoring and scene compilation
+│  ├─ Chart.js                      # Mounted façade; private DOM lifecycle
 │  ├─ Options.js                    # Validation and renderer-ready defaults
 │  ├─ ChartData.js                  # Atomic normalized model replacement
 │  ├─ ChartSelection.js             # Public selection payload policy
@@ -200,13 +202,16 @@ they answer domain questions and keep calculated geometry out of DOM code.
 ## Dependency direction
 
 ```text
-index → Chart → ChartData → support
-              ↘ Render → frozen chart state + SvgSurface → concrete renderers
-              ↘ InteractionController
+index → ChartDefinition → Builder → detached scene
+                                  ↘ Chart → ChartData → support
+                                           ↘ Render → frozen chart state + SvgSurface → concrete renderers
+                                           ↘ InteractionController
 
 concrete renderers → support
 ```
 
+- `ChartDefinition` owns only immutable type identity and `make(parent)`.
+  Builders own authoring state and compile it without reading or mutating DOM.
 - Pure support calculations (`Normalize`, `Math`, and `Presentation`) never
   import `core`, a renderer, or browser globals.
 - `ChartData` owns normalization state and knows nothing about tooltips, SVG
@@ -231,28 +236,32 @@ defines native private identifiers for class fields, methods, and accessors.
 JavaScript has `public` and native `#private` class elements, but no native
 `protected` visibility. Charts2 therefore uses these rules:
 
-1. Package-public API is only `createChart` and the returned TypeScript `Chart`
-   interface.
-2. `Chart` exposes only `element`, `update`, `point`, `toSvg`, `download`,
+1. Package-public values are the twelve frozen chart definitions and the
+   returned TypeScript `Chart` interface. There is no generic runtime factory.
+2. Each definition exposes only `make(parent)`; each type-specific builder
+   exposes only its valid domain methods and `render()`.
+3. Mounted `Chart` exposes only `element`, `update`, `point`, `toSvg`, `download`,
    and `destroy`.
-3. Every mutable property and lifecycle helper is a native `#private` element;
+4. Every mutable property and lifecycle helper is a native `#private` element;
    underscore conventions are not accepted as encapsulation.
-4. Internal class collaboration uses constructor injection and frozen chart state,
+5. Internal class collaboration uses constructor injection and frozen chart state,
    not public mutation, `.call(this)`, or pseudo-protected properties.
-5. Renderer helper methods are `#private`. A method is public only when another
+6. Renderer helper methods are `#private`. A method is public only when another
    internal class deliberately collaborates with it, such as legend item layout.
-6. Stateless algebra remains a named function. Utility classes containing only
+7. Stateless algebra remains a named function. Utility classes containing only
    static functions are prohibited because they add ceremony without ownership.
 
 ## Public boundary
 
 ```js
-import { createChart } from "@charts2/core";
+import { LineChart } from "@charts2/core";
 
-const chart = createChart("#revenue", {
-  type: "line",
-  data: { datasets: [{ values: [12, 18, 16] }] },
-});
+const chart = LineChart.make("#revenue")
+  .dataset([12, 18, 16])
+  .colors(["#00bdff", "#1b3bff"])
+  .height(300)
+  .gradient()
+  .render();
 
 chart.update({ datasets: [{ values: [14, 21, 19] }] });
 chart.point(0);
@@ -261,8 +270,9 @@ chart.download("revenue");
 chart.destroy();
 ```
 
-There is no public constructor hierarchy, default export, mutable `options`,
-`svg` alias, renderer method, deprecated preset, or compatibility adapter.
+There is no generic factory, public constructor hierarchy, default export,
+mutable `options`, `svg` alias, renderer method, plugin hook, or compatibility
+adapter.
 
 ## Non-negotiable invariants
 
@@ -272,8 +282,8 @@ There is no public constructor hierarchy, default export, mutable `options`,
 4. Renderer dispatch fails closed for an unknown type.
 5. Every interactive mark uses `InteractionController`.
 6. `toSvg()` is pure; the side-effecting download is named `download()`.
-7. New chart types add one concrete renderer class and a discriminated public
-   option; they do not add another lifecycle or public constructor.
+7. New chart types add one concrete renderer class and one frozen definition;
+   they do not add another lifecycle or public constructor.
 8. No compatibility adapter may be added without an explicit removal release.
 9. Stateful classes use native `#private` ownership and explanatory JSDoc.
 10. Architecture fitness tests enforce dependency direction, class form, private
@@ -298,6 +308,10 @@ There is no public constructor hierarchy, default export, mutable `options`,
     contracts become named value/layout objects or are split by responsibility;
     large anonymous return records and private-method object bags are rejected
     by ESLint.
+18. Builders never import renderers or browser primitives, never resolve the
+    parent before `render()`, and are consumed only after a successful commit.
+19. Chart-wide conventions are expressed once on the chart builder; dataset
+    scopes only override them locally.
 
 The opinion matrix, rejected alternatives, and implementation record are in
 [REFACTORING.md](./REFACTORING.md). The per-module vocabulary decisions are in

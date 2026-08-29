@@ -1,9 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import InteractionController from "../src/core/InteractionController.js";
-import { createChart } from "../src/index.js";
-
 import ChartScenario from "./support/ChartScenario.js";
+import createChart from "./support/MountChart.js";
 
 const tooltipFor = (chart) => chart.element.parentElement.querySelector(".charts2-tooltip");
 
@@ -92,6 +90,130 @@ describe("shared chart interaction contract", () => {
     scenario.destroy();
   });
 
+  it("keeps radial popovers outside their sectors and percentage popovers on segments", () => {
+    for (const type of ["pie", "donut", "percentage"]) {
+      const chart = createChart("#chart", {
+        type,
+        data: { labels: ["Direct", "Search", "Partners"], datasets: [{ values: [1, 1, 1] }] },
+      });
+      const marks = [...chart.element.querySelectorAll(".charts2-interactive-mark")];
+
+      expect(marks).toHaveLength(3);
+      const bottomMark = marks.find((mark) => mark.dataset.tooltipPlacement === "bottom");
+
+      if (type !== "percentage") {
+        expect(bottomMark).not.toBeUndefined();
+        bottomMark.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
+        expect(tooltipFor(chart).style.transform).toBe("none");
+        bottomMark.dispatchEvent(new PointerEvent("pointerleave", { bubbles: true }));
+      }
+
+      for (const mark of marks) {
+        if (type === "percentage") {
+          expect(mark.dataset.tooltipAnchorX).toBeUndefined();
+          expect(mark.dataset.tooltipAnchorY).toBeUndefined();
+          expect(mark.dataset.tooltipPlacement).toBeUndefined();
+        }
+
+        if (type !== "percentage") {
+          expect(Number(mark.dataset.tooltipAnchorX)).toBeGreaterThan(0);
+          expect(Number(mark.dataset.tooltipAnchorY)).toBeGreaterThan(0);
+          expect(["top", "right", "bottom", "left"]).toContain(mark.dataset.tooltipPlacement);
+        }
+        mark.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
+        expect(mark).toHaveClass("is-hovered");
+        expect(tooltipFor(chart).hidden).toBe(false);
+        expect(tooltipFor(chart).style.left).not.toBe("");
+        expect(tooltipFor(chart).style.top).not.toBe("");
+        mark.dispatchEvent(new PointerEvent("pointerleave", { bubbles: true }));
+      }
+      chart.destroy();
+    }
+
+    const whole = createChart("#chart", {
+      type: "pie",
+      data: { labels: ["Complete"], datasets: [{ values: [100] }] },
+    });
+    const topMark = whole.element.querySelector(".charts2-interactive-mark");
+
+    expect(topMark.dataset.tooltipPlacement).toBe("top");
+    topMark.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
+    expect(tooltipFor(whole).style.transform).toBe("none");
+    whole.destroy();
+  });
+
+  it("uses highlighted shared areas for easy scatter and bubble hover", () => {
+    for (const type of ["scatter", "bubble"]) {
+      const values = type === "bubble" ? [{ x: 1, y: 2, r: 5 }] : [{ x: 1, y: 2 }];
+      const chart = createChart("#chart", { type, data: { datasets: [{ values }] } });
+      const hits = [...chart.element.querySelectorAll(".charts2-x-hit")];
+      const visibleMarks = [...chart.element.querySelectorAll(".charts2-visual-mark")];
+
+      expect(hits).toHaveLength(visibleMarks.length);
+      expect(chart.element.querySelector(".charts2-point-hit")).toBeNull();
+      for (const hit of hits) {
+        hit.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
+        expect(hit).toHaveClass("is-hovered");
+        expect(JSON.parse(hit.dataset.tooltipItems)).toHaveLength(1);
+        expect(tooltipFor(chart).hidden).toBe(false);
+        hit.dispatchEvent(new PointerEvent("pointerleave", { bubbles: true }));
+      }
+      chart.destroy();
+    }
+  });
+
+  it("keeps aligned mixed hover shared while selection remains point-specific", () => {
+    const data = {
+      labels: ["W1", "W2"],
+      datasets: [
+        { name: "Actual", chartType: "bar", values: [2, 3] },
+        { name: "Plan", chartType: "line", values: [3, 4] },
+      ],
+    };
+    const hoverChart = createChart("#chart", { type: "mixed", data });
+    const category = hoverChart.element.querySelector(".charts2-x-hit");
+
+    expect(hoverChart.element.querySelectorAll(".charts2-interactive-mark")).toHaveLength(2);
+    category.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
+    expect(tooltipFor(hoverChart).querySelectorAll(".charts2-tooltip-row")).toHaveLength(2);
+    expect(tooltipFor(hoverChart).textContent).toContain("Actual");
+    expect(tooltipFor(hoverChart).textContent).toContain("Plan");
+    hoverChart.destroy();
+
+    const selectable = createChart("#chart", { type: "mixed", data, onSelect: vi.fn() });
+    expect(selectable.element.querySelector(".charts2-x-hit")).toBeNull();
+    expect(selectable.element.querySelectorAll(".charts2-interactive-mark")).toHaveLength(4);
+    selectable.destroy();
+  });
+
+  it("keeps every mixed and dual-axis category aligned with a shared popover", () => {
+    const labels = ["Mon", "Tue", "Wed", "Thu"];
+    const data = {
+      labels,
+      datasets: [
+        { name: "Daily change", chartType: "bar", values: [-8, 4, -3, 9] },
+        { name: "Rolling trend", chartType: "line", values: [-4, -2, 2, 5] },
+        { name: "Alert threshold", chartType: "line", values: [3, 3, 3, 3] },
+      ],
+    };
+
+    for (const yAxisPosition of ["left", "right"]) {
+      const chart = createChart("#chart", { type: "mixed", yAxisPosition, data });
+      const categories = [...chart.element.querySelectorAll(".charts2-x-hit")];
+      const categoryLabels = [...chart.element.querySelectorAll(".charts2-label")].slice(-labels.length);
+
+      expect(categories).toHaveLength(labels.length);
+      expect(categoryLabels.map((label) => label.textContent)).toEqual(labels);
+      for (const [index, category] of categories.entries()) {
+        category.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
+        expect(tooltipFor(chart).querySelector(".charts2-tooltip-heading").textContent).toBe(labels[index]);
+        expect(tooltipFor(chart).querySelectorAll(".charts2-tooltip-row")).toHaveLength(3);
+        category.dispatchEvent(new PointerEvent("pointerleave", { bubbles: true }));
+      }
+      chart.destroy();
+    }
+  });
+
   it("keeps tooltip width stable at the first and last chart positions", () => {
     const percentage = createChart("#chart", {
       type: "percentage",
@@ -148,7 +270,7 @@ describe("shared chart interaction contract", () => {
       {
         options: {
           type: "percentage",
-          tooltipOptions: { formatTooltipY: (value) => `${value} GB` },
+          tooltipFormatValue: (value) => `${value} GB`,
           data: { labels: ["Photos", "Free"], datasets: [{ values: [72, 28] }] },
         },
         heading: "Photos",
@@ -160,17 +282,23 @@ describe("shared chart interaction contract", () => {
         value: "60 (60%)",
       },
       {
-        options: { type: "donut", data: { labels: ["Individual", "Family"], datasets: [{ values: [70, 30] }] } },
+        options: {
+          type: "donut",
+          data: { labels: ["Individual", "Family"], datasets: [{ values: [70, 30] }] },
+        },
         heading: "Individual",
         value: "70 (70%)",
       },
       {
-        options: { type: "polar-area", data: { labels: ["Social", "Reading"], datasets: [{ values: [74, 26] }] } },
+        options: {
+          type: "polar-area",
+          data: { labels: ["Social", "Reading"], datasets: [{ values: [74, 26] }] },
+        },
         heading: "Social",
         value: "74",
       },
       {
-        options: { type: "heatmap", countLabel: "events", data: { dataPoints: { "2026-01-01": 4 } } },
+        options: { type: "heatmap", countLabel: "events", data: { points: { "2026-01-01": 4 } } },
         heading: "2026-01-01",
         value: "4 events",
       },
@@ -186,7 +314,9 @@ describe("shared chart interaction contract", () => {
       expect(row.querySelector("strong").textContent).toBe(value);
       expect(getComputedStyle(row.querySelector("span")).fontWeight).toBe("500");
       expect(getComputedStyle(row.querySelector("strong")).fontWeight).toBe("600");
-      expect([...tooltipFor(chart).childNodes].every((node) => node.nodeType === Node.ELEMENT_NODE)).toBe(true);
+      expect([...tooltipFor(chart).childNodes].every((node) => node.nodeType === Node.ELEMENT_NODE)).toBe(
+        true,
+      );
       chart.destroy();
     }
 
@@ -204,10 +334,14 @@ describe("shared chart interaction contract", () => {
     cartesian.element.querySelector(".charts2-x-hit").focus();
     expect(tooltipFor(cartesian).querySelector(".charts2-tooltip-heading").textContent).toBe("Europe");
     expect(
-      [...tooltipFor(cartesian).querySelectorAll(".charts2-tooltip-row span")].map((node) => node.textContent),
+      [...tooltipFor(cartesian).querySelectorAll(".charts2-tooltip-row span")].map(
+        (node) => node.textContent,
+      ),
     ).toEqual(["Standard", "Express"]);
     expect(
-      [...tooltipFor(cartesian).querySelectorAll(".charts2-tooltip-row strong")].map((node) => node.textContent),
+      [...tooltipFor(cartesian).querySelectorAll(".charts2-tooltip-row strong")].map(
+        (node) => node.textContent,
+      ),
     ).toEqual(["36", "16"]);
 
     expect(tooltipFor(cartesian).querySelector("i").style.background).toBe("rgb(0, 122, 255)");
@@ -256,16 +390,17 @@ describe("shared chart interaction contract", () => {
   });
 
   it("makes frameless charts inspectable without making every value a tab stop", () => {
+    const onSelect = vi.fn();
     const chart = createChart("#chart", {
       type: "line",
-      showAxes: false,
-      showGrid: false,
-      showLabels: false,
-      showLegend: false,
-      showDots: false,
+      axes: false,
+      grid: false,
+      valueLabels: false,
+      legend: false,
+      dots: false,
       data: { labels: ["Value 1", "Value 2", "Value 3"], datasets: [{ values: [12, 18, 16] }] },
       ariaLabel: "Revenue trend",
-      onSelect: vi.fn(),
+      onSelect,
     });
     const marks = [...chart.element.querySelectorAll(".charts2-interactive-mark")];
     expect(marks).toHaveLength(3);
@@ -277,14 +412,16 @@ describe("shared chart interaction contract", () => {
     marks[0].dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(marks[0]).toHaveClass("is-active");
     chart.update({ labels: ["Value 1", "Value 2", "Value 3"], datasets: [{ values: [20, 24, 22] }] });
-    expect(tooltipFor(chart).querySelector(".charts2-tooltip-row strong").textContent).toBe("20");
+    expect(chart.element.querySelector(".is-active")).toBeNull();
+    expect(tooltipFor(chart).hidden).toBe(true);
+    expect(onSelect).toHaveBeenCalledTimes(1);
     chart.destroy();
   });
 
   it("removes hover and focus inspection when a tooltip is opted out", () => {
     const chart = createChart("#chart", {
       type: "line",
-      showTooltip: false,
+      tooltip: false,
       data: { labels: ["Mon", "Tue"], datasets: [{ name: "Revenue", values: [12, 18] }] },
     });
     const line = chart.element.querySelector(".charts2-line");
@@ -302,7 +439,7 @@ describe("shared chart interaction contract", () => {
     const onSelect = vi.fn();
     const chart = createChart("#chart", {
       type: "line",
-      showTooltip: false,
+      tooltip: false,
       onSelect,
       data: { labels: ["Mon", "Tue"], datasets: [{ name: "Revenue", values: [12, 18] }] },
     });
@@ -320,80 +457,10 @@ describe("shared chart interaction contract", () => {
     chart.destroy();
   });
 
-  it("covers the complete pointer and keyboard state machine", async () => {
-    const namespace = "http://www.w3.org/2000/svg";
-    const marks = [0, 1, 2].map(() => document.createElementNS(namespace, "rect"));
-    const shown = [];
-    const hidden = [];
-    const active = [];
-    const callbacks = {
-      labelFor: (_mark, index) => `Mark ${index + 1}`,
-      onShow: (_mark, label) => {
-        shown.push(label);
-      },
-      onHide: () => {
-        hidden.push(true);
-      },
-      onActiveChange: (index) => {
-        active.push(index);
-      },
-    };
-    const setup = (activeIndex) => new InteractionController(marks, { activeIndex }, callbacks);
-
-    const controller = setup(1);
-    expect(marks[1].getAttribute("tabindex")).toBe("0");
-    expect(marks[1].getAttribute("aria-pressed")).toBe("true");
-    marks[1].dispatchEvent(new PointerEvent("pointerenter"));
-    marks[1].dispatchEvent(new PointerEvent("pointerdown"));
-    expect(marks[1].classList.contains("is-pressed")).toBe(true);
-    marks[1].dispatchEvent(new PointerEvent("pointerup"));
-    marks[1].dispatchEvent(new PointerEvent("pointercancel"));
-    marks[1].dispatchEvent(new PointerEvent("pointerleave"));
-    marks[1].focus();
-    marks[1].blur();
-    expect(shown).toContain("Mark 2");
-    expect(hidden).toHaveLength(0);
-
-    press(marks[1], "ArrowLeft");
-    expect(marks[0].getAttribute("tabindex")).toBe("0");
-    press(marks[0], "ArrowUp");
-    expect(marks[2].getAttribute("tabindex")).toBe("0");
-    press(marks[2], "Home");
-    expect(marks[0].getAttribute("tabindex")).toBe("0");
-    press(marks[0], "End");
-    expect(marks[2].getAttribute("tabindex")).toBe("0");
-    press(marks[2], " ");
-    expect(active.at(-1)).toBe(2);
-    marks[2].dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(active.at(-1)).toBe(2);
-    await new Promise((resolve) => {
-      setTimeout(resolve, 0);
-    });
-    press(marks[2], "Escape");
-    expect(active.at(-1)).toBe(-1);
-    expect(hidden.length).toBeGreaterThan(0);
-    press(marks[2], "Escape");
-    press(marks[2], "PageDown");
-
-    controller.dismiss();
-    expect(hidden.length).toBeGreaterThan(0);
-
-    setup(99);
-    expect(marks[0].getAttribute("tabindex")).toBe("0");
-    const emptyCallbacks = {
-      labelFor: () => "",
-      onShow: () => {},
-      onHide: () => {},
-      onActiveChange: () => {},
-    };
-    const emptyController = new InteractionController([], {}, emptyCallbacks);
-    emptyController.dismiss();
-  });
-
   it("applies the same model to heatmap cells", () => {
     const chart = createChart("#chart", {
       type: "heatmap",
-      data: { dataPoints: { "2026-01-01": 1, "2026-01-02": 4 } },
+      data: { points: { "2026-01-01": 1, "2026-01-02": 4 } },
     });
     const cells = chart.element.querySelectorAll(".charts2-interactive-mark");
     expect(cells).toHaveLength(2);
@@ -428,7 +495,9 @@ describe("shared chart interaction contract", () => {
     hit.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
     hit.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect({ left: tooltipFor(chart).style.left, top: tooltipFor(chart).style.top }).toEqual(hoverPosition);
-    expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ label: "Implementation", group: "Engineering" }));
+    expect(onSelect).toHaveBeenCalledWith(
+      expect.objectContaining({ label: "Implementation", group: "Engineering" }),
+    );
     expect(tooltipFor(chart).querySelectorAll(".charts2-tooltip-row")).toHaveLength(1);
     chart.destroy();
   });

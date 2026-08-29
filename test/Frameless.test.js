@@ -1,20 +1,25 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { createChart } from "../src/index.js";
+import createChart from "./support/MountChart.js";
 
 function frameless(type, values, options = {}) {
-  return createChart("#chart", {
+  const presentation = {
     type,
     height: 90,
-    showAxes: false,
-    showGrid: false,
-    showLabels: false,
-    showLegend: false,
-    showDots: false,
-    showTooltip: false,
+    axes: false,
+    grid: false,
+    valueLabels: false,
+    legend: false,
+    tooltip: false,
     data: { datasets: [{ values }] },
     ...options,
-  });
+  };
+
+  if (type === "line") {
+    presentation.dots = false;
+  }
+
+  return createChart("#chart", presentation);
 }
 
 describe("explicit frameless charts", () => {
@@ -37,24 +42,27 @@ describe("explicit frameless charts", () => {
       width: 100,
       height: 40,
       colors: ["red"],
-      lineOptions: { regionFill: true },
+      area: true,
     });
     expect(chart.element.querySelectorAll("path")).toHaveLength(2);
-    expect(chart.element.querySelector("linearGradient")).not.toBeNull();
+    expect(chart.element.querySelector("linearGradient")).toBeNull();
+    expect(chart.element.querySelector(".charts2-area").getAttribute("fill")).toBe("red");
   });
 
   it("renders dense frameless bars with a safe minimum width", () => {
     const chart = frameless(
       "bar",
       Array.from({ length: 200 }, () => 2),
-      { width: 10, strokeWidth: 3 },
+      { width: 10 },
     );
     expect(chart.element.querySelectorAll(".charts2-bar")).toHaveLength(200);
     expect(chart.element.querySelector(".charts2-bar").getBBox().width).toBeCloseTo(2);
   });
 
   it.each([null, "#missing"])("rejects an invalid parent", (parent) => {
-    expect(() => createChart(parent, { type: "line", data: { datasets: [{ values: [1] }] } })).toThrow("parent");
+    expect(() => createChart(parent, { type: "line", data: { datasets: [{ values: [1] }] } })).toThrow(
+      "parent",
+    );
   });
 
   it("rejects removed compatibility routes", () => {

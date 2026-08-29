@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createChart } from "../src/index.js";
+import createChart from "./support/MountChart.js";
 
 const tooltipFor = (chart) => chart.element.parentElement.querySelector(".charts2-tooltip");
 const widthOf = (chart) => chart.element.viewBox.baseVal.width;
 const heightOf = (chart) => chart.element.viewBox.baseVal.height;
-const timesheetOptions = (data) => ({ type: "timesheet", data });
+const timesheetScene = (data) => ({ type: "timesheet", data });
 
 const series = { labels: ["A", "B", "C"], datasets: [{ name: "One", values: [2, 4, -1] }] };
 
@@ -19,14 +19,14 @@ describe("unified public pipeline", () => {
       ["line", { data: series }],
       ["bar", { data: series }],
       ["scatter", { data: series }],
-      ["axis-mixed", { data: series }],
-      ["bubble", { data: { datasets: [{ values: [{ y: 2, r: 7 }] }] } }],
-      ["radar", { data: series }],
-      ["polar-area", { data: series }],
-      ["pie", { data: series }],
-      ["donut", { data: series }],
-      ["percentage", { data: series }],
-      ["heatmap", { data: { dataPoints: { "2026-01-01": 2 } } }],
+      ["mixed", { data: { ...series, datasets: [{ ...series.datasets[0], chartType: "line" }] } }],
+      ["bubble", { data: { datasets: [{ values: [{ x: 1, y: 2, r: 7 }] }] } }],
+      ["radar", { data: { ...series, datasets: [{ name: "One", values: [2, 4, 1] }] } }],
+      ["polar-area", { data: { ...series, datasets: [{ values: [2, 4, 1] }] } }],
+      ["pie", { data: { ...series, datasets: [{ values: [2, 4, 1] }] } }],
+      ["donut", { data: { ...series, datasets: [{ values: [2, 4, 1] }] } }],
+      ["percentage", { data: { ...series, datasets: [{ values: [2, 4, 1] }] } }],
+      ["heatmap", { data: { points: { "2026-01-01": 2 } } }],
       ["timesheet", { data: { tasks: [{ label: "Build", start: "2026-01-01", end: "2026-01-02" }] } }],
     ];
     for (const [type, options] of cases) {
@@ -38,13 +38,17 @@ describe("unified public pipeline", () => {
 
   it("requires an explicit supported type", () => {
     expect(() => createChart("#chart", { data: series })).toThrow("Chart type must be one of");
-    expect(() => createChart("#chart", { type: "unknown", data: series })).toThrow("Chart type must be one of");
+    expect(() => createChart("#chart", { type: "unknown", data: series })).toThrow(
+      "Chart type must be one of",
+    );
   });
 
-  it("renders scatter and mixed stacked marks with shared annotations", () => {
+  it("renders scatter and mixed marks with shared annotations", () => {
     const scatter = createChart("#chart", { type: "scatter", data: series });
     expect(scatter.element.querySelectorAll(".charts2-scatter")).toHaveLength(3);
-    expect(scatter.element.querySelector(".charts2-scatter").getAttribute("fill")).toBe("var(--charts-point-fill)");
+    expect(scatter.element.querySelector(".charts2-scatter").getAttribute("fill")).toBe(
+      "var(--charts-point-fill)",
+    );
     expect(scatter.element.querySelector(".charts2-scatter").getAttribute("stroke")).toBe("#007AFF");
     expect(scatter.element.querySelector(".charts2-scatter").getAttribute("opacity")).toBe("1");
     expect(getComputedStyle(scatter.element.querySelector(".charts2-scatter")).strokeWidth).toBe("3px");
@@ -52,27 +56,25 @@ describe("unified public pipeline", () => {
     scatter.destroy();
 
     const mixed = createChart("#chart", {
-      type: "axis-mixed",
-      barOptions: { stacked: true },
-      tooltipOptions: { formatTooltipX: (value) => `X ${value}`, formatTooltipY: (value) => `$${value}` },
+      type: "mixed",
+      tooltipFormatLabel: (value) => `X ${value}`,
+      tooltipFormatValue: (value) => `$${value}`,
       data: {
         labels: ["A", "B"],
         datasets: [
-          { name: "Line", values: [1, 3] },
+          { name: "Line", chartType: "line", values: [1, 3] },
           { name: "Positive", chartType: "bar", values: [2, 4] },
           { name: "Negative", chartType: "bar", values: [-1, -2] },
         ],
-        yRegions: [{ start: 1, end: 3 }],
-        yMarkers: [{ value: 2, label: "Target" }],
+        regions: [{ label: "Expected range", range: [1, 3] }],
+        markers: [{ value: 2, label: "Target" }],
       },
     });
     expect(mixed.element.querySelectorAll(".charts2-region")).toHaveLength(1);
     expect(mixed.element.querySelectorAll(".charts2-marker")).toHaveLength(1);
     expect(mixed.element.textContent).toContain("Target");
-    expect(mixed.element.querySelector(".charts2-x-hit").dataset.tooltip).toBe(
-      "X A — Line: $1 · Positive: $2 · Negative: $-1",
-    );
-    const mixedBar = mixed.element.querySelector(".charts2-bar.charts2-visual-mark");
+    expect(mixed.point(0)).toMatchObject({ dataset: "Line", label: "A", y: 1 });
+    const mixedBar = mixed.element.querySelector(".charts2-bar");
     const mixedHalo = mixed.element.querySelector(".charts2-point-halo");
     const mixedPoint = mixed.element.querySelector(".charts2-point");
     expect(mixedBar.compareDocumentPosition(mixedHalo) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -84,7 +86,11 @@ describe("unified public pipeline", () => {
     const horizontal = createChart("#chart", {
       type: "bar",
       orientation: "horizontal",
-      data: { ...series, yRegions: [{ start: 0, end: 3 }], yMarkers: [{ value: 2 }] },
+      data: {
+        ...series,
+        regions: [{ label: "Expected range", range: [0, 3] }],
+        markers: [{ value: 2, label: "Target" }],
+      },
     });
     expect(horizontal.element.querySelector(".charts2-region").getAttribute("x")).not.toBeNull();
     expect(horizontal.element.querySelector(".charts2-marker").getAttribute("x1")).toBe(
@@ -94,14 +100,15 @@ describe("unified public pipeline", () => {
 
     const filled = createChart("#chart", {
       type: "line",
-      lineOptions: { regionFill: true, hideDots: true },
+      area: true,
+      dots: false,
       data: series,
     });
     expect(filled.element.querySelector(".charts2-area")).not.toBeNull();
     expect(filled.element.querySelector(".charts2-point")).toBeNull();
     filled.destroy();
     const points = Array.from({ length: 201 }, (_, index) => index);
-    const long = createChart("#chart", { type: "line", data: { labels: [], datasets: [{ values: points }] } });
+    const long = createChart("#chart", { type: "line", data: { datasets: [{ values: points }] } });
     expect(long.element.querySelectorAll(".charts2-mark")).toHaveLength(1);
     expect(long.element.querySelector(".charts2-mark").dataset.tooltip).toContain("201 points");
     expect(long.element.querySelector(".charts2-mark").dataset.tooltip).toContain("range 0–200");
@@ -115,7 +122,7 @@ describe("unified public pipeline", () => {
     expect(denseHorizontal.element.querySelectorAll(".charts2-bar.charts2-mark")).toHaveLength(65);
     expect(denseHorizontal.element.querySelector(".charts2-x-hit")).toBeNull();
     denseHorizontal.destroy();
-    const hidden = createChart("#chart", { type: "line", lineOptions: { hideLine: true, dotSize: 6 }, data: series });
+    const hidden = createChart("#chart", { type: "line", line: false, dotSize: 6, data: series });
     expect(hidden.element.querySelector(".charts2-line")).toBeNull();
     expect(hidden.element.querySelector(".charts2-point").getAttribute("r")).toBe("6");
   });
@@ -146,7 +153,7 @@ describe("unified public pipeline", () => {
     }
     smooth.destroy();
 
-    const straight = createChart("#chart", { type: "line", lineOptions: { spline: false }, data: series });
+    const straight = createChart("#chart", { type: "line", smooth: false, data: series });
     expect(straight.element.querySelector(".charts2-line").getAttribute("d")).toContain("L");
     expect(straight.element.querySelector(".charts2-line").getAttribute("d")).not.toContain("C");
   });
@@ -154,7 +161,7 @@ describe("unified public pipeline", () => {
   it("rounds only the value-facing outer end of signed and stacked bars", () => {
     const signed = createChart("#chart", {
       type: "bar",
-      barOptions: { radius: 4 },
+      radius: 4,
       data: { labels: ["Loss", "Zero", "Gain"], datasets: [{ values: [-10, 0, 10] }] },
     });
     const signedBars = [...signed.element.querySelectorAll(".charts2-bar")];
@@ -165,8 +172,17 @@ describe("unified public pipeline", () => {
 
     const stacked = createChart("#chart", {
       type: "bar",
-      barOptions: { stacked: true, radius: 4 },
-      data: { labels: ["Total"], datasets: [{ values: [5] }, { values: [3] }, { values: [-4] }, { values: [-2] }] },
+      stacked: true,
+      radius: 4,
+      data: {
+        labels: ["Total"],
+        datasets: [
+          { name: "Positive base", values: [5] },
+          { name: "Positive cap", values: [3] },
+          { name: "Negative base", values: [-4] },
+          { name: "Negative cap", values: [-2] },
+        ],
+      },
     });
     const stackedBars = [...stacked.element.querySelectorAll(".charts2-bar")];
     expect(stackedBars.map((bar) => bar.getAttribute("d").includes("Q"))).toEqual([false, true, false, true]);
@@ -174,15 +190,23 @@ describe("unified public pipeline", () => {
 
     const sparseStack = createChart("#chart", {
       type: "bar",
-      barOptions: { stacked: true },
-      data: { labels: ["A", "B"], datasets: [{ values: [5, 4] }, { values: [2] }] },
+      stacked: true,
+      data: {
+        labels: ["A", "B"],
+        datasets: [
+          { name: "Base", values: [5, 4] },
+          { name: "Additional", values: [2, 0] },
+        ],
+      },
     });
-    expect(sparseStack.element.querySelectorAll(".charts2-bar")).toHaveLength(3);
+    expect(sparseStack.element.querySelectorAll(".charts2-bar")).toHaveLength(4);
     sparseStack.destroy();
 
-    const square = createChart("#chart", { type: "bar", barOptions: { radius: 0 }, data: series });
+    const square = createChart("#chart", { type: "bar", radius: 0, data: series });
     expect(
-      [...square.element.querySelectorAll(".charts2-bar")].every((bar) => !bar.getAttribute("d").includes("Q")),
+      [...square.element.querySelectorAll(".charts2-bar")].every(
+        (bar) => !bar.getAttribute("d").includes("Q"),
+      ),
     ).toBe(true);
     square.destroy();
 
@@ -214,7 +238,7 @@ describe("unified public pipeline", () => {
     gradient.destroy();
 
     const mixed = createChart("#chart", {
-      type: "axis-mixed",
+      type: "mixed",
       data: {
         labels,
         datasets: [
@@ -224,23 +248,15 @@ describe("unified public pipeline", () => {
         ],
       },
     });
-    expect(mixed.element.querySelectorAll(".charts2-bar.charts2-visual-mark")).toHaveLength(4);
+    expect(mixed.element.querySelectorAll(".charts2-bar")).toHaveLength(4);
     expect(mixed.element.querySelectorAll(".charts2-line")).toHaveLength(2);
-    expect(JSON.parse(mixed.element.querySelector(".charts2-x-hit").dataset.tooltipItems)).toHaveLength(3);
-    const mixedFirstBand = mixed.element.querySelector(".charts2-x-hit[data-point-index='0']");
-    const mixedFirstCenter =
-      Number(mixedFirstBand.getAttribute("x")) + Number(mixedFirstBand.getAttribute("width")) / 2;
-    const mixedFirstLineX = Number(
-      mixed.element
-        .querySelector(".charts2-line")
-        .getAttribute("d")
-        .match(/^M([^,]+)/)[1],
-    );
-    expect(mixedFirstLineX).toBeCloseTo(mixedFirstCenter);
+    expect(mixed.element.querySelectorAll(".charts2-x-hit")).toHaveLength(4);
+    expect(mixed.point(0)).toMatchObject({ dataset: "Actual", chartType: "bar", y: -3 });
+    expect(mixed.point(4)).toMatchObject({ dataset: "Target", chartType: "line", y: 2 });
     mixed.destroy();
 
     const narrowMixed = createChart("#chart", {
-      type: "axis-mixed",
+      type: "mixed",
       width: 220,
       height: 520,
       data: {
@@ -256,10 +272,12 @@ describe("unified public pipeline", () => {
       [...narrowMixed.element.querySelectorAll(".charts2-legend")].map((item) => item.getAttribute("y")),
     );
     const narrowLegend = narrowMixed.element.querySelector(".charts2-legend-group").getBBox();
-    const narrowPlotTop = Number(narrowMixed.element.querySelector(".charts2-grid-vertical").getAttribute("y1"));
+    const narrowPlotTop = Number(
+      narrowMixed.element.querySelector(".charts2-grid-vertical").getAttribute("y1"),
+    );
     expect(narrowLegendRows.size).toBeGreaterThan(1);
     expect(narrowLegend.y + narrowLegend.height).toBeLessThanOrEqual(narrowPlotTop - 6);
-    expect(Number(narrowMixed.element.querySelector(".charts2-x-hit").getAttribute("y"))).toBe(narrowPlotTop);
+    expect(narrowMixed.element.querySelectorAll(".charts2-x-hit")).toHaveLength(4);
     narrowMixed.destroy();
 
     const grouped = createChart("#chart", {
@@ -281,7 +299,7 @@ describe("unified public pipeline", () => {
     const stacked = createChart("#chart", {
       type: "bar",
       orientation: "horizontal",
-      barOptions: { stacked: true },
+      stacked: true,
       data: {
         labels: labels.slice(0, 3),
         datasets: [
@@ -293,7 +311,9 @@ describe("unified public pipeline", () => {
     const stackedBars = [...stacked.element.querySelectorAll(".charts2-bar.charts2-visual-mark")];
     expect(stackedBars).toHaveLength(6);
     expect(stackedBars[0].getBBox().y).toBe(stackedBars[3].getBBox().y);
-    expect(stackedBars[3].getBBox().x).toBeCloseTo(stackedBars[0].getBBox().x + stackedBars[0].getBBox().width);
+    expect(stackedBars[3].getBBox().x).toBeCloseTo(
+      stackedBars[0].getBBox().x + stackedBars[0].getBBox().width,
+    );
     stacked.destroy();
 
     const denseLabels = Array.from({ length: 48 }, (_, index) => `W${index + 1}`);
@@ -316,7 +336,13 @@ describe("unified public pipeline", () => {
 
   it("renders all aggregation variants, pruning, legend control, and validation", () => {
     const many = { labels: ["A", "B", "C", "D"], datasets: [{ values: [40, 30, 20, 10] }] };
-    const pie = createChart("#chart", { type: "pie", data: many, maxSlices: 3, showLegend: false, startAngle: 30 });
+    const pie = createChart("#chart", {
+      type: "pie",
+      data: many,
+      maxSlices: 3,
+      legend: false,
+      startAngle: 30,
+    });
     expect(pie.element.querySelectorAll(".charts2-pie-slice")).toHaveLength(3);
     expect(pie.element.querySelector(".charts2-legend")).toBeNull();
     pie.destroy();
@@ -324,7 +350,10 @@ describe("unified public pipeline", () => {
     expect(donut.element.querySelectorAll(".charts2-donut-slice")).toHaveLength(4);
     expect(donut.element.querySelector(".charts2-direct-value").textContent).toBe("100");
     donut.destroy();
-    const single = createChart("#chart", { type: "donut", data: { labels: ["All"], datasets: [{ values: [100] }] } });
+    const single = createChart("#chart", {
+      type: "donut",
+      data: { labels: ["All"], datasets: [{ values: [100] }] },
+    });
     expect(single.element.querySelector("circle.charts2-donut-slice")).not.toBeNull();
     single.destroy();
     const percentage = createChart("#chart", { type: "percentage", data: many });
@@ -332,28 +361,28 @@ describe("unified public pipeline", () => {
     expect(percentage.element.querySelector("clipPath rect").getAttribute("rx")).toBe("6");
     expect(percentage.element.querySelectorAll(".charts2-percentage-segment[clip-path]")).toHaveLength(4);
     percentage.destroy();
-    const squarePercentage = createChart("#chart", { type: "percentage", barOptions: { radius: 0 }, data: many });
+    const squarePercentage = createChart("#chart", { type: "percentage", radius: 0, data: many });
     expect(squarePercentage.element.querySelector("clipPath")).toBeNull();
     expect(() =>
       createChart("#chart", { type: "pie", data: { labels: ["None"], datasets: [{ values: [0] }] } }),
-    ).toThrow("positive total");
+    ).toThrow("positive value");
   });
 
   it("rounds radial sector boundaries according to their data geometry", () => {
     const data = { labels: ["A", "B", "C"], datasets: [{ values: [50, 30, 20] }] };
-    const pie = createChart("#chart", { type: "pie", showLegend: false, data });
+    const pie = createChart("#chart", { type: "pie", legend: false, data });
     expect(pie.element.querySelector(".charts2-pie-slice").getAttribute("d").match(/Q/g)).toHaveLength(2);
     pie.destroy();
 
-    const donut = createChart("#chart", { type: "donut", showLegend: false, data });
+    const donut = createChart("#chart", { type: "donut", legend: false, data });
     expect(donut.element.querySelector(".charts2-donut-slice").getAttribute("d").match(/Q/g)).toHaveLength(4);
     donut.destroy();
 
-    const polar = createChart("#chart", { type: "polar-area", showLegend: false, data });
+    const polar = createChart("#chart", { type: "polar-area", legend: false, data });
     expect(polar.element.querySelector(".charts2-polar-area").getAttribute("d").match(/Q/g)).toHaveLength(2);
     polar.destroy();
 
-    const sharp = createChart("#chart", { type: "donut", showLegend: false, sectorOptions: { cornerRadius: 0 }, data });
+    const sharp = createChart("#chart", { type: "donut", legend: false, cornerRadius: 0, data });
     expect(sharp.element.querySelector(".charts2-donut-slice").getAttribute("d")).not.toContain("Q");
   });
 
@@ -374,17 +403,17 @@ describe("unified public pipeline", () => {
         type,
         width: 240,
         height: 240,
-        showLegend: false,
+        legend: false,
         padAngle: 0,
-        sectorOptions: { cornerRadius: 0 },
+        cornerRadius: 0,
         data: radialData,
       });
       const separated = createChart("#chart", {
         type,
         width: 240,
         height: 240,
-        showLegend: false,
-        sectorOptions: { cornerRadius: 0 },
+        legend: false,
+        cornerRadius: 0,
         data: radialData,
       });
       expect(startX(contiguous, selector, ring)).toBeCloseTo(120);
@@ -397,17 +426,17 @@ describe("unified public pipeline", () => {
       type: "pie",
       width: 240,
       height: 240,
-      showLegend: false,
+      legend: false,
       padAngle: 12,
-      sectorOptions: { cornerRadius: 0 },
+      cornerRadius: 0,
       data: radialData,
     });
     const standard = createChart("#chart", {
       type: "pie",
       width: 240,
       height: 240,
-      showLegend: false,
-      sectorOptions: { cornerRadius: 0 },
+      legend: false,
+      cornerRadius: 0,
       data: radialData,
     });
     expect(startX(custom, ".charts2-pie-slice")).toBeGreaterThan(startX(standard, ".charts2-pie-slice"));
@@ -433,9 +462,9 @@ describe("unified public pipeline", () => {
       type: "donut",
       width: 240,
       height: 240,
-      showLegend: false,
+      legend: false,
       padAngle: 12,
-      sectorOptions: { cornerRadius: 0 },
+      cornerRadius: 0,
       data: radialData,
     });
     const numbers = donut.element
@@ -450,7 +479,10 @@ describe("unified public pipeline", () => {
   });
 
   it("fills aggregation height and reserves wrapped legends systematically", () => {
-    const data = { labels: ["Done", "In progress", "Waiting", "Open"], datasets: [{ values: [40, 30, 20, 10] }] };
+    const data = {
+      labels: ["Done", "In progress", "Waiting", "Open"],
+      datasets: [{ values: [40, 30, 20, 10] }],
+    };
     const percentage = createChart("#chart", { type: "percentage", height: 280, data });
     const segment = percentage.element.querySelector(".charts2-percentage-segment");
     const legendLabels = [...percentage.element.querySelectorAll(".charts2-legend")];
@@ -462,7 +494,7 @@ describe("unified public pipeline", () => {
     expect(Number(legendLabels.at(-1).getAttribute("y"))).toBe(262);
     percentage.destroy();
 
-    const hiddenLegend = createChart("#chart", { type: "percentage", height: 280, showLegend: false, data });
+    const hiddenLegend = createChart("#chart", { type: "percentage", height: 280, legend: false, data });
     expect(
       Number(hiddenLegend.element.querySelector(".charts2-percentage-segment").getAttribute("height")),
     ).toBeCloseTo(178.56);
@@ -470,7 +502,12 @@ describe("unified public pipeline", () => {
     hiddenLegend.destroy();
 
     const wrappedData = {
-      labels: ["Completed after review", "In progress with owner", "Waiting for approval", "Open without assignee"],
+      labels: [
+        "Completed after review",
+        "In progress with owner",
+        "Waiting for approval",
+        "Open without assignee",
+      ],
       datasets: [{ values: [40, 30, 20, 10] }],
     };
     const wrapped = createChart("#chart", { type: "percentage", width: 180, height: 280, data: wrappedData });
@@ -479,14 +516,16 @@ describe("unified public pipeline", () => {
     );
     const wrappedSegment = wrapped.element.querySelector(".charts2-percentage-segment");
     expect(wrappedLegendY).toEqual([202, 222, 242, 262]);
-    expect(Number(wrappedSegment.getAttribute("y")) + Number(wrappedSegment.getAttribute("height"))).toBeLessThan(
-      wrappedLegendY[0] - 20,
-    );
+    expect(
+      Number(wrappedSegment.getAttribute("y")) + Number(wrappedSegment.getAttribute("height")),
+    ).toBeLessThan(wrappedLegendY[0] - 20);
     wrapped.destroy();
 
     for (const type of ["pie", "donut"]) {
       const radial = createChart("#chart", { type, height: 280, data });
-      const slices = [...radial.element.querySelectorAll(`.charts2-${type}-slice`)].map((slice) => slice.getBBox());
+      const slices = [...radial.element.querySelectorAll(`.charts2-${type}-slice`)].map((slice) =>
+        slice.getBBox(),
+      );
       const top = Math.min(...slices.map((bounds) => bounds.y));
       const bottom = Math.max(...slices.map((bounds) => bounds.y + bounds.height));
       expect(bottom - top).toBeGreaterThan(190);
@@ -515,7 +554,7 @@ describe("unified public pipeline", () => {
       countLabel: "events",
       radius: 4,
       colors: palette,
-      data: { dataPoints: { [stamp]: 5, "2026-01-01": 1 } },
+      data: { points: { [stamp]: 5, "2026-01-01": 1 } },
     });
     expect(heatmap.element.querySelector(".charts2-heat-cell").dataset.tooltip).toBe("2026-01-01: 1 events");
     expect(heatmap.element.querySelector(".charts2-heat-cell title")).toBeNull();
@@ -541,23 +580,20 @@ describe("unified public pipeline", () => {
     expect(heatmap.element.style.minWidth).toBe("");
     const resizedCells = [...heatmap.element.querySelectorAll(".charts2-heat-cell")];
     expect(
-      Math.max(...resizedCells.map((cell) => Number(cell.getAttribute("x")) + Number(cell.getAttribute("width")))),
+      Math.max(
+        ...resizedCells.map((cell) => Number(cell.getAttribute("x")) + Number(cell.getAttribute("width"))),
+      ),
     ).toBeLessThanOrEqual(widthOf(heatmap) - 14.4);
-    expect(heatmap.update({ dataPoints: {} })).toBe(heatmap);
-    expect(heatmap.element.querySelector(".charts2-heat-cell")).toBeNull();
+    expect(() => heatmap.update({ points: {} })).toThrow("at least one entry");
+    expect(heatmap.element.querySelector(".charts2-heat-cell")).not.toBeNull();
     expect(heatmap.element.querySelectorAll(".charts2-heat-legend-swatch")).toHaveLength(10);
     heatmap.destroy();
-    const hiddenLegend = createChart("#chart", {
+    const singleDay = createChart("#chart", {
       type: "heatmap",
-      showLegend: false,
-      data: { dataPoints: { "2026-01-01": 2 } },
+      data: { points: { "2026-01-01": 2 } },
     });
-    expect(hiddenLegend.element.querySelector(".charts2-heat-legend")).toBeNull();
-    const hiddenCell = hiddenLegend.element.querySelector(".charts2-heat-cell");
-    expect(Number(hiddenCell.getAttribute("y")) + Number(hiddenCell.getAttribute("height"))).toBe(
-      heightOf(hiddenLegend) - 24,
-    );
-    hiddenLegend.destroy();
+    expect(singleDay.element.querySelector(".charts2-heat-legend")).not.toBeNull();
+    singleDay.destroy();
 
     const year = Object.fromEntries(
       Array.from({ length: 365 }, (_, index) => [
@@ -572,33 +608,32 @@ describe("unified public pipeline", () => {
       height: 280,
       colors: palette,
       onSelect: onWeekSelect,
-      data: { dataPoints: year },
+      data: { points: year },
     });
     const narrowCells = [...narrow.element.querySelectorAll(".charts2-heat-cell")];
     const narrowSwatches = [...narrow.element.querySelectorAll(".charts2-heat-legend-swatch")];
     const weekHits = [...narrow.element.querySelectorAll(".charts2-heat-week-hit")];
     expect(narrow.element.parentElement).toHaveClass("charts2-scrollable-heatmap");
     expect(Number(narrow.element.style.width.replace("px", ""))).toBeGreaterThan(100);
-    expect(Math.min(...narrowCells.map((cell) => Number(cell.getAttribute("width"))))).toBeGreaterThanOrEqual(16);
-    expect(narrowCells.every((cell) => !cell.classList.contains("charts2-mark"))).toBe(true);
-    expect(weekHits).toHaveLength(53);
-    expect(JSON.parse(weekHits[0].dataset.tooltipItems)).toHaveLength(7);
-    expect(Number(weekHits[0].getAttribute("height"))).toBeGreaterThan(180);
+    expect(Math.min(...narrowCells.map((cell) => Number(cell.getAttribute("width"))))).toBeGreaterThanOrEqual(
+      16,
+    );
+    expect(narrowCells.every((cell) => cell.classList.contains("charts2-mark"))).toBe(true);
+    expect(weekHits).toHaveLength(0);
     expect(
       Number(narrowSwatches[1].getAttribute("x")) -
         Number(narrowSwatches[0].getAttribute("x")) -
         Number(narrowSwatches[0].getAttribute("width")),
     ).toBeCloseTo(2);
-    weekHits[0].dispatchEvent(new Event("pointerdown", { bubbles: true }));
+    narrowCells[0].dispatchEvent(new Event("pointerdown", { bubbles: true }));
     expect(tooltipFor(narrow).hidden).toBe(false);
-    expect(tooltipFor(narrow).querySelectorAll(".charts2-tooltip-row")).toHaveLength(7);
-    weekHits[0].dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    narrowCells[0].dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(onWeekSelect).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "heatmap",
         index: 0,
-        values: [0, 1, 2, 3, 4, 5, 6],
-        range: { start: "2026-01-01", end: "2026-01-07" },
+        key: "2026-01-01",
+        value: 0,
       }),
     );
     narrow.destroy();
@@ -606,7 +641,7 @@ describe("unified public pipeline", () => {
       type: "heatmap",
       width: 100,
       colors: palette,
-      data: { dataPoints: { "2026-01-01": 1 } },
+      data: { points: { "2026-01-01": 1 } },
     });
     const compactSwatches = [...compactLegend.element.querySelectorAll(".charts2-heat-legend-swatch")];
     expect(compactLegend.element.parentElement).not.toHaveClass("charts2-scrollable-heatmap");
@@ -616,24 +651,33 @@ describe("unified public pipeline", () => {
         Number(compactSwatches[0].getAttribute("width")),
     ).toBeCloseTo(0);
     compactLegend.destroy();
-    const tall = createChart("#chart", { type: "heatmap", height: 280, data: { dataPoints: year } });
+    const tall = createChart("#chart", { type: "heatmap", height: 280, data: { points: year } });
     const tallCells = [...tall.element.querySelectorAll(".charts2-heat-cell")];
     const tallGridBottom = Math.max(
       ...tallCells.map((cell) => Number(cell.getAttribute("y")) + Number(cell.getAttribute("height"))),
     );
     expect(Number(tallCells[0].getAttribute("height"))).toBeGreaterThan(18);
-    expect(Number(tall.element.querySelector(".charts2-heat-legend-swatch").getAttribute("y")) - tallGridBottom).toBe(
-      12,
+    expect(
+      Number(tall.element.querySelector(".charts2-heat-legend-swatch").getAttribute("y")) - tallGridBottom,
+    ).toBe(12);
+    expect(Number(tall.element.querySelector(".charts2-heat-legend-swatch").getAttribute("y")) + 11).toBe(
+      256,
     );
-    expect(Number(tall.element.querySelector(".charts2-heat-legend-swatch").getAttribute("y")) + 11).toBe(256);
     tall.destroy();
     expect(() =>
-      createChart("#chart", { type: "heatmap", data: { start: new Date("2026-02-01"), end: new Date("2026-01-01") } }),
-    ).toThrow("after");
-    expect(() => createChart("#chart", { type: "heatmap", data: { dataPoints: { bad: 1 } } })).toThrow(
+      createChart("#chart", {
+        type: "heatmap",
+        data: {
+          start: new Date("2026-02-01"),
+          end: new Date("2026-01-01"),
+          points: { "2026-01-15": 1 },
+        },
+      }),
+    ).toThrow("precede");
+    expect(() => createChart("#chart", { type: "heatmap", data: { points: { bad: 1 } } })).toThrow(
       "Invalid heatmap date",
     );
-    expect(() => createChart("#chart", { type: "heatmap", data: { dataPoints: { "2026-01-01": NaN } } })).toThrow(
+    expect(() => createChart("#chart", { type: "heatmap", data: { points: { "2026-01-01": NaN } } })).toThrow(
       "finite",
     );
     expect(() => createChart("#chart", { type: "line", colors: [], data: series })).toThrow("colors");
@@ -672,7 +716,9 @@ describe("unified public pipeline", () => {
       onSelect: bubbleSelect,
       data: { labels: ["Reach"], datasets: [{ name: "Audience", values: [{ x: 7, y: 12, r: 9 }] }] },
     });
-    bubble.element.querySelector(".charts2-x-hit").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    bubble.element
+      .querySelector(".charts2-point-hit")
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(bubbleSelect).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "bubble",
@@ -690,14 +736,17 @@ describe("unified public pipeline", () => {
       data: {
         labels: ["A", "B"],
         datasets: [
-          { name: "Short", values: [1] },
+          { name: "Short", values: [1, 0] },
           { name: "Long", values: [2, 3] },
         ],
       },
     });
-    sparse.element.querySelectorAll(".charts2-x-hit")[1].dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(sparseSelect).toHaveBeenCalledWith(expect.objectContaining({ values: [undefined, 3] }));
+    sparse.element
+      .querySelectorAll(".charts2-x-hit")[1]
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(sparseSelect).toHaveBeenCalledWith(expect.objectContaining({ values: [0, 3] }));
     expect(sparseSelect.mock.calls[0][0].points).toEqual([
+      { datasetIndex: 0, dataset: "Short", label: "B", x: 1, y: 0 },
       { datasetIndex: 1, dataset: "Long", label: "B", x: 1, y: 3 },
     ]);
     sparse.destroy();
@@ -707,38 +756,34 @@ describe("unified public pipeline", () => {
     const unlabeled = createChart("#chart", {
       type: "line",
       data: {
-        labels: [],
         datasets: [
           {
-            values: [
-              { x: 7, y: 2 },
-              { x: 8, y: 3 },
-            ],
+            values: [2, 3],
           },
         ],
       },
     });
-    expect(unlabeled.element.querySelector(".charts2-line title").textContent).toContain("7: 2");
-    expect(unlabeled.element.querySelector(".charts2-label:not(.charts2-value-label)")).toBeNull();
+    expect(unlabeled.element.querySelector(".charts2-line title").textContent).toContain("1: 2");
+    expect(unlabeled.element.querySelector(".charts2-label:not(.charts2-value-label)").textContent).toBe("1");
     unlabeled.destroy();
 
     const bubble = createChart("#chart", {
       type: "bubble",
-      data: { labels: [], datasets: [{ values: [{ x: 4, y: 2 }] }] },
+      data: { datasets: [{ values: [{ x: 4, y: 2, r: 4 }] }] },
     });
     expect(bubble.element.querySelector("title").textContent).toContain("4: 2");
     bubble.destroy();
-    const polar = createChart("#chart", { type: "polar-area", data: { labels: [], datasets: [{ values: [2] }] } });
+    const polar = createChart("#chart", { type: "polar-area", data: { datasets: [{ values: [2] }] } });
     expect(polar.element.querySelector(".charts2-mark").dataset.tooltip).toBe("1: 2");
-    expect(polar.element.querySelector(".charts2-label")).toBeNull();
+    expect(polar.element.querySelector(".charts2-label").textContent).toBe("1");
     polar.destroy();
-    const radar = createChart("#chart", { type: "radar", data: { labels: [], datasets: [{ values: [2, 3] }] } });
-    expect(radar.element.querySelectorAll(".charts2-label")).toHaveLength(0);
+    const radar = createChart("#chart", { type: "radar", data: { datasets: [{ values: [2, 3] }] } });
+    expect(radar.element.querySelectorAll(".charts2-label")).toHaveLength(2);
     radar.destroy();
     const scatter = createChart("#chart", {
       type: "scatter",
       onSelect: () => {},
-      data: { labels: [], datasets: [{ values: [{ x: 5, y: 2 }] }] },
+      data: { datasets: [{ values: [{ x: 5, y: 2 }] }] },
     });
     expect(scatter.element.querySelector("title").textContent).toBe("5: 2");
     const scatterSelection = [];
@@ -748,18 +793,21 @@ describe("unified public pipeline", () => {
     scatter.element.querySelector(".charts2-mark").dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(scatterSelection[0].label).toBe(5);
     scatter.destroy();
-    const bars = createChart("#chart", { type: "bar", data: { labels: [], datasets: [{ values: [2] }] } });
-    expect(bars.element.querySelector(".charts2-x-hit").dataset.tooltip).toBe("0 — Series 1: 2");
+    const bars = createChart("#chart", { type: "bar", data: { datasets: [{ values: [2] }] } });
+    expect(bars.element.querySelector(".charts2-x-hit").dataset.tooltip).toBe("1 — Series 1: 2");
     bars.destroy();
-    const mixedDefault = createChart("#chart", { type: "axis-mixed", data: { datasets: [{ values: [1, 2] }] } });
+    const mixedDefault = createChart("#chart", {
+      type: "mixed",
+      data: { datasets: [{ chartType: "line", values: [1, 2] }] },
+    });
     expect(mixedDefault.element.querySelector(".charts2-line")).not.toBeNull();
     mixedDefault.destroy();
     const multiBubble = createChart("#chart", {
       type: "bubble",
       data: {
         datasets: [
-          { name: "First", values: [{ y: 1 }] },
-          { name: "Second", values: [{ y: 2 }] },
+          { name: "First", values: [{ x: 1, y: 1, r: 5 }] },
+          { name: "Second", values: [{ x: 2, y: 2, r: 5 }] },
         ],
       },
     });
@@ -781,30 +829,36 @@ describe("unified public pipeline", () => {
     const chart = createChart("#chart", {
       type: "bar",
       orientation: "horizontal",
-      barOptions: { stacked: true },
+      stacked: true,
       data: {
-        labels: [],
-        datasets: [{ values: [2] }, { values: [3, -1] }, { values: [4, -2] }],
-        yMarkers: [{ value: 2, label: "Goal" }],
+        datasets: [
+          { name: "Series 1", values: [2, 0] },
+          { name: "Series 2", values: [3, -1] },
+          { name: "Series 3", values: [4, -2] },
+        ],
+        markers: [{ value: 2, label: "Goal" }],
       },
     });
     expect(chart.element.textContent).toContain("Goal");
     expect(chart.element.querySelector(".charts2-x-hit").dataset.tooltip).toBe(
-      "0 — Series 1: 2 · Series 2: 3 · Series 3: 4",
+      "1 — Series 1: 2 · Series 2: 3 · Series 3: 4",
     );
     expect(chart.element.querySelectorAll(".charts2-x-hit")).toHaveLength(2);
 
     const defaultLayerMixed = createChart("#chart", {
-      type: "axis-mixed",
-      barOptions: { stacked: true },
-      data: { datasets: [{ chartType: "bar", values: [2, 3] }, { values: [1, 2] }] },
+      type: "mixed",
+      data: {
+        datasets: [
+          { name: "Bars", chartType: "bar", values: [2, 3] },
+          { name: "Line", chartType: "line", values: [1, 2] },
+        ],
+      },
     });
     expect(defaultLayerMixed.element.querySelector(".charts2-line")).not.toBeNull();
     defaultLayerMixed.destroy();
 
     const lineOnlyMixed = createChart("#chart", {
-      type: "axis-mixed",
-      barOptions: { stacked: true },
+      type: "mixed",
       data: { datasets: [{ chartType: "line", values: [1, 2] }] },
     });
     expect(lineOnlyMixed.element.querySelector(".charts2-bar")).toBeNull();
@@ -812,30 +866,32 @@ describe("unified public pipeline", () => {
   });
 
   it("covers sparse aggregation, explicit frameless routing, empty heatmaps, and download names", () => {
-    const pie = createChart("#chart", {
-      type: "pie",
-      data: { labels: ["A", "B"], datasets: [{ values: [2, 3] }, { values: [1] }] },
-    });
-    expect(pie.element.querySelectorAll(".charts2-pie-slice")).toHaveLength(2);
-    pie.destroy();
+    expect(() =>
+      createChart("#chart", {
+        type: "pie",
+        data: { labels: ["A", "B"], datasets: [{ values: [2] }] },
+      }),
+    ).toThrow("match every dataset");
     const frameless = createChart("#chart", {
       type: "line",
-      showAxes: false,
-      showGrid: false,
-      showLabels: false,
-      showLegend: false,
-      lineOptions: { regionFill: true },
+      axes: false,
+      grid: false,
+      valueLabels: false,
+      legend: false,
+      area: true,
       data: { datasets: [{ values: [2, 5] }] },
     });
     expect(frameless.element.querySelector(".charts2-area")).not.toBeNull();
     frameless.destroy();
-    const empty = createChart("#chart", { type: "heatmap", data: {} });
-    expect(empty.element.textContent).toContain("Less");
+    expect(() => createChart("#chart", { type: "heatmap", data: { points: {} } })).toThrow(
+      "at least one entry",
+    );
+    const heatmap = createChart("#chart", { type: "heatmap", data: { points: { "2026-01-01": 0 } } });
     const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
-    expect(empty.toSvg()).toContain("<svg");
-    expect(empty.download("Empty heatmap")).toBe(empty);
+    expect(heatmap.toSvg()).toContain("<svg");
+    expect(heatmap.download("Heatmap.svg")).toBe(heatmap);
     click.mockRestore();
-    empty.destroy();
+    heatmap.destroy();
     const gradient = createChart("#chart", { type: "line", gradient: true, data: series });
     expect(gradient.element.querySelector("linearGradient")).not.toBeNull();
   });
@@ -891,7 +947,7 @@ describe("unified public pipeline", () => {
     const chart = createChart("#chart", {
       type: "heatmap",
       onSelect: () => {},
-      data: { dataPoints: { "2026-01-01": 4 } },
+      data: { points: { "2026-01-01": 4 } },
     });
     const selected = [];
     chart.element.parentElement.addEventListener("data-select", (event) => {
@@ -937,7 +993,9 @@ describe("unified public pipeline", () => {
     scatter.element.parentElement.addEventListener("data-select", (event) => {
       selected.push(event.detail);
     });
-    scatter.element.querySelector(".charts2-point-hit").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    scatter.element
+      .querySelector(".charts2-point-hit")
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(selected[0]).toMatchObject({ dataset: "Dense", label: 0.5, value: 0 });
     scatter.destroy();
 
@@ -953,7 +1011,15 @@ describe("unified public pipeline", () => {
     expect(horizontal.element.querySelector(".charts2-x-hit").getAttribute("fill")).toBe("transparent");
     horizontal.destroy();
 
-    const sparse = createChart("#chart", { type: "line", data: { datasets: [{ values: [1] }, { values: [2, 3] }] } });
+    const sparse = createChart("#chart", {
+      type: "line",
+      data: {
+        datasets: [
+          { name: "First", values: [1, 0] },
+          { name: "Second", values: [2, 3] },
+        ],
+      },
+    });
     expect(sparse.element.querySelectorAll(".charts2-x-hit")).toHaveLength(2);
     sparse.destroy();
 
@@ -984,23 +1050,21 @@ describe("unified public pipeline", () => {
       type: "timesheet",
       width: 320,
       onSelect,
-      timesheetOptions: {
-        formatTick: (date) => `T${date.getDate()}`,
-        formatDate: (date) => `D${date.getDate()}`,
-        formatDuration: (milliseconds) => `${milliseconds / 3_600_000} hours`,
-      },
+      formatTick: (date) => `T${date.getDate()}`,
+      formatDate: (date) => `D${date.getDate()}`,
+      formatDuration: (milliseconds) => `${milliseconds / 3_600_000} hours`,
       data: {
-        start: "2026-09-01T00:00:00",
-        end: "2026-09-05T00:00:00",
+        start: "2026-09-01T00:00:00Z",
+        end: "2026-09-05T00:00:00Z",
         tasks: [
           {
             label: "Design review with a deliberately long label",
-            start: "2026-09-01T00:00:00",
-            end: "2026-09-02T00:00:00",
+            start: "2026-09-01T00:00:00Z",
+            end: "2026-09-02T00:00:00Z",
             group: "Design",
             color: "#af52de",
           },
-          { label: "Build", start: "2026-09-02T00:00:00", end: "2026-09-04T00:00:00" },
+          { label: "Build", start: "2026-09-02T00:00:00Z", end: "2026-09-04T00:00:00Z" },
         ],
       },
     });
@@ -1014,9 +1078,13 @@ describe("unified public pipeline", () => {
     const first = chart.element.querySelector(".charts2-timesheet-hit");
     expect(firstBar.getAttribute("rx")).toBe("3");
     expect(Number(first.getAttribute("width"))).toBeGreaterThan(Number(firstBar.getAttribute("width")));
-    expect(first.dataset.tooltip).toBe("Design review with a deliberately long label: D1 – D2, 24 hours, Design");
+    expect(first.dataset.tooltip).toBe(
+      "Design review with a deliberately long label: D1 – D2, 24 hours, Design",
+    );
     first.focus();
-    expect(tooltipFor(chart).querySelector(".charts2-tooltip-heading").textContent).toContain("Design review");
+    expect(tooltipFor(chart).querySelector(".charts2-tooltip-heading").textContent).toContain(
+      "Design review",
+    );
     expect(
       [...tooltipFor(chart).querySelectorAll(".charts2-tooltip-row span")].map((node) => node.textContent),
     ).toEqual(["D1 – D2"]);
@@ -1033,58 +1101,71 @@ describe("unified public pipeline", () => {
     );
     expect(chart.point(1)).toMatchObject({ label: "Build", color: "#AF52DE" });
 
-    expect(chart.update({ tasks: [{ start: "2026-10-01T08:00:00", end: "2026-10-01T12:00:00" }] })).toBe(chart);
+    expect(
+      chart.update({
+        tasks: [{ label: "Task 1", start: "2026-10-01T08:00:00Z", end: "2026-10-01T12:00:00Z" }],
+      }),
+    ).toBe(chart);
     expect(chart.element.querySelector(".charts2-timesheet-task-label").textContent).toBe("Task 1");
     expect(chart.element.querySelector(".charts2-timesheet-hit").dataset.tooltip).toContain("4 hours");
 
     const square = createChart("#chart", {
       type: "timesheet",
-      timesheetOptions: { radius: 0 },
-      data: { tasks: [{ start: "2026-10-01T08:00:00", end: "2026-10-01T12:00:00" }] },
+      radius: 0,
+      data: { tasks: [{ label: "Task 1", start: "2026-10-01T08:00:00Z", end: "2026-10-01T12:00:00Z" }] },
     });
     expect(square.element.querySelector(".charts2-timesheet-bar").getAttribute("rx")).toBe("0");
   });
 
   it("validates timesheet dates, bounds, and task structure", () => {
-    expect(() => createChart("#chart", timesheetOptions())).toThrow("non-empty tasks");
-    expect(() => createChart("#chart", timesheetOptions({ tasks: [] }))).toThrow("non-empty tasks");
-    expect(() => createChart("#chart", timesheetOptions({ tasks: [null] }))).toThrow("must be an object");
-    expect(() => createChart("#chart", timesheetOptions({ tasks: [{ start: "bad", end: "2026-01-02" }] }))).toThrow(
-      "valid date",
-    );
-    expect(() => createChart("#chart", timesheetOptions({ tasks: [{ start: "2026-01-02", end: "bad" }] }))).toThrow(
-      "valid date",
-    );
+    expect(() => createChart("#chart", timesheetScene())).toThrow("non-empty tasks");
+    expect(() => createChart("#chart", timesheetScene({ tasks: [] }))).toThrow("non-empty tasks");
+    expect(() => createChart("#chart", timesheetScene({ tasks: [null] }))).toThrow("must be an object");
     expect(() =>
-      createChart("#chart", timesheetOptions({ tasks: [{ start: "2026-01-02", end: "2026-01-02" }] })),
+      createChart("#chart", timesheetScene({ tasks: [{ label: "Task", start: "bad", end: "2026-01-02" }] })),
+    ).toThrow("timezone offset or Z");
+    expect(() =>
+      createChart("#chart", timesheetScene({ tasks: [{ label: "Task", start: "2026-01-02", end: "bad" }] })),
+    ).toThrow("timezone offset or Z");
+    expect(() =>
+      createChart(
+        "#chart",
+        timesheetScene({ tasks: [{ label: "Task", start: "2026-01-02", end: "2026-01-02" }] }),
+      ),
     ).toThrow("after start");
     expect(() =>
       createChart(
         "#chart",
-        timesheetOptions({
+        timesheetScene({
           start: "2026-02-01",
           end: "2026-01-01",
-          tasks: [{ start: "2026-01-01", end: "2026-01-02" }],
+          tasks: [{ label: "Task", start: "2026-01-01", end: "2026-01-02" }],
         }),
       ),
     ).toThrow("after start");
     expect(() =>
       createChart(
         "#chart",
-        timesheetOptions({ start: "2026-01-02", tasks: [{ start: "2026-01-01", end: "2026-01-03" }] }),
+        timesheetScene({
+          start: "2026-01-02",
+          tasks: [{ label: "Task", start: "2026-01-01", end: "2026-01-03" }],
+        }),
       ),
     ).toThrow("contain every task");
     expect(() =>
       createChart(
         "#chart",
-        timesheetOptions({ end: "2026-01-02", tasks: [{ start: "2026-01-01", end: "2026-01-03" }] }),
+        timesheetScene({
+          end: "2026-01-02",
+          tasks: [{ label: "Task", start: "2026-01-01", end: "2026-01-03" }],
+        }),
       ),
     ).toThrow("contain every task");
   });
 
   it("adapts timesheet tick units and can hide all labels", () => {
     const ranges = [
-      [new Date("2026-01-01T00:00:00"), new Date("2026-01-02T00:00:00")],
+      [new Date("2026-01-01T00:00:00Z"), new Date("2026-01-02T00:00:00Z")],
       ["2026-01-01", "2026-01-12"],
       ["2026-01-01", "2027-01-01"],
       ["2020-01-01", "2025-01-01"],
@@ -1094,8 +1175,8 @@ describe("unified public pipeline", () => {
       const chart = createChart("#chart", {
         type: "timesheet",
         width: 240,
-        showLabels: index !== 4,
-        data: { tasks: [{ start, end }] },
+        valueLabels: index !== 4,
+        data: { tasks: [{ label: `Task ${index + 1}`, start, end }] },
       });
       expect(chart.element.querySelectorAll(".charts2-timesheet-bar")).toHaveLength(1);
       if (index === 4) {
@@ -1114,17 +1195,17 @@ describe("unified public pipeline", () => {
 
     const hours = createChart("#chart", {
       type: "timesheet",
-      data: { tasks: [{ start: "2026-01-01T08:00:00", end: "2026-01-01T12:00:00" }] },
+      data: { tasks: [{ label: "Task", start: "2026-01-01T08:00:00Z", end: "2026-01-01T12:00:00Z" }] },
     });
     expect(hours.element.querySelector(".charts2-timesheet-hit").dataset.tooltip).toContain("4 hours");
 
     const bare = createChart("#chart", {
       type: "timesheet",
       width: 240,
-      showAxes: false,
-      showGrid: false,
-      showLabels: false,
-      data: { tasks: [{ start: "2026-01-01", end: "2026-01-02" }] },
+      axes: false,
+      grid: false,
+      valueLabels: false,
+      data: { tasks: [{ label: "Task", start: "2026-01-01", end: "2026-01-02" }] },
     });
     expect(bare.element.querySelector(".charts2-grid")).toBeNull();
     expect(bare.element.querySelector(".charts2-axis")).toBeNull();

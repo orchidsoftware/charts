@@ -1,4 +1,4 @@
-import { createChart } from "../../src/index.js";
+import createChart from "./MountChart.js";
 
 /**
  * Drives one interactive chart through person-level feature actions.

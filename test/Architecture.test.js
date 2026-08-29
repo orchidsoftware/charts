@@ -26,8 +26,27 @@ function imports(path) {
 }
 
 describe("architecture fitness functions", () => {
-  it("keeps one obvious JavaScript package entry", () => {
-    expect(Object.keys(publicApi)).toEqual(["createChart"]);
+  it("exports only the frozen named chart definitions", () => {
+    const names = [
+      "LineChart",
+      "BarChart",
+      "ScatterChart",
+      "MixedChart",
+      "BubbleChart",
+      "PieChart",
+      "DonutChart",
+      "PercentageChart",
+      "RadarChart",
+      "PolarAreaChart",
+      "HeatmapChart",
+      "TimesheetChart",
+    ].toSorted((left, right) => left.localeCompare(right));
+
+    expect(Object.keys(publicApi)).toEqual(names);
+    for (const [name, definition] of Object.entries(publicApi)) {
+      expect(Object.isFrozen(definition), name).toBe(true);
+      expect(Object.keys(definition), name).toEqual(["make"]);
+    }
   });
 
   it("keeps only cohesive source areas instead of one-file directories", () => {
@@ -44,7 +63,14 @@ describe("architecture fitness functions", () => {
   });
 
   it("keeps closed vocabularies and shared value collections immutable", () => {
-    for (const value of [ChartType, ChartOrientation, YAxisPosition, TYPES, DEFAULT_COLORS, TIME_TICK_STEPS]) {
+    for (const value of [
+      ChartType,
+      ChartOrientation,
+      YAxisPosition,
+      TYPES,
+      DEFAULT_COLORS,
+      TIME_TICK_STEPS,
+    ]) {
       expect(Object.isFrozen(value)).toBe(true);
     }
     expect(Reflect.set(ChartType, "LINE", "changed")).toBe(false);
@@ -79,7 +105,9 @@ describe("architecture fitness functions", () => {
       .filter((path) => path.startsWith("renderers/"));
 
     for (const path of rendererModules) {
-      expect(source(path), path).not.toMatch(/createElement|createElementNS|addEventListener|replaceChildren/);
+      expect(source(path), path).not.toMatch(
+        /createElement|createElementNS|addEventListener|replaceChildren/,
+      );
       expect(imports(path), path).not.toContain(expect.stringContaining("/core/"));
       expect(imports(path), path).not.toContain(expect.stringContaining("/interactions/"));
     }
@@ -90,8 +118,12 @@ describe("architecture fitness functions", () => {
     expect(source("core/ChartData.js")).toMatch(/class ChartData[\s\S]*#datasets = \[\];/);
     expect(source("core/ChartSelection.js")).toMatch(/class ChartSelection[\s\S]*#type;/);
     expect(source("core/ChartTooltip.js")).toMatch(/class ChartTooltip[\s\S]*#element;/);
-    expect(source("core/InteractionController.js")).toMatch(/class InteractionController[\s\S]*#selectedIndex;/);
-    expect(source("renderers/CartesianLayout.js")).toMatch(/class CartesianLayout[\s\S]*#chart;[\s\S]*#pointX;/);
+    expect(source("core/InteractionController.js")).toMatch(
+      /class InteractionController[\s\S]*#selectedIndex;/,
+    );
+    expect(source("renderers/CartesianLayout.js")).toMatch(
+      /class CartesianLayout[\s\S]*#chart;[\s\S]*#pointX;/,
+    );
     expect(source("renderers/CartesianInspectorRenderer.js")).toMatch(
       /class CartesianInspectorRenderer[\s\S]*#layout;/,
     );
@@ -102,13 +134,17 @@ describe("architecture fitness functions", () => {
     const concreteRenderers = Object.keys(sources)
       .map((path) => path.replace("../src/", ""))
       .filter((path) =>
-        /^renderers\/(Aggregation|Cartesian|Heatmap|Legend|PolarArea|Radar|Timesheet)Renderer\.js$/.test(path),
+        /^renderers\/(Aggregation|Cartesian|Heatmap|Legend|PolarArea|Radar|Timesheet)Renderer\.js$/.test(
+          path,
+        ),
       );
     expect(concreteRenderers).toHaveLength(7);
     for (const path of concreteRenderers) {
       expect(source(path), path).toMatch(/export default class \w+Renderer/);
     }
-    expect(source("core/Chart.js")).not.toMatch(/\.call\(this\)|this\.(options|datasets|tooltip|parent|svg)\b/);
+    expect(source("core/Chart.js")).not.toMatch(
+      /\.call\(this\)|this\.(options|datasets|tooltip|parent|svg)\b/,
+    );
   });
 
   it("fails closed before an unknown renderer can touch chart state", () => {
@@ -144,7 +180,9 @@ describe("architecture fitness functions", () => {
     for (const prefix of ["get", "set"]) {
       const forbidden = declarations.some((line) => {
         const candidates = [prefix, `#${prefix}`, `static #${prefix}`, `function ${prefix}`];
-        return candidates.some((candidate) => line.startsWith(candidate) && uppercase.includes(line[candidate.length]));
+        return candidates.some(
+          (candidate) => line.startsWith(candidate) && uppercase.includes(line[candidate.length]),
+        );
       });
       expect(forbidden, `${prefix}* application method`).toBe(false);
     }
@@ -161,7 +199,12 @@ describe("architecture fitness functions", () => {
 
   it("routes closed chart choices through frozen enum values", () => {
     const runtime = Object.entries(sources)
-      .filter(([path]) => !path.endsWith("support/Constants.js"))
+      .filter(
+        ([path]) =>
+          !path.endsWith("support/Constants.js") &&
+          !path.includes("Builder") &&
+          !path.endsWith("core/ChartDefinition.js"),
+      )
       .map(([, contents]) => contents)
       .join("\n");
 

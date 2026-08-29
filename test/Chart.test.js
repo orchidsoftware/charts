@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createChart } from "../src/index.js";
+import createChart from "./support/MountChart.js";
 
 const tooltipFor = (chart) => chart.element.parentElement.querySelector(".charts2-tooltip");
 const widthOf = (chart) => chart.element.viewBox.baseVal.width;
@@ -10,13 +10,7 @@ const tickText = (chart) =>
 const data = {
   datasets: [
     { name: "Alpha", color: "#123456", values: [2, -1, 4] },
-    {
-      values: [
-        { x: 0, y: 1 },
-        { x: 1, y: 3 },
-        { x: 2, y: 2 },
-      ],
-    },
+    { name: "Beta", values: [1, 3, 2] },
   ],
 };
 
@@ -51,7 +45,9 @@ describe("Chart", () => {
     expect(chart.element.querySelectorAll(".charts2-grid-vertical")).toHaveLength(5);
     expect(chart.element.querySelectorAll(".charts2-point title")).toHaveLength(3);
     expect(chart.element.querySelector(".charts2-point title").textContent).toBe("Mon: 1");
-    expect(chart.element.querySelector(".charts2-point").getAttribute("fill")).toBe("var(--charts-point-fill)");
+    expect(chart.element.querySelector(".charts2-point").getAttribute("fill")).toBe(
+      "var(--charts-point-fill)",
+    );
     expect(chart.element.querySelector(".charts2-point").getAttribute("stroke")).toBe("#007AFF");
     expect(chart.element.querySelector(".charts2-point").getAttribute("r")).toBe("4.5");
     expect(getComputedStyle(chart.element.querySelector(".charts2-point")).strokeWidth).toBe("3px");
@@ -61,7 +57,9 @@ describe("Chart", () => {
     expect(getComputedStyle(halo).strokeWidth).toBe("5px");
     expect(halo.querySelector("title")).toBeNull();
     expect(
-      [...chart.element.querySelectorAll(".charts2-label:not(.charts2-value-label)")].map((node) => node.textContent),
+      [...chart.element.querySelectorAll(".charts2-label:not(.charts2-value-label)")].map(
+        (node) => node.textContent,
+      ),
     ).toEqual(["Mon", "Tue", "Wed"]);
   });
 
@@ -80,7 +78,12 @@ describe("Chart", () => {
     const nodes = [...chart.element.querySelectorAll(".charts2-label:not(.charts2-value-label)")];
     const boxes = nodes.map((node) => node.getBBox());
     expect(nodes.map((node) => node.textContent)).toEqual(labels);
-    expect(nodes.map((node) => node.getAttribute("text-anchor"))).toEqual(["start", "middle", "middle", "end"]);
+    expect(nodes.map((node) => node.getAttribute("text-anchor"))).toEqual([
+      "start",
+      "middle",
+      "middle",
+      "end",
+    ]);
     expect(nodes.every((node) => node.querySelector("tspan") === null)).toBe(true);
     expect(boxes[0].x).toBeGreaterThanOrEqual(28);
     expect(boxes.at(-1).x + boxes.at(-1).width).toBeLessThanOrEqual(872);
@@ -117,13 +120,17 @@ describe("Chart", () => {
     expect(integerLabels.map((label) => Number(label.getAttribute("y")))).toEqual(
       integerLabels.map((label) => Number(label.getAttribute("y"))).toSorted((a, b) => a - b),
     );
-    expect(Number(integerLabels[0].getAttribute("y"))).toBeLessThan(Number(integerLabels.at(-1).getAttribute("y")));
+    expect(Number(integerLabels[0].getAttribute("y"))).toBeLessThan(
+      Number(integerLabels.at(-1).getAttribute("y")),
+    );
     integer.destroy();
 
     const small = createChart("#chart", { type: "bar", data: { datasets: [{ values: [1, 2] }] } });
     expect(tickText(small)).toEqual(["2", "1", "0"]);
     const smallLabels = [...small.element.querySelectorAll(".charts2-value-label")];
-    expect(Number(smallLabels[0].getAttribute("y"))).toBeLessThan(Number(smallLabels.at(-1).getAttribute("y")));
+    expect(Number(smallLabels[0].getAttribute("y"))).toBeLessThan(
+      Number(smallLabels.at(-1).getAttribute("y")),
+    );
     small.destroy();
 
     const negative = createChart("#chart", {
@@ -141,20 +148,30 @@ describe("Chart", () => {
     }
     negative.destroy();
 
-    const millions = createChart("#chart", { type: "line", data: { datasets: [{ values: [6_450_000, 12_750_000] }] } });
+    const millions = createChart("#chart", {
+      type: "line",
+      data: { datasets: [{ values: [6_450_000, 12_750_000] }] },
+    });
     expect(tickText(millions)).toEqual(["15M", "10M", "5M", "0"]);
     millions.destroy();
 
-    const fractions = createChart("#chart", { type: "line", data: { datasets: [{ values: [0.00009, 0.00021] }] } });
+    const fractions = createChart("#chart", {
+      type: "line",
+      data: { datasets: [{ values: [0.00009, 0.00021] }] },
+    });
     expect(tickText(fractions)).toEqual(["0.00025", "0.0002", "0.00015", "0.0001", "0.00005", "0"]);
     const fractionLabels = [...fractions.element.querySelectorAll(".charts2-value-label")];
-    const fractionPlotLeft = Number(fractions.element.querySelector(".charts2-grid-horizontal").getAttribute("x1"));
+    const fractionPlotLeft = Number(
+      fractions.element.querySelector(".charts2-grid-horizontal").getAttribute("x1"),
+    );
     expect(fractionPlotLeft).toBeGreaterThan(28);
     expect(fractionLabels.every((label) => label.getBBox().x >= 0)).toBe(true);
-    expect(fractionLabels.every((label) => Number(label.getAttribute("x")) === fractionPlotLeft - 5)).toBe(true);
-    expect(Number(fractions.element.querySelector(".charts2-label:not(.charts2-value-label)").getAttribute("x"))).toBe(
-      fractionPlotLeft,
+    expect(fractionLabels.every((label) => Number(label.getAttribute("x")) === fractionPlotLeft - 5)).toBe(
+      true,
     );
+    expect(
+      Number(fractions.element.querySelector(".charts2-label:not(.charts2-value-label)").getAttribute("x")),
+    ).toBe(fractionPlotLeft);
     fractions.destroy();
 
     const tens = createChart("#chart", { type: "line", data: { datasets: [{ values: [8, 32] }] } });
@@ -167,9 +184,9 @@ describe("Chart", () => {
 
     const equalFractions = createChart("#chart", {
       type: "line",
-      showAxes: false,
-      showGrid: true,
-      showLabels: false,
+      axes: false,
+      grid: true,
+      valueLabels: false,
       data: { datasets: [{ values: [0.25, 0.25] }] },
     });
     expect(equalFractions.element.querySelector(".charts2-axis")).toBeNull();
@@ -203,7 +220,9 @@ describe("Chart", () => {
     expect(bars).toHaveLength(6);
     expect(bars[0].getBBox().width).toBeGreaterThan(0);
     expect(bars[1].getBBox().width).toBeGreaterThan(0);
-    expect(Math.max(...[...bars].map((bar) => bar.getBBox().y + bar.getBBox().height))).toBeLessThanOrEqual(292);
+    expect(Math.max(...[...bars].map((bar) => bar.getBBox().y + bar.getBBox().height))).toBeLessThanOrEqual(
+      292,
+    );
     const labels = [...chart.element.querySelectorAll(".charts2-label:not(.charts2-value-label)")];
     expect(labels.map((label) => label.textContent)).toEqual(["One", "Two", "Three"]);
     expect(labels.every((label) => label.getAttribute("text-anchor") === "end")).toBe(true);
@@ -225,7 +244,8 @@ describe("Chart", () => {
     expect(tooltipSwatches).toHaveLength(2);
     expect(
       tooltipSwatches.every(
-        (swatch) => getComputedStyle(swatch).width === "8px" && getComputedStyle(swatch).borderRadius === "50%",
+        (swatch) =>
+          getComputedStyle(swatch).width === "8px" && getComputedStyle(swatch).borderRadius === "50%",
       ),
     ).toBe(true);
     expect(tooltipSwatches.every((swatch) => swatch.getAttribute("aria-hidden") === "true")).toBe(true);
@@ -250,14 +270,16 @@ describe("Chart", () => {
     const line = createChart("#chart", {
       type: "line",
       width: 220,
-      axisOptions: { yAxisPosition: "right" },
+      yAxisPosition: "right",
       data: { labels: ["A", "B", "C"], datasets: [{ values: [0.00009, 0.00014, 0.00021] }] },
     });
     const valueLabels = [...line.element.querySelectorAll(".charts2-value-label")];
     const plotRight = Number(line.element.querySelector(".charts2-grid-horizontal").getAttribute("x2"));
     expect(valueLabels.every((label) => label.getAttribute("text-anchor") === "start")).toBe(true);
     expect(valueLabels.every((label) => Number(label.getAttribute("x")) === plotRight + 5)).toBe(true);
-    expect(Math.max(...valueLabels.map((label) => label.getBBox().x + label.getBBox().width))).toBeLessThanOrEqual(220);
+    expect(
+      Math.max(...valueLabels.map((label) => label.getBBox().x + label.getBBox().width)),
+    ).toBeLessThanOrEqual(220);
     expect(Number(line.element.querySelector(".charts2-grid-vertical").getAttribute("x1"))).toBe(28);
     const lastHit = [...line.element.querySelectorAll(".charts2-x-hit")].at(-1);
     expect(Number(lastHit.getAttribute("x")) + Number(lastHit.getAttribute("width"))).toBe(plotRight);
@@ -267,103 +289,78 @@ describe("Chart", () => {
       type: "bar",
       width: 240,
       orientation: "horizontal",
-      axisOptions: { yAxisPosition: "right" },
+      yAxisPosition: "right",
       data: { labels: ["North America", "Europe", "Asia-Pacific"], datasets: [{ values: [42, 36, 54] }] },
     });
-    const categoryLabels = [...horizontal.element.querySelectorAll(".charts2-label:not(.charts2-value-label)")];
+    const categoryLabels = [
+      ...horizontal.element.querySelectorAll(".charts2-label:not(.charts2-value-label)"),
+    ];
     const axisX = Number(horizontal.element.querySelector(".charts2-y-axis").getAttribute("x1"));
     expect(categoryLabels.every((label) => label.getAttribute("text-anchor") === "start")).toBe(true);
     expect(categoryLabels.every((label) => Number(label.getAttribute("x")) === axisX + 4)).toBe(true);
-    expect(Math.max(...categoryLabels.map((label) => label.getBBox().x + label.getBBox().width))).toBeLessThanOrEqual(
-      236,
-    );
+    expect(
+      Math.max(...categoryLabels.map((label) => label.getBBox().x + label.getBBox().width)),
+    ).toBeLessThanOrEqual(236);
   });
 
   it("uses an explicit label formatter without changing source data or interaction labels", () => {
-    const sourceLabels = [
-      "North America enterprise accounts",
-      "Europe, Middle East, and Africa",
-      "Asia-Pacific strategic partnerships",
-    ];
-    const formattedLabels = {
-      [sourceLabels[0]]: ["North America", "enterprise", "accounts"],
-      [sourceLabels[1]]: ["Europe, Middle", "East, and Africa"],
-      [sourceLabels[2]]: ["Asia-Pacific", "strategic", "partnerships"],
-    };
-    const formatLabel = vi.fn((label) => formattedLabels[label]);
+    const sourceLabels = ["North America", "Europe", "Asia-Pacific"];
+    const formatLabel = vi.fn((label) => `Region: ${label}`);
     const chart = createChart("#chart", {
       type: "bar",
       orientation: "horizontal",
       width: 640,
-      axisOptions: { formatLabel },
+      formatLabel,
       data: {
         labels: sourceLabels,
         datasets: [{ values: [9_800_000, 12_750_000, 6_450_000] }],
       },
     });
-    const axisX = Number(chart.element.querySelector(".charts2-axis").getAttribute("x1"));
     const labels = [...chart.element.querySelectorAll(".charts2-multiline-label")];
-    expect(axisX).toBeLessThan(100);
-    expect(labels.map((label) => label.querySelectorAll("tspan").length)).toEqual([3, 2, 3]);
-    expect([...labels[0].querySelectorAll("tspan")].map((line) => line.textContent)).toEqual([
-      "North America",
-      "enterprise",
-      "accounts",
-    ]);
-    expect([...labels[1].querySelectorAll("tspan")].map((line) => line.textContent)).toEqual([
-      "Europe, Middle",
-      "East, and Africa",
-    ]);
-    expect([...labels[2].querySelectorAll("tspan")].map((line) => line.textContent)).toEqual([
-      "Asia-Pacific",
-      "strategic",
-      "partnerships",
-    ]);
-    for (const label of labels) {
-      const widths = [...label.querySelectorAll("tspan")].map((line) => line.getBBox().width);
-      expect(Math.max(...widths) - Math.min(...widths)).toBeLessThan(30);
-    }
-    expect(labels.every((label) => label.querySelector("title") === null)).toBe(true);
+    expect(labels.map((label) => label.textContent)).toEqual(sourceLabels.map((label) => `Region: ${label}`));
     expect(labels.map((label) => label.getAttribute("aria-label"))).toEqual(sourceLabels);
-    expect(formatLabel).toHaveBeenCalledWith(sourceLabels[0], 0, { orientation: "horizontal", type: "bar" });
     expect(chart.point(0).label).toBe(sourceLabels[0]);
-    chart.element.querySelector(".charts2-x-hit").dispatchEvent(new MouseEvent("mousemove", { bubbles: true }));
-    expect(tooltipFor(chart).querySelector(".charts2-tooltip-heading").textContent).toBe(sourceLabels[0]);
+    chart.element
+      .querySelector(".charts2-x-hit")
+      .dispatchEvent(new MouseEvent("mousemove", { bubbles: true }));
+    expect(tooltipFor(chart).querySelector(".charts2-tooltip-heading").textContent).toBe(
+      `Region: ${sourceLabels[0]}`,
+    );
     chart.destroy();
+  });
 
-    const compact = createChart("#chart", {
+  it("preserves explicit formatter lines on horizontal category axes", () => {
+    const chart = createChart("#chart", {
       type: "bar",
       orientation: "horizontal",
-      width: 180,
-      data: { labels: ["ExtraordinarilyLongUnbrokenCategory"], datasets: [{ values: [1] }] },
+      formatLabel: () => ["Партнёрские интеграции", "проверка доступности", "и локализации"],
+      data: { labels: ["Партнёрские интеграции с проверкой"], datasets: [{ values: [61] }] },
     });
-    const compactLabel = compact.element.querySelector(".charts2-multiline-label");
-    expect(compactLabel.querySelector("tspan").textContent).toContain("…");
-    expect(compactLabel.querySelector("title").textContent).toBe("ExtraordinarilyLongUnbrokenCategory");
-    compact.destroy();
+    const label = chart.element.querySelector(".charts2-multiline-label");
 
-    const untouched = createChart("#chart", {
+    expect([...label.querySelectorAll("tspan")].map((line) => line.textContent)).toEqual([
+      "Партнёрские интеграции",
+      "проверка доступности",
+      "и локализации",
+    ]);
+    expect(label.getAttribute("aria-label")).toBe("Партнёрские интеграции с проверкой");
+  });
+
+  it("balances ordinary long horizontal labels without browser-dependent SVG wrapping", () => {
+    const chart = createChart("#chart", {
       type: "bar",
       orientation: "horizontal",
-      width: 240,
-      data: { labels: ["Long category one", "Long category two"], datasets: [{ values: [1, 2] }] },
+      width: 320,
+      data: {
+        labels: ["Partner integrations with availability and localization review"],
+        datasets: [{ values: [61] }],
+      },
     });
-    expect(
-      [...untouched.element.querySelectorAll(".charts2-multiline-label")].every(
-        (label) => label.querySelectorAll("tspan").length === 1,
-      ),
-    ).toBe(true);
-    untouched.destroy();
+    const lines = [...chart.element.querySelectorAll(".charts2-multiline-label tspan")];
 
-    const vertical = createChart("#chart", {
-      type: "line",
-      axisOptions: { formatLabel: (label, index) => (index === 0 ? ["Localized", label] : `Localized ${label}`) },
-      data: { labels: ["A", "B"], datasets: [{ values: [1, 2] }] },
-    });
-    const verticalLabels = [...vertical.element.querySelectorAll(".charts2-label:not(.charts2-value-label)")];
-    expect(verticalLabels.map((label) => label.textContent)).toEqual(["Localized A", "Localized B"]);
-    expect(verticalLabels.map((label) => label.getAttribute("aria-label"))).toEqual(["A", "B"]);
-    vertical.destroy();
+    expect(lines.length).toBeGreaterThan(1);
+    expect(lines.length).toBeLessThanOrEqual(3);
+    expect(lines.every((line) => !line.textContent.includes("…"))).toBe(true);
   });
 
   it.each([null, [], ["Valid", 1]])("rejects invalid formatted labels", (formatted) => {
@@ -371,16 +368,25 @@ describe("Chart", () => {
       createChart("#chart", {
         type: "bar",
         orientation: "horizontal",
-        axisOptions: { formatLabel: () => formatted },
+        formatLabel: () => formatted,
         data: { labels: ["A"], datasets: [{ values: [1] }] },
       }),
-    ).toThrow("formatLabel");
+    ).toThrow("Label formatter");
   });
 
   it("renders bubbles using point radii", () => {
     const chart = createChart("#chart", {
       type: "bubble",
-      data: { datasets: [{ values: [{ x: 2, y: 4, r: 9 }, { y: 2 }] }] },
+      data: {
+        datasets: [
+          {
+            values: [
+              { x: 2, y: 4, r: 9 },
+              { x: 3, y: 2, r: 5 },
+            ],
+          },
+        ],
+      },
     });
     const bubbles = chart.element.querySelectorAll(".charts2-bubble.charts2-visual-mark");
     expect(bubbles[0].getAttribute("r")).toBe("9");
@@ -396,7 +402,7 @@ describe("Chart", () => {
       data: {
         labels: ["Speed", "DX", "A11y", "Quality", "Size", "Stability"],
         datasets: [
-          { name: "Current", color: "#007aff", values: [-2, 0, 4, 2, 3, 1] },
+          { name: "Current", color: "#007aff", values: [2, 0, 4, 2, 3, 1] },
           { name: "Previous", color: "#34c759", values: [1, 2, 3, 4, 2, 3] },
           { name: "Target", color: "#af52de", values: [4, 4, 4, 4, 4, 4] },
         ],
@@ -410,9 +416,9 @@ describe("Chart", () => {
     expect(legendBox.y + legendBox.height).toBeLessThan(frameBox.y);
     const legendLabels = [...chart.element.querySelectorAll(".charts2-legend")];
     const legendSwatches = [...chart.element.querySelectorAll(".charts2-legend-swatch")];
-    expect(legendSwatches.every((swatch) => swatch.tagName === "circle" && swatch.getAttribute("r") === "4")).toBe(
-      true,
-    );
+    expect(
+      legendSwatches.every((swatch) => swatch.tagName === "circle" && swatch.getAttribute("r") === "4"),
+    ).toBe(true);
     expect(legendSwatches.every((swatch) => swatch.getAttribute("aria-hidden") === "true")).toBe(true);
     expect(
       legendLabels.map(
@@ -434,7 +440,7 @@ describe("Chart", () => {
     expect(tooltipFor(chart).querySelectorAll(".charts2-tooltip-row")).toHaveLength(6);
     expect(
       [...tooltipFor(chart).querySelectorAll(".charts2-tooltip-row strong")].map((node) => node.textContent),
-    ).toEqual(["-2", "0", "4", "2", "3", "1"]);
+    ).toEqual(["2", "0", "4", "2", "3", "1"]);
     const firstWidth = tooltipFor(chart).getBoundingClientRect().width;
     polygons[1].focus();
     expect(tooltipFor(chart).querySelector(".charts2-tooltip-heading").textContent).toBe("Previous");
@@ -445,7 +451,7 @@ describe("Chart", () => {
   it("renders polar-area slices including a full-circle slice", () => {
     const chart = createChart("#chart", {
       type: "polar-area",
-      data: { labels: ["A", "B", "C", "D"], datasets: [{ values: [-2, 4, 2, 1] }] },
+      data: { labels: ["A", "B", "C", "D"], datasets: [{ values: [2, 4, 2, 1] }] },
     });
     expect(chart.element.querySelectorAll(".charts2-polar-area")).toHaveLength(4);
     expect(chart.element.textContent).toContain("D");
@@ -487,30 +493,38 @@ describe("Chart", () => {
     [undefined, "options"],
     [{ type: "unknown", data }, "type"],
     [{ type: "bar", orientation: "diagonal", data }, "orientation"],
-    [{ type: "line", axisOptions: { yAxisPosition: "center" }, data }, "position"],
-    [{ type: "pie", padAngle: Infinity, data }, "Pad angle"],
-    [{ type: "pie", padAngle: -1, data }, "Pad angle"],
-    [{ type: "pie", padAngle: 360, data }, "Pad angle"],
-    [{ type: "bar", barOptions: { radius: -1 }, data }, "Bar radius"],
-    [{ type: "donut", sectorOptions: { cornerRadius: -1 }, data }, "Sector corner radius"],
-    [
-      { type: "timesheet", timesheetOptions: { radius: -1 }, data: { tasks: [{ start: 1, end: 2 }] } },
-      "Timesheet radius",
-    ],
-    [{ type: "line" }, "dataset"],
+    [{ type: "line", yAxisPosition: "center", data }, "position"],
+    [{ type: "pie", padAngle: Infinity, data }, "padAngle"],
+    [{ type: "pie", padAngle: -1, data }, "padAngle"],
+    [{ type: "pie", padAngle: 360, data }, "padAngle"],
+    [{ type: "bar", radius: -1, data }, "radius"],
+    [{ type: "donut", cornerRadius: -1, data }, "cornerRadius"],
+    [{ type: "timesheet", radius: -1, data: { tasks: [{ label: "Task", start: 1, end: 2 }] } }, "radius"],
+    [{ type: "line" }, "data"],
     [{ type: "line", data: { datasets: [] } }, "dataset"],
-    [{ type: "line", data: { datasets: [null] } }, "values"],
+    [{ type: "line", data: { datasets: [null] } }, "object"],
     [{ type: "line", data: { datasets: [{ values: [] }] } }, "values"],
-    [{ type: "line", data: { datasets: [{ values: [null] }] } }, "point"],
+    [{ type: "line", data: { datasets: [{ values: [null] }] } }, "finite"],
     [{ type: "line", data: { datasets: [{ values: [NaN] }] } }, "finite"],
     [{ type: "bubble", data: { datasets: [{ values: [{ y: 1, x: NaN }] }] } }, "finite"],
-    [{ type: "bubble", data: { datasets: [{ values: [{ y: NaN }] }] } }, "finite"],
-    [{ type: "bubble", data: { datasets: [{ values: [{ y: 1, r: NaN }] }] } }, "finite"],
+    [{ type: "bubble", data: { datasets: [{ values: [{ x: 1, y: NaN, r: 1 }] }] } }, "finite"],
+    [{ type: "bubble", data: { datasets: [{ values: [{ x: 1, y: 1, r: NaN }] }] } }, "finite"],
     [{ type: "line", width: 0, data }, "width"],
-    [{ type: "line", height: NaN, data }, "width"],
-    [{ type: "radar", data: { datasets: [{ values: [1] }, { values: [1, 2] }] } }, "equal"],
+    [{ type: "line", height: NaN, data }, "height"],
+    [
+      {
+        type: "radar",
+        data: {
+          datasets: [
+            { name: "First", values: [1] },
+            { name: "Second", values: [1, 2] },
+          ],
+        },
+      },
+      "match",
+    ],
     [{ type: "polar-area", data }, "exactly one"],
-    [{ type: "bubble", data: { datasets: [{ values: [{ y: 1, r: -1 }] }] } }, "negative"],
+    [{ type: "bubble", data: { datasets: [{ values: [{ x: 1, y: 1, r: -1 }] }] } }, "negative"],
     [{ type: "line", data: { labels: "A", datasets: [{ values: [1] }] } }, "labels"],
   ])("rejects malformed options and data", (options, message) => {
     expect(() => createChart("#chart", options)).toThrow(message);

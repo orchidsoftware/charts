@@ -2,8 +2,10 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { page } from "vitest/browser";
 
 import demoMarkup from "../demo/index.html?raw";
+
 import "../demo/style.css";
-import { createChart } from "../src/index.js";
+
+import createChart from "./support/MountChart.js";
 
 const screenshotOptions = {
   comparatorName: "pixelmatch",
@@ -24,8 +26,8 @@ const demoCards = [
   ["bubble", "#bubble"],
   ["radar", "#radar"],
   ["polar", "#polar"],
-  ["axis-mixed", "#axis-mixed"],
-  ["axis-mixed-signed", "#axis-mixed-signed"],
+  ["mixed", "#mixed"],
+  ["axis-mixed-signed", "#mixed-signed"],
   ["pie", "#pie"],
   ["donut", "#donut"],
   ["percentage", "#percentage"],
@@ -43,6 +45,22 @@ const responsiveCards = [
   ["percentage", "#percentage"],
   ["timesheet", "#timesheet"],
   ["heatmap", "#heatmap"],
+];
+
+const sharedMixedCards = [
+  ["mixed-shared-hover", "#mixed"],
+  ["mixed-dual-axis-shared-hover", "#mixed-signed"],
+];
+
+const demoXYCards = [
+  ["scatter-real-hover", "#scatter", "$799", 2],
+  ["bubble-real-hover", "#bubble", "Music", 1],
+];
+
+const demoCompositionCards = [
+  ["pie-real-hover", "#pie"],
+  ["donut-real-hover", "#donut"],
+  ["percentage-real-hover", "#percentage"],
 ];
 
 const demoSections = [
@@ -88,6 +106,88 @@ const stateFixtures = [
     },
   ],
   [
+    "donut",
+    {
+      type: "donut",
+      data: { labels: ["Individual", "Family", "Student"], datasets: [{ values: [61, 27, 12] }] },
+    },
+  ],
+  [
+    "percentage",
+    {
+      type: "percentage",
+      data: { labels: ["Photos", "Apps", "Free"], datasets: [{ values: [72, 58, 64] }] },
+    },
+  ],
+  [
+    "scatter",
+    {
+      type: "scatter",
+      data: {
+        datasets: [
+          {
+            name: "Phone",
+            values: [
+              { x: 1, y: 18 },
+              { x: 2, y: 24 },
+            ],
+          },
+          {
+            name: "Tablet",
+            values: [
+              { x: 1, y: 24 },
+              { x: 2, y: 31 },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+  [
+    "bubble",
+    {
+      type: "bubble",
+      data: {
+        datasets: [
+          {
+            name: "Apps",
+            values: [
+              { x: 1, y: 78, r: 18 },
+              { x: 2, y: 52, r: 10 },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+  [
+    "mixed",
+    {
+      type: "mixed",
+      data: {
+        labels: ["W1", "W2", "W3"],
+        datasets: [
+          { name: "Actual", chartType: "bar", values: [28, 37, 34] },
+          { name: "Plan", chartType: "line", values: [32, 35, 39] },
+        ],
+      },
+    },
+  ],
+  [
+    "mixed-dual-axis",
+    {
+      type: "mixed",
+      yAxisPosition: "right",
+      data: {
+        labels: ["Mon", "Tue", "Wed"],
+        datasets: [
+          { name: "Change", chartType: "bar", values: [-18, 9, -6] },
+          { name: "Trend", chartType: "line", values: [-8, -4, -2] },
+        ],
+      },
+    },
+  ],
+  [
     "radar",
     {
       type: "radar",
@@ -105,12 +205,22 @@ const stateFixtures = [
     {
       type: "timesheet",
       data: {
-        start: "2026-09-01T00:00:00",
-        end: "2026-09-10T00:00:00",
+        start: "2026-09-01T00:00:00Z",
+        end: "2026-09-10T00:00:00Z",
         tasks: [
-          { label: "Design", start: "2026-09-01T00:00:00", end: "2026-09-03T00:00:00", group: "Product" },
-          { label: "Implementation", start: "2026-09-03T00:00:00", end: "2026-09-07T00:00:00", group: "Engineering" },
-          { label: "Release", start: "2026-09-07T00:00:00", end: "2026-09-10T00:00:00", group: "Distribution" },
+          { label: "Design", start: "2026-09-01T00:00:00Z", end: "2026-09-03T00:00:00Z", group: "Product" },
+          {
+            label: "Implementation",
+            start: "2026-09-03T00:00:00Z",
+            end: "2026-09-07T00:00:00Z",
+            group: "Engineering",
+          },
+          {
+            label: "Release",
+            start: "2026-09-07T00:00:00Z",
+            end: "2026-09-10T00:00:00Z",
+            group: "Distribution",
+          },
         ],
       },
     },
@@ -123,7 +233,7 @@ const stateFixtures = [
       data: {
         start: new Date("2026-01-01T00:00:00Z"),
         end: new Date("2026-03-31T00:00:00Z"),
-        dataPoints: Object.fromEntries(
+        points: Object.fromEntries(
           Array.from({ length: 90 }, (_, index) => {
             const date = new Date(Date.UTC(2026, 0, index + 1)).toISOString().slice(0, 10);
             return [date, (index * 7 + (index % 5)) % 13];
@@ -341,6 +451,42 @@ describe.sequential("visual regression baselines", () => {
   for (const [name, selector] of demoCards) {
     it(`keeps the desktop ${name} card stable`, async () => {
       await matchScreenshot(demoCard(selector), `demo-desktop-light-${name}`);
+    });
+  }
+
+  for (const [name, selector] of sharedMixedCards) {
+    it(`keeps the ${name} popover stable`, async () => {
+      const card = demoCard(selector);
+      const mark = card.querySelectorAll(".charts2-x-hit")[1];
+      mark.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
+
+      expect(card.querySelector(".charts2-tooltip-heading").textContent).not.toBe("");
+      expect(card.querySelectorAll(".charts2-tooltip-row")).toHaveLength(3);
+      await matchScreenshot(card, name);
+    });
+  }
+
+  for (const [name, selector, heading, rowCount] of demoXYCards) {
+    it(`keeps the ${name} popover stable`, async () => {
+      const card = demoCard(selector);
+      const mark = card.querySelectorAll(".charts2-x-hit")[1];
+      mark.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
+
+      expect(card.querySelector(".charts2-tooltip-heading").textContent).toBe(heading);
+      expect(card.querySelectorAll(".charts2-tooltip-row")).toHaveLength(rowCount);
+      await matchScreenshot(card, name);
+    });
+  }
+
+  for (const [name, selector] of demoCompositionCards) {
+    it(`keeps the ${name} popover stable`, async () => {
+      const card = demoCard(selector);
+      const mark = card.querySelectorAll(".charts2-mark")[1];
+      mark.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
+
+      expect(mark).toHaveClass("is-hovered");
+      expect(card.querySelectorAll(".charts2-tooltip-row")).toHaveLength(1);
+      await matchScreenshot(card, name);
     });
   }
 

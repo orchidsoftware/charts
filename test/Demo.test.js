@@ -13,8 +13,8 @@ const showcaseIds = [
   "bubble",
   "radar",
   "polar",
-  "axis-mixed",
-  "axis-mixed-signed",
+  "mixed",
+  "mixed-signed",
   "pie",
   "donut",
   "percentage",
@@ -61,7 +61,9 @@ describe("real-world demo", () => {
     ]);
     expect(links).toHaveLength(14);
     expect(links.every((link) => demo.querySelector(link.getAttribute("href")))).toBe(true);
-    expect(links.every((link) => link.querySelector("svg").getAttribute("aria-hidden") === "true")).toBe(true);
+    expect(links.every((link) => link.querySelector("svg").getAttribute("aria-hidden") === "true")).toBe(
+      true,
+    );
   });
 
   it("varies showcase density while keeping the complete quality matrix immutable", async () => {
@@ -79,11 +81,29 @@ describe("real-world demo", () => {
     expect(document.querySelector("#radar svg").getAttribute("height")).toBe("320");
     expect(document.querySelector("#fractions svg").getAttribute("height")).toBe("280");
 
+    const localizedLabels = [...document.querySelectorAll("#absurd-labels .charts2-multiline-label")];
+    expect(
+      localizedLabels.map((label) => [...label.querySelectorAll("tspan")].map((line) => line.textContent)),
+    ).toEqual([
+      ["Manual verification", "after inconclusive", "compliance review"],
+      ["Партнёрские интеграции", "проверка доступности", "и локализации"],
+      ["顧客向け分析", "プラットフォーム", "段階的な移行"],
+      ["طلبات المؤسسات", "مراجعة يدوية إضافية", "قبل الموافقة النهائية"],
+    ]);
+    expect(localizedLabels.every((label) => !label.textContent.includes("…"))).toBe(true);
+    expect(
+      [...document.querySelectorAll("#large-values .charts2-multiline-label")].map(
+        (label) => label.querySelectorAll("tspan").length,
+      ),
+    ).toEqual([2, 2, 2]);
+
     const cards = [...document.querySelectorAll("article")];
     const overflow = cards.flatMap((article) => {
       const articleRight = article.getBoundingClientRect().right;
       const visible = [
-        ...article.querySelectorAll("svg path, svg line, svg rect, svg circle, svg polygon, svg polyline, svg text"),
+        ...article.querySelectorAll(
+          "svg path, svg line, svg rect, svg circle, svg polygon, svg polyline, svg text",
+        ),
       ].filter((element) => {
         const style = getComputedStyle(element);
         return (
@@ -122,21 +142,23 @@ describe("real-world demo", () => {
     const heatmapCells = [...heatmapHost.querySelectorAll(".charts2-heat-cell")];
     expect(heatmapHost).toHaveClass("charts2-scrollable-heatmap");
     expect(heatmapHost.scrollWidth).toBeGreaterThan(heatmapHost.clientWidth);
-    expect(Math.min(...heatmapCells.map((cell) => cell.getBoundingClientRect().width))).toBeGreaterThanOrEqual(16);
-    expect(heatmapHost.querySelectorAll(".charts2-heat-week-hit")).toHaveLength(53);
+    expect(
+      Math.min(...heatmapCells.map((cell) => cell.getBoundingClientRect().width)),
+    ).toBeGreaterThanOrEqual(16);
+    expect(heatmapHost.querySelectorAll(".charts2-heat-cell.charts2-mark")).toHaveLength(heatmapCells.length);
     heatmapHost.scrollLeft = heatmapHost.scrollWidth - heatmapHost.clientWidth;
-    [...heatmapHost.querySelectorAll(".charts2-heat-week-hit")].at(-1).focus();
+    heatmapCells.at(-1).focus();
     const heatmapHostBounds = heatmapHost.getBoundingClientRect();
     const heatmapTooltipBounds = heatmapHost.querySelector(".charts2-tooltip").getBoundingClientRect();
     expect(heatmapTooltipBounds.left).toBeGreaterThanOrEqual(heatmapHostBounds.left + 4);
     expect(heatmapTooltipBounds.right).toBeLessThanOrEqual(heatmapHostBounds.right - 4);
 
-    const signedMixed = document.querySelector("#axis-mixed-signed svg");
+    const signedMixed = document.querySelector("#mixed-signed svg");
     const signedValueLabels = [...signedMixed.querySelectorAll(".charts2-value-label")];
     expect(signedValueLabels.every((label) => label.getAttribute("text-anchor") === "start")).toBe(true);
-    expect(Math.max(...signedValueLabels.map((label) => label.getBoundingClientRect().right))).toBeLessThanOrEqual(
-      signedMixed.getBoundingClientRect().right,
-    );
+    expect(
+      Math.max(...signedValueLabels.map((label) => label.getBoundingClientRect().right)),
+    ).toBeLessThanOrEqual(signedMixed.getBoundingClientRect().right);
     const signedLegend = signedMixed.querySelector(".charts2-legend-group").getBoundingClientRect();
     const signedPlotTop = signedMixed.querySelector(".charts2-grid-vertical").getBoundingClientRect().top;
     expect(signedLegend.bottom).toBeLessThanOrEqual(signedPlotTop - 6);
@@ -172,6 +194,23 @@ describe("real-world demo", () => {
       "System Data: 23 GB (9%)",
       "Free: 64 GB (25%)",
     ]);
+
+    const xyCases = [
+      ["scatter", "$799", "Phone", "20 h"],
+      ["bubble", "Music", "Weekly users", "64, size 18"],
+    ];
+
+    for (const [id, heading, name, value] of xyCases) {
+      const host = document.querySelector(`#${id}`);
+      const hit = host.querySelectorAll(".charts2-x-hit")[1];
+
+      hit.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
+      expect(host.querySelector(".charts2-tooltip-heading").textContent).toBe(heading);
+      expect(host.querySelector(".charts2-tooltip-row span").textContent).toBe(name);
+      expect(host.querySelector(".charts2-tooltip-row strong").textContent).toBe(value);
+      expect(host.querySelector(".charts2-point-hit")).toBeNull();
+      hit.dispatchEvent(new PointerEvent("pointerleave", { bubbles: true }));
+    }
 
     const stressBefore = stressIds.map((id) => document.querySelector(`#${id} svg`).getHTML());
     const showcaseBefore = document.querySelector("#line .charts2-line").getAttribute("d");

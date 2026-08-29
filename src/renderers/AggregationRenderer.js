@@ -1,5 +1,6 @@
 import { AGGREGATION_INSET, ChartType, DEFAULT_PERCENTAGE_RADIUS } from "../support/Constants.js";
-import { svg, formatNumber } from "../support/Dom.js";
+import { svg } from "../support/Dom.js";
+import { formatLabel, formatValue } from "../support/Formatting.js";
 import { aggregationLayout, tooltipText } from "../support/Presentation.js";
 
 import Composition from "./Composition.js";
@@ -12,6 +13,7 @@ const FULL_PERCENTAGE = 100;
 const MINIMUM_SECTOR_RADIUS = 8;
 const SECTOR_RADIUS_RATIO = 0.44;
 const DONUT_LABEL_OFFSET = 5;
+const VALUE_LABEL_TARGET = "value-label";
 
 /**
  * Names the resolved geometry of one horizontal percentage strip.
@@ -67,7 +69,7 @@ export default class AggregationRenderer {
     const colors = this.#chart.options.colors;
 
     const legendItems = composition.parts.map((part, index) => ({
-      label: part.label,
+      label: formatLabel(this.#chart.options, part.label, { target: VALUE_LABEL_TARGET, index }),
       color: colors[index % colors.length],
     }));
 
@@ -75,7 +77,7 @@ export default class AggregationRenderer {
       width,
       height,
       items: legendItems,
-      showLegend: this.#chart.options.showLegend,
+      legend: this.#chart.options.legend,
     });
 
     if (type === ChartType.PERCENTAGE) {
@@ -107,7 +109,7 @@ export default class AggregationRenderer {
    */
   #renderPercentage(composition, { colors, layout, width }) {
     const strip = new PercentageStrip(width, layout, {
-      radius: this.#chart.options.barOptions?.radius ?? DEFAULT_PERCENTAGE_RADIUS,
+      radius: this.#chart.options.radius ?? DEFAULT_PERCENTAGE_RADIUS,
       id: `charts2-percentage-clip-${this.#chart.id}`,
     });
 
@@ -204,29 +206,68 @@ export default class AggregationRenderer {
 
     const sectors = composition.sectors({ x: cx, y: cy }, radius, { type, colors });
 
-    for (const { attributes, index, name, part } of sectors) {
-      this.#surface.mark(
-        name,
-        {
-          ...attributes,
-          class: `charts2-${type}-slice charts2-mark`,
-        },
-        {
-          dataset: 0,
-          point: index,
-          title: `${part.label}: ${formatNumber(part.value)} (${Math.round(composition.shareOf(part) * FULL_PERCENTAGE)}%)`,
-        },
-      );
+    for (const sector of sectors) {
+      this.#appendSector(composition, sector, type);
     }
 
     if (type === ChartType.DONUT) {
-      this.#surface.text(formatNumber(composition.total), {
-        x: cx,
-        y: cy + DONUT_LABEL_OFFSET,
-        class: "charts2-direct-value",
-        "text-anchor": "middle",
-      });
+      this.#surface.text(
+        formatValue(this.#chart.options, composition.total, { target: VALUE_LABEL_TARGET }),
+        {
+          x: cx,
+          y: cy + DONUT_LABEL_OFFSET,
+          class: "charts2-direct-value",
+          "text-anchor": "middle",
+        },
+      );
     }
+  }
+
+  /**
+   * Appends one radial sector with stable outer-arc tooltip metadata.
+   *
+   * @param {Composition} composition - Current normalized composition.
+   * @param {object} sector - Renderable sector descriptor.
+   * @param {string} type - Pie or donut renderer type.
+   * @returns {void} One interactive sector is appended.
+   */
+  #appendSector(composition, sector, type) {
+    this.#surface.mark(
+      sector.name,
+      {
+        ...sector.attributes,
+        "data-tooltip-anchor-x": sector.tooltip.x,
+        "data-tooltip-anchor-y": sector.tooltip.y,
+        "data-tooltip-placement": sector.tooltip.placement,
+        class: `charts2-${type}-slice charts2-mark`,
+      },
+      {
+        dataset: 0,
+        point: sector.index,
+        title: this.#sectorTitle(composition, sector.part, sector.index),
+      },
+    );
+  }
+
+  /**
+   * Formats one composition mark through tooltip-specific precedence.
+   *
+   * @param {Composition} composition - Current normalized composition.
+   * @param {object} part - Current labeled value.
+   * @param {number} index - Stable part position.
+   * @returns {string} Plain tooltip and accessibility text.
+   */
+  #sectorTitle(composition, part, index) {
+    return tooltipText({
+      options: this.#chart.options,
+      label: part.label,
+      value: part.value,
+      dataset: this.#chart.datasets[0],
+      datasetIndex: 0,
+      index,
+      point: this.#chart.datasets[0].points[index],
+      suffix: ` (${Math.round(composition.shareOf(part) * FULL_PERCENTAGE)}%)`,
+    });
   }
 
   /**
@@ -239,7 +280,10 @@ export default class AggregationRenderer {
    */
   #renderItemLegend(entries, colors, y) {
     new LegendRenderer({ chart: this.#chart, surface: this.#surface }).renderItems(
-      entries.map((item, index) => ({ label: item.label, color: colors[index % colors.length] })),
+      entries.map((item, index) => ({
+        label: formatLabel(this.#chart.options, item.label, { target: VALUE_LABEL_TARGET, index }),
+        color: colors[index % colors.length],
+      })),
       y,
     );
   }

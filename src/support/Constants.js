@@ -4,7 +4,7 @@ const ChartType = Object.freeze({
   LINE: "line",
   BAR: "bar",
   SCATTER: "scatter",
-  AXIS_MIXED: "axis-mixed",
+  AXIS_MIXED: "mixed",
   BUBBLE: "bubble",
   PIE: "pie",
   DONUT: "donut",
@@ -27,7 +27,17 @@ const YAxisPosition = Object.freeze({
 
 const CHART_ORIENTATIONS = Object.freeze(Object.values(ChartOrientation));
 const Y_AXIS_POSITIONS = Object.freeze(Object.values(YAxisPosition));
-const DEFAULT_COLORS = Object.freeze(["#007AFF", "#AF52DE", "#FF3B30", "#FF9500", "#248A3D", "#5856D6", "#008C95"]);
+
+const DEFAULT_COLORS = Object.freeze([
+  "#007AFF",
+  "#AF52DE",
+  "#FF3B30",
+  "#FF9500",
+  "#248A3D",
+  "#5856D6",
+  "#008C95",
+]);
+
 const HEATMAP_COLORS = Object.freeze(["#E5E5EA", "#B7E4C7", "#74C69D", "#40916C", "#1B6B47"]);
 
 const CARTESIAN_TYPES = Object.freeze([
@@ -89,7 +99,11 @@ const TIME_TICK_STEPS = Object.freeze([
   365 * DAY,
 ]);
 
-const COMPACT_NUMBER_FORMATTER = new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 });
+const COMPACT_NUMBER_FORMATTER = new Intl.NumberFormat(undefined, {
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
 const SMALL_NUMBER_FORMATTER = new Intl.NumberFormat(undefined, { maximumSignificantDigits: 3 });
 const STANDARD_NUMBER_FORMATTER = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
 

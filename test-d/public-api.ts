@@ -1,37 +1,76 @@
-import { createChart, type Chart, type HeatmapData, type SeriesData, type TimesheetData } from "../src/index.js";
+import {
+  BarChart,
+  BubbleChart,
+  DonutChart,
+  HeatmapChart,
+  LineChart,
+  MixedChart,
+  PercentageChart,
+  PieChart,
+  PolarAreaChart,
+  RadarChart,
+  ScatterChart,
+  TimesheetChart,
+  type BarChartBuilder,
+  type BubbleChartBuilder,
+  type DonutChartBuilder,
+  type HeatmapChartBuilder,
+  type LineChartBuilder,
+  type MixedChartBuilder,
+  type PercentageChartBuilder,
+  type PieChartBuilder,
+  type PolarAreaChartBuilder,
+  type RadarChartBuilder,
+  type ScatterChartBuilder,
+  type TimesheetChartBuilder,
+} from "../src/index.js";
 
-const axis = createChart("#axis", {
-  type: "bar",
-  orientation: "horizontal",
-  data: { labels: ["A"], datasets: [{ values: [1] }] },
-});
-axis satisfies Chart<SeriesData>;
-axis.update({ labels: ["B"], datasets: [{ values: [2] }] });
-axis.point(0)?.values satisfies readonly (number | undefined)[] | undefined;
-// @ts-expect-error Series charts update with datasets, not heatmap data.
-axis.update({ dataPoints: { "2026-01-01": 4 } });
+LineChart.make("#line") satisfies LineChartBuilder;
+BarChart.make("#bar") satisfies BarChartBuilder;
+ScatterChart.make("#scatter") satisfies ScatterChartBuilder;
+MixedChart.make("#mixed") satisfies MixedChartBuilder;
+BubbleChart.make("#bubble") satisfies BubbleChartBuilder;
+PieChart.make("#pie") satisfies PieChartBuilder;
+DonutChart.make("#donut") satisfies DonutChartBuilder;
+PercentageChart.make("#percentage") satisfies PercentageChartBuilder;
+RadarChart.make("#radar") satisfies RadarChartBuilder;
+PolarAreaChart.make("#polar") satisfies PolarAreaChartBuilder;
+HeatmapChart.make("#heatmap") satisfies HeatmapChartBuilder;
+TimesheetChart.make("#timesheet") satisfies TimesheetChartBuilder;
 
-const heatmap = createChart("#heatmap", {
-  type: "heatmap",
-  data: { dataPoints: { "2026-01-01": 4 } },
-});
-heatmap satisfies Chart<HeatmapData>;
-heatmap.update({ start: new Date(), dataPoints: {} });
-heatmap.point(0)?.date satisfies Date | undefined;
-// @ts-expect-error Heatmaps require dated data, not series datasets.
-heatmap.update({ datasets: [{ values: [1] }] });
+const line = LineChart.make("#line")
+  .labels(["Jan", "Feb"])
+  .dataset("Revenue", [1, 2], (dataset) => dataset.gradient().smooth().dotSize(4))
+  .marker("Target", 2)
+  .region("Expected", [1, 3])
+  .render();
+line.update({ labels: ["Mar"], datasets: [{ name: "Revenue", values: [3] }] });
+line.point()?.values satisfies readonly (number | undefined)[] | undefined;
 
-const timesheet = createChart("#plan", {
-  type: "timesheet",
-  data: { tasks: [{ label: "Build", start: "2026-01-01", end: "2026-01-02" }] },
-});
-timesheet satisfies Chart<TimesheetData>;
-timesheet.update({ tasks: [{ start: new Date(), end: Date.now() + 1000 }] });
-timesheet.point(0)?.start satisfies Date | undefined;
+const scatter = ScatterChart.make("#scatter")
+  .dataset("Observed", [{ x: 1, y: 2 }])
+  .render();
+scatter.point()?.datasetIndex satisfies number | undefined;
 
-// @ts-expect-error The chart type is required; there is no implicit line default.
-createChart("#missing-type", { data: { datasets: [{ values: [1] }] } });
-// @ts-expect-error Deprecated sparkline routing was removed.
-createChart("#spark", { type: "sparkline", values: [1, 2] });
-// @ts-expect-error Deprecated compact preset was removed.
-createChart("#compact", { type: "line", compact: true, data: { datasets: [{ values: [1, 2] }] } });
+MixedChart.make("#mixed")
+  .line("Plan", [1, 2], (dataset) => dataset.gradient())
+  .bar("Actual", [2, 3], (dataset) => dataset.radius(3))
+  .scatter("Events", [{ x: 1, y: 2 }], (dataset) => dataset.opacity(0.5));
+
+HeatmapChart.make("#heatmap")
+  .points({ "2026-01-01": 2 })
+  .tooltip((tooltip) => tooltip.formatDate(String));
+TimesheetChart.make("#timesheet").task("Build", "2026-01-01", "2026-01-02");
+
+// @ts-expect-error Heatmaps do not expose legends.
+HeatmapChart.make("#heatmap").legend(true);
+// @ts-expect-error Radar does not expose Cartesian markers.
+RadarChart.make("#radar").marker("Target", 2);
+// @ts-expect-error Percentage does not expose sector start angles.
+PercentageChart.make("#percentage").startAngle(90);
+// @ts-expect-error Mixed positional datasets must name a concrete mark type.
+MixedChart.make("#mixed").dataset([1, 2]);
+// @ts-expect-error Bubble points require radius.
+BubbleChart.make("#bubble").dataset([{ x: 1, y: 2 }]);
+// @ts-expect-error A bar dataset callback does not expose gradient.
+BarChart.make("#bar").dataset([1], (dataset) => dataset.gradient());

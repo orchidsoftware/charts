@@ -83,7 +83,7 @@ class TimesheetTaskPlacement {
  * @returns {number} Width reserved for task labels.
  */
 function taskLabelWidth(chart) {
-  if (!chart.options.showLabels) {
+  if (!chart.options.valueLabels) {
     return 0;
   }
 
@@ -121,7 +121,10 @@ function timesheetGeometry(chart) {
     ...horizontal,
     ...vertical,
     plotWidth,
-    barHeight: Math.max(MINIMUM_BAR_HEIGHT, Math.min(MAXIMUM_BAR_HEIGHT, vertical.rowHeight * BAR_HEIGHT_RATIO)),
+    barHeight: Math.max(
+      MINIMUM_BAR_HEIGHT,
+      Math.min(MAXIMUM_BAR_HEIGHT, vertical.rowHeight * BAR_HEIGHT_RATIO),
+    ),
     labelWidth,
     span: values.end - values.start,
   });
@@ -150,9 +153,9 @@ export default class TimesheetLayout {
     this.#options = chart.options;
     this.#x = (value) =>
       scale(value, [geometry.values.start, geometry.values.end], [geometry.frame.left, geometry.frame.right]);
-    this.#dateFormatter = chart.options.timesheetOptions?.formatDate;
-    this.#tickFormatter = chart.options.timesheetOptions?.formatTick ?? this.#dateFormatter;
-    this.#durationFormatter = chart.options.timesheetOptions?.formatDuration;
+    this.#dateFormatter = chart.options.tooltipFormatDate ?? chart.options.formatDate;
+    this.#tickFormatter = chart.options.formatTick ?? chart.options.formatDate;
+    this.#durationFormatter = chart.options.tooltipFormatDuration ?? chart.options.formatDuration;
     this.ticks = Object.freeze(timeTicks(geometry.values.start, geometry.values.end, geometry.maximumTicks));
     this.frame = geometry.frame;
     Object.freeze(this);
@@ -211,7 +214,7 @@ export default class TimesheetLayout {
     const duration = formatTimesheetDuration(task.end - task.start, this.#durationFormatter);
 
     const radius = Math.min(
-      this.#options.timesheetOptions?.radius ?? DEFAULT_BAR_RADIUS,
+      this.#options.radius ?? DEFAULT_BAR_RADIUS,
       barWidth / 2,
       this.frame.barHeight / 2,
     );

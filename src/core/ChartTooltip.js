@@ -97,12 +97,114 @@ export default class ChartTooltip {
 
     const hasAnchor = mark.dataset.tooltipAnchorX !== undefined;
     const svgBox = hasAnchor ? this.#svg.getBoundingClientRect() : null;
+    const placement = mark.dataset.tooltipPlacement;
+
+    if (hasAnchor && placement) {
+      const anchorLeft =
+        svgBox.left -
+        hostBox.left +
+        this.#host.scrollLeft +
+        (Number(mark.dataset.tooltipAnchorX) / width) * svgBox.width;
+
+      const anchorTop =
+        svgBox.top -
+        hostBox.top +
+        this.#host.scrollTop +
+        (Number(mark.dataset.tooltipAnchorY) / height) * svgBox.height;
+
+      this.#positionBesideTarget({ left: anchorLeft, top: anchorTop, placement }, hostBox);
+
+      return;
+    }
+
+    this.#element.style.removeProperty("transform");
     const anchor = { mark, hasSvgCoordinates: hasAnchor };
     const boxes = { host: hostBox, mark: markBox, svg: svgBox };
     const requestedLeft = this.#requestedLeft(anchor, boxes, width);
     const requestedTop = this.#requestedTop(anchor, boxes, height);
 
     this.#positionWithinViewport(requestedLeft, requestedTop, hostBox);
+  }
+
+  /**
+   * Places a radial tooltip outside its sector without obscuring the chart.
+   *
+   * @param {object} anchor - Projected outer-arc coordinates and preferred side.
+   * @param {DOMRect} hostBox - Current chart-host viewport bounds.
+   * @returns {void} Tooltip receives clamped top-left coordinates.
+   */
+  #positionBesideTarget(anchor, hostBox) {
+    this.#element.hidden = false;
+    this.#element.style.transform = "none";
+    const bounds = this.#element.getBoundingClientRect();
+
+    const size = {
+      width: Math.max(this.#element.offsetWidth, bounds.width),
+      height: Math.max(this.#element.offsetHeight, bounds.height),
+    };
+
+    const origin = this.#besideOrigin(anchor, size);
+    const position = this.#clampedOrigin(origin, size, hostBox);
+
+    this.#element.style.left = `${position.left}px`;
+    this.#element.style.top = `${position.top}px`;
+  }
+
+  /**
+   * Resolves the top-left tooltip origin for one outer-arc side.
+   *
+   * @param {object} anchor - Projected coordinates and preferred placement.
+   * @param {{width: number, height: number}} size - Measured tooltip dimensions.
+   * @returns {{left: number, top: number}} Unclamped top-left coordinates.
+   */
+  #besideOrigin(anchor, size) {
+    switch (anchor.placement) {
+      case "top": {
+        return { left: anchor.left - size.width / 2, top: anchor.top - size.height - TOOLTIP_ANCHOR_OFFSET };
+      }
+
+      case "right": {
+        return { left: anchor.left + TOOLTIP_ANCHOR_OFFSET, top: anchor.top - size.height / 2 };
+      }
+
+      case "bottom": {
+        return { left: anchor.left - size.width / 2, top: anchor.top + TOOLTIP_ANCHOR_OFFSET };
+      }
+
+      default: {
+        return { left: anchor.left - size.width - TOOLTIP_ANCHOR_OFFSET, top: anchor.top - size.height / 2 };
+      }
+    }
+  }
+
+  /**
+   * Clamps a top-left origin to the currently visible chart viewport.
+   *
+   * @param {{left: number, top: number}} origin - Requested tooltip origin.
+   * @param {{width: number, height: number}} size - Measured tooltip dimensions.
+   * @param {DOMRect} hostBox - Current chart-host viewport bounds.
+   * @returns {{left: number, top: number}} Visible top-left coordinates.
+   */
+  #clampedOrigin(origin, size, hostBox) {
+    const viewport = {
+      left: this.#host.scrollLeft + TOOLTIP_EDGE_GAP,
+      top: this.#host.scrollTop + TOOLTIP_EDGE_GAP,
+    };
+
+    const maximumLeft = Math.max(
+      viewport.left,
+      this.#host.scrollLeft + hostBox.width - size.width - TOOLTIP_EDGE_GAP,
+    );
+
+    const maximumTop = Math.max(
+      viewport.top,
+      this.#host.scrollTop + hostBox.height - size.height - TOOLTIP_EDGE_GAP,
+    );
+
+    return {
+      left: Math.min(maximumLeft, Math.max(viewport.left, origin.left)),
+      top: Math.min(maximumTop, Math.max(viewport.top, origin.top)),
+    };
   }
 
   /**

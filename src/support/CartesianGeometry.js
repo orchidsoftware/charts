@@ -6,63 +6,72 @@ const CUBIC_CONTROL_DIVISOR = 3;
  * Calculates monotone tangents for ordered screen-space points.
  *
  * @param {Array<{x: number, y: number}>} points - Strictly increasing coordinates.
- * @param {number[]} intervals - Horizontal distance between adjacent points.
- * @returns {number[]} Tangent slope at every point.
+ * @param {Float64Array} intervals - Horizontal distance between adjacent points.
+ * @returns {Float64Array} Tangent slope at every point.
  */
+// The indexed loops here avoid callback and iterator allocation on very large paths.
+// eslint-disable-next-line max-statements
 function monotoneTangents(points, intervals) {
-  const slopes = intervals.map((interval, index) => (points[index + 1].y - points[index].y) / interval);
+  const slopes = new Float64Array(intervals.length);
+  const tangents = new Float64Array(points.length);
+  let slopeIndex = 0;
 
-  return points.map((_point, index) => {
-    if (index === 0) {
-      return slopes[0];
-    }
+  while (slopeIndex < intervals.length) {
+    slopes[slopeIndex] = (points[slopeIndex + 1].y - points[slopeIndex].y) / intervals[slopeIndex];
+    slopeIndex += 1;
+  }
 
-    if (index === points.length - 1) {
-      return slopes.at(-1);
-    }
+  tangents[0] = slopes[0];
+  tangents[tangents.length - 1] = slopes.at(-1);
 
-    const before = slopes[index - 1];
-    const after = slopes[index];
+  let tangentIndex = 1;
+
+  while (tangentIndex < points.length - 1) {
+    const before = slopes[tangentIndex - 1];
+    const after = slopes[tangentIndex];
 
     if (before === 0 || after === 0 || Math.sign(before) !== Math.sign(after)) {
-      return 0;
+      tangents[tangentIndex] = 0;
+      tangentIndex += 1;
+      continue;
     }
 
-    const beforeInterval = intervals[index - 1];
-    const afterInterval = intervals[index];
+    const beforeInterval = intervals[tangentIndex - 1];
+    const afterInterval = intervals[tangentIndex];
     const firstWeight = 2 * afterInterval + beforeInterval;
     const secondWeight = afterInterval + 2 * beforeInterval;
 
-    return (firstWeight + secondWeight) / (firstWeight / before + secondWeight / after);
-  });
+    tangents[tangentIndex] = (firstWeight + secondWeight) / (firstWeight / before + secondWeight / after);
+    tangentIndex += 1;
+  }
+
+  return tangents;
 }
 
 /**
  * Serializes monotone cubic control points into one SVG path.
  *
  * @param {Array<{x: number, y: number}>} points - Ordered coordinates.
- * @param {number[]} intervals - Horizontal distances between points.
- * @param {number[]} tangents - Monotone tangent at every point.
+ * @param {Float64Array} intervals - Horizontal distances between points.
+ * @param {Float64Array} tangents - Monotone tangent at every point.
  * @returns {string} Smooth SVG path data.
  */
 function smoothLinePath(points, intervals, tangents) {
   let path = `M${points[0].x},${points[0].y}`;
+  let index = 1;
 
-  for (const [index, point] of points.slice(1).entries()) {
-    const previous = points[index];
-    const interval = intervals[index];
+  while (index < points.length) {
+    const point = points[index];
+    const previous = points[index - 1];
+    const interval = intervals[index - 1];
+    const controlOffset = interval / CUBIC_CONTROL_DIVISOR;
+    const firstControlX = previous.x + controlOffset;
+    const firstControlY = previous.y + tangents[index - 1] * controlOffset;
+    const secondControlX = point.x - controlOffset;
+    const secondControlY = point.y - tangents[index] * controlOffset;
 
-    const firstControl = {
-      x: previous.x + interval / CUBIC_CONTROL_DIVISOR,
-      y: previous.y + (tangents[index] * interval) / CUBIC_CONTROL_DIVISOR,
-    };
-
-    const secondControl = {
-      x: point.x - interval / CUBIC_CONTROL_DIVISOR,
-      y: point.y - (tangents[index + 1] * interval) / CUBIC_CONTROL_DIVISOR,
-    };
-
-    path += ` C${firstControl.x},${firstControl.y} ${secondControl.x},${secondControl.y} ${point.x},${point.y}`;
+    path += ` C${firstControlX},${firstControlY} ${secondControlX},${secondControlY} ${point.x},${point.y}`;
+    index += 1;
   }
 
   return path;
@@ -75,16 +84,44 @@ function smoothLinePath(points, intervals, tangents) {
  * @param {boolean} [isSmooth=true] - Enables smoothing when x coordinates are strictly increasing.
  * @returns {string} SVG path data that passes through every supplied point.
  */
+// eslint-disable-next-line max-statements
 function linePath(points, isSmooth = true) {
   if (points.length === 1) {
     return `M${points[0].x},${points[0].y}`;
   }
 
-  if (!isSmooth || points.some((point, index) => index > 0 && point.x <= points[index - 1].x)) {
-    return points.map((point, index) => `${index === 0 ? "M" : "L"}${point.x},${point.y}`).join(" ");
+  let hasIncreasingX = true;
+  let pointIndex = 1;
+
+  while (pointIndex < points.length) {
+    if (points[pointIndex].x <= points[pointIndex - 1].x) {
+      hasIncreasingX = false;
+      break;
+    }
+
+    pointIndex += 1;
   }
 
-  const intervals = points.slice(1).map((point, index) => point.x - points[index].x);
+  if (!isSmooth || !hasIncreasingX) {
+    let path = `M${points[0].x},${points[0].y}`;
+    let pathIndex = 1;
+
+    while (pathIndex < points.length) {
+      path += ` L${points[pathIndex].x},${points[pathIndex].y}`;
+      pathIndex += 1;
+    }
+
+    return path;
+  }
+
+  const intervals = new Float64Array(points.length - 1);
+  let intervalIndex = 0;
+
+  while (intervalIndex < intervals.length) {
+    intervals[intervalIndex] = points[intervalIndex + 1].x - points[intervalIndex].x;
+    intervalIndex += 1;
+  }
+
   const tangents = monotoneTangents(points, intervals);
 
   return smoothLinePath(points, intervals, tangents);

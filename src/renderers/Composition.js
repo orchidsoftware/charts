@@ -2,10 +2,10 @@ import { ChartType, DEFAULT_SECTOR_CORNER_RADIUS } from "../support/Constants.js
 import { paddedSector, roundedSectorPath } from "../support/Math.js";
 
 const DEGREES_PER_HALF_CIRCLE = 180;
-const DEFAULT_MAXIMUM_SLICES = 20;
 const DONUT_STROKE_RADIUS_RATIO = 0.72;
 const DONUT_STROKE_WIDTH_RATIO = 0.56;
 const DONUT_INNER_RADIUS_RATIO = 0.48;
+const FULL_CIRCLE_TOP_ANGLE = -Math.PI / 2;
 
 /**
  * Owns normalized part-to-whole values and their non-DOM sector geometry.
@@ -70,29 +70,17 @@ export default class Composition {
   }
 
   /**
-   * Aggregates labels across datasets and applies the configured part limit.
+   * Aggregates normalized labels across datasets.
    *
    * @returns {Array<{label: string, value: number}>} Display-ready composition parts.
    */
   #parts() {
-    const candidates = this.#chart.labels
+    return this.#chart.labels
       .map((label, index) => ({
         label,
-        value: this.#chart.datasets.reduce((sum, dataset) => sum + (dataset.points[index]?.y ?? 0), 0),
+        value: this.#chart.datasets.reduce((sum, dataset) => sum + dataset.points[index].y, 0),
       }))
       .filter((part) => part.value >= 0);
-
-    const maximum = this.#chart.options.maxSlices ?? DEFAULT_MAXIMUM_SLICES;
-
-    if (candidates.length <= maximum) {
-      return candidates;
-    }
-
-    const sorted = candidates.toSorted((left, right) => right.value - left.value);
-    const visible = sorted.slice(0, maximum - 1);
-    const rest = sorted.slice(maximum - 1).reduce((sum, part) => sum + part.value, 0);
-
-    return [...visible, { label: "Rest", value: rest }];
   }
 
   /**
@@ -127,7 +115,9 @@ export default class Composition {
    * @returns {object} SVG-independent path descriptor.
    */
   #pathSector(identity, geometry, presentation) {
-    const innerRadius = presentation.type === ChartType.DONUT ? geometry.radius * DONUT_INNER_RADIUS_RATIO : 0;
+    const innerRadius =
+      presentation.type === ChartType.DONUT ? geometry.radius * DONUT_INNER_RADIUS_RATIO : 0;
+
     const radii = { outer: geometry.radius, inner: innerRadius };
 
     const sector = paddedSector({
@@ -140,10 +130,25 @@ export default class Composition {
       center: geometry.center,
       radii,
       angles: { outer: sector.outer, inner: sector.inner },
-      cornerRadius: this.#chart.options.sectorOptions?.cornerRadius ?? DEFAULT_SECTOR_CORNER_RADIUS,
+      cornerRadius: this.#chart.options.cornerRadius ?? DEFAULT_SECTOR_CORNER_RADIUS,
     });
 
-    return { part: identity.part, index: identity.index, name: "path", attributes: { d, fill: presentation.color } };
+    const tooltip = this.#tooltipAt(
+      geometry.center,
+      geometry.radius,
+      (geometry.angles.start + geometry.angles.end) / 2,
+    );
+
+    return {
+      part: identity.part,
+      index: identity.index,
+      name: "path",
+      tooltip,
+      attributes: {
+        d,
+        fill: presentation.color,
+      },
+    };
   }
 
   /**
@@ -158,6 +163,7 @@ export default class Composition {
       part: identity.part,
       index: identity.index,
       name: "circle",
+      tooltip: this.#tooltipAt(circle.center, circle.radius, FULL_CIRCLE_TOP_ANGLE),
       attributes: {
         cx: circle.center.x,
         cy: circle.center.y,
@@ -181,7 +187,37 @@ export default class Composition {
       part: identity.part,
       index: identity.index,
       name: "circle",
-      attributes: { cx: circle.center.x, cy: circle.center.y, r: circle.radius, fill: circle.color },
+      tooltip: this.#tooltipAt(circle.center, circle.radius, FULL_CIRCLE_TOP_ANGLE),
+      attributes: {
+        cx: circle.center.x,
+        cy: circle.center.y,
+        r: circle.radius,
+        fill: circle.color,
+      },
+    };
+  }
+
+  /**
+   * Places a radial tooltip just beyond the sector's outer arc.
+   *
+   * @param {{x: number, y: number}} center - Radial chart center.
+   * @param {number} radius - Outer sector radius.
+   * @param {number} angle - Sector midpoint angle in radians.
+   * @returns {{x: number, y: number, placement: string}} Stable outer-arc anchor and side.
+   */
+  #tooltipAt(center, radius, angle) {
+    const horizontal = Math.cos(angle);
+    const vertical = Math.sin(angle);
+    let placement = vertical < 0 ? "top" : "bottom";
+
+    if (Math.abs(horizontal) > Math.abs(vertical)) {
+      placement = horizontal < 0 ? "left" : "right";
+    }
+
+    return {
+      x: center.x + horizontal * radius,
+      y: center.y + vertical * radius,
+      placement,
     };
   }
 }

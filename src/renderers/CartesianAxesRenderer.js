@@ -4,11 +4,11 @@ import {
   MAJOR_GRID_DIVISIONS,
   VALUE_LABEL_GAP,
 } from "../support/Constants.js";
-import { formatNumber, labelElement, wrappedLabelElement } from "../support/Dom.js";
+import { labelElement, wrappedLabelElement } from "../support/Dom.js";
+import { formatContext, formatterText, formatValue } from "../support/Formatting.js";
 import { requireFiniteNumber } from "../support/Normalize.js";
 
 const MARKER_LABEL_OFFSET = 4;
-const MARKER_LABEL_BASELINE = 10;
 const VALUE_LABEL_BASELINE_OFFSET = 7;
 const VALUE_LABEL_CENTER_OFFSET = 3;
 const CATEGORY_MIDPOINT = 0.5;
@@ -18,6 +18,21 @@ const CATEGORY_LABEL_BOTTOM_OFFSET = 7;
 const MINIMUM_CATEGORY_LABEL_WIDTH = 24;
 const CATEGORY_LABEL_SIDE_GAP = 4;
 const CATEGORY_LABEL_TOTAL_GAP = 8;
+
+/**
+ * Names a visible category label's relationship to the viewport edges.
+ *
+ * @param {number} index - Position in the sampled visible-label collection.
+ * @param {number} count - Number of visible category labels.
+ * @returns {"first" | "middle" | "last"} Edge-aware placement role.
+ */
+function verticalLabelEdge(index, count) {
+  if (index === 0) {
+    return "first";
+  }
+
+  return index === count - 1 ? "last" : "middle";
+}
 
 /**
  * Renders Cartesian axes, annotations, grid lines, and labels.
@@ -47,12 +62,13 @@ export default class CartesianAxesRenderer {
    * @returns {void} Background Cartesian presentation is appended to the chart SVG.
    */
   renderBackground() {
-    if (this.#chart.options.showGrid) {
+    if (this.#chart.options.grid) {
       this.#renderGrid();
     }
 
     this.#renderRegions();
-    if (this.#chart.options.showAxes) {
+    this.#renderMarkerLines();
+    if (this.#chart.options.axes) {
       this.#renderAxis();
     }
   }
@@ -63,8 +79,9 @@ export default class CartesianAxesRenderer {
    * @returns {void} Foreground Cartesian presentation is appended to the chart SVG.
    */
   renderForeground() {
-    this.#renderMarkers();
-    if (this.#chart.options.showLabels) {
+    this.#renderRegionLabels();
+    this.#renderMarkerLabels();
+    if (this.#chart.options.valueLabels) {
       this.#renderValueLabels();
       this.#renderCategoryLabels();
     }
@@ -75,22 +92,43 @@ export default class CartesianAxesRenderer {
    *
    * @returns {void} Region rectangles are appended to the chart SVG.
    */
+  // eslint-disable-next-line max-lines-per-function
   #renderRegions() {
     const { bottom, left, right, top } = this.#layout.frame;
-    const regions = this.#chart.source?.yRegions ?? [];
+    const regions = this.#chart.source.yRegions;
 
     for (const region of regions) {
-      requireFiniteNumber(region.start, "Region start");
-      requireFiniteNumber(region.end, "Region end");
-      const start = this.#layout.valueAt(region.start);
-      const end = this.#layout.valueAt(region.end);
+      const [rangeStart, rangeEnd] = region.range;
+      requireFiniteNumber(rangeStart, "Region start");
+      requireFiniteNumber(rangeEnd, "Region end");
+      const start = this.#layout.valueAt(rangeStart);
+      const end = this.#layout.valueAt(rangeEnd);
+
+      if (!region.includeInDomain && !this.#overlapsPlot(start, end)) {
+        continue;
+      }
+
+      const boundedStart = this.#boundedValuePosition(start);
+      const boundedEnd = this.#boundedValuePosition(end);
 
       const attributes = this.#layout.isHorizontal
-        ? { x: Math.min(start, end), y: top, width: Math.abs(end - start), height: bottom - top }
-        : { x: left, y: Math.min(start, end), width: right - left, height: Math.abs(end - start) };
+        ? {
+            x: Math.min(boundedStart, boundedEnd),
+            y: top,
+            width: Math.abs(boundedEnd - boundedStart),
+            height: bottom - top,
+          }
+        : {
+            x: left,
+            y: Math.min(boundedStart, boundedEnd),
+            width: right - left,
+            height: Math.abs(boundedEnd - boundedStart),
+          };
 
       this.#surface.append("rect", {
         ...attributes,
+        fill: region.color,
+        opacity: region.opacity,
         class: "charts2-region",
         "aria-hidden": "true",
       });
@@ -102,27 +140,198 @@ export default class CartesianAxesRenderer {
    *
    * @returns {void} Marker lines and optional labels are appended to the chart SVG.
    */
-  #renderMarkers() {
+  #renderMarkerLines() {
     const { bottom, left, right, top } = this.#layout.frame;
-    const markers = this.#chart.source?.yMarkers ?? [];
+    const markers = this.#chart.source.yMarkers;
 
     for (const marker of markers) {
       requireFiniteNumber(marker.value, "Marker value");
       const position = this.#layout.valueAt(marker.value);
 
+      if (!marker.includeInDomain && !this.#insidePlot(position)) {
+        continue;
+      }
+
       const attributes = this.#layout.isHorizontal
         ? { x1: position, y1: top, x2: position, y2: bottom }
         : { x1: left, y1: position, x2: right, y2: position };
 
-      this.#surface.append("line", { ...attributes, class: "charts2-marker" });
-      if (marker.label) {
-        const labelAttributes = this.#layout.isHorizontal
-          ? { x: position + MARKER_LABEL_OFFSET, y: top + MARKER_LABEL_BASELINE, class: "charts2-annotation" }
-          : { x: right, y: position - MARKER_LABEL_OFFSET, class: "charts2-annotation", "text-anchor": "end" };
-
-        this.#surface.text(marker.label, labelAttributes);
-      }
+      this.#surface.append("line", {
+        ...attributes,
+        stroke: marker.color,
+        opacity: marker.opacity,
+        "stroke-width": marker.width,
+        "stroke-dasharray": marker.dash.join(" "),
+        "vector-effect": "non-scaling-stroke",
+        class: "charts2-marker",
+      });
     }
+  }
+
+  /**
+   * Renders region labels after datasets in stable call order.
+   *
+   * @returns {void} Visible region labels remain inside the plot.
+   */
+  #renderRegionLabels() {
+    const regions = this.#chart.source.yRegions;
+
+    for (const region of regions) {
+      const positions = region.range.map((value) => this.#layout.valueAt(value));
+
+      if (!region.includeInDomain && !this.#overlapsPlot(...positions)) {
+        continue;
+      }
+
+      const label = region.formatLabel
+        ? formatterText(
+            region.formatLabel(
+              region.label,
+              Object.freeze([...region.range]),
+              formatContext(this.#chart.options, "accessibility"),
+            ),
+            "Region label",
+          )
+        : region.label;
+
+      this.#surface.text(label, {
+        ...this.#annotationLabelAttributes(region.labelPosition, positions),
+        fill: region.labelColor,
+      });
+    }
+  }
+
+  /**
+   * Renders marker labels after region labels in stable call order.
+   *
+   * @returns {void} Visible marker labels remain inside the plot.
+   */
+  #renderMarkerLabels() {
+    const markers = this.#chart.source.yMarkers;
+
+    for (const marker of markers) {
+      const position = this.#layout.valueAt(marker.value);
+
+      if (!marker.includeInDomain && !this.#insidePlot(position)) {
+        continue;
+      }
+
+      const label = marker.formatLabel
+        ? formatterText(
+            marker.formatLabel(
+              marker.label,
+              marker.value,
+              formatContext(this.#chart.options, "accessibility"),
+            ),
+            "Marker label",
+          )
+        : marker.label;
+
+      this.#surface.text(label, {
+        ...this.#annotationLabelAttributes(marker.labelPosition, [position]),
+        fill: marker.labelColor,
+      });
+    }
+  }
+
+  /**
+   * Resolves one logical annotation-label position for either orientation.
+   *
+   * @param {"start" | "center" | "end"} placement - Logical label placement.
+   * @param {number[]} values - One marker coordinate or two region coordinates.
+   * @returns {object} Bounded SVG text attributes.
+   */
+  #annotationLabelAttributes(placement, values) {
+    const { bottom, left, right, top } = this.#layout.frame;
+    const value = this.#boundedValuePosition(values.reduce((sum, item) => sum + item, 0) / values.length);
+
+    if (this.#layout.isHorizontal) {
+      const y = this.#placementCoordinate([bottom, (top + bottom) / 2, top], placement);
+
+      return {
+        x: value + MARKER_LABEL_OFFSET,
+        y,
+        class: "charts2-annotation",
+        "dominant-baseline": "middle",
+      };
+    }
+
+    const x = this.#placementCoordinate([left, (left + right) / 2, right], placement);
+    const anchor = this.#placementCoordinate(["start", "middle", "end"], placement);
+
+    return {
+      x,
+      y: value - MARKER_LABEL_OFFSET,
+      class: "charts2-annotation",
+      "text-anchor": anchor,
+    };
+  }
+
+  /**
+   * Maps a logical annotation placement without coupling it to one orientation.
+   *
+   * @param {unknown[]} values - Physical values for start, center, and end.
+   * @param {string} placement - Logical placement.
+   * @returns {unknown} Selected physical value.
+   */
+  #placementCoordinate([start, center, end], placement) {
+    if (placement === "start") {
+      return start;
+    }
+
+    return placement === "center" ? center : end;
+  }
+
+  /**
+   * Tests a value-axis coordinate against the current plot bounds.
+   *
+   * @param {number} position - Scaled value-axis position.
+   * @returns {boolean} Whether the position falls inside the plot.
+   */
+  #insidePlot(position) {
+    const { maximum, minimum } = this.#valueAxisBounds();
+
+    return position >= minimum && position <= maximum;
+  }
+
+  /**
+   * Tests whether a scaled interval intersects the plot.
+   *
+   * @param {number} start - First scaled endpoint.
+   * @param {number} end - Second scaled endpoint.
+   * @returns {boolean} Whether any portion of the interval is visible.
+   */
+  #overlapsPlot(start, end) {
+    const { maximum, minimum } = this.#valueAxisBounds();
+
+    return Math.max(start, end) >= minimum && Math.min(start, end) <= maximum;
+  }
+
+  /**
+   * Clamps one value-axis coordinate to the plot.
+   *
+   * @param {number} position - Scaled value-axis coordinate.
+   * @returns {number} Coordinate inside the plot bounds.
+   */
+  #boundedValuePosition(position) {
+    const { maximum, minimum } = this.#valueAxisBounds();
+
+    return Math.min(maximum, Math.max(minimum, position));
+  }
+
+  /**
+   * Resolves the physical value-axis interval for the active orientation.
+   *
+   * @returns {{minimum: number, maximum: number}} Ascending plot bounds.
+   */
+  #valueAxisBounds() {
+    const { bottom, left, right, top } = this.#layout.frame;
+
+    if (this.#layout.isHorizontal) {
+      return { minimum: left, maximum: right };
+    }
+
+    return { minimum: top, maximum: bottom };
   }
 
   /**
@@ -152,7 +361,7 @@ export default class CartesianAxesRenderer {
             "text-anchor": this.#layout.isYAxisRight ? "start" : "end",
           };
 
-      this.#surface.text(formatNumber(value), attributes);
+      this.#surface.text(formatValue(this.#chart.options, value, { target: "axis" }), attributes);
     }
   }
 
@@ -176,7 +385,9 @@ export default class CartesianAxesRenderer {
       this.#surface.append("line", { ...attributes, "aria-hidden": "true" });
     }
 
-    const orderedTicks = this.#layout.isHorizontal ? this.#layout.values.ticks : this.#layout.values.ticks.toReversed();
+    const orderedTicks = this.#layout.isHorizontal
+      ? this.#layout.values.ticks
+      : this.#layout.values.ticks.toReversed();
 
     for (const value of orderedTicks) {
       const position = this.#layout.valueAt(value);
@@ -311,27 +522,22 @@ export default class CartesianAxesRenderer {
     }
 
     const position = plotLeft + index * step;
-    const isFirst = visibleIndex === 0;
-    const isLast = visibleIndex === visibleIndexes.length - 1;
     const previousPosition = visibleIndex > 0 ? plotLeft + visibleIndexes[visibleIndex - 1] * step : plotLeft;
 
     const nextPosition =
-      visibleIndex < visibleIndexes.length - 1 ? plotLeft + visibleIndexes[visibleIndex + 1] * step : plotRight;
+      visibleIndex < visibleIndexes.length - 1
+        ? plotLeft + visibleIndexes[visibleIndex + 1] * step
+        : plotRight;
 
-    if (isFirst) {
-      return {
-        x: plotLeft,
-        anchor: "start",
-        width: Math.max(MINIMUM_CATEGORY_LABEL_WIDTH, (nextPosition - position) / 2 - CATEGORY_LABEL_SIDE_GAP),
-      };
-    }
+    const edgePlacement = this.#edgeVerticalLabelPlacement({
+      position,
+      previousPosition,
+      nextPosition,
+      edge: verticalLabelEdge(visibleIndex, visibleIndexes.length),
+    });
 
-    if (isLast) {
-      return {
-        x: plotRight,
-        anchor: "end",
-        width: Math.max(MINIMUM_CATEGORY_LABEL_WIDTH, (position - previousPosition) / 2 - CATEGORY_LABEL_SIDE_GAP),
-      };
+    if (edgePlacement) {
+      return edgePlacement;
     }
 
     return {
@@ -342,5 +548,43 @@ export default class CartesianAxesRenderer {
         Math.min(position - previousPosition, nextPosition - position) - CATEGORY_LABEL_TOTAL_GAP,
       ),
     };
+  }
+
+  /**
+   * Resolves the asymmetric placement used by the first and last category labels.
+   *
+   * @param {object} geometry - Current and neighboring sampled positions.
+   * @param {number} geometry.position - Current label position.
+   * @param {number} geometry.previousPosition - Previous sampled label position.
+   * @param {number} geometry.nextPosition - Next sampled label position.
+   * @param {"first" | "middle" | "last"} geometry.edge - Position within the sampled collection.
+   * @returns {{x: number, anchor: string, width: number} | null} Edge placement or null for middle labels.
+   */
+  #edgeVerticalLabelPlacement({ position, previousPosition, nextPosition, edge }) {
+    const { left: plotLeft, right: plotRight } = this.#layout.frame;
+
+    if (edge === "first") {
+      return {
+        x: plotLeft,
+        anchor: "start",
+        width: Math.max(
+          MINIMUM_CATEGORY_LABEL_WIDTH,
+          (nextPosition - position) / 2 - CATEGORY_LABEL_SIDE_GAP,
+        ),
+      };
+    }
+
+    if (edge === "last") {
+      return {
+        x: plotRight,
+        anchor: "end",
+        width: Math.max(
+          MINIMUM_CATEGORY_LABEL_WIDTH,
+          (position - previousPosition) / 2 - CATEGORY_LABEL_SIDE_GAP,
+        ),
+      };
+    }
+
+    return null;
   }
 }

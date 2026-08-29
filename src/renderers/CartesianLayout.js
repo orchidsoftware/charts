@@ -25,10 +25,6 @@ const SLOT_MIDPOINT = 0.5;
  * @returns {number[]} Signed stack totals across every category.
  */
 function stackedBarValues(datasets) {
-  if (datasets.length === 0) {
-    return [];
-  }
-
   const pointCount = Math.max(...datasets.map((dataset) => dataset.points.length));
   const totals = [];
 
@@ -37,7 +33,7 @@ function stackedBarValues(datasets) {
     let negative = 0;
 
     for (const dataset of datasets) {
-      const value = dataset.points[pointIndex]?.y ?? 0;
+      const value = dataset.points[pointIndex].y;
 
       if (value > 0) {
         positive += value;
@@ -217,23 +213,20 @@ export default class CartesianLayout {
     const { height, orientation, type, width } = this.#chart.options;
     const presentation = this.#presentationState({ orientation, type, width });
     const data = this.#dataState({ ...presentation, type, width });
-    const left = presentation.isYAxisRight ? presentation.padding : data.gutter;
-    const right = width - (presentation.isYAxisRight ? data.gutter : presentation.padding);
 
     const frame = {
       width,
       height,
       padding: presentation.padding,
       top: presentation.top,
-      right,
+      right: width - (presentation.isYAxisRight ? data.gutter : presentation.padding),
       bottom: height - presentation.padding,
-      left,
+      left: presentation.isYAxisRight ? presentation.padding : data.gutter,
     };
 
     const supportsInspector = this.#supportsInspector(type);
 
-    const usesInspector =
-      data.count <= MAX_INDIVIDUAL_LINE_POINTS || (supportsInspector && data.count <= MAX_X_INSPECTOR_POINTS);
+    const usesInspector = supportsInspector && data.count <= MAX_X_INSPECTOR_POINTS;
 
     return { orientation, type, ...presentation, ...data, frame, usesInspector };
   }
@@ -249,13 +242,17 @@ export default class CartesianLayout {
    */
   #presentationState({ orientation, type, width }) {
     const isFrameless =
-      !this.#chart.options.showAxes && !this.#chart.options.showGrid && !this.#chart.options.showLabels;
+      !this.#chart.options.axes && !this.#chart.options.grid && !this.#chart.options.valueLabels;
 
     const padding = isFrameless ? Math.max(this.#chart.options.strokeWidth, 1) : STANDARD_FRAME_PADDING;
     const top = padding + Math.max(0, this.#legendRows(width) - 1) * LEGEND_ROW_HEIGHT;
     const isHorizontal = type === ChartType.BAR && orientation === ChartOrientation.HORIZONTAL;
-    const labels = this.#chart.labels.map((label, index) => formatCategoryLabel(this.#chart.options, label, index));
-    const isYAxisRight = this.#chart.options.axisOptions?.yAxisPosition === YAxisPosition.RIGHT;
+
+    const labels = this.#chart.labels.map((label, index) =>
+      formatCategoryLabel(this.#chart.options, label, index),
+    );
+
+    const isYAxisRight = this.#chart.options.yAxisPosition === YAxisPosition.RIGHT;
 
     return { isFrameless, padding, top, isHorizontal, labels, isYAxisRight };
   }
@@ -270,7 +267,7 @@ export default class CartesianLayout {
     const points = this.#chart.datasets.flatMap((dataset) => dataset.points);
     const count = Math.max(...this.#chart.datasets.map((dataset) => dataset.points.length));
     const barDatasets = this.#barDatasets(state.type);
-    const isStacked = Boolean(this.#chart.options.barOptions?.stacked);
+    const isStacked = Boolean(this.#chart.options.stacked);
     const values = this.#valueScale(points, { datasets: barDatasets, isStacked }, state);
     const gutter = this.#valueGutter(state.labels, values, state);
 
@@ -314,7 +311,7 @@ export default class CartesianLayout {
    * @returns {number} Number of visible legend rows.
    */
   #legendRows(width) {
-    if (!this.#chart.options.showLegend || this.#chart.datasets.length < 2) {
+    if (!this.#chart.options.legend || this.#chart.datasets.length < 2) {
       return 0;
     }
 
@@ -339,7 +336,7 @@ export default class CartesianLayout {
         return false;
       }
 
-      return (dataset.chartType ?? ChartType.LINE) === ChartType.BAR;
+      return dataset.chartType === ChartType.BAR;
     });
   }
 
@@ -353,13 +350,31 @@ export default class CartesianLayout {
    */
   #valueScale(points, bars, presentation) {
     const stackValues = bars.isStacked ? stackedBarValues(bars.datasets) : [];
-    let data = [...points.map((point) => point.y), ...stackValues, 0];
+    const annotationValues = this.#annotationValues();
+    let data = [...points.map((point) => point.y), ...stackValues, ...annotationValues, 0];
 
     if (presentation.isFrameless && presentation.type === ChartType.LINE) {
       data = points.map((point) => point.y);
     }
 
     return presentation.isFrameless ? { domain: extent(data), ticks: [] } : niceValueScale(data);
+  }
+
+  /**
+   * Collects opted-in marker values and region endpoints for automatic domains.
+   *
+   * @returns {number[]} Ordered annotation values participating in the scale.
+   */
+  #annotationValues() {
+    const markers = this.#chart.source.yMarkers
+      .filter((marker) => marker.includeInDomain)
+      .map((marker) => marker.value);
+
+    const regions = this.#chart.source.yRegions
+      .filter((region) => region.includeInDomain)
+      .flatMap((region) => region.range);
+
+    return [...markers, ...regions];
   }
 
   /**
@@ -375,7 +390,9 @@ export default class CartesianLayout {
       return horizontalCategoryPadding(labels, presentation.width);
     }
 
-    return presentation.isFrameless ? presentation.padding : verticalValuePadding(values.ticks, presentation.padding);
+    return presentation.isFrameless
+      ? presentation.padding
+      : verticalValuePadding(values.ticks, presentation.padding);
   }
 
   /**
@@ -385,15 +402,28 @@ export default class CartesianLayout {
    * @returns {boolean} True when a shared category inspector is valid.
    */
   #supportsInspector(type) {
-    return this.#chart.datasets.every((dataset) => {
-      let datasetType = type;
+    if (type === ChartType.AXIS_MIXED) {
+      return (
+        typeof this.#chart.options.onSelect !== "function" &&
+        this.#chart.datasets.every((dataset) => [ChartType.LINE, ChartType.BAR].includes(dataset.chartType))
+      );
+    }
 
-      if (type === ChartType.AXIS_MIXED) {
-        datasetType = dataset.chartType ?? ChartType.LINE;
+    if ([ChartType.SCATTER, ChartType.BUBBLE].includes(type)) {
+      if (typeof this.#chart.options.onSelect === "function") {
+        return false;
       }
 
-      return [ChartType.LINE, ChartType.BAR].includes(datasetType);
-    });
+      const [firstDataset, ...otherDatasets] = this.#chart.datasets;
+
+      return otherDatasets.every(
+        (dataset) =>
+          dataset.points.length === firstDataset.points.length &&
+          dataset.points.every((point, index) => point.x === firstDataset.points[index].x),
+      );
+    }
+
+    return [ChartType.LINE, ChartType.BAR].includes(type);
   }
 
   /**
@@ -411,7 +441,7 @@ export default class CartesianLayout {
 
       const point = this.#chart.datasets[0].points[index];
 
-      return this.#pointX(point ?? { x: index }, index);
+      return this.#pointX(point, index);
     });
 
     return Object.freeze(

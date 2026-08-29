@@ -34,7 +34,7 @@ export default class TimesheetRenderer {
     const layout = new TimesheetLayout(this.#chart);
     this.#renderTicks(layout);
     this.#renderTasks(this.#chart.timesheet.tasks, layout);
-    if (this.#chart.options.showAxes) {
+    if (this.#chart.options.axes) {
       const { bottom, left, right } = layout.frame;
       this.#surface.append("line", {
         x1: left,
@@ -59,7 +59,7 @@ export default class TimesheetRenderer {
     for (const [index, value] of layout.ticks.entries()) {
       const tick = layout.tickAt(value, index);
 
-      if (this.#chart.options.showGrid) {
+      if (this.#chart.options.grid) {
         this.#surface.append("line", {
           x1: tick.position,
           y1: top,
@@ -70,7 +70,7 @@ export default class TimesheetRenderer {
         });
       }
 
-      if (this.#chart.options.showLabels) {
+      if (this.#chart.options.valueLabels) {
         this.#surface.append(
           labelElement({
             value: tick.label,
@@ -131,7 +131,7 @@ export default class TimesheetRenderer {
    * @returns {void} An optional horizontal line is appended.
    */
   #renderRowGrid(row, index, frame) {
-    if (!this.#chart.options.showGrid || index === 0) {
+    if (!this.#chart.options.grid || index === 0) {
       return;
     }
 
@@ -154,7 +154,7 @@ export default class TimesheetRenderer {
    * @returns {void} A bounded label is appended when enabled.
    */
   #renderTaskLabel(task, row, frame) {
-    if (!this.#chart.options.showLabels) {
+    if (!this.#chart.options.valueLabels) {
       return;
     }
 

@@ -9,6 +9,94 @@ import {
 const COMPACT_NUMBER_THRESHOLD = 10_000;
 const SMALL_NUMBER_THRESHOLD = 0.01;
 const DEFAULT_LABEL_FONT_SIZE = 11;
+const BALANCE_OVERFLOW_WEIGHT = 10_000;
+const MINIMUM_BALANCED_LABEL_LINES = 2;
+const MAXIMUM_BALANCED_LABEL_LINES = 3;
+
+/**
+ * Scores a contiguous line partition by overflow first and raggedness second.
+ *
+ * @param {string[]} lines - Candidate text lines.
+ * @param {number} maxWidth - Available width for every line.
+ * @returns {number} Lower scores represent a better balanced partition.
+ */
+function lineBalanceScore(lines, maxWidth) {
+  const widths = lines.map((line) => measuredTextWidth(line));
+  const overflow = widths.reduce((sum, width) => sum + Math.max(0, width - maxWidth), 0);
+  const widest = Math.max(...widths);
+  const narrowest = Math.min(...widths);
+
+  return overflow * BALANCE_OVERFLOW_WEIGHT + widest - narrowest;
+}
+
+/**
+ * Finds the best two- or three-line contiguous partition for a word sequence.
+ *
+ * @param {string[]} words - Ordered label words.
+ * @param {number} lineCount - Requested line count.
+ * @param {number} maxWidth - Available width for every line.
+ * @returns {string[]} Best balanced lines for the requested count.
+ */
+function balancedPartition(words, lineCount, maxWidth) {
+  let best = [words.join(" ")];
+  let bestScore = Infinity;
+
+  for (let first = 1; first < words.length; first += 1) {
+    const lastStart = lineCount === MINIMUM_BALANCED_LABEL_LINES ? words.length : first + 1;
+
+    for (let second = lastStart; second <= words.length; second += 1) {
+      const lines = [words.slice(0, first).join(" "), words.slice(first, second).join(" ")];
+
+      if (lineCount === MAXIMUM_BALANCED_LABEL_LINES) {
+        lines.push(words.slice(second).join(" "));
+      }
+
+      const score = lineBalanceScore(lines, maxWidth);
+
+      if (lines.every(Boolean) && score < bestScore) {
+        best = lines;
+        bestScore = score;
+      }
+    }
+  }
+
+  return best;
+}
+
+/**
+ * Balances an ordinary phrase into the fewest lines that fit its width budget.
+ *
+ * @param {string} value - Plain category label.
+ * @param {number} maxWidth - Available width for every line.
+ * @returns {string[]} One to three deterministic display lines.
+ */
+function balancedTextLines(value, maxWidth) {
+  const text = value.trim();
+
+  if (measuredTextWidth(text) <= maxWidth) {
+    return [text];
+  }
+
+  const words = text.split(/\s+/u);
+
+  if (words.length < 2) {
+    return [text];
+  }
+
+  for (
+    let lineCount = MINIMUM_BALANCED_LABEL_LINES;
+    lineCount <= Math.min(MAXIMUM_BALANCED_LABEL_LINES, words.length);
+    lineCount += 1
+  ) {
+    const lines = balancedPartition(words, lineCount, maxWidth);
+
+    if (lines.every((line) => measuredTextWidth(line) <= maxWidth)) {
+      return lines;
+    }
+  }
+
+  return balancedPartition(words, Math.min(MAXIMUM_BALANCED_LABEL_LINES, words.length), maxWidth);
+}
 
 /**
  * Creates an SVG element and serializes its initial attributes.
@@ -159,7 +247,10 @@ function measuredLegendTextWidth(value) {
  * @returns {SVGElement} Detached SVG text element containing positioned tspan children.
  */
 function wrappedLabelElement({ value, attributes, maxWidth, originalValue = value }) {
-  const lines = (Array.isArray(value) ? value : [String(value)]).map((line) => line.trim());
+  const lines = Array.isArray(value)
+    ? value.map((line) => line.trim())
+    : balancedTextLines(String(value), maxWidth);
+
   const text = lines.join(" ");
 
   const visibleLines = lines.map((line) => truncateText(line, maxWidth));

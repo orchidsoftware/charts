@@ -29,7 +29,7 @@ export default class LegendRenderer {
    * @returns {void} Legend content is appended when enabled and meaningful.
    */
   render() {
-    if (!this.#chart.options.showLegend || this.#chart.datasets.length < 2) {
+    if (!this.#chart.options.legend || this.#chart.datasets.length < 2) {
       return;
     }
 

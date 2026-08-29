@@ -63,9 +63,11 @@ export default class InteractionController {
   #onActiveChange;
   #onHide;
   #onShow;
+  #onFocusChange;
   #allowPointerPan;
   #previewable;
   #selectable;
+  #visualItems = new WeakMap();
 
   /**
    * Binds one roving-tabindex interaction model to ordered SVG marks.
@@ -80,6 +82,7 @@ export default class InteractionController {
     this.#onActiveChange = callbacks.onActiveChange;
     this.#onHide = callbacks.onHide;
     this.#onShow = callbacks.onShow;
+    this.#onFocusChange = callbacks.onFocusChange;
     this.#allowPointerPan = behavior.allowPointerPan ?? false;
     this.#previewable = behavior.previewable ?? true;
     this.#selectable = behavior.selectable ?? true;
@@ -94,7 +97,6 @@ export default class InteractionController {
     if (this.#selectedIndex >= 0) {
       const selected = this.#items[this.#selectedIndex];
       this.#onShow(selected, this.#labelFor(selected, this.#selectedIndex), this.#selectedIndex);
-      this.#onActiveChange(this.#selectedIndex, selected);
     }
   }
 
@@ -126,6 +128,44 @@ export default class InteractionController {
   }
 
   /**
+   * Resolves the visible point paired with a transparent 44 px hit target.
+   *
+   * @param {Element} item - Interactive mark or point hit target.
+   * @returns {Element} Visible presentation mark, or the item itself.
+   */
+  #visualItem(item) {
+    if (!item.classList.contains("charts2-point-hit")) {
+      return item;
+    }
+
+    let visual = this.#visualItems.get(item);
+
+    if (!visual) {
+      const datasetIndex = item.dataset.datasetIndex;
+      const pointIndex = item.dataset.pointIndex;
+      visual = item.ownerSVGElement.querySelector(
+        `.charts2-visual-mark[data-dataset-index="${CSS.escape(datasetIndex)}"][data-point-index="${CSS.escape(pointIndex)}"]`,
+      );
+      this.#visualItems.set(item, visual ?? item);
+    }
+
+    return visual ?? item;
+  }
+
+  /**
+   * Reflects a visual interaction class on both hit and presentation marks.
+   *
+   * @param {Element} item - Interactive mark receiving state.
+   * @param {string} className - CSS state class.
+   * @param {boolean} active - Whether the state is enabled.
+   * @returns {void} The hit target and visible mark stay visually synchronized.
+   */
+  #toggleVisualState(item, className, active) {
+    item.classList.toggle(className, active);
+    this.#visualItem(item).classList.toggle(className, active);
+  }
+
+  /**
    * Applies one persistent selection and notifies chart lifecycle callbacks.
    *
    * @param {number} nextIndex - Selected mark index, or `-1` to clear selection.
@@ -139,11 +179,14 @@ export default class InteractionController {
     this.#selectedIndex = nextIndex;
     for (const [index, item] of this.#items.entries()) {
       const isSelected = index === this.#selectedIndex;
-      item.classList.toggle(ACTIVE_CLASS, isSelected);
+      this.#toggleVisualState(item, ACTIVE_CLASS, isSelected);
       InteractionController.#reflectBoolean(item, PRESSED_ATTRIBUTE, isSelected);
     }
 
-    this.#onActiveChange(this.#selectedIndex, this.#selectedIndex >= 0 ? this.#items[this.#selectedIndex] : null);
+    this.#onActiveChange(
+      this.#selectedIndex,
+      this.#selectedIndex >= 0 ? this.#items[this.#selectedIndex] : null,
+    );
     if (this.#selectedIndex >= 0) {
       const selected = this.#items[this.#selectedIndex];
       this.#onShow(selected, this.#labelFor(selected, this.#selectedIndex), this.#selectedIndex);
@@ -162,7 +205,7 @@ export default class InteractionController {
    * @returns {void} Preview styling and tooltip state are updated.
    */
   #showPreview(item, index) {
-    item.classList.add("is-hovered");
+    this.#toggleVisualState(item, "is-hovered", true);
     this.#onShow(item, this.#labelFor(item, index), index);
   }
 
@@ -173,7 +216,8 @@ export default class InteractionController {
    * @returns {void} Pressed styling and tooltip state are restored.
    */
   #hidePreview(item) {
-    item.classList.remove("is-hovered", PRESSED_CLASS);
+    this.#toggleVisualState(item, "is-hovered", false);
+    this.#toggleVisualState(item, PRESSED_CLASS, false);
     if (this.#selectedIndex >= 0) {
       const selected = this.#items[this.#selectedIndex];
       this.#onShow(selected, this.#labelFor(selected, this.#selectedIndex), this.#selectedIndex);
@@ -208,6 +252,7 @@ export default class InteractionController {
    */
   #bindItem(item, index, initialFocusIndex) {
     this.#configureItem(item, index, initialFocusIndex);
+    item.addEventListener("focus", () => this.#onFocusChange(index, item));
     this.#bindPreview(item, index);
     this.#bindSelection(item, index);
     this.#bindKeyboard(item, index);
@@ -239,7 +284,7 @@ export default class InteractionController {
       item.removeAttribute(PRESSED_ATTRIBUTE);
     }
 
-    item.classList.toggle(ACTIVE_CLASS, index === this.#selectedIndex);
+    this.#toggleVisualState(item, ACTIVE_CLASS, index === this.#selectedIndex);
   }
 
   /**
@@ -270,9 +315,9 @@ export default class InteractionController {
    */
   #bindSelection(item, index) {
     if (this.#selectable) {
-      item.addEventListener("pointerdown", () => item.classList.add(PRESSED_CLASS));
-      item.addEventListener("pointerup", () => item.classList.remove(PRESSED_CLASS));
-      item.addEventListener("pointercancel", () => item.classList.remove(PRESSED_CLASS));
+      item.addEventListener("pointerdown", () => this.#toggleVisualState(item, PRESSED_CLASS, true));
+      item.addEventListener("pointerup", () => this.#toggleVisualState(item, PRESSED_CLASS, false));
+      item.addEventListener("pointercancel", () => this.#toggleVisualState(item, PRESSED_CLASS, false));
       item.addEventListener("click", () => this.#updateSelection(index));
 
       return;
@@ -292,7 +337,7 @@ export default class InteractionController {
    */
   #bindKeyboard(item, index) {
     item.addEventListener("keydown", (event) => this.#handleKeydown(event, index));
-    item.addEventListener("keyup", () => item.classList.remove(PRESSED_CLASS));
+    item.addEventListener("keyup", () => this.#toggleVisualState(item, PRESSED_CLASS, false));
   }
 
   /**
@@ -314,7 +359,7 @@ export default class InteractionController {
 
     if (this.#selectable && (event.key === "Enter" || event.key === " ")) {
       event.preventDefault();
-      this.#items[index].classList.add(PRESSED_CLASS);
+      this.#toggleVisualState(this.#items[index], PRESSED_CLASS, true);
       this.#updateSelection(index);
 
       return;

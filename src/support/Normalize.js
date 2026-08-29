@@ -1,9 +1,116 @@
-import { ChartType, DEFAULT_COLORS } from "./Constants.js";
+import { AGGREGATION_TYPES, ChartType, DEFAULT_COLORS } from "./Constants.js";
 
 const DEFAULT_POINT_RADIUS = 5;
 const ISO_DATE_LENGTH = 10;
 const MILLISECONDS_PER_SECOND = 1000;
 const UNIX_SECONDS_THRESHOLD = 100_000;
+const YEAR_LENGTH = 4;
+const YEAR_MONTH_LENGTH = 7;
+const DATE_SEPARATOR_INDICES = new Set([YEAR_LENGTH, YEAR_MONTH_LENGTH]);
+const TIMEZONE_OFFSET_LENGTH = 6;
+const TIMEZONE_HOUR_END = 3;
+const TIMEZONE_MINUTE_START = 4;
+const DATASET_BASE_KEYS = ["name", "values", "color", "opacity", "formatValue"];
+
+const DATASET_LINE_KEYS = [
+  ...DATASET_BASE_KEYS,
+  "gradient",
+  "smooth",
+  "dots",
+  "dotSize",
+  "line",
+  "area",
+  "strokeWidth",
+];
+
+const DATASET_BAR_KEYS = [...DATASET_BASE_KEYS, "radius"];
+
+const CARTESIAN_SERIES_TYPES = new Set([
+  ChartType.LINE,
+  ChartType.BAR,
+  ChartType.SCATTER,
+  ChartType.AXIS_MIXED,
+  ChartType.BUBBLE,
+]);
+
+/**
+ * Names one normalized series while retaining supported local presentation.
+ */
+class NormalizedDataset {
+  /**
+   * Creates an immutable-shape renderer record from one validated input.
+   *
+   * @param {object} dataset - Raw dataset input.
+   * @param {number} datasetIndex - Stable palette position.
+   */
+  constructor(dataset, datasetIndex) {
+    this.name = dataset.name ?? `Series ${datasetIndex + 1}`;
+    this.identityName = dataset.name;
+    this.color = dataset.color;
+    this.chartType = dataset.chartType ?? dataset.type;
+    this.opacity = dataset.opacity;
+    this.formatValue = dataset.formatValue;
+    this.gradient = dataset.gradient;
+    this.smooth = dataset.smooth;
+    this.dots = dataset.dots;
+    this.dotSize = dataset.dotSize;
+    this.line = dataset.line;
+    this.area = dataset.area;
+    this.strokeWidth = dataset.strokeWidth;
+    this.radius = dataset.radius;
+    this.points = dataset.values.map((point, pointIndex) => normalizePoint(point, pointIndex));
+  }
+}
+
+/**
+ * Assigns one encounter-ordered palette stream across grouped and ungrouped tasks.
+ */
+class TimesheetPalette {
+  #colors;
+  #groups = new Map();
+  #next = 0;
+
+  /**
+   * Captures the effective chart palette.
+   *
+   * @param {readonly string[]} colors - Cyclic categorical colors.
+   */
+  constructor(colors) {
+    this.#colors = colors;
+  }
+
+  /**
+   * Resolves an explicit task color or its stable categorical color.
+   *
+   * @param {object} task - Validated task input.
+   * @returns {string} Effective task color.
+   */
+  colorFor(task) {
+    const index = this.#indexFor(task.group);
+
+    return task.color ?? this.#colors[index % this.#colors.length];
+  }
+
+  /**
+   * Resolves and advances the palette key stream.
+   *
+   * @param {string | undefined} group - Optional stable group key.
+   * @returns {number} Palette position.
+   */
+  #indexFor(group) {
+    if (group && this.#groups.has(group)) {
+      return this.#groups.get(group);
+    }
+
+    const index = this.#next;
+    this.#next += 1;
+    if (group) {
+      this.#groups.set(group, index);
+    }
+
+    return index;
+  }
+}
 
 /**
  * Verifies that a value is safe to use in geometry calculations.
@@ -49,41 +156,251 @@ function normalizePoint(point, index) {
  * Normalizes series names, colors, chart overrides, and values for rendering.
  *
  * @param {{datasets?: Array<object>}} data - Dataset container from chart options.
+ * @param {readonly string[]} [colors=DEFAULT_COLORS] - Effective categorical palette.
+ * @param {string} type - Immutable chart family.
  * @returns {Array<object>} Non-empty collection of canonical datasets and points.
  * @throws {TypeError} When datasets or their values are missing or malformed.
  */
-function normalizeDatasets(data) {
+function normalizeDatasets(data, colors = DEFAULT_COLORS, type) {
   if (!data || !Array.isArray(data.datasets) || data.datasets.length === 0) {
     throw new TypeError("Chart data requires at least one dataset");
   }
 
   return data.datasets.map((dataset, datasetIndex) => {
+    validateDatasetInput(dataset, type);
     if (!dataset || !Array.isArray(dataset.values) || dataset.values.length === 0) {
-      throw new TypeError("Each dataset requires a non-empty values array");
+      throw new TypeError("Each dataset requires a non-empty array of values");
     }
 
-    return {
-      name: dataset.name ?? `Series ${datasetIndex + 1}`,
-      color: dataset.color ?? DEFAULT_COLORS[datasetIndex % DEFAULT_COLORS.length],
-      chartType: dataset.chartType ?? dataset.type,
-      points: dataset.values.map((point, pointIndex) => normalizePoint(point, pointIndex)),
-    };
+    return new NormalizedDataset(
+      { ...dataset, color: dataset.color ?? colors[datasetIndex % colors.length] },
+      datasetIndex,
+    );
   });
+}
+
+/**
+ * Rejects unknown scene keys before any renderer-facing normalization occurs.
+ *
+ * @param {string} type - Immutable chart family.
+ * @param {unknown} data - Candidate complete series scene.
+ * @returns {void} Exhaustive public records pass unchanged.
+ */
+function validateSeriesScene(type, data) {
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new TypeError("Chart data must be an object");
+  }
+
+  const allowed = CARTESIAN_SERIES_TYPES.has(type)
+    ? ["labels", "datasets", "markers", "regions"]
+    : ["labels", "datasets"];
+
+  validateObjectKeys(data, allowed, "chart data");
+}
+
+/**
+ * Validates one dataset record using the exhaustive grammar for its family.
+ *
+ * @param {unknown} dataset - Candidate dataset object.
+ * @param {string} type - Owning chart type.
+ * @returns {void} Supported keys and independently decidable values pass.
+ */
+function validateDatasetInput(dataset, type) {
+  if (!dataset || typeof dataset !== "object" || Array.isArray(dataset)) {
+    throw new TypeError("Each dataset must be an object");
+  }
+
+  const subtype = type === ChartType.AXIS_MIXED ? dataset.chartType : type;
+
+  if (
+    type === ChartType.AXIS_MIXED &&
+    ![ChartType.LINE, ChartType.BAR, ChartType.SCATTER].includes(subtype)
+  ) {
+    throw new TypeError("Mixed dataset chartType must be line, bar, or scatter");
+  }
+
+  const localKeys = datasetKeysFor(subtype);
+  const allowed = type === ChartType.AXIS_MIXED ? [...localKeys, "chartType"] : localKeys;
+  validateObjectKeys(dataset, allowed, "dataset");
+  validateDatasetProperties(dataset, subtype);
+}
+
+/**
+ * Selects exhaustive keys for one concrete dataset subtype.
+ *
+ * @param {string} type - Concrete dataset family.
+ * @returns {string[]} Allowed dataset keys.
+ */
+function datasetKeysFor(type) {
+  if (type === ChartType.LINE) {
+    return DATASET_LINE_KEYS;
+  }
+
+  if (type === ChartType.BAR) {
+    return DATASET_BAR_KEYS;
+  }
+
+  return DATASET_BASE_KEYS;
+}
+
+/**
+ * Validates common and family-specific dataset properties.
+ *
+ * @param {object} dataset - Exhaustive dataset record.
+ * @param {string} type - Concrete dataset family.
+ * @returns {void} Presentation and point values satisfy public invariants.
+ */
+function validateDatasetProperties(dataset, type) {
+  validateDatasetIdentity(dataset);
+  validateDatasetPresentation(dataset);
+  validateDatasetGradient(dataset.gradient);
+
+  if (Array.isArray(dataset.values)) {
+    for (const [index, value] of dataset.values.entries()) {
+      validatePublicPoint(value, type, index);
+    }
+  }
+}
+
+/**
+ * Validates optional dataset identity and formatter fields.
+ *
+ * @param {object} dataset - Candidate dataset input.
+ * @returns {void} Identity fields are either absent or valid.
+ */
+function validateDatasetIdentity(dataset) {
+  const hasName = dataset.name !== undefined;
+  const isValidName = typeof dataset.name === "string" && dataset.name.trim() !== "";
+
+  if (hasName && !isValidName) {
+    throw new TypeError("Dataset name must be a non-empty string");
+  }
+
+  if (dataset.formatValue !== undefined && typeof dataset.formatValue !== "function") {
+    throw new TypeError("Dataset formatValue must be a function");
+  }
+}
+
+/**
+ * Validates optional dataset geometry and visibility fields.
+ *
+ * @param {object} dataset - Candidate dataset input.
+ * @returns {void} Presentation fields are either absent or valid.
+ */
+function validateDatasetPresentation(dataset) {
+  const hasOpacity = dataset.opacity !== undefined;
+  const isValidOpacity = Number.isFinite(dataset.opacity) && dataset.opacity >= 0 && dataset.opacity <= 1;
+
+  if (hasOpacity && !isValidOpacity) {
+    throw new TypeError("Dataset opacity must be from 0 through 1");
+  }
+
+  for (const property of ["smooth", "dots", "line", "area"]) {
+    if (dataset[property] !== undefined && typeof dataset[property] !== "boolean") {
+      throw new TypeError(`Dataset ${property} must be a boolean`);
+    }
+  }
+
+  for (const property of ["dotSize", "strokeWidth", "radius"]) {
+    if (dataset[property] !== undefined && (!Number.isFinite(dataset[property]) || dataset[property] < 0)) {
+      throw new TypeError(`Dataset ${property} must be a non-negative finite number`);
+    }
+  }
+}
+
+/**
+ * Validates dataset-local gradient switches and endpoints.
+ *
+ * @param {unknown} gradient - Optional gradient configuration.
+ * @returns {void} Supported gradient input passes unchanged.
+ */
+function validateDatasetGradient(gradient) {
+  if (gradient === undefined || typeof gradient === "boolean") {
+    return;
+  }
+
+  if (!gradient || typeof gradient !== "object" || Array.isArray(gradient)) {
+    throw new TypeError("Dataset gradient must be a boolean or object");
+  }
+
+  validateObjectKeys(gradient, ["fromOpacity", "toOpacity"], "gradient");
+  for (const value of Object.values(gradient)) {
+    if (!Number.isFinite(value) || value < 0 || value > 1) {
+      throw new TypeError("Gradient opacity must be from 0 through 1");
+    }
+  }
+}
+
+/**
+ * Rejects extra point keys and invalid family-specific coordinate values.
+ *
+ * @param {unknown} value - Candidate scalar or point.
+ * @param {string} type - Concrete dataset type.
+ * @param {number} index - Scalar scatter shorthand position.
+ * @returns {void} Point input can be normalized without ambiguity.
+ */
+function validatePublicPoint(value, type, index) {
+  if (type === ChartType.SCATTER && Number.isFinite(value)) {
+    return;
+  }
+
+  const isPointSeries = [ChartType.SCATTER, ChartType.BUBBLE].includes(type);
+
+  if (!isPointSeries) {
+    if (!Number.isFinite(value)) {
+      throw new TypeError(`Dataset value ${index + 1} must be finite`);
+    }
+
+    return;
+  }
+
+  validateCoordinatePoint(value, type);
+}
+
+/**
+ * Validates one explicit scatter or bubble coordinate object.
+ *
+ * @param {unknown} value - Candidate point object.
+ * @param {string} type - Scatter or bubble family.
+ * @returns {void} Exhaustive finite coordinates pass unchanged.
+ */
+function validateCoordinatePoint(value, type) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new TypeError(`${type} points must be objects with finite coordinates`);
+  }
+
+  const pointKeys = type === ChartType.BUBBLE ? ["x", "y", "r"] : ["x", "y"];
+
+  validateObjectKeys(value, pointKeys, `${type} point`);
+  if (!Number.isFinite(value.x) || !Number.isFinite(value.y)) {
+    throw new TypeError(`${type} points must provide finite x and y`);
+  }
+
+  if (type === ChartType.BUBBLE && (!Number.isFinite(value.r) || value.r < 0)) {
+    throw new TypeError("Bubble points must provide a finite non-negative r");
+  }
 }
 
 /**
  * Converts keyed heatmap values into sorted, date-addressable entries.
  *
- * @param {{start?: string | Date, end?: string | Date, dataPoints?: Record<string, number>}} [data={}] - Heatmap dates and values.
+ * @param {{start?: string | Date, end?: string | Date, points?: Record<string, number>}} [data={}] - Heatmap dates and values.
  * @returns {Array<{date: Date, key: string, value: number}>} Chronologically sorted daily entries.
  * @throws {TypeError} When bounds, dates, or values are invalid.
  */
 function normalizeHeatmapData(data = {}) {
-  if (data.start && data.end && new Date(data.start) > new Date(data.end)) {
-    throw new TypeError("Heatmap start date cannot be after end date");
+  validateObjectKeys(data, ["start", "end", "points"], "heatmap data");
+  const source = data.points;
+
+  if (!source || typeof source !== "object") {
+    throw new TypeError("Heatmap points must contain at least one entry");
   }
 
-  const entries = Object.entries(data.dataPoints ?? {}).map(([key, value]) => {
+  if (Array.isArray(source) || Object.keys(source).length === 0) {
+    throw new TypeError("Heatmap points must contain at least one entry");
+  }
+
+  const entries = Object.entries(source).map(([key, value]) => {
     requireFiniteNumber(value, "Heatmap value");
     const date = heatmapDate(key);
 
@@ -94,7 +411,51 @@ function normalizeHeatmapData(data = {}) {
     return { date, key: date.toISOString().slice(0, ISO_DATE_LENGTH), value };
   });
 
-  return entries.toSorted((left, right) => left.date - right.date);
+  const sorted = entries.toSorted((left, right) => left.date - right.date);
+  validateHeatmapRange(data, sorted);
+
+  return sorted;
+}
+
+/**
+ * Validates an optional explicit heatmap range against normalized UTC days.
+ *
+ * @param {object} data - Heatmap data containing optional bounds.
+ * @param {Array<object>} entries - Sorted normalized point entries.
+ * @returns {void} Ascending containing ranges pass unchanged.
+ */
+function validateHeatmapRange(data, entries) {
+  if (data.start === undefined && data.end === undefined) {
+    return;
+  }
+
+  if (data.start === undefined || data.end === undefined) {
+    throw new TypeError("Heatmap range requires both start and end");
+  }
+
+  const start = heatmapBound(data.start, "Heatmap range start");
+  const end = heatmapBound(data.end, "Heatmap range end");
+
+  if (start > end) {
+    throw new TypeError("Heatmap range end cannot precede start");
+  }
+
+  if (entries[0].date < start || entries.at(-1).date > end) {
+    throw new TypeError("Heatmap range must contain every point");
+  }
+}
+
+/**
+ * Converts a heatmap range bound to its UTC calendar day.
+ *
+ * @param {unknown} value - Date or transitional date-only string.
+ * @param {string} name - Public concept named in failures.
+ * @returns {Date} Midnight UTC calendar bound.
+ */
+function heatmapBound(value, name) {
+  const date = normalizeDate(value, name);
+
+  return new Date(`${date.toISOString().slice(0, ISO_DATE_LENGTH)}T00:00:00Z`);
 }
 
 /**
@@ -104,10 +465,18 @@ function normalizeHeatmapData(data = {}) {
  * @returns {Date} Candidate date for subsequent validity checking.
  */
 function heatmapDate(key) {
-  const numeric = Number(key);
+  if (isNumericKey(key)) {
+    const numeric = Number(key);
 
-  if (Number.isFinite(numeric) && numeric > UNIX_SECONDS_THRESHOLD) {
+    if (!Number.isFinite(numeric) || numeric <= UNIX_SECONDS_THRESHOLD) {
+      return new Date(NaN);
+    }
+
     return new Date(numeric * MILLISECONDS_PER_SECOND);
+  }
+
+  if (!isDateOnly(key)) {
+    return new Date(NaN);
   }
 
   return new Date(`${key}T00:00:00Z`);
@@ -122,7 +491,8 @@ function heatmapDate(key) {
  * @throws {TypeError} When the value cannot be interpreted as a date.
  */
 function normalizeDate(value, name) {
-  const date = value instanceof Date ? new Date(value.valueOf()) : new Date(value);
+  const normalized = normalizeDateInput(value, name);
+  const date = value instanceof Date ? new Date(value.valueOf()) : new Date(normalized);
 
   if (Number.isNaN(date.valueOf())) {
     throw new TypeError(`${name} must be a valid date`);
@@ -132,37 +502,124 @@ function normalizeDate(value, name) {
 }
 
 /**
+ * Rejects timezone-ambiguous strings and normalizes calendar dates to UTC.
+ *
+ * @param {unknown} value - Candidate date input.
+ * @param {string} name - Public concept named in failures.
+ * @returns {unknown} Date-constructor input with explicit timezone semantics.
+ */
+function normalizeDateInput(value, name) {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  if (isDateOnly(value)) {
+    return `${value}T00:00:00Z`;
+  }
+
+  if (!hasExplicitTimezone(value)) {
+    throw new TypeError(`${name} date-time string must include a timezone offset or Z`);
+  }
+
+  return value;
+}
+
+/**
+ * Recognizes the exact timezone-free ISO calendar form.
+ *
+ * @param {string} value - Candidate date string.
+ * @returns {boolean} Whether separators and decimal fields match YYYY-MM-DD.
+ */
+function isDateOnly(value) {
+  if (value.length !== ISO_DATE_LENGTH || value[4] !== "-" || value[7] !== "-") {
+    return false;
+  }
+
+  return [...value].every(
+    (character, index) => DATE_SEPARATOR_INDICES.has(index) || (character >= "0" && character <= "9"),
+  );
+}
+
+/**
+ * Recognizes supported decimal Unix-second keys without a permissive parser.
+ *
+ * @param {string} value - Candidate heatmap key.
+ * @returns {boolean} Whether every character belongs to one decimal number.
+ */
+function isNumericKey(value) {
+  const numeric = Number(value);
+
+  if (!Number.isFinite(numeric) || value.trim() !== value || value === "") {
+    return false;
+  }
+
+  const body = value.startsWith("-") ? value.slice(1) : value;
+  const parts = body.split(".");
+
+  return (
+    parts.length <= 2 &&
+    parts.every((part) => part !== "" && [...part].every((character) => character >= "0" && character <= "9"))
+  );
+}
+
+/**
+ * Detects a terminal Z or numeric offset on a date-time string.
+ *
+ * @param {string} value - Candidate date-time string.
+ * @returns {boolean} Whether timezone semantics are explicit.
+ */
+function hasExplicitTimezone(value) {
+  if (!value.includes("T")) {
+    return false;
+  }
+
+  if (value.toUpperCase().endsWith("Z")) {
+    return true;
+  }
+
+  const offset = value.slice(-TIMEZONE_OFFSET_LENGTH);
+  const sign = offset[0];
+  const digits = `${offset.slice(1, TIMEZONE_HOUR_END)}${offset.slice(TIMEZONE_MINUTE_START)}`;
+
+  return (
+    ["+", "-"].includes(sign) &&
+    offset[TIMEZONE_HOUR_END] === ":" &&
+    [...digits].every((character) => character >= "0" && character <= "9")
+  );
+}
+
+/**
+ * Rejects unknown public input-object keys.
+ *
+ * @param {object} input - Candidate public record.
+ * @param {string[]} allowed - Exhaustive supported keys.
+ * @param {string} concept - Public concept named in failures.
+ * @returns {void} Exhaustive records pass unchanged.
+ */
+function validateObjectKeys(input, allowed, concept) {
+  const unknown = Object.keys(input).find((key) => !allowed.includes(key));
+
+  if (unknown) {
+    throw new TypeError(`Unsupported ${concept} key: ${unknown}`);
+  }
+}
+
+/**
  * Validates timesheet tasks and derives an enclosing time range when omitted.
  *
  * @param {{start?: string | number | Date, end?: string | number | Date, tasks?: Array<object>}} [data={}] - Timesheet bounds and task records.
+ * @param {readonly string[]} [colors=DEFAULT_COLORS] - Effective categorical palette.
  * @returns {{start: Date, end: Date, tasks: Array<object>}} Canonical task collection enclosed by validated bounds.
  * @throws {TypeError} When tasks, dates, durations, or explicit bounds are invalid.
  */
-function normalizeTimesheetData(data = {}) {
+function normalizeTimesheetData(data = {}, colors = DEFAULT_COLORS) {
+  validateObjectKeys(data, ["start", "end", "tasks"], "timesheet data");
   if (!Array.isArray(data.tasks) || data.tasks.length === 0) {
     throw new TypeError("Timesheet data requires a non-empty tasks array");
   }
 
-  const tasks = data.tasks.map((task, index) => {
-    if (!task || typeof task !== "object") {
-      throw new TypeError("Each timesheet task must be an object");
-    }
-
-    const start = normalizeDate(task.start, `Task ${index + 1} start`);
-    const end = normalizeDate(task.end, `Task ${index + 1} end`);
-
-    if (end <= start) {
-      throw new TypeError("Timesheet task end must be after start");
-    }
-
-    return {
-      label: String(task.label ?? `Task ${index + 1}`),
-      start,
-      end,
-      group: task.group === undefined ? undefined : String(task.group),
-      color: task.color ?? DEFAULT_COLORS[index % DEFAULT_COLORS.length],
-    };
-  });
+  const palette = new TimesheetPalette(colors);
+  const tasks = data.tasks.map((task, index) => normalizeTimesheetTask(task, index, palette));
 
   const taskStart = new Date(Math.min(...tasks.map((task) => task.start.valueOf())));
   const taskEnd = new Date(Math.max(...tasks.map((task) => task.end.valueOf())));
@@ -181,6 +638,44 @@ function normalizeTimesheetData(data = {}) {
 }
 
 /**
+ * Normalizes one task against strict dates and the shared palette stream.
+ *
+ * @param {unknown} task - Candidate task input.
+ * @param {number} index - Stable task position.
+ * @param {TimesheetPalette} palette - Encounter-ordered palette state.
+ * @returns {object} Normalized task snapshot.
+ */
+function normalizeTimesheetTask(task, index, palette) {
+  if (!task || typeof task !== "object") {
+    throw new TypeError("Each timesheet task must be an object");
+  }
+
+  validateObjectKeys(task, ["label", "start", "end", "group", "color"], "timesheet task");
+  if (typeof task.label !== "string" || task.label.trim() === "") {
+    throw new TypeError("Timesheet task label must be a non-empty string");
+  }
+
+  if (task.group !== undefined && (typeof task.group !== "string" || task.group.trim() === "")) {
+    throw new TypeError("Timesheet task group must be a non-empty string");
+  }
+
+  const start = normalizeDate(task.start, `Task ${index + 1} start`);
+  const end = normalizeDate(task.end, `Task ${index + 1} end`);
+
+  if (end <= start) {
+    throw new TypeError("Timesheet task end must be after start");
+  }
+
+  return {
+    label: task.label,
+    start,
+    end,
+    group: task.group,
+    color: palette.colorFor(task),
+  };
+}
+
+/**
  * Applies invariants that depend on the selected chart renderer.
  *
  * @param {string} type - Canonical chart type selected for rendering.
@@ -194,16 +689,43 @@ function validateChartData(type, datasets, labels) {
     throw new TypeError("Chart labels must be an array");
   }
 
-  if (type === ChartType.RADAR && datasets.some((dataset) => dataset.points.length !== datasets[0].points.length)) {
-    throw new TypeError("Radar datasets must have equal lengths");
+  if (datasets.length > 1 && datasets.some((dataset) => dataset.identityName === undefined)) {
+    throw new TypeError("An unnamed dataset is valid only for a single-series chart");
   }
 
-  if (type === ChartType.POLAR_AREA && datasets.length !== 1) {
+  const hasGeneratedIndependentLabels =
+    [ChartType.SCATTER, ChartType.BUBBLE].includes(type) &&
+    labels.every((label) => typeof label === "number");
+
+  if (!hasGeneratedIndependentLabels && datasets.some((dataset) => dataset.points.length !== labels.length)) {
+    throw new TypeError("Chart labels length must match every dataset");
+  }
+
+  if ([...AGGREGATION_TYPES, ChartType.POLAR_AREA].includes(type) && datasets.length !== 1) {
     throw new TypeError(`${type} requires exactly one dataset`);
   }
 
-  if (type === ChartType.BUBBLE && datasets.some((dataset) => dataset.points.some((point) => point.r < 0))) {
-    throw new TypeError("Bubble radii cannot be negative");
+  if ([...AGGREGATION_TYPES, ChartType.POLAR_AREA, ChartType.RADAR].includes(type)) {
+    validateNonNegativeData(type, datasets);
+  }
+}
+
+/**
+ * Validates radial and composition values after numeric normalization.
+ *
+ * @param {string} type - Current chart type.
+ * @param {Array<object>} datasets - Normalized datasets.
+ * @returns {void} Non-negative data with a positive composition total passes.
+ */
+function validateNonNegativeData(type, datasets) {
+  const values = datasets.flatMap((dataset) => dataset.points.map((point) => point.y));
+
+  if (values.some((value) => value < 0)) {
+    throw new TypeError(`${type} values must be non-negative`);
+  }
+
+  if ([...AGGREGATION_TYPES, ChartType.POLAR_AREA].includes(type) && values.every((value) => value === 0)) {
+    throw new TypeError(`${type} requires at least one positive value`);
   }
 }
 
@@ -214,5 +736,6 @@ export {
   normalizeHeatmapData,
   normalizeDate,
   normalizeTimesheetData,
+  validateSeriesScene,
   validateChartData,
 };

@@ -10,12 +10,14 @@ import {
   AGGREGATION_LEGEND_GAP,
 } from "./Constants.js";
 import { formatNumber, truncateText, measuredTextWidth, measuredLegendTextWidth } from "./Dom.js";
+import { formatLabel, formatValue } from "./Formatting.js";
 import { extent } from "./Math.js";
 
 const AGGREGATION_MINIMUM_CONTENT_HEIGHT = 8;
-const HORIZONTAL_LABEL_MAXIMUM_PADDING = 160;
+const HORIZONTAL_LABEL_MAXIMUM_PADDING = 176;
 const HORIZONTAL_LABEL_MINIMUM_PADDING = 24;
 const HORIZONTAL_LABEL_WIDTH_RATIO = 0.42;
+const HORIZONTAL_MULTILINE_LABEL_WIDTH_RATIO = 0.55;
 const INITIAL_LEGEND_ROW_COUNT = 1;
 const LEGEND_ITEM_GAP = 16;
 const LEGEND_LEFT_INSET = 12;
@@ -34,23 +36,7 @@ const DATASET_SUMMARY_LIMIT = 12;
  * @throws {TypeError} When a formatter returns an unsupported value.
  */
 function formatCategoryLabel(options, label, index) {
-  const formatter = options.axisOptions?.formatLabel;
-
-  if (!formatter) {
-    return String(label);
-  }
-
-  const formatted = formatter(label, index, { orientation: options.orientation, type: options.type });
-
-  if (typeof formatted === "string") {
-    return formatted;
-  }
-
-  if (Array.isArray(formatted) && formatted.length > 0 && formatted.every((line) => typeof line === "string")) {
-    return [...formatted];
-  }
-
-  throw new TypeError("axisOptions.formatLabel must return a string or a non-empty string array");
+  return formatLabel(options, label, { target: "axis", index });
 }
 
 /**
@@ -61,9 +47,13 @@ function formatCategoryLabel(options, label, index) {
  * @returns {number} Clamped left padding required by the widest visible label.
  */
 function horizontalCategoryPadding(labels, width) {
+  const widthRatio = labels.some((label) => Array.isArray(label))
+    ? HORIZONTAL_MULTILINE_LABEL_WIDTH_RATIO
+    : HORIZONTAL_LABEL_WIDTH_RATIO;
+
   const maximum = Math.max(
     HORIZONTAL_LABEL_MINIMUM_PADDING,
-    Math.min(HORIZONTAL_LABEL_MAXIMUM_PADDING, width * HORIZONTAL_LABEL_WIDTH_RATIO),
+    Math.min(HORIZONTAL_LABEL_MAXIMUM_PADDING, width * widthRatio),
   );
 
   const maximumLabelWidth = maximum - HORIZONTAL_LABEL_EDGE_INSET - HORIZONTAL_LABEL_GAP;
@@ -71,7 +61,10 @@ function horizontalCategoryPadding(labels, width) {
   const displayedWidths = labels.map((label) => {
     const lines = Array.isArray(label) ? label : [String(label)];
 
-    return Math.min(maximumLabelWidth, Math.ceil(Math.max(...lines.map((line) => measuredTextWidth(line.trim())))));
+    return Math.min(
+      maximumLabelWidth,
+      Math.ceil(Math.max(...lines.map((line) => measuredTextWidth(line.trim())))),
+    );
   });
 
   return Math.max(
@@ -135,11 +128,11 @@ function legendLayout(width, items) {
  * @param {number} specification.width - Available chart width in pixels.
  * @param {number} specification.height - Available chart height in pixels.
  * @param {Array<{label: string}>} specification.items - Legend entries used to calculate row count.
- * @param {boolean} specification.showLegend - Whether layout must reserve legend space.
+ * @param {boolean} specification.legend - Whether layout must reserve legend space.
  * @returns {{contentTop: number, contentBottom: number, contentHeight: number, legendBaseline: number | null}} Vertical content bounds and optional legend baseline.
  */
-function aggregationLayout({ width, height, items, showLegend }) {
-  const legendRows = showLegend ? legendLayout(width, items).rows : 0;
+function aggregationLayout({ width, height, items, legend }) {
+  const legendRows = legend ? legendLayout(width, items).rows : 0;
 
   const legendBaseline =
     legendRows > 0 ? height - AGGREGATION_LEGEND_BASELINE_INSET - (legendRows - 1) * LEGEND_ROW_HEIGHT : null;
@@ -164,18 +157,41 @@ function aggregationLayout({ width, height, items, showLegend }) {
  *
  * @param {{name: string, points: Array<{x: number, y: number}>}} dataset - Normalized series to describe.
  * @param {unknown[]} labels - Optional category values corresponding to points.
+ * @param {object} [formatting={}] - Formatter options and stable dataset identity.
+ * @param {object} [formatting.options={}] - Chart-level formatter options.
+ * @param {number} [formatting.datasetIndex=0] - Stable dataset position.
  * @returns {string} Detailed short-series summary or bounded long-series statistics.
  */
-function datasetSummary(dataset, labels) {
-  const values = dataset.points.map((point, index) => `${labels[index] ?? point.x}: ${point.y}`);
+function datasetSummary(dataset, labels, { options = {}, datasetIndex = 0 } = {}) {
+  const formatPoint = (point, index) => {
+    const label = formatLabel(options, labels[index] ?? point.x, {
+      target: "accessibility",
+      datasetIndex,
+      index,
+      point,
+    });
 
-  if (values.length > DATASET_SUMMARY_LIMIT) {
-    const first = dataset.points[0];
-    const last = dataset.points.at(-1);
+    const value = formatValue(options, point.y, {
+      target: "accessibility",
+      dataset,
+      datasetIndex,
+      index,
+      label: labels[index] ?? point.x,
+      point,
+    });
+
+    return `${label}: ${value}`;
+  };
+
+  if (dataset.points.length > DATASET_SUMMARY_LIMIT) {
     const [minimum, maximum] = extent(dataset.points.map((point) => point.y));
+    const first = formatPoint(dataset.points[0], 0);
+    const last = formatPoint(dataset.points.at(-1), dataset.points.length - 1);
 
-    return `${dataset.name}: ${values.length} points · ${labels[0] ?? first.x}: ${formatNumber(first.y)} · ${labels.at(-1) ?? last.x}: ${formatNumber(last.y)} · range ${formatNumber(minimum)}–${formatNumber(maximum)}`;
+    return `${dataset.name}: ${dataset.points.length} points · ${first} · ${last} · range ${formatNumber(minimum)}–${formatNumber(maximum)}`;
   }
+
+  const values = dataset.points.map((point, index) => formatPoint(point, index));
 
   return `${dataset.name}: ${values.join(", ")}`;
 }
@@ -188,13 +204,16 @@ function datasetSummary(dataset, labels) {
  * @param {unknown} content.label - Source x or category value.
  * @param {number} content.value - Numeric y value to present.
  * @param {string} [content.suffix=""] - Unit or contextual text appended to the value.
+ * @param {object} [content.dataset] - Dataset-local formatter owner.
+ * @param {number} [content.datasetIndex] - Stable dataset position.
+ * @param {number} [content.index] - Stable point position.
+ * @param {object} [content.point] - Normalized source point.
  * @returns {string} Complete tooltip text in `label: value` form.
  */
-function tooltipText({ options, label, value, suffix = "" }) {
-  const formatX = options.tooltipOptions?.formatTooltipX;
-  const formatY = options.tooltipOptions?.formatTooltipY;
-  const x = formatX ? formatX(label) : label;
-  const y = formatY ? formatY(value) : formatNumber(value);
+function tooltipText(content) {
+  const { options, label, value, suffix = "", dataset, datasetIndex, index, point } = content;
+  const x = formatLabel(options, label, { target: "tooltip", datasetIndex, index, point });
+  const y = formatValue(options, value, { target: "tooltip", dataset, datasetIndex, index, label, point });
 
   return `${x}: ${y}${suffix}`;
 }

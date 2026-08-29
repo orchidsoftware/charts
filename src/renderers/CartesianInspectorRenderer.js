@@ -1,4 +1,5 @@
-import { formatNumber, markMetadata, svg, titled } from "../support/Dom.js";
+import { markMetadata, svg, titled } from "../support/Dom.js";
+import { formatLabel, formatValue } from "../support/Formatting.js";
 
 /**
  * Renders category-sized interaction targets for dense Cartesian series.
@@ -29,8 +30,8 @@ export default class CartesianInspectorRenderer {
    */
   render() {
     for (let index = 0; index < this.#layout.categories.count; index += 1) {
-      const rawLabel = this.#chart.labels[index] ?? this.#chart.datasets[0].points[index]?.x ?? index + 1;
-      const label = this.#chart.options.tooltipOptions?.formatTooltipX?.(rawLabel) ?? rawLabel;
+      const rawLabel = this.#chart.labels[index];
+      const label = formatLabel(this.#chart.options, rawLabel, { target: "tooltip", index });
       const items = this.#itemsAt(index);
 
       const hitTarget = markMetadata(
@@ -59,16 +60,22 @@ export default class CartesianInspectorRenderer {
    * @returns {Array<object>} Existing values formatted as tooltip rows.
    */
   #itemsAt(index) {
-    return this.#chart.datasets.flatMap((dataset) => {
+    return this.#chart.datasets.map((dataset, datasetIndex) => {
       const point = dataset.points[index];
 
-      if (!point) {
-        return [];
-      }
+      const formattedValue = formatValue(this.#chart.options, point.y, {
+        target: "tooltip",
+        dataset,
+        datasetIndex,
+        datasetName: dataset.name,
+        index,
+        label: this.#chart.labels[index],
+        point,
+      });
 
-      const value = this.#chart.options.tooltipOptions?.formatTooltipY?.(point.y) ?? formatNumber(point.y);
+      const size = point.r === undefined ? "" : `, size ${point.r}`;
 
-      return [{ name: dataset.name, value: String(value), color: dataset.color }];
+      return { name: dataset.name, value: `${formattedValue}${size}`, color: dataset.color };
     });
   }
 }

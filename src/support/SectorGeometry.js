@@ -60,9 +60,22 @@ function arcPath({ center, radius, angles }) {
  * @returns {string} Closed SVG path data for the ring segment.
  */
 function ringPath({ center, radii, outerAngles, innerAngles = outerAngles }) {
-  const outerStart = polarPoint({ cx: center.x, cy: center.y, radius: radii.outer, angle: outerAngles.start });
+  const outerStart = polarPoint({
+    cx: center.x,
+    cy: center.y,
+    radius: radii.outer,
+    angle: outerAngles.start,
+  });
+
   const outerEnd = polarPoint({ cx: center.x, cy: center.y, radius: radii.outer, angle: outerAngles.end });
-  const innerStart = polarPoint({ cx: center.x, cy: center.y, radius: radii.inner, angle: innerAngles.start });
+
+  const innerStart = polarPoint({
+    cx: center.x,
+    cy: center.y,
+    radius: radii.inner,
+    angle: innerAngles.start,
+  });
+
   const innerEnd = polarPoint({ cx: center.x, cy: center.y, radius: radii.inner, angle: innerAngles.end });
   const outerLarge = outerAngles.end - outerAngles.start > Math.PI ? 1 : 0;
   const innerLarge = innerAngles.end - innerAngles.start > Math.PI ? 1 : 0;
@@ -127,7 +140,11 @@ function ringPoints({ center, radii, outerAngles, innerAngles }) {
  * @returns {number} Non-overlapping corner radius.
  */
 function ringCornerRadius({ geometry, points }) {
-  const startSide = Math.hypot(points.outerStart.x - points.innerStart.x, points.outerStart.y - points.innerStart.y);
+  const startSide = Math.hypot(
+    points.outerStart.x - points.innerStart.x,
+    points.outerStart.y - points.innerStart.y,
+  );
+
   const endSide = Math.hypot(points.outerEnd.x - points.innerEnd.x, points.outerEnd.y - points.innerEnd.y);
 
   return Math.min(
@@ -204,8 +221,11 @@ function roundedRingPath(geometry) {
     outerStart: pointToward(points.outerStart, points.innerStart, appliedRadius),
   };
 
-  const outerLarge = geometry.angles.outer.end - geometry.angles.outer.start - arcs.outerDelta * 2 > Math.PI ? 1 : 0;
-  const innerLarge = geometry.angles.inner.end - geometry.angles.inner.start - arcs.innerDelta * 2 > Math.PI ? 1 : 0;
+  const outerLarge =
+    geometry.angles.outer.end - geometry.angles.outer.start - arcs.outerDelta * 2 > Math.PI ? 1 : 0;
+
+  const innerLarge =
+    geometry.angles.inner.end - geometry.angles.inner.start - arcs.innerDelta * 2 > Math.PI ? 1 : 0;
 
   return `M${arcs.outerStart.x},${arcs.outerStart.y}A${geometry.radii.outer},${geometry.radii.outer} 0 ${outerLarge} 1 ${arcs.outerEnd.x},${arcs.outerEnd.y}Q${points.outerEnd.x},${points.outerEnd.y} ${sides.outerEnd.x},${sides.outerEnd.y}L${sides.innerEnd.x},${sides.innerEnd.y}Q${points.innerEnd.x},${points.innerEnd.y} ${arcs.innerEnd.x},${arcs.innerEnd.y}A${geometry.radii.inner},${geometry.radii.inner} 0 ${innerLarge} 0 ${arcs.innerStart.x},${arcs.innerStart.y}Q${points.innerStart.x},${points.innerStart.y} ${sides.innerStart.x},${sides.innerStart.y}L${sides.outerStart.x},${sides.outerStart.y}Q${points.outerStart.x},${points.outerStart.y} ${arcs.outerStart.x},${arcs.outerStart.y}Z`;
 }

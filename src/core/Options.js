@@ -1,4 +1,5 @@
 import {
+  AGGREGATION_TYPES,
   ChartOrientation,
   ChartType,
   CHART_ORIENTATIONS,
@@ -16,37 +17,50 @@ const FULL_CIRCLE_DEGREES = 360;
 const MINIMUM_TIMESHEET_HEIGHT = 220;
 const TIMESHEET_FRAME_HEIGHT = 52;
 const TIMESHEET_ROW_HEIGHT = 40;
+const COLOR_PROPERTIES = new Set(["color", "labelColor"]);
+const CSS_VARIABLE_PREFIX_LENGTH = 4;
 
 const ALLOWED_OPTIONS = Object.freeze([
+  "area",
   "ariaLabel",
-  "axisOptions",
-  "barOptions",
+  "axes",
+  "axisFormatValue",
   "colors",
+  "cornerRadius",
   "countLabel",
   "data",
   "description",
+  "dots",
+  "dotSize",
+  "formatDate",
+  "formatDuration",
   "gradient",
+  "formatLabel",
+  "formatTick",
+  "formatValue",
+  "grid",
   "height",
-  "lineOptions",
+  "legend",
+  "line",
   "maxSlices",
   "onSelect",
   "orientation",
   "padAngle",
   "radius",
-  "sectorOptions",
-  "showAxes",
-  "showDots",
-  "showGrid",
-  "showLabels",
-  "showLegend",
-  "showTooltip",
+  "smooth",
+  "stacked",
   "startAngle",
   "strokeWidth",
-  "timesheetOptions",
   "title",
-  "tooltipOptions",
+  "tooltip",
+  "tooltipFormatDate",
+  "tooltipFormatDuration",
+  "tooltipFormatLabel",
+  "tooltipFormatValue",
   "type",
+  "valueLabels",
   "width",
+  "yAxisPosition",
 ]);
 
 /**
@@ -75,7 +89,7 @@ function validateChoices(options) {
     throw new TypeError("Bar orientation must be vertical or horizontal");
   }
 
-  if (options.axisOptions?.yAxisPosition && !Y_AXIS_POSITIONS.includes(options.axisOptions.yAxisPosition)) {
+  if (options.yAxisPosition && !Y_AXIS_POSITIONS.includes(options.yAxisPosition)) {
     throw new TypeError("Y-axis position must be left or right");
   }
 }
@@ -93,9 +107,8 @@ function validateGeometry(options) {
   }
 
   for (const [value, name] of [
-    [options.barOptions?.radius, "Bar radius"],
-    [options.sectorOptions?.cornerRadius, "Sector corner radius"],
-    [options.timesheetOptions?.radius, "Timesheet radius"],
+    [options.radius, "Radius"],
+    [options.cornerRadius, "Corner radius"],
   ]) {
     validateRadius(value, name);
   }
@@ -155,13 +168,13 @@ class PresentationOptions {
    * @param {object} options - Validated caller options.
    */
   constructor(options) {
-    this.showAxes = options.showAxes ?? true;
-    this.showGrid = options.showGrid ?? true;
-    this.showLabels = options.showLabels ?? true;
-    this.showLegend = shouldShowLegend(options);
-    this.showTooltip = options.showTooltip ?? true;
+    this.axes = options.axes ?? true;
+    this.grid = options.grid ?? true;
+    this.valueLabels = options.valueLabels ?? true;
+    this.legend = shouldShowLegend(options);
+    this.tooltip = options.tooltip ?? true;
     this.orientation = options.orientation ?? ChartOrientation.VERTICAL;
-    this.ariaLabel = options.ariaLabel ?? `${options.type} chart`;
+    this.ariaLabel = options.ariaLabel ?? options.title ?? `${options.type} chart`;
   }
 }
 
@@ -186,7 +199,15 @@ function shouldShowLegend(options) {
     return false;
   }
 
-  return options.showLegend ?? true;
+  if (options.legend !== undefined) {
+    return options.legend;
+  }
+
+  if ([...AGGREGATION_TYPES, ChartType.POLAR_AREA, ChartType.HEATMAP].includes(options.type)) {
+    return true;
+  }
+
+  return options.data.datasets.length >= 2;
 }
 
 /**
@@ -198,7 +219,12 @@ function shouldShowLegend(options) {
  */
 function chartDimensions(host, options) {
   const taskCount = options.data?.tasks?.length ?? DEFAULT_TIMESHEET_TASK_COUNT;
-  const timesheetHeight = Math.max(MINIMUM_TIMESHEET_HEIGHT, taskCount * TIMESHEET_ROW_HEIGHT + TIMESHEET_FRAME_HEIGHT);
+
+  const timesheetHeight = Math.max(
+    MINIMUM_TIMESHEET_HEIGHT,
+    taskCount * TIMESHEET_ROW_HEIGHT + TIMESHEET_FRAME_HEIGHT,
+  );
+
   const defaultHeight = options.type === ChartType.TIMESHEET ? timesheetHeight : DEFAULT_CHART_HEIGHT;
 
   return { width: options.width ?? measureParentWidth(host), height: options.height ?? defaultHeight };
@@ -214,6 +240,7 @@ function chartDimensions(host, options) {
  */
 function normalizeChartOptions(host, options) {
   validateChartOptions(options);
+  validateChartColors(host, options);
 
   const normalized = {
     colors: options.colors ? [...options.colors] : DEFAULT_COLORS,
@@ -235,4 +262,104 @@ function normalizeChartOptions(host, options) {
   return { options: normalized, hasCustomColors: options.colors !== undefined };
 }
 
-export { normalizeChartOptions };
+/**
+ * Validates every palette and explicit input color in the parent CSS context.
+ *
+ * @param {Element} host - Chart parent supplying custom-property values.
+ * @param {object} input - Options or update data containing color fields.
+ * @returns {void} Every supplied color is supported by the browser.
+ */
+function validateChartColors(host, input) {
+  const colors = collectColors(input);
+
+  for (const color of colors) {
+    validateCssColor(host, color);
+  }
+}
+
+/**
+ * Recursively collects only public color properties and palette entries.
+ *
+ * @param {unknown} value - Candidate nested public input.
+ * @returns {string[]} Explicit color strings.
+ */
+function collectColors(value) {
+  if (!value || typeof value !== "object") {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => collectColors(item));
+  }
+
+  return Object.entries(value).flatMap(([name, item]) => {
+    if (name === "colors" && Array.isArray(item)) {
+      return item;
+    }
+
+    if (COLOR_PROPERTIES.has(name)) {
+      return [item];
+    }
+
+    return collectColors(item);
+  });
+}
+
+/**
+ * Resolves CSS variables and verifies one browser-supported color.
+ *
+ * @param {Element} host - Parent supplying custom properties.
+ * @param {unknown} value - Candidate CSS color.
+ * @returns {void} Supported colors pass unchanged.
+ */
+function validateCssColor(host, value) {
+  if (typeof value !== "string" || value.trim() === "") {
+    throw new TypeError("Color must be a non-empty supported CSS color");
+  }
+
+  const color = resolvedColor(host, value.trim());
+  const isSupported = globalThis.CSS?.supports?.("color", color) ?? supportsStyleColor(color);
+
+  if (!isSupported) {
+    throw new TypeError(`Unsupported CSS color: ${value}`);
+  }
+}
+
+/**
+ * Resolves one leading var() expression against the chart parent.
+ *
+ * @param {Element} host - Parent supplying custom properties.
+ * @param {string} value - Candidate color expression.
+ * @returns {string} Resolved color or unresolved original value.
+ */
+function resolvedColor(host, value) {
+  if (!value.startsWith("var(") || !value.endsWith(")")) {
+    return value;
+  }
+
+  const [name, ...fallbackParts] = value.slice(CSS_VARIABLE_PREFIX_LENGTH, -1).split(",");
+  const resolved = getComputedStyle(host).getPropertyValue(name.trim()).trim();
+  const fallback = fallbackParts.join(",").trim();
+  const candidate = resolved || fallback;
+
+  if (!candidate) {
+    throw new TypeError(`Unresolved CSS color variable: ${name.trim()}`);
+  }
+
+  return candidate;
+}
+
+/**
+ * Uses detached style parsing when CSS.supports is unavailable.
+ *
+ * @param {string} color - Resolved candidate color.
+ * @returns {boolean} Whether the browser accepts the declaration.
+ */
+function supportsStyleColor(color) {
+  const probe = document.createElement("span");
+  probe.style.color = color;
+
+  return probe.style.color !== "";
+}
+
+export { normalizeChartOptions, validateChartColors, validateChartOptions };

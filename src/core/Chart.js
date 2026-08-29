@@ -6,9 +6,33 @@ import ChartData from "./ChartData.js";
 import ChartTooltip from "./ChartTooltip.js";
 import InteractionController from "./InteractionController.js";
 import { nextChartId } from "./NextChartId.js";
-import { normalizeChartOptions } from "./Options.js";
+import { normalizeChartOptions, validateChartColors, validateChartOptions } from "./Options.js";
 
 const MARK_SELECTOR = ".charts2-mark";
+const SCROLLABLE_HEATMAP_CLASS = "charts2-scrollable-heatmap";
+const SVG_EXTENSION = ".svg";
+
+const EXPORT_STYLE_PROPERTIES = Object.freeze([
+  "color",
+  "fill",
+  "fill-opacity",
+  "font-family",
+  "font-size",
+  "font-style",
+  "font-weight",
+  "letter-spacing",
+  "opacity",
+  "paint-order",
+  "shape-rendering",
+  "stroke",
+  "stroke-dasharray",
+  "stroke-linecap",
+  "stroke-linejoin",
+  "stroke-opacity",
+  "stroke-width",
+  "text-anchor",
+  "vector-effect",
+]);
 
 /**
  * Public lifecycle façade for one chart. All mutable model, rendering,
@@ -26,10 +50,14 @@ export default class Chart {
   #tooltip;
   #interactions = null;
   #activeMarkIndex = -1;
+  #keyboardMarkIndex = -1;
+  #selectionIdentity = null;
   #boundPointerMove;
   #boundPointerLeave;
   #boundDocumentPointerDown;
   #boundResize = null;
+  #resizeObserver = null;
+  #destroyed = false;
 
   /**
    * Validates options, mounts owned DOM, and renders the initial chart.
@@ -39,56 +67,80 @@ export default class Chart {
    * @throws {TypeError} When options, dimensions, renderer settings, or data violate the public contract.
    */
   constructor(parent, options) {
-    this.#host = resolveParent(parent);
-    const chartConfig = normalizeChartOptions(this.#host, options);
+    validateChartOptions(options);
 
+    const model = new ChartData(options.type, options.data, {
+      colors: options.colors,
+      maxSlices: options.maxSlices,
+    });
+
+    const host = resolveParent(parent);
+    const chartConfig = normalizeChartOptions(host, options);
+    this.#host = host;
     this.#type = chartConfig.options.type;
-    this.#hasCustomColors = chartConfig.hasCustomColors;
     this.#id = nextChartId();
+    this.#hasCustomColors = chartConfig.hasCustomColors;
     this.#autoWidth = options.width === undefined;
     this.#options = chartConfig.options;
-    this.#model = new ChartData(this.#type, options.data);
-    this.#mountElement();
+    this.#model = model;
+    this.#element = this.#createElement();
+    this.#tooltip = new ChartTooltip(this.#host, this.#element, this.#id);
+    this.#renderInto(this.#element, this.#model);
+    this.#commitHostPresentation(this.#element);
     this.#bindLifecycle();
-    this.#render();
+    this.#bindInteractions();
 
     if (this.#autoWidth) {
       this.#boundResize = this.#resize.bind(this);
-      window.addEventListener("resize", this.#boundResize);
+      this.#bindResponsiveWidth();
     }
   }
 
   /**
-   * Creates and mounts the SVG and tooltip nodes owned by this chart.
+   * Creates a detached SVG surface for validation and atomic rendering.
    *
-   * @returns {void} The host contains the initialized chart surface.
+   * @param {object} [options=this.#options] - Candidate rendering options.
+   * @returns {SVGSVGElement} Detached chart surface with stable root attributes.
    */
-  #mountElement() {
-    this.#element = svg("svg", {
-      viewBox: `0 0 ${this.#options.width} ${this.#options.height}`,
+  #createElement(options = this.#options) {
+    const element = svg("svg", {
+      viewBox: `0 0 ${options.width} ${options.height}`,
       width: "100%",
-      height: this.#options.height,
+      height: options.height,
       role: "group",
       "aria-roledescription": "chart",
-      "aria-label": this.#options.ariaLabel,
+      "aria-label": options.ariaLabel,
       preserveAspectRatio: "xMidYMid meet",
     });
-    this.#element.classList.add("charts2-chart");
+
+    element.classList.add("charts2-chart");
     if (this.#type === ChartType.HEATMAP) {
-      this.#element.classList.add("charts2-heatmap-chart");
+      element.classList.add("charts2-heatmap-chart");
     }
 
     if (this.#type === ChartType.TIMESHEET) {
-      this.#element.classList.add("charts2-timesheet-chart");
+      element.classList.add("charts2-timesheet-chart");
     }
 
-    if (this.#type === ChartType.BAR && this.#options.orientation === ChartOrientation.HORIZONTAL) {
-      this.#element.classList.add("charts2-horizontal-bar");
+    if (this.#type === ChartType.BAR && options.orientation === ChartOrientation.HORIZONTAL) {
+      element.classList.add("charts2-horizontal-bar");
     }
 
-    this.#tooltip = new ChartTooltip(this.#host, this.#element, this.#id);
+    return element;
+  }
+
+  /**
+   * Atomically mounts a completely rendered surface and its tooltip.
+   *
+   * @param {SVGSVGElement} element - Successfully rendered detached SVG.
+   * @returns {void} Host-owned nodes and presentation classes commit together.
+   */
+  #commitHostPresentation(element) {
+    const renderedElement = element;
     this.#host.classList.add("charts2-host");
-    this.#host.replaceChildren(this.#element, this.#tooltip.element);
+    this.#host.classList.toggle(SCROLLABLE_HEATMAP_CLASS, element.dataset.scrollable === "true");
+    delete renderedElement.dataset.scrollable;
+    this.#host.replaceChildren(element, this.#tooltip.element);
   }
 
   /**
@@ -97,11 +149,11 @@ export default class Chart {
    * @returns {void} Pointer listeners are bound to their lifecycle owners.
    */
   #bindLifecycle() {
-    this.#boundPointerMove = this.#showTooltip.bind(this);
+    this.#boundPointerMove = this.#handlePointerMove.bind(this);
     this.#boundPointerLeave = this.#tooltip.hide.bind(this.#tooltip);
     this.#boundDocumentPointerDown = this.#handleDocumentPointerDown.bind(this);
 
-    if (this.#options.showTooltip) {
+    if (this.#options.tooltip) {
       this.#element.addEventListener("mousemove", this.#boundPointerMove);
     }
 
@@ -126,8 +178,18 @@ export default class Chart {
    * @throws {TypeError} When the new payload violates normalization or renderer invariants.
    */
   update(data) {
-    this.#model.update(data);
-    this.#render();
+    this.#assertMounted();
+
+    const model = new ChartData(this.#type, data, {
+      colors: this.#options.colors,
+      maxSlices: this.#options.maxSlices,
+    });
+
+    validateChartColors(this.#host, data);
+
+    const staged = this.#createElement();
+    this.#renderInto(staged, model);
+    this.#commitUpdate(staged, model);
 
     return this;
   }
@@ -138,8 +200,19 @@ export default class Chart {
    * @param {number} [index=Math.max(0, this.#activeMarkIndex)] - Requested point, cell, or task index.
    * @returns {object | undefined} Type-appropriate normalized data at the requested index.
    */
-  point(index = Math.max(0, this.#activeMarkIndex)) {
-    return this.#model.pointAt(index);
+  point(index) {
+    this.#assertMounted();
+
+    const fallbackIndex =
+      this.#activeMarkIndex >= 0 ? this.#activeMarkIndex : Math.max(0, this.#keyboardMarkIndex);
+
+    const requestedIndex = index ?? fallbackIndex;
+
+    if (!Number.isSafeInteger(requestedIndex) || requestedIndex < 0) {
+      throw new TypeError("Chart point index must be a non-negative integer");
+    }
+
+    return this.#model.pointAt(requestedIndex);
   }
 
   /**
@@ -148,7 +221,24 @@ export default class Chart {
    * @returns {string} Complete SVG markup representing the current render.
    */
   toSvg() {
-    return new XMLSerializer().serializeToString(this.#element);
+    this.#assertMounted();
+    const clone = this.#element.cloneNode(true);
+    clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    const originals = [this.#element, ...this.#element.querySelectorAll("*")];
+    const copies = [clone, ...clone.querySelectorAll("*")];
+
+    for (const [index, original] of originals.entries()) {
+      const computed = getComputedStyle(original);
+      const copy = copies[index];
+
+      for (const property of EXPORT_STYLE_PROPERTIES) {
+        const value = computed.getPropertyValue(property);
+
+        copy.style.setProperty(property, value);
+      }
+    }
+
+    return new XMLSerializer().serializeToString(clone);
   }
 
   /**
@@ -158,10 +248,18 @@ export default class Chart {
    * @returns {import("../index.js").Chart} Current chart instance for fluent lifecycle calls.
    */
   download(filename = this.#options.title ?? "Chart") {
+    this.#assertMounted();
+    if (typeof filename !== "string" || filename.trim() === "" || /[\\/]/u.test(filename)) {
+      throw new TypeError("Download filename must be non-empty and must not contain path separators");
+    }
+
+    const normalizedFilename = filename.toLowerCase().endsWith(SVG_EXTENSION) ? filename : `${filename}.svg`;
     const link = document.createElement("a");
-    link.download = `${filename}.svg`;
-    link.href = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(this.toSvg())}`;
+    link.download = normalizedFilename;
+    const url = URL.createObjectURL(new Blob([this.toSvg()], { type: "image/svg+xml" }));
+    link.href = url;
     link.click();
+    URL.revokeObjectURL(url);
 
     return this;
   }
@@ -172,6 +270,11 @@ export default class Chart {
    * @returns {void} The chart becomes unusable after cleanup completes.
    */
   destroy() {
+    if (this.#destroyed) {
+      return;
+    }
+
+    this.#destroyed = true;
     this.#element.removeEventListener("mousemove", this.#boundPointerMove);
     this.#element.removeEventListener("mouseleave", this.#boundPointerLeave);
     document.removeEventListener("pointerdown", this.#boundDocumentPointerDown);
@@ -179,9 +282,11 @@ export default class Chart {
       window.removeEventListener("resize", this.#boundResize);
     }
 
+    this.#resizeObserver?.disconnect();
+
     this.#element.remove();
     this.#tooltip.destroy();
-    this.#host.classList.remove("charts2-host", "charts2-scrollable-heatmap");
+    this.#host.classList.remove("charts2-host", SCROLLABLE_HEATMAP_CLASS);
   }
 
   /**
@@ -190,9 +295,37 @@ export default class Chart {
    * @returns {void} The existing chart instance and SVG are updated in place.
    */
   #resize() {
-    this.#options.width = measureParentWidth(this.#host, this.#options.width);
-    this.#element.setAttribute("viewBox", `0 0 ${this.#options.width} ${this.#options.height}`);
-    this.#render();
+    if (this.#destroyed) {
+      return;
+    }
+
+    const width = measureParentWidth(this.#host, this.#options.width);
+
+    if (width === this.#options.width) {
+      return;
+    }
+
+    const options = { ...this.#options, width };
+    const staged = this.#createElement(options);
+    this.#renderInto(staged, this.#model, options);
+    const activeIndex = this.#preservedIndex(staged, this.#model);
+    this.#options = options;
+    this.#replaceSurface(staged);
+    this.#activeMarkIndex = activeIndex;
+    this.#bindInteractions();
+  }
+
+  /**
+   * Observes parent content-box changes with a browser-compatible fallback.
+   *
+   * @returns {void} Exactly one responsive resize source is registered.
+   */
+  #bindResponsiveWidth() {
+    window.addEventListener("resize", this.#boundResize);
+    if (typeof ResizeObserver === "function") {
+      this.#resizeObserver = new ResizeObserver(this.#boundResize);
+      this.#resizeObserver.observe(this.#host, { box: "content-box" });
+    }
   }
 
   /**
@@ -201,7 +334,7 @@ export default class Chart {
    * @param {MouseEvent} event - Mouse movement event dispatched within the chart SVG.
    * @returns {void} Tooltip state is updated when an eligible mark is present.
    */
-  #showTooltip(event) {
+  #handlePointerMove(event) {
     const mark = event.target.closest(MARK_SELECTOR);
 
     if (!mark || !this.#element.contains(mark)) {
@@ -230,29 +363,135 @@ export default class Chart {
   /**
    * Rebuilds SVG content through class-based renderer dispatch.
    *
-   * @returns {void} The current SVG and interaction controller are replaced synchronously.
+   * @param {SVGSVGElement} element - Detached SVG receiving rendered content.
+   * @param {ChartData} model - Fully normalized model exposed to the renderer snapshot.
+   * @param {object} [options=this.#options] - Candidate rendering options.
+   * @returns {void} The detached SVG contains a complete candidate scene.
    */
-  #render() {
-    this.#element.replaceChildren();
+  #renderInto(element, model, options = this.#options) {
     const description = svg("desc");
-    description.textContent = this.#options.description ?? this.#options.ariaLabel;
-    this.#element.append(description);
+    description.textContent = options.description ?? this.#generatedDescription(model);
+    element.append(description);
+    if (options.title) {
+      const title = svg("text", { x: 16, y: 22, class: "charts2-title" });
+      title.textContent = options.title;
+      element.append(title);
+    }
+
     renderChart(
       {
         host: this.#host,
-        element: this.#element,
-        options: this.#options,
-        source: this.#model.source,
-        datasets: this.#model.datasets,
-        labels: this.#model.labels,
-        heatmap: this.#model.heatmap,
-        timesheet: this.#model.timesheet,
+        element,
+        options,
+        source: model.source,
+        datasets: model.datasets,
+        labels: model.labels,
+        heatmap: model.heatmap,
+        timesheet: model.timesheet,
         hasCustomColors: this.#hasCustomColors,
         id: this.#id,
       },
       this.#type,
     );
+  }
+
+  /**
+   * Builds a concise accessible summary when no authored description exists.
+   *
+   * @param {ChartData} model - Fully normalized current model.
+   * @returns {string} Plain-text chart description.
+   */
+  #generatedDescription(model) {
+    if (this.#type === ChartType.HEATMAP) {
+      return `${this.#options.ariaLabel}. ${model.heatmap.length} heatmap cells.`;
+    }
+
+    if (this.#type === ChartType.TIMESHEET) {
+      return `${this.#options.ariaLabel}. ${model.timesheet.tasks.length} tasks.`;
+    }
+
+    const datasets = model.datasets.map((dataset) => dataset.identityName ?? dataset.name).join(", ");
+    const markerCount = model.source.yMarkers.length;
+    const regionCount = model.source.yRegions.length;
+    const annotations = ` ${markerCount} markers and ${regionCount} regions.`;
+    const datasetSummary = ` in ${datasets}`;
+
+    return `${this.#options.ariaLabel}. ${model.labels.length} values${datasetSummary}.${annotations}`;
+  }
+
+  /**
+   * Commits a validated data model and completely rendered SVG together.
+   *
+   * @param {SVGSVGElement} staged - Detached rendered candidate.
+   * @param {ChartData} model - Fully normalized replacement model.
+   * @returns {void} Mounted data, SVG, and interactions advance together.
+   */
+  #commitUpdate(staged, model) {
+    const activeIndex = this.#preservedIndex(staged, model);
+    this.#replaceSurface(staged);
+    this.#model = model;
+    this.#activeMarkIndex = activeIndex;
+    if (activeIndex < 0) {
+      this.#selectionIdentity = null;
+    }
+
+    this.#tooltip.hide();
     this.#bindInteractions();
+  }
+
+  /**
+   * Finds the sole candidate mark matching the current logical selection.
+   *
+   * @param {SVGSVGElement} staged - Completely rendered candidate surface.
+   * @param {ChartData} model - Candidate normalized data model.
+   * @returns {number} Matching mark index, or -1 for absent or ambiguous identity.
+   */
+  #preservedIndex(staged, model) {
+    if (!this.#selectionIdentity) {
+      return -1;
+    }
+
+    const marks = this.#orderedMarks(staged);
+
+    const matches = marks.flatMap((mark, index) =>
+      model.identityFor(mark) === this.#selectionIdentity ? [index] : [],
+    );
+
+    return matches.length === 1 ? matches[0] : -1;
+  }
+
+  /**
+   * Moves staged children and root attributes into the stable public SVG element.
+   *
+   * @param {SVGSVGElement} staged - Successfully rendered detached surface.
+   * @returns {void} Public element identity is preserved across redraws.
+   */
+  #replaceSurface(staged) {
+    const currentAttributes = [...this.#element.attributes];
+
+    for (const attribute of currentAttributes) {
+      this.#element.removeAttribute(attribute.name);
+    }
+
+    for (const attribute of staged.attributes) {
+      this.#element.setAttribute(attribute.name, attribute.value);
+    }
+
+    this.#host.classList.toggle(SCROLLABLE_HEATMAP_CLASS, staged.dataset.scrollable === "true");
+    delete this.#element.dataset.scrollable;
+    this.#element.replaceChildren(...staged.childNodes);
+  }
+
+  /**
+   * Rejects lifecycle operations after destruction while keeping `element` inspectable.
+   *
+   * @returns {void} Active charts continue normally.
+   * @throws {TypeError} When the chart has been destroyed.
+   */
+  #assertMounted() {
+    if (this.#destroyed) {
+      throw new TypeError("Chart has been destroyed");
+    }
   }
 
   /**
@@ -261,13 +500,13 @@ export default class Chart {
    * @returns {void} Rendered marks receive a fresh interaction controller.
    */
   #bindInteractions() {
-    const marks = this.#element.querySelectorAll(MARK_SELECTOR);
+    const marks = this.#orderedMarks(this.#element);
 
     for (const mark of marks) {
       mark.querySelector(":scope > title")?.remove();
     }
 
-    if (!this.#options.showTooltip && typeof this.#options.onSelect !== "function") {
+    if (!this.#options.tooltip && typeof this.#options.onSelect !== "function") {
       const titles = this.#element.querySelectorAll(".charts2-visual-mark > title, .charts2-line > title");
 
       for (const title of titles) {
@@ -281,25 +520,66 @@ export default class Chart {
 
     const interactionBehavior = {
       activeIndex: this.#activeMarkIndex,
-      allowPointerPan: this.#host.classList.contains("charts2-scrollable-heatmap"),
-      previewable: this.#options.showTooltip,
+      allowPointerPan: this.#host.classList.contains(SCROLLABLE_HEATMAP_CLASS),
+      previewable: this.#options.tooltip,
       selectable: typeof this.#options.onSelect === "function",
     };
 
     const interactionCallbacks = {
       labelFor: (mark) => mark.dataset.tooltip,
-      onShow: this.#options.showTooltip ? (mark, label) => this.#tooltip.show(mark, label, this.#options) : () => {},
+      onShow: this.#options.tooltip
+        ? (mark, label) => this.#tooltip.show(mark, label, this.#options)
+        : () => {},
       onHide: () => this.#tooltip.hide(),
-      onActiveChange: (index, mark) => {
-        this.#activeMarkIndex = index;
-        if (index >= 0 && mark) {
-          const detail = this.#model.selectionFor(mark);
-          this.#host.dispatchEvent(new CustomEvent("data-select", { detail }));
-          this.#options.onSelect?.(detail);
-        }
+      onActiveChange: (index, mark) => this.#handleActiveChange(index, mark),
+      onFocusChange: (index) => {
+        this.#keyboardMarkIndex = index;
       },
     };
 
     this.#interactions = new InteractionController(marks, interactionBehavior, interactionCallbacks);
+  }
+
+  /**
+   * Returns marks in the public navigation order independently of visual layer order.
+   *
+   * @param {SVGSVGElement} element - Rendered surface containing interaction marks.
+   * @returns {SVGElement[]} Stable keyboard and `point()` order.
+   */
+  #orderedMarks(element) {
+    const marks = [...element.querySelectorAll(MARK_SELECTOR)];
+
+    if (this.#type !== ChartType.AXIS_MIXED) {
+      return marks;
+    }
+
+    return marks.toSorted((left, right) => {
+      const dataset = Number(left.dataset.datasetIndex) - Number(right.dataset.datasetIndex);
+
+      return dataset || Number(left.dataset.pointIndex) - Number(right.dataset.pointIndex);
+    });
+  }
+
+  /**
+   * Commits and publishes one user-initiated persistent selection change.
+   *
+   * @param {number} index - Selected mark index, or -1 for explicit deselection.
+   * @param {SVGElement | null} mark - Selected rendered mark.
+   * @returns {void} Internal identity is committed before user code runs.
+   */
+  #handleActiveChange(index, mark) {
+    this.#activeMarkIndex = index;
+    if (index >= 0 && mark) {
+      const detail = this.#model.selectionFor(mark);
+      this.#selectionIdentity = this.#model.identityFor(mark);
+      this.#host.dispatchEvent(new CustomEvent("data-select", { detail }));
+      this.#options.onSelect?.(detail);
+
+      return;
+    }
+
+    this.#selectionIdentity = null;
+    this.#host.dispatchEvent(new CustomEvent("data-select"));
+    this.#options.onSelect?.();
   }
 }

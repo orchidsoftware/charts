@@ -1,6 +1,7 @@
 import { HEATMAP_COLORS, HEATMAP_COMPACT_WIDTH, HEATMAP_MIN_CELL_WIDTH } from "../support/Constants.js";
 import { formatNumber, markMetadata, measuredTextWidth, svg, titled } from "../support/Dom.js";
-import { extent, scale } from "../support/Math.js";
+import { formatContext, formatterText } from "../support/Formatting.js";
+import { extent } from "../support/Math.js";
 
 const GRID_PADDING = 24;
 const MINIMUM_HORIZONTAL_PADDING = 4;
@@ -19,6 +20,24 @@ const DESIRED_SWATCH_WIDTH = 11;
 const DESIRED_SWATCH_GAP = 3;
 const MINIMUM_SWATCH_WIDTH = 5;
 const MINIMUM_SWATCH_GAP = 2;
+
+/**
+ * Maps one heatmap value onto the complete ordered intensity palette.
+ *
+ * @param {number} value - Normalized heatmap value.
+ * @param {[number, number]} domain - Complete data minimum and maximum.
+ * @param {number} colorCount - Number of supplied intensity colors.
+ * @returns {number} Bounded zero-based palette bucket.
+ */
+function intensityLevel(value, [minimum, maximum], colorCount) {
+  if (minimum === maximum) {
+    return value === 0 ? 0 : colorCount - 1;
+  }
+
+  const ratio = (value - minimum) / (maximum - minimum);
+
+  return Math.min(colorCount - 1, Math.floor(ratio * colorCount));
+}
 
 /**
  * Calculates responsive horizontal padding for the heatmap grid.
@@ -48,17 +67,21 @@ class HeatmapDimensions {
     this.hasWeekInspector = this.weeks > INSPECTOR_WEEK_THRESHOLD && width < HEATMAP_COMPACT_WIDTH;
 
     const minimumScrollableWidth =
-      this.horizontalPadding * 2 + this.weeks * HEATMAP_MIN_CELL_WIDTH + (this.weeks - 1) * PREFERRED_CELL_GAP;
+      this.horizontalPadding * 2 +
+      this.weeks * HEATMAP_MIN_CELL_WIDTH +
+      (this.weeks - 1) * PREFERRED_CELL_GAP;
 
     this.layoutWidth = this.hasWeekInspector ? Math.max(width, minimumScrollableWidth) : width;
     this.gridTop = GRID_TOP;
-    this.gridBottom = height - GRID_PADDING - (chart.options.showLegend ? LEGEND_HEIGHT + LEGEND_GAP : 0);
+    this.gridBottom = height - GRID_PADDING - LEGEND_HEIGHT - LEGEND_GAP;
   }
 }
 
 /**
  * Renders calendar heatmaps and owns their overflow presentation policy.
  */
+export { intensityLevel };
+
 export default class HeatmapRenderer {
   #chart;
   #surface;
@@ -83,13 +106,7 @@ export default class HeatmapRenderer {
   render() {
     const layout = this.#layout();
     this.#renderCells(layout);
-    if (layout.hasWeekInspector) {
-      this.#renderWeekInspectors(layout);
-    }
-
-    if (this.#chart.options.showLegend) {
-      this.#renderLegend(layout);
-    }
+    this.#renderLegend(layout);
   }
 
   /**
@@ -133,7 +150,7 @@ export default class HeatmapRenderer {
    * @returns {void} Host class and SVG sizing are updated.
    */
   #configureSurface(dimensions, height) {
-    this.#chart.host.classList.toggle("charts2-scrollable-heatmap", dimensions.hasWeekInspector);
+    this.#surface.attribute("data-scrollable", dimensions.hasWeekInspector ? "true" : "false");
     this.#surface.attribute("viewBox", `0 0 ${dimensions.layoutWidth} ${height}`);
     this.#surface.styles({
       width: dimensions.hasWeekInspector ? `${dimensions.layoutWidth}px` : "100%",
@@ -160,7 +177,8 @@ export default class HeatmapRenderer {
       PREFERRED_CELL_GAP,
       Math.max(
         0,
-        (availableGridWidth - dimensions.weeks * MINIMUM_COLUMN_CALCULATION_WIDTH) / Math.max(1, dimensions.weeks - 1),
+        (availableGridWidth - dimensions.weeks * MINIMUM_COLUMN_CALCULATION_WIDTH) /
+          Math.max(1, dimensions.weeks - 1),
       ),
     );
 
@@ -181,11 +199,10 @@ export default class HeatmapRenderer {
    */
   #palette() {
     const values = this.#chart.heatmap.map((item) => item.value);
-    const [minimum, maximum] = values.length > 0 ? extent(values) : [0, 1];
+    const [minimum, maximum] = extent(values);
     const colors = this.#chart.hasCustomColors ? this.#chart.options.colors : HEATMAP_COLORS;
 
-    const colorLevel = (value) =>
-      Math.min(colors.length - 1, Math.max(0, Math.round(scale(value, [minimum, maximum], [0, colors.length - 1]))));
+    const colorLevel = (value) => intensityLevel(value, [minimum, maximum], colors.length);
 
     return { colors, colorLevel };
   }
@@ -211,61 +228,15 @@ export default class HeatmapRenderer {
         height: layout.cellHeight,
         rx: Math.min(this.#chart.options.radius ?? 2, layout.cellWidth / 2, layout.cellHeight / 2),
         fill: layout.colors[level],
-        class: `charts2-heat-cell ${layout.hasWeekInspector ? "charts2-visual-mark" : "charts2-mark"}`,
+        class: "charts2-heat-cell charts2-mark",
       });
 
-      const visibleCell = layout.hasWeekInspector
-        ? cell
-        : titled(markMetadata(cell, 0, index), `${item.key}: ${formatNumber(item.value)}${suffix}`);
-
-      this.#surface.append(visibleCell);
-    }
-  }
-
-  /**
-   * Adds one aggregate hit target and structured tooltip for each visible week.
-   *
-   * @param {object} layout - Heatmap dimensions and color scale from `#layout`.
-   * @returns {void} Week-sized interaction targets are appended to the chart SVG.
-   */
-  #renderWeekInspectors(layout) {
-    const weeks = Array.from({ length: layout.weeks }, (_, columnIndex) =>
-      this.#chart.heatmap.slice(columnIndex * DAYS_PER_WEEK, columnIndex * DAYS_PER_WEEK + DAYS_PER_WEEK),
-    );
-
-    const suffix = this.#countSuffix();
-
-    for (const [columnIndex, items] of weeks.entries()) {
-      const firstLabel = this.#formatKey(items[0].key);
-      const lastLabel = this.#formatKey(items.at(-1).key);
-      const heading = firstLabel === lastLabel ? firstLabel : `${firstLabel} – ${lastLabel}`;
-
-      const tooltipItems = items.map((item) => ({
-        name: this.#formatKey(item.key),
-        value: `${this.#formatValue(item.value)}${suffix}`,
-        color: layout.colors[layout.colorLevel(item.value)],
-      }));
-
-      const hit = markMetadata(
-        svg("rect", {
-          x: layout.horizontalPadding + columnIndex * (layout.cellWidth + layout.columnGap) - layout.columnGap / 2,
-          y: layout.gridTop,
-          width: layout.cellWidth + layout.columnGap,
-          height: layout.availableGridHeight,
-          fill: "transparent",
-          class: "charts2-x-hit charts2-heat-week-hit charts2-mark",
-        }),
-        -1,
-        columnIndex * DAYS_PER_WEEK,
+      const visibleCell = titled(
+        markMetadata(cell, 0, index),
+        `${this.#formatDate(item)}: ${this.#formatValue(item, index)}${suffix}`,
       );
 
-      Object.assign(hit.dataset, {
-        heatmapRangeLength: String(items.length),
-        tooltipHeading: heading,
-        tooltipItems: JSON.stringify(tooltipItems),
-      });
-      const summary = tooltipItems.map((item) => `${item.name}: ${item.value}`).join(" · ");
-      this.#surface.append(titled(hit, `${heading} — ${summary}`));
+      this.#surface.append(visibleCell);
     }
   }
 
@@ -277,7 +248,11 @@ export default class HeatmapRenderer {
    */
   #renderLegend(layout) {
     const geometry = this.#legendGeometry(layout);
-    const legend = svg("g", { class: "charts2-heat-legend", "aria-label": "Heatmap intensity: Less to More" });
+
+    const legend = svg("g", {
+      class: "charts2-heat-legend",
+      "aria-label": "Heatmap intensity: Less to More",
+    });
 
     const less = svg("text", {
       x: layout.horizontalPadding,
@@ -314,7 +289,8 @@ export default class HeatmapRenderer {
     const scaleWidth = this.#legendScaleWidth(layout, scaleX, labelWidths.more);
 
     const minimumGappedWidth =
-      layout.colors.length * MINIMUM_SWATCH_WIDTH + Math.max(0, layout.colors.length - 1) * MINIMUM_SWATCH_GAP;
+      layout.colors.length * MINIMUM_SWATCH_WIDTH +
+      Math.max(0, layout.colors.length - 1) * MINIMUM_SWATCH_GAP;
 
     const swatchGap = scaleWidth >= minimumGappedWidth ? MINIMUM_SWATCH_GAP : 0;
     const swatchWidth = (scaleWidth - swatchGap * (layout.colors.length - 1)) / layout.colors.length;
@@ -344,7 +320,8 @@ export default class HeatmapRenderer {
     );
 
     const desiredScaleWidth =
-      layout.colors.length * DESIRED_SWATCH_WIDTH + Math.max(0, layout.colors.length - 1) * DESIRED_SWATCH_GAP;
+      layout.colors.length * DESIRED_SWATCH_WIDTH +
+      Math.max(0, layout.colors.length - 1) * DESIRED_SWATCH_GAP;
 
     return Math.min(desiredScaleWidth, maximumScaleWidth);
   }
@@ -376,21 +353,44 @@ export default class HeatmapRenderer {
   /**
    * Formats one heatmap date key through the optional tooltip hook.
    *
-   * @param {string} key - Canonical daily heatmap key.
+   * @param {object} item - Normalized daily heatmap point.
    * @returns {string} Caller-formatted or canonical date label.
    */
-  #formatKey(key) {
-    return String(this.#chart.options.tooltipOptions?.formatTooltipX?.(key) ?? key);
+  #formatDate(item) {
+    const formatter = this.#chart.options.tooltipFormatDate;
+
+    if (!formatter) {
+      return item.key;
+    }
+
+    return formatterText(formatter(new Date(item.date)), "Heatmap tooltip date");
   }
 
   /**
    * Formats one heatmap value through the optional tooltip hook.
    *
-   * @param {number} value - Normalized heatmap value.
+   * @param {object} item - Normalized daily heatmap point.
+   * @param {number} index - Stable point position.
    * @returns {string} Caller-formatted or localized numeric value.
    */
-  #formatValue(value) {
-    return String(this.#chart.options.tooltipOptions?.formatTooltipY?.(value) ?? formatNumber(value));
+  #formatValue(item, index) {
+    const formatter = this.#chart.options.tooltipFormatValue;
+
+    if (!formatter) {
+      return formatNumber(item.value);
+    }
+
+    return formatterText(
+      formatter(
+        item.value,
+        formatContext(this.#chart.options, "tooltip", {
+          index,
+          label: item.key,
+          point: { x: index, y: item.value },
+        }),
+      ),
+      "Heatmap tooltip value",
+    );
   }
 
   /**

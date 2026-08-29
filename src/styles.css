@@ -35,6 +35,12 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+.charts2-title {
+  font-size: 15px;
+  font-weight: 600;
+  fill: var(--charts-label-color, #3a3a3c);
+}
+
 .charts2-axis {
   stroke: var(--charts-axis-line-color, #f4f5f6);
   stroke-width: 1;
@@ -141,7 +147,8 @@
 }
 
 .charts2-previewable-mark:hover,
-.charts2-interactive-mark.is-hovered {
+.charts2-interactive-mark.is-hovered,
+.charts2-visual-mark.is-hovered {
   filter: brightness(0.96) saturate(1.08);
 }
 
@@ -165,7 +172,10 @@
 .charts2-point-hit:hover,
 .charts2-point-hit.is-hovered,
 .charts2-point-hit.is-active {
+  fill: var(--charts-focus-ring);
+  fill-opacity: 0.08;
   stroke: currentcolor;
+  stroke-opacity: 0.42;
 }
 
 .charts2-point-halo {

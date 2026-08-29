@@ -1,6 +1,39 @@
 import { AGGREGATION_TYPES, ChartType } from "../support/Constants.js";
 
 /**
+ * Produces a collision-resistant key for primitive public identity parts.
+ *
+ * @param {string} family - Chart-family identity namespace.
+ * @param {unknown[]} parts - Required logical identity values.
+ * @returns {string | null} Serialized identity, or null when a part is absent.
+ */
+function identityKey(family, parts) {
+  if (parts.some((part) => [undefined, null, ""].includes(part))) {
+    return null;
+  }
+
+  return JSON.stringify([family, ...parts]);
+}
+
+/**
+ * Deeply freezes public selection records while leaving Date instances mutable.
+ *
+ * @param {unknown} value - Selection value or nested collection.
+ * @returns {unknown} The same recursively frozen value.
+ */
+function freezeSelection(value) {
+  if (!value || typeof value !== "object" || value instanceof Date) {
+    return value;
+  }
+
+  for (const child of Object.values(value)) {
+    freezeSelection(child);
+  }
+
+  return Object.freeze(value);
+}
+
+/**
  * Names one selected heatmap cell.
  */
 class HeatmapPointSelection {
@@ -9,34 +42,15 @@ class HeatmapPointSelection {
    *
    * @param {number} index - Selected cell index.
    * @param {object} point - Normalized heatmap entry.
+   * @param {string} color - Effective intensity color.
    */
-  constructor(index, point) {
+  constructor(index, point, color) {
     this.type = ChartType.HEATMAP;
     this.index = index;
-    this.date = point.date;
+    this.date = new Date(point.date);
     this.key = point.key;
     this.value = point.value;
-  }
-}
-
-/**
- * Names one inspected heatmap range.
- */
-class HeatmapRangeSelection {
-  /**
-   * Creates a public heatmap-range payload.
-   *
-   * @param {number} index - First selected cell index.
-   * @param {Array<object>} points - Range entries.
-   */
-  constructor(index, points) {
-    this.type = ChartType.HEATMAP;
-    this.index = index;
-    this.key = points[0].key;
-    this.value = points[0].value;
-    this.values = points.map((point) => point.value);
-    this.points = points;
-    this.range = { start: points[0].key, end: points.at(-1).key };
+    this.color = color;
   }
 }
 
@@ -59,7 +73,7 @@ class TimesheetSelection {
     this.duration = task.end - task.start;
     this.group = task.group;
     this.color = task.color;
-    this.task = { ...task };
+    this.task = { ...task, start: new Date(task.start), end: new Date(task.end) };
   }
 }
 
@@ -78,7 +92,11 @@ class CategorySelection {
     this.type = type;
     this.index = index;
     this.label = category.label;
-    this.x = category.points[0]?.x;
+    this.datasetIndex = category.points[0].datasetIndex;
+    this.dataset = category.points[0].dataset;
+    this.x = category.points[0].x;
+    this.y = category.points[0].y;
+    this.value = category.points[0].y;
     this.values = category.values;
     this.points = category.points;
   }
@@ -101,6 +119,9 @@ class RadarSelection {
     this.label = dataset.name;
     this.datasetIndex = index;
     this.dataset = dataset.name;
+    this.x = points[0]?.x;
+    this.y = points[0]?.y;
+    this.value = points[0]?.y;
     this.values = points.map((point) => point.y);
     this.points = points;
   }
@@ -115,9 +136,11 @@ class AggregationSelection {
    *
    * @param {string} type - Chart type.
    * @param {number} index - Point index.
-   * @param {object} point - Selected point.
+   * @param {object} selection - Selected point and effective item color.
+   * @param {object} selection.point - Selected point.
+   * @param {string} selection.color - Effective composition item color.
    */
-  constructor(type, index, point) {
+  constructor(type, index, { point, color }) {
     this.type = type;
     this.index = index;
     this.label = point.label;
@@ -126,6 +149,7 @@ class AggregationSelection {
     this.value = point.y;
     this.values = [point.y];
     this.points = [point];
+    this.color = color;
   }
 }
 
@@ -164,6 +188,7 @@ export default class ChartSelection {
   #labels;
   #heatmap;
   #timesheet;
+  #colors;
 
   /**
    * Captures the normalized collections required to resolve one selection.
@@ -177,6 +202,7 @@ export default class ChartSelection {
     this.#labels = collections.labels;
     this.#heatmap = collections.heatmap;
     this.#timesheet = collections.timesheet;
+    this.#colors = collections.colors;
   }
 
   /**
@@ -190,26 +216,97 @@ export default class ChartSelection {
     const datasetIndex = Number(mark.dataset.datasetIndex);
 
     if (this.#type === ChartType.HEATMAP) {
-      return this.#selectHeatmap(mark, pointIndex);
+      return freezeSelection(this.#selectHeatmap(mark, pointIndex));
     }
 
     if (this.#type === ChartType.TIMESHEET) {
-      return this.#selectTimesheet(pointIndex);
+      return freezeSelection(this.#selectTimesheet(pointIndex));
     }
 
     if (datasetIndex === -1) {
-      return this.#selectCategory(pointIndex);
+      return freezeSelection(this.#selectCategory(pointIndex));
     }
 
     if (this.#type === ChartType.RADAR) {
-      return this.#selectRadarDataset(datasetIndex);
+      return freezeSelection(this.#selectRadarDataset(datasetIndex));
     }
 
     if (AGGREGATION_TYPES.includes(this.#type) || this.#type === ChartType.POLAR_AREA) {
-      return this.#selectAggregation(pointIndex);
+      return freezeSelection(this.#selectAggregation(pointIndex));
     }
 
-    return this.#selectSeriesPoint(datasetIndex, pointIndex);
+    return freezeSelection(this.#selectSeriesPoint(datasetIndex, pointIndex));
+  }
+
+  /**
+   * Resolves type-specific logical identity used only for lifecycle preservation.
+   *
+   * @param {SVGElement} mark - Rendered mark carrying dataset and point indices.
+   * @returns {string | null} Stable identity, or null when identity is ambiguous.
+   */
+  identityFor(mark) {
+    const pointIndex = Number(mark.dataset.pointIndex);
+
+    if (this.#type === ChartType.HEATMAP) {
+      return identityKey("heatmap", [this.#heatmap[pointIndex]?.key]);
+    }
+
+    if (this.#type === ChartType.TIMESHEET) {
+      const task = this.#timesheet.tasks[pointIndex];
+
+      return identityKey("timesheet", [task?.label, task?.start.valueOf(), task?.end.valueOf()]);
+    }
+
+    return this.#seriesIdentity(Number(mark.dataset.datasetIndex), pointIndex);
+  }
+
+  /**
+   * Resolves series and composition identities from normalized mark coordinates.
+   *
+   * @param {number} datasetIndex - Selected dataset, or -1 for an aligned category.
+   * @param {number} pointIndex - Selected point or category position.
+   * @returns {string | null} Stable identity or null for unnamed data.
+   */
+  #seriesIdentity(datasetIndex, pointIndex) {
+    if (datasetIndex === -1) {
+      return this.#categoryIdentity(pointIndex);
+    }
+
+    if (this.#type === ChartType.RADAR) {
+      return identityKey("series", [this.#datasets[datasetIndex]?.identityName, "dataset"]);
+    }
+
+    if (AGGREGATION_TYPES.includes(this.#type) || this.#type === ChartType.POLAR_AREA) {
+      return identityKey("composition", [this.#pointLabel(0, pointIndex)]);
+    }
+
+    return identityKey("series", [
+      this.#datasets[datasetIndex]?.identityName,
+      this.#pointLabel(datasetIndex, pointIndex),
+    ]);
+  }
+
+  /**
+   * Names an aligned category only when every participating series is explicit.
+   *
+   * @param {number} pointIndex - Shared category position.
+   * @returns {string | null} Stable category identity or null for unnamed data.
+   */
+  #categoryIdentity(pointIndex) {
+    const names = this.#datasets.map((dataset) => dataset.identityName);
+
+    return identityKey("series-category", [...names, this.#pointLabel(0, pointIndex)]);
+  }
+
+  /**
+   * Resolves the public label participating in logical identity.
+   *
+   * @param {number} datasetIndex - Dataset containing the selected point.
+   * @param {number} pointIndex - Point position within that dataset.
+   * @returns {unknown} Explicit category label or point x coordinate.
+   */
+  #pointLabel(datasetIndex, pointIndex) {
+    return this.#labels[pointIndex] ?? this.#datasets[datasetIndex]?.points[pointIndex]?.x;
   }
 
   /**
@@ -220,14 +317,10 @@ export default class ChartSelection {
    * @param {number} selection.datasetIndex - Zero-based dataset position.
    * @param {number} selection.pointIndex - Zero-based point position.
    * @param {unknown} [selection.label=this.#labels[selection.pointIndex]] - Category label overriding the x value.
-   * @returns {object | null} Selection point, or null when the source point is absent.
+   * @returns {object} Complete selection point for one rendered mark.
    */
   #buildPoint({ dataset, datasetIndex, pointIndex, label = this.#labels[pointIndex] }) {
     const point = dataset?.points[pointIndex];
-
-    if (!point) {
-      return null;
-    }
 
     return {
       datasetIndex,
@@ -242,20 +335,12 @@ export default class ChartSelection {
   /**
    * Builds a heatmap cell or inspected week selection.
    *
-   * @param {SVGElement} mark - Heatmap mark containing optional range metadata.
+   * @param {SVGElement} _mark - Rendered heatmap cell retained for policy symmetry.
    * @param {number} pointIndex - First selected heatmap entry index.
    * @returns {object} Public heatmap selection payload.
    */
-  #selectHeatmap(mark, pointIndex) {
-    const rangeLength = Number(mark.dataset.heatmapRangeLength ?? 0);
-
-    if (rangeLength <= 0) {
-      return new HeatmapPointSelection(pointIndex, this.#heatmap[pointIndex]);
-    }
-
-    const points = this.#heatmap.slice(pointIndex, pointIndex + rangeLength);
-
-    return new HeatmapRangeSelection(pointIndex, points);
+  #selectHeatmap(_mark, pointIndex) {
+    return new HeatmapPointSelection(pointIndex, this.#heatmap[pointIndex], this.#heatmapColor(pointIndex));
   }
 
   /**
@@ -277,11 +362,11 @@ export default class ChartSelection {
    * @returns {object} Multi-series category selection payload.
    */
   #selectCategory(pointIndex) {
-    const points = this.#datasets
-      .map((dataset, datasetIndex) => this.#buildPoint({ dataset, datasetIndex, pointIndex }))
-      .filter(Boolean);
+    const points = this.#datasets.map((dataset, datasetIndex) =>
+      this.#buildPoint({ dataset, datasetIndex, pointIndex }),
+    );
 
-    const label = this.#labels[pointIndex] ?? this.#datasets[0].points[pointIndex]?.x;
+    const label = this.#labels[pointIndex];
     const values = this.#datasets.map((dataset) => dataset.points[pointIndex]?.y);
 
     return new CategorySelection(this.#type, pointIndex, { label, values, points });
@@ -317,7 +402,33 @@ export default class ChartSelection {
   #selectAggregation(pointIndex) {
     const point = this.#buildPoint({ dataset: this.#datasets[0], datasetIndex: 0, pointIndex });
 
-    return new AggregationSelection(this.#type, pointIndex, point);
+    return new AggregationSelection(this.#type, pointIndex, {
+      point,
+      color: this.#colors[pointIndex % this.#colors.length],
+    });
+  }
+
+  /**
+   * Resolves a heatmap cell color from the complete ordered intensity scale.
+   *
+   * @param {number} pointIndex - Selected normalized heatmap entry.
+   * @returns {string} Effective cell color.
+   */
+  #heatmapColor(pointIndex) {
+    const values = this.#heatmap.map((point) => point.value);
+    const minimum = Math.min(...values);
+    const maximum = Math.max(...values);
+    const value = this.#heatmap[pointIndex].value;
+    let level = value === 0 ? 0 : this.#colors.length - 1;
+
+    if (minimum !== maximum) {
+      level = Math.min(
+        this.#colors.length - 1,
+        Math.floor(((value - minimum) / (maximum - minimum)) * this.#colors.length),
+      );
+    }
+
+    return this.#colors[level];
   }
 
   /**

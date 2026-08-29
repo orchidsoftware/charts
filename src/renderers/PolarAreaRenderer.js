@@ -1,11 +1,11 @@
 import {
-  DEFAULT_COLORS,
   DEFAULT_SECTOR_CORNER_RADIUS,
   POLAR_LABEL_EDGE_INSET,
   POLAR_LABEL_GAP,
   POLAR_LABEL_MIN_WIDTH,
 } from "../support/Constants.js";
 import { labelElement, markMetadata, svg, titled } from "../support/Dom.js";
+import { formatLabel } from "../support/Formatting.js";
 import { paddedSector, polarPoint, roundedSectorPath } from "../support/Math.js";
 import { tooltipText } from "../support/Presentation.js";
 
@@ -75,7 +75,11 @@ class PolarAreaLayout {
 
     this.maximumRadius = Math.max(
       MINIMUM_POLAR_RADIUS,
-      Math.min(Math.min(this.width, this.height) * POLAR_RADIUS_RATIO, radiusLimits.horizontal, radiusLimits.vertical),
+      Math.min(
+        Math.min(this.width, this.height) * POLAR_RADIUS_RATIO,
+        radiusLimits.horizontal,
+        radiusLimits.vertical,
+      ),
     );
     this.slice = (Math.PI * 2) / this.values.length;
   }
@@ -131,18 +135,19 @@ export default class PolarAreaRenderer {
       padding: { angle: this.#chart.options.padAngle, count: layout.values.length },
     });
 
-    const cornerRadius = this.#chart.options.sectorOptions?.cornerRadius ?? DEFAULT_SECTOR_CORNER_RADIUS;
+    const cornerRadius = this.#chart.options.cornerRadius ?? DEFAULT_SECTOR_CORNER_RADIUS;
 
     const sectorElement = this.#sectorElement(layout, { radius, sector, cornerRadius });
 
-    sectorElement.setAttribute("fill", DEFAULT_COLORS[index % DEFAULT_COLORS.length]);
+    const colors = this.#chart.options.colors;
+    sectorElement.setAttribute("fill", colors[index % colors.length]);
     sectorElement.classList.add("charts2-polar-area", "charts2-mark");
     this.#surface.append(
       titled(
         markMetadata(sectorElement, 0, index),
         tooltipText({
           options: this.#chart.options,
-          label: this.#chart.labels[index] ?? index + 1,
+          label: this.#chart.labels[index],
           value: point.y,
         }),
       ),
@@ -181,10 +186,6 @@ export default class PolarAreaRenderer {
    * @returns {void} A label is appended only when the category exists.
    */
   #renderLabel(index, angles, layout) {
-    if (this.#chart.labels[index] === undefined) {
-      return;
-    }
-
     const point = polarPoint({
       cx: layout.center.x,
       cy: layout.center.y,
@@ -193,12 +194,22 @@ export default class PolarAreaRenderer {
     });
 
     const labelX = Math.min(layout.width - POLAR_LABEL_EDGE_INSET, Math.max(POLAR_LABEL_EDGE_INSET, point.x));
-    const labelY = Math.min(layout.height - POLAR_LABEL_EDGE_INSET, Math.max(POLAR_LABEL_EDGE_INSET, point.y));
+
+    const labelY = Math.min(
+      layout.height - POLAR_LABEL_EDGE_INSET,
+      Math.max(POLAR_LABEL_EDGE_INSET, point.y),
+    );
+
     const anchor = radialAnchor(labelX, layout.center.x);
     this.#surface.append(
       labelElement({
-        value: this.#chart.labels[index],
-        attributes: { x: labelX, y: labelY, class: "charts2-label charts2-polar-label", "text-anchor": anchor },
+        value: formatLabel(this.#chart.options, this.#chart.labels[index], { target: "value-label", index }),
+        attributes: {
+          x: labelX,
+          y: labelY,
+          class: "charts2-label charts2-polar-label",
+          "text-anchor": anchor,
+        },
         measurement: { maxWidth: Math.max(1, polarLabelWidth({ labelX, anchor, width: layout.width })) },
       }),
     );

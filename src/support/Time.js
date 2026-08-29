@@ -1,4 +1,5 @@
 import { HOUR, DAY, TIME_TICK_STEPS } from "./Constants.js";
+import { formatterText } from "./Formatting.js";
 
 const DAYS_PER_YEAR = 365;
 const QUARTER_YEAR_DAYS = 90;
@@ -13,7 +14,10 @@ const QUARTER_YEAR_DAYS = 90;
  */
 function timeTicks(start, end, maximumTicks) {
   const span = end - start;
-  const step = TIME_TICK_STEPS.find((candidate) => span / candidate <= maximumTicks - 1) ?? TIME_TICK_STEPS.at(-1);
+
+  const step =
+    TIME_TICK_STEPS.find((candidate) => span / candidate <= maximumTicks - 1) ?? TIME_TICK_STEPS.at(-1);
+
   const interior = [];
 
   for (let value = start + step; value < end; value += step) {
@@ -35,7 +39,7 @@ function formatTimeTick(value, span, formatter) {
   const date = new Date(value);
 
   if (formatter) {
-    return String(formatter(date));
+    return formatterText(formatter(date), "Timesheet tick date");
   }
 
   const options = timeFormatOptions(span);
@@ -74,7 +78,7 @@ function timeFormatOptions(span) {
  */
 function formatTimesheetDate(date, formatter) {
   if (formatter) {
-    return String(formatter(new Date(date)));
+    return formatterText(formatter(new Date(date)), "Timesheet tooltip date");
   }
 
   return new Intl.DateTimeFormat(undefined, {
@@ -94,7 +98,7 @@ function formatTimesheetDate(date, formatter) {
  */
 function formatTimesheetDuration(milliseconds, formatter) {
   if (formatter) {
-    return String(formatter(milliseconds));
+    return formatterText(formatter(milliseconds), "Timesheet tooltip duration");
   }
 
   const isMeasuredInDays = milliseconds >= DAY;

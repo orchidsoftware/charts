@@ -1,4 +1,5 @@
-import { formatNumber, labelElement, markMetadata, svg, titled } from "../support/Dom.js";
+import { labelElement, markMetadata, svg, titled } from "../support/Dom.js";
+import { formatLabel, formatValue } from "../support/Formatting.js";
 import { polarPoint } from "../support/Math.js";
 import { datasetSummary, legendLayout } from "../support/Presentation.js";
 
@@ -17,7 +18,7 @@ const LABEL_WIDTH_RATIO = 0.16;
  * @returns {number} Top edge of the drawable radar region.
  */
 function radarContentTop(chart, items) {
-  if (!chart.options.showLegend || chart.datasets.length < 2) {
+  if (!chart.options.legend || chart.datasets.length < 2) {
     return 0;
   }
 
@@ -64,7 +65,11 @@ export default class RadarRenderer {
    */
   render() {
     const { height, width } = this.#chart.options;
-    const legendItems = this.#chart.datasets.map((dataset) => ({ label: dataset.name, color: dataset.color }));
+
+    const legendItems = this.#chart.datasets.map((dataset) => ({
+      label: dataset.name,
+      color: dataset.color,
+    }));
 
     const contentTop = radarContentTop(this.#chart, legendItems);
     const contentHeight = height - contentTop;
@@ -73,7 +78,10 @@ export default class RadarRenderer {
     const scale = {
       radius: Math.min(width, contentHeight) * RADAR_RADIUS_RATIO,
       count: this.#chart.datasets[0].points.length,
-      maximum: Math.max(...this.#chart.datasets.flatMap((dataset) => dataset.points.map((point) => point.y)), 1),
+      maximum: Math.max(
+        ...this.#chart.datasets.flatMap((dataset) => dataset.points.map((point) => point.y)),
+        1,
+      ),
     };
 
     const frame = Array.from({ length: scale.count }, (_, index) =>
@@ -105,7 +113,13 @@ export default class RadarRenderer {
       class: "charts2-grid charts2-radar-frame",
     });
     for (const point of frame) {
-      this.#surface.append("line", { x1: centerX, y1: centerY, x2: point.x, y2: point.y, class: "charts2-grid" });
+      this.#surface.append("line", {
+        x1: centerX,
+        y1: centerY,
+        x2: point.x,
+        y2: point.y,
+        class: "charts2-grid",
+      });
     }
   }
 
@@ -141,7 +155,7 @@ export default class RadarRenderer {
           datasetIndex,
           0,
         ),
-        datasetSummary(dataset, this.#chart.labels),
+        datasetSummary(dataset, this.#chart.labels, { options: this.#chart.options, datasetIndex }),
       );
 
       polygon.dataset.tooltipHeading = dataset.name;
@@ -158,8 +172,20 @@ export default class RadarRenderer {
    */
   #tooltipItems(dataset) {
     return dataset.points.map((point, index) => ({
-      name: this.#chart.labels[index] ?? `Value ${index + 1}`,
-      value: formatNumber(point.y),
+      name: formatLabel(this.#chart.options, this.#chart.labels[index], {
+        target: "tooltip",
+        datasetIndex: this.#chart.datasets.indexOf(dataset),
+        index,
+        point,
+      }),
+      value: formatValue(this.#chart.options, point.y, {
+        target: "tooltip",
+        dataset,
+        datasetIndex: this.#chart.datasets.indexOf(dataset),
+        index,
+        label: this.#chart.labels[index],
+        point,
+      }),
       color: dataset.color,
     }));
   }
@@ -175,17 +201,16 @@ export default class RadarRenderer {
    * @returns {void} Category labels are appended when present.
    */
   #renderLabels({ frame, centerX, centerY, width }) {
-    if (this.#chart.labels.length === 0) {
-      return;
-    }
-
     for (const [index, point] of frame.slice(0, this.#chart.labels.length).entries()) {
       const directionX = point.x - centerX;
       const directionY = point.y - centerY;
       const length = Math.hypot(directionX, directionY);
       this.#surface.append(
         labelElement({
-          value: this.#chart.labels[index],
+          value: formatLabel(this.#chart.options, this.#chart.labels[index], {
+            target: "value-label",
+            index,
+          }),
           attributes: {
             x: point.x + (directionX / length) * LABEL_OFFSET,
             y: point.y + (directionY / length) * LABEL_OFFSET,

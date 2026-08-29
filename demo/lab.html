@@ -26,13 +26,13 @@
 
       <section class="lab-intro" aria-labelledby="lab-title">
         <div>
-          <p class="lab-kicker">QA reference surface · 26 deterministic fixtures</p>
+          <p class="lab-kicker">QA reference surface · 38 deterministic fixtures</p>
           <h1 id="lab-title">Chart laboratory</h1>
         </div>
         <div class="lab-intro-copy">
           <p>
-            Every production example and demanding dataset, grouped by renderer. Use this page for exploratory QA,
-            responsive inspection, interaction checks, and visual regression review.
+            Every production example and demanding dataset, grouped by renderer. Use this page for exploratory
+            QA, responsive inspection, interaction checks, and visual regression review.
           </p>
           <button id="shuffle" type="button">Exercise update lifecycle</button>
         </div>
@@ -45,6 +45,7 @@
         <a href="#xy-fixtures"><strong>02</strong><span>XY plots</span></a>
         <a href="#radial-fixtures"><strong>05</strong><span>Radial</span></a>
         <a href="#time-fixtures"><strong>02</strong><span>Time &amp; calendar</span></a>
+        <a href="#background-fixtures"><strong>12</strong><span>Background bounds</span></a>
       </nav>
 
       <section id="line-fixtures" class="lab-group" data-fixture-group="line" aria-labelledby="line-title">
@@ -221,25 +222,25 @@
           <p>Bar and line series sharing a plot, including signed data and a secondary axis.</p>
         </header>
         <div class="lab-grid">
-          <article class="lab-fixture" data-fixture="axis-mixed">
+          <article class="lab-fixture" data-fixture="mixed">
             <header>
               <div>
                 <span class="tag">MIXED · BAR + LINES</span>
                 <h3>Plan and capacity</h3>
               </div>
-              <code>#axis-mixed</code>
+              <code>#mixed</code>
             </header>
-            <div id="axis-mixed"></div>
+            <div id="mixed"></div>
           </article>
-          <article class="lab-fixture" data-fixture="axis-mixed-signed">
+          <article class="lab-fixture" data-fixture="mixed-signed">
             <header>
               <div>
                 <span class="tag">MIXED · DUAL AXIS</span>
                 <h3>Signed movement</h3>
               </div>
-              <code>#axis-mixed-signed</code>
+              <code>#mixed-signed</code>
             </header>
-            <div id="axis-mixed-signed"></div>
+            <div id="mixed-signed"></div>
           </article>
         </div>
       </section>
@@ -273,7 +274,12 @@
         </div>
       </section>
 
-      <section id="radial-fixtures" class="lab-group" data-fixture-group="radial" aria-labelledby="radial-title">
+      <section
+        id="radial-fixtures"
+        class="lab-group"
+        data-fixture-group="radial"
+        aria-labelledby="radial-title"
+      >
         <header class="lab-group-header">
           <h2 id="radial-title">Radial</h2>
           <p>Comparison and composition across radar, polar area, pie, donut, and percentage renderers.</p>
@@ -360,10 +366,147 @@
           </article>
         </div>
       </section>
+
+      <section
+        id="background-fixtures"
+        class="lab-group"
+        data-fixture-group="background"
+        aria-labelledby="background-title"
+      >
+        <header class="lab-group-header">
+          <h2 id="background-title">Background bounds</h2>
+          <p>
+            One example per public chart type. The gray host has no padding, making the exact chart boundary
+            visible.
+          </p>
+        </header>
+        <div class="lab-grid">
+          <article class="lab-fixture" data-fixture="background-line">
+            <header>
+              <div>
+                <span class="tag">LINE · BOUNDS</span>
+                <h3>Zero-padding host</h3>
+              </div>
+              <code>#background-line</code>
+            </header>
+            <div id="background-line" class="lab-boundary"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="background-bar">
+            <header>
+              <div>
+                <span class="tag">BAR · BOUNDS</span>
+                <h3>Zero-padding host</h3>
+              </div>
+              <code>#background-bar</code>
+            </header>
+            <div id="background-bar" class="lab-boundary"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="background-mixed">
+            <header>
+              <div>
+                <span class="tag">MIXED · BOUNDS</span>
+                <h3>Zero-padding host</h3>
+              </div>
+              <code>#background-mixed</code>
+            </header>
+            <div id="background-mixed" class="lab-boundary"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="background-scatter">
+            <header>
+              <div>
+                <span class="tag">SCATTER · BOUNDS</span>
+                <h3>Zero-padding host</h3>
+              </div>
+              <code>#background-scatter</code>
+            </header>
+            <div id="background-scatter" class="lab-boundary"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="background-bubble">
+            <header>
+              <div>
+                <span class="tag">BUBBLE · BOUNDS</span>
+                <h3>Zero-padding host</h3>
+              </div>
+              <code>#background-bubble</code>
+            </header>
+            <div id="background-bubble" class="lab-boundary"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="background-radar">
+            <header>
+              <div>
+                <span class="tag">RADAR · BOUNDS</span>
+                <h3>Zero-padding host</h3>
+              </div>
+              <code>#background-radar</code>
+            </header>
+            <div id="background-radar" class="lab-boundary"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="background-polar-area">
+            <header>
+              <div>
+                <span class="tag">POLAR AREA · BOUNDS</span>
+                <h3>Zero-padding host</h3>
+              </div>
+              <code>#background-polar-area</code>
+            </header>
+            <div id="background-polar-area" class="lab-boundary"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="background-pie">
+            <header>
+              <div>
+                <span class="tag">PIE · BOUNDS</span>
+                <h3>Zero-padding host</h3>
+              </div>
+              <code>#background-pie</code>
+            </header>
+            <div id="background-pie" class="lab-boundary"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="background-donut">
+            <header>
+              <div>
+                <span class="tag">DONUT · BOUNDS</span>
+                <h3>Zero-padding host</h3>
+              </div>
+              <code>#background-donut</code>
+            </header>
+            <div id="background-donut" class="lab-boundary"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="background-percentage">
+            <header>
+              <div>
+                <span class="tag">PERCENTAGE · BOUNDS</span>
+                <h3>Zero-padding host</h3>
+              </div>
+              <code>#background-percentage</code>
+            </header>
+            <div id="background-percentage" class="lab-boundary"></div>
+          </article>
+          <article class="lab-fixture lab-fixture-wide" data-fixture="background-timesheet">
+            <header>
+              <div>
+                <span class="tag">TIMESHEET · BOUNDS</span>
+                <h3>Zero-padding host</h3>
+              </div>
+              <code>#background-timesheet</code>
+            </header>
+            <div id="background-timesheet" class="lab-boundary"></div>
+          </article>
+          <article class="lab-fixture lab-fixture-wide" data-fixture="background-heatmap">
+            <header>
+              <div>
+                <span class="tag">HEATMAP · BOUNDS</span>
+                <h3>Zero-padding host</h3>
+              </div>
+              <code>#background-heatmap</code>
+            </header>
+            <div id="background-heatmap" class="lab-boundary"></div>
+          </article>
+        </div>
+      </section>
     </main>
 
     <footer class="site-footer lab-footer">
-      <span>Charts2 QA laboratory · 26 fixtures · public API only</span>
+      <span>Charts2 QA laboratory · 38 fixtures · public API only</span>
       <a href="#top">Back to top ↑</a>
     </footer>
     <script type="module" src="./Main.js"></script>

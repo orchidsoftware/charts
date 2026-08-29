@@ -3,6 +3,14 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   build: {
+    minify: "terser",
+    terserOptions: {
+      compress: { passes: 5, module: true, toplevel: true },
+      ecma: 2022,
+      format: { comments: false },
+      module: true,
+      toplevel: true,
+    },
     lib: {
       entry: "src/index.js",
       name: "Charts2",

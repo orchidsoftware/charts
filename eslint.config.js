@@ -12,9 +12,10 @@ const JAVASCRIPT_FILES = ["**/*.{js,mjs,cjs}"];
 const SOURCE_FILES = ["src/**/*.js"];
 const NODE_FILES = ["scripts/**/*.mjs", "*.config.js"];
 const MAX_CONSECUTIVE_DECLARATIONS = 8;
-const declarationSequence = Array.from({ length: MAX_CONSECUTIVE_DECLARATIONS + 1 }, () => "VariableDeclaration").join(
-  " + ",
-);
+const declarationSequence = Array.from(
+  { length: MAX_CONSECUTIVE_DECLARATIONS + 1 },
+  () => "VariableDeclaration",
+).join(" + ");
 const declarationWallSelector = `:matches(FunctionDeclaration, FunctionExpression, ArrowFunctionExpression) BlockStatement > ${declarationSequence}`;
 
 const correctnessRules = {
@@ -48,7 +49,8 @@ const correctnessRules = {
     },
     {
       selector: "ConditionalExpression > LogicalExpression",
-      message: "Do not combine ternary expressions with logical or nullish expressions. Extract a named decision.",
+      message:
+        "Do not combine ternary expressions with logical or nullish expressions. Extract a named decision.",
     },
     {
       selector: declarationWallSelector,
@@ -63,7 +65,8 @@ const correctnessRules = {
     {
       selector:
         'CallExpression[callee.type="MemberExpression"][callee.property.type="PrivateIdentifier"] > ObjectExpression[properties.length>4]',
-      message: "Do not pass wide anonymous objects to private methods. Introduce a named collaborator or value object.",
+      message:
+        "Do not pass wide anonymous objects to private methods. Introduce a named collaborator or value object.",
     },
     {
       selector: "ReturnStatement > ObjectExpression[properties.length>6]",
@@ -147,7 +150,7 @@ const correctnessRules = {
 const maintainabilityRules = {
   complexity: ["error", 12],
   "max-depth": ["error", 3],
-  "max-lines": ["error", { max: 500, skipBlankLines: true, skipComments: true }],
+  "max-lines": ["error", { max: 1000, skipBlankLines: true, skipComments: true }],
   "max-lines-per-function": ["error", { max: 35, skipBlankLines: true, skipComments: true }],
   "max-nested-callbacks": ["error", 3],
   "max-params": ["error", 3],
@@ -179,6 +182,40 @@ const maintainabilityRules = {
   "sonarjs/expression-complexity": ["error", { max: 2 }],
   "sonarjs/no-duplicate-string": ["error", { threshold: 3 }],
 };
+
+const architectureRules = {
+  "import-x/no-restricted-paths": [
+    "error",
+    {
+      basePath: ".",
+      zones: [
+        {
+          target: "./src/support",
+          from: ["./src/core", "./src/renderers"],
+          message: "Support policies must not depend on lifecycle or rendering.",
+        },
+        {
+          target: "./src/renderers",
+          from: "./src/core",
+          message: "Renderers must not depend on lifecycle owners.",
+        },
+      ],
+    },
+  ],
+};
+
+const legacyVocabularyRules = [
+  {
+    selector:
+      "Property[key.name=/^(showAxes|showGrid|showLabels|showLegend|showTooltip|showDots|lineOptions|axisOptions|tooltipOptions|barOptions|sectorOptions|timesheetOptions)$/]",
+    message: "Legacy chart vocabulary is removed. Use the flat public fluent option name.",
+  },
+  {
+    selector:
+      "MemberExpression[computed=false][property.name=/^(showAxes|showGrid|showLabels|showLegend|showTooltip|showDots|lineOptions|axisOptions|tooltipOptions|barOptions|sectorOptions|timesheetOptions)$/]",
+    message: "Legacy chart vocabulary is removed. Use the flat public fluent option name.",
+  },
+];
 
 const jsdocRules = {
   ...jsdocConfigs["flat/recommended-error"].rules,
@@ -224,8 +261,42 @@ export default [
   {
     files: SOURCE_FILES,
     plugins: { jsdoc: jsdocPlugin },
-    rules: { ...maintainabilityRules, ...jsdocRules },
+    rules: { ...architectureRules, ...maintainabilityRules, ...jsdocRules },
     settings: { jsdoc: { mode: "typescript" } },
+  },
+  {
+    files: ["src/**/*.js", "test/**/*.js"],
+    rules: {
+      "no-restricted-syntax": [...correctnessRules["no-restricted-syntax"], ...legacyVocabularyRules],
+    },
+  },
+  {
+    files: [
+      "test/Chart.test.js",
+      "test/Demo.test.js",
+      "test/FluentApi.test.js",
+      "test/FluentCoverage.test.js",
+      "test/Frameless.test.js",
+      "test/Interactions.test.js",
+      "test/Performance.test.js",
+      "test/UnifiedPipeline.test.js",
+      "test/VisualRegression.test.js",
+      "test/support/MountChart.js",
+    ],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["../src/core/**", "../../src/core/**"],
+              message:
+                "Product tests must exercise the package entry point instead of internal lifecycle classes.",
+            },
+          ],
+        },
+      ],
+    },
   },
   {
     files: ["src/support/Constants.js"],

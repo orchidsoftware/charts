@@ -55,7 +55,7 @@
 
 .lab-index {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   margin-bottom: 88px;
   overflow: hidden;
   background: var(--charts2-demo-elevated);
@@ -179,6 +179,18 @@
   align-self: start;
 }
 
+.lab-boundary {
+  padding: 0;
+  background: var(--charts2-demo-background);
+  border-radius: 4px;
+
+  --charts-label-color: #1c2226;
+  --charts-secondary-label-color: #4f5d69;
+  --charts-axis-line-color: #c6d0d8;
+  --charts-mark-separator: #e7e7e7;
+  --charts-point-fill: #e7e7e7;
+}
+
 .lab-footer {
   width: min(1400px, calc(100% - 56px));
 }
@@ -193,7 +205,8 @@
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .lab-index a:nth-child(4) {
+  .lab-index a:nth-child(4),
+  .lab-index a:nth-child(7) {
     border-left: 0;
   }
 

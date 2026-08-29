@@ -31,8 +31,8 @@
           <div class="hero-copy">
             <h1>Charts that belong in your product.</h1>
             <p class="lede">
-              Turn everyday product data into clear, interactive charts without turning chart configuration into a
-              project. One small API covers trends, comparisons, composition, activity, and planning.
+              Turn everyday product data into clear, interactive charts without turning chart configuration
+              into a project. One small API covers trends, comparisons, composition, activity, and planning.
             </p>
             <div class="actions">
               <a class="primary-action" href="#install">Start building</a>
@@ -70,7 +70,9 @@
                 <small>↑ 18.4% this year</small>
               </div>
               <div class="preview-chart-card">
-                <div class="preview-chart-title"><strong>Revenue and plan</strong><span>USD, thousands</span></div>
+                <div class="preview-chart-title">
+                  <strong>Revenue and plan</strong><span>USD, thousands</span>
+                </div>
                 <div id="hero-revenue"></div>
                 <div class="preview-footer">
                   <span><i class="preview-key preview-key-current" aria-hidden="true"></i>Revenue</span>
@@ -105,8 +107,8 @@
             <h2 id="supported-charts-title">The charts product work needs.</h2>
           </div>
           <p>
-            Choose the shape that makes the answer obvious. Every type below keeps the same responsive lifecycle,
-            tooltip, selection, update, and export contract.
+            Choose the shape that makes the answer obvious. Every type below keeps the same responsive
+            lifecycle, tooltip, selection, update, and export contract.
           </p>
         </header>
         <div class="support-families">
@@ -129,7 +131,10 @@
               <a href="#spark-area"
                 ><svg viewBox="0 0 64 40" aria-hidden="true">
                   <path class="support-guide" d="M5 34.5H59" />
-                  <path class="support-primary-fill" d="M6 34V29C14 29 17 22 25 23S37 14 43 16 52 9 58 7V34Z" /></svg
+                  <path
+                    class="support-primary-fill"
+                    d="M6 34V29C14 29 17 22 25 23S37 14 43 16 52 9 58 7V34Z"
+                  /></svg
                 ><span>Area</span></a
               >
               <a href="#bar-vertical"
@@ -155,7 +160,7 @@
                   </g></svg
                 ><span>Horizontal</span></a
               >
-              <a href="#axis-mixed"
+              <a href="#mixed"
                 ><svg viewBox="0 0 64 40" aria-hidden="true">
                   <path class="support-guide" d="M5 34.5H59" />
                   <g class="support-primary-fill">
@@ -313,7 +318,7 @@
                 <h2>Store visits, plan, and capacity</h2>
               </div>
             </header>
-            <div id="axis-mixed"></div>
+            <div id="mixed"></div>
           </article>
           <article>
             <header>
@@ -322,7 +327,7 @@
                 <h2>Account balance movement</h2>
               </div>
             </header>
-            <div id="axis-mixed-signed"></div>
+            <div id="mixed-signed"></div>
           </article>
           <article id="timesheet-card">
             <header>
@@ -458,8 +463,8 @@
         <div class="section-copy">
           <h2>Less chrome. Same chart.</h2>
           <p>
-            Every omitted element is visible in configuration: axes, grid, labels, legend, dots, and tooltip are each
-            set to <code>false</code>.
+            Every omitted element is visible in configuration: axes, grid, labels, legend, dots, and tooltip
+            are each set to <code>false</code>.
           </p>
         </div>
         <div class="spark-grid">
@@ -483,22 +488,23 @@
         <div>
           <h2>Learn it once.<br />Use it everywhere.</h2>
           <p>
-            Choose the chart type. The same lifecycle handles responsive rendering, updates, interaction, export, and
-            cleanup.
+            Choose the chart type. The same lifecycle handles responsive rendering, updates, interaction,
+            export, and cleanup.
           </p>
           <div class="snippet-actions">
             <a class="primary-action" href="https://github.com/tabuna/charts2#readme">Read the quick start</a>
             <a href="https://github.com/tabuna/charts2">View on GitHub ↗</a>
           </div>
         </div>
-        <pre><code>import { createChart } from "@charts2/core";
+        <pre><code>import { BarChart } from "@charts2/core";
 import "@charts2/core/style.css";
 
-const chart = createChart("#revenue", {
-  type: "bar",
-  orientation: "horizontal",
-  data: { datasets: [{ values: [18, 31, 44] }] }
-});
+const chart = BarChart.make("#revenue")
+  .labels(["Europe", "Americas", "Asia-Pacific"])
+  .dataset("Revenue", [18, 31, 44])
+  .horizontal()
+  .height(300)
+  .render();
 
 chart.update(nextData);
 chart.destroy();</code></pre>

@@ -1,4 +1,17 @@
-import { createChart } from "../src/index.js";
+import {
+  BarChart,
+  BubbleChart,
+  DonutChart,
+  HeatmapChart,
+  LineChart,
+  MixedChart,
+  PercentageChart,
+  PieChart,
+  PolarAreaChart,
+  RadarChart,
+  ScatterChart,
+  TimesheetChart,
+} from "../src/index.js";
 
 import buildSize from "./BuildSize.js";
 
@@ -47,6 +60,32 @@ const heroRevenueSource = {
       values: [44, 47, 49, 53, 56, 60, 63, 67, 71, 75, 80, 85],
     },
   ],
+};
+const heatmapOptions = {
+  type: "heatmap",
+  height: 320,
+  ariaLabel: "Daily contributions throughout 2026",
+  countLabel: "contributions",
+  radius: 2,
+  colors: ["#f2f2f7", "#d8ecff", "#acd7ff", "#73baff", "#2490ef", "#126fbd", "#084b83"],
+  data: {
+    start: new Date("2026-01-01T00:00:00Z"),
+    end: new Date("2026-12-31T00:00:00Z"),
+    points: Object.fromEntries(
+      Array.from({ length: 365 }, (_, index) => {
+        const date = new Date(Date.UTC(2026, 0, index + 1));
+        const weekday = date.getUTCDay();
+        const seasonal = Math.sin(index / 19) * 4 + 5;
+        const isWorkday = weekday > 0 && weekday < 6;
+        const workday = isWorkday ? 4 : 0;
+
+        return [
+          date.toISOString().slice(0, 10),
+          Math.max(0, Math.round(seasonal + workday + ((index * 7) % 5))),
+        ];
+      }),
+    ),
+  },
 };
 
 /**
@@ -102,7 +141,7 @@ export const showcaseSpecs = [
     {
       type: "line",
       height: 320,
-      tooltipOptions: { formatTooltipY: (value) => `${formatDemoValue(value)}k` },
+      formatTooltipValue: (value) => `${formatDemoValue(value)}k`,
       onSelect: selectionReporter("#line"),
       ariaLabel: "Monthly App Store downloads, plan, and previous year",
       description:
@@ -110,7 +149,10 @@ export const showcaseSpecs = [
       data: {
         labels: months,
         datasets: [
-          { name: "Downloads", values: [42.1, 46.8, 44.5, 53.2, 57.9, 61.4, 59.8, 68.3, 71.6, 76.2, 79.4, 84.2] },
+          {
+            name: "Downloads",
+            values: [42.1, 46.8, 44.5, 53.2, 57.9, 61.4, 59.8, 68.3, 71.6, 76.2, 79.4, 84.2],
+          },
           { name: "Plan", values: [44, 47, 49, 53, 56, 60, 63, 67, 71, 75, 80, 85] },
           { name: "Previous year", values: [35, 39, 41, 45, 48, 52, 54, 57, 61, 65, 69, 73] },
         ],
@@ -157,7 +199,7 @@ export const showcaseSpecs = [
       type: "bar",
       height: 250,
       orientation: "horizontal",
-      tooltipOptions: { formatTooltipY: (value) => `${formatDemoValue(value)} h` },
+      formatTooltipValue: (value) => `${formatDemoValue(value)} h`,
       ariaLabel: "Standard and express delivery time by region in hours",
       data: {
         labels: ["North America", "Europe", "Asia-Pacific", "Latin America"],
@@ -174,7 +216,7 @@ export const showcaseSpecs = [
       type: "bar",
       height: 250,
       orientation: "horizontal",
-      barOptions: { stacked: true },
+      stacked: true,
       ariaLabel: "Orders by channel and fulfillment status",
       data: {
         labels: ["Online Store", "Retail pickup", "Marketplace", "Partner"],
@@ -191,7 +233,7 @@ export const showcaseSpecs = [
     {
       type: "scatter",
       height: 260,
-      tooltipOptions: { formatTooltipY: (value) => `${formatDemoValue(value)} h` },
+      formatTooltipValue: (value) => `${formatDemoValue(value)} h`,
       ariaLabel: "Battery life by device price for phones and tablets",
       data: {
         labels: ["$699", "$799", "$899", "$999", "$1,099", "$1,199"],
@@ -246,7 +288,7 @@ export const showcaseSpecs = [
     {
       type: "polar-area",
       height: 280,
-      tooltipOptions: { formatTooltipY: (value) => `${formatDemoValue(value)} min` },
+      formatTooltipValue: (value) => `${formatDemoValue(value)} min`,
       ariaLabel: "Screen Time by app category",
       data: {
         labels: ["Social", "Entertainment", "Productivity", "Creativity", "Reading", "Other"],
@@ -255,9 +297,9 @@ export const showcaseSpecs = [
     },
   ],
   [
-    "#axis-mixed",
+    "#mixed",
     {
-      type: "axis-mixed",
+      type: "mixed",
       height: 300,
       ariaLabel: "Weekly store visits compared with plan and capacity",
       data: {
@@ -271,19 +313,35 @@ export const showcaseSpecs = [
     },
   ],
   [
-    "#axis-mixed-signed",
+    "#mixed-signed",
     {
-      type: "axis-mixed",
+      type: "mixed",
       height: 300,
-      axisOptions: { yAxisPosition: "right" },
-      tooltipOptions: { formatTooltipY: (value) => `${value < 0 ? "−" : "+"}$${formatDemoValue(Math.abs(value))}` },
-      ariaLabel: "Daily account balance movement with right-side value axis, rolling trend, and alert threshold",
+      yAxisPosition: "right",
+      formatTooltipValue: (value) => `${value < 0 ? "−" : "+"}$${formatDemoValue(Math.abs(value))}`,
+      ariaLabel:
+        "Daily account balance movement with right-side value axis, rolling trend, and alert threshold",
       data: {
         labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Today"],
         datasets: [
-          { name: "Daily change", chartType: "bar", color: "#2490ef", values: [-18, 9, -6, 22, 0, -14, 17, 28] },
-          { name: "Rolling trend", chartType: "line", color: "#af52de", values: [-8, -4, -2, 5, 7, 3, 8, 14] },
-          { name: "Alert threshold", chartType: "line", color: "#ff9500", values: [12, 12, 12, 12, 12, 12, 12, 12] },
+          {
+            name: "Daily change",
+            chartType: "bar",
+            color: "#2490ef",
+            values: [-18, 9, -6, 22, 0, -14, 17, 28],
+          },
+          {
+            name: "Rolling trend",
+            chartType: "line",
+            color: "#af52de",
+            values: [-8, -4, -2, 5, 7, 3, 8, 14],
+          },
+          {
+            name: "Alert threshold",
+            chartType: "line",
+            color: "#ff9500",
+            values: [12, 12, 12, 12, 12, 12, 12, 12],
+          },
         ],
       },
     },
@@ -294,50 +352,51 @@ export const showcaseSpecs = [
       type: "timesheet",
       height: 300,
       ariaLabel: "App release work plan from design review through release",
-      description: "Six release tasks overlap where parallel work is possible and finish with the public release.",
+      description:
+        "Six release tasks overlap where parallel work is possible and finish with the public release.",
       data: {
-        start: "2026-09-01T00:00:00",
-        end: "2026-09-13T00:00:00",
+        start: "2026-09-01",
+        end: "2026-09-13",
         tasks: [
           {
             label: "Design review",
-            start: "2026-09-01T00:00:00",
-            end: "2026-09-03T00:00:00",
+            start: "2026-09-01",
+            end: "2026-09-03",
             group: "Design",
             color: "#AF52DE",
           },
           {
             label: "Accessibility audit",
-            start: "2026-09-02T00:00:00",
-            end: "2026-09-05T00:00:00",
+            start: "2026-09-02",
+            end: "2026-09-05",
             group: "Quality",
             color: "#248A3D",
           },
           {
             label: "Implementation",
-            start: "2026-09-03T00:00:00",
-            end: "2026-09-08T00:00:00",
+            start: "2026-09-03",
+            end: "2026-09-08",
             group: "Engineering",
             color: "#007AFF",
           },
           {
             label: "TestFlight",
-            start: "2026-09-07T00:00:00",
-            end: "2026-09-10T00:00:00",
+            start: "2026-09-07",
+            end: "2026-09-10",
             group: "Quality",
             color: "#248A3D",
           },
           {
             label: "App Review",
-            start: "2026-09-09T00:00:00",
-            end: "2026-09-12T00:00:00",
+            start: "2026-09-09",
+            end: "2026-09-12",
             group: "Distribution",
             color: "#FF9500",
           },
           {
             label: "Release",
-            start: "2026-09-12T00:00:00",
-            end: "2026-09-13T00:00:00",
+            start: "2026-09-12",
+            end: "2026-09-13",
             group: "Distribution",
             color: "#FF3B30",
           },
@@ -369,7 +428,7 @@ export const showcaseSpecs = [
     {
       type: "percentage",
       height: 140,
-      tooltipOptions: { formatTooltipY: (value) => `${formatDemoValue(value)} GB` },
+      formatTooltipValue: (value) => `${formatDemoValue(value)} GB`,
       ariaLabel: "iPhone storage usage by category",
       colors: ["#ff9f0a", "#0a84ff", "#30d158", "#8e8e93", "#bf5af2", "#d1d1d6"],
       data: {
@@ -410,14 +469,12 @@ export const qualitySpecs = [
       type: "bar",
       orientation: "horizontal",
       ariaLabel: "Large values with long category labels",
-      axisOptions: {
-        formatLabel: (label) =>
-          ({
-            "North America enterprise accounts": ["North America", "enterprise accounts"],
-            "Europe, Middle East, and Africa": ["Europe, Middle", "East, and Africa"],
-            "Asia-Pacific strategic partnerships": ["Asia-Pacific", "strategic partnerships"],
-          })[label] ?? label,
-      },
+      formatLabel: (label) =>
+        ({
+          "North America enterprise accounts": ["North America", "enterprise accounts"],
+          "Europe, Middle East, and Africa": ["Europe, Middle", "East, and Africa"],
+          "Asia-Pacific strategic partnerships": ["Asia-Pacific", "strategic partnerships"],
+        })[label] ?? label,
       data: {
         labels: [
           "North America enterprise accounts",
@@ -437,31 +494,29 @@ export const qualitySpecs = [
       type: "bar",
       orientation: "horizontal",
       ariaLabel: "Extremely long localized category labels",
-      axisOptions: {
-        formatLabel: (label) =>
-          ({
-            "Accounts requiring manual verification after an inconclusive automated compliance review": [
-              "Manual verification",
-              "after inconclusive",
-              "compliance review",
-            ],
-            "Партнёрские интеграции с дополнительной проверкой доступности и локализации": [
-              "Партнёрские интеграции",
-              "проверка доступности",
-              "и локализации",
-            ],
-            顧客向けエンタープライズ分析プラットフォームの段階的な移行: [
-              "顧客向け分析",
-              "プラットフォーム",
-              "段階的な移行",
-            ],
-            "طلبات المؤسسات التي تتطلب مراجعة يدوية إضافية قبل الموافقة النهائية": [
-              "طلبات المؤسسات",
-              "مراجعة يدوية إضافية",
-              "قبل الموافقة النهائية",
-            ],
-          })[label] ?? label,
-      },
+      formatLabel: (label) =>
+        ({
+          "Accounts requiring manual verification after an inconclusive automated compliance review": [
+            "Manual verification",
+            "after inconclusive",
+            "compliance review",
+          ],
+          "Партнёрские интеграции с дополнительной проверкой доступности и локализации": [
+            "Партнёрские интеграции",
+            "проверка доступности",
+            "и локализации",
+          ],
+          顧客向けエンタープライズ分析プラットフォームの段階的な移行: [
+            "顧客向け分析",
+            "プラットフォーム",
+            "段階的な移行",
+          ],
+          "طلبات المؤسسات التي تتطلب مراجعة يدوية إضافية قبل الموافقة النهائية": [
+            "طلبات المؤسسات",
+            "مراجعة يدوية إضافية",
+            "قبل الموافقة النهائية",
+          ],
+        })[label] ?? label,
       data: {
         labels: [
           "Accounts requiring manual verification after an inconclusive automated compliance review",
@@ -542,6 +597,197 @@ export const qualitySpecs = [
  * Shared chart mounting
  */
 
+const chartDefinitions = Object.freeze({
+  line: LineChart,
+  bar: BarChart,
+  scatter: ScatterChart,
+  mixed: MixedChart,
+  bubble: BubbleChart,
+  pie: PieChart,
+  donut: DonutChart,
+  percentage: PercentageChart,
+  radar: RadarChart,
+  "polar-area": PolarAreaChart,
+  heatmap: HeatmapChart,
+  timesheet: TimesheetChart,
+});
+const backgroundSpecs = Object.keys(chartDefinitions).map((type) => {
+  const source =
+    type === "heatmap" ? heatmapOptions : showcaseSpecs.find(([, options]) => options.type === type)?.[1];
+
+  if (!source) {
+    throw new TypeError(`Missing background-boundary example for chart type: ${type}`);
+  }
+
+  return [
+    `#background-${type}`,
+    {
+      ...source,
+      height: type === "percentage" ? 140 : source.height,
+      ariaLabel: `${type} chart on a zero-padding background`,
+      onSelect: undefined,
+    },
+  ];
+});
+
+/**
+ * Applies configuration shared by every fluent chart builder.
+ *
+ * @param {object} builder - Type-specific fluent builder.
+ * @param {object} options - Demo chart specification.
+ * @returns {object} The same configured builder.
+ */
+function commonBuilder(builder, options) {
+  for (const [name, value] of [
+    ["height", options.height ?? 280],
+    ["width", options.width],
+    ["colors", options.colors],
+    ["ariaLabel", options.ariaLabel],
+    ["description", options.description],
+    ["formatLabel", options.formatLabel],
+    ["onSelect", options.onSelect],
+  ]) {
+    if (value !== undefined) {
+      builder[name](value);
+    }
+  }
+
+  if (options.formatTooltipValue) {
+    builder.tooltip((tooltip) => tooltip.formatValue(options.formatTooltipValue));
+  }
+
+  if (options.tooltipEnabled !== undefined) {
+    builder.tooltip(options.tooltipEnabled);
+  }
+
+  return builder;
+}
+
+/**
+ * Applies shared labels, datasets, legends, and Cartesian visibility.
+ *
+ * @param {object} builder - Series-capable fluent builder.
+ * @param {object} options - Demo chart specification.
+ * @returns {object} The same configured builder.
+ */
+function seriesBuilder(builder, options) {
+  if (options.data.labels) {
+    builder.labels(options.data.labels);
+  }
+
+  if (builder.legend && options.legend !== undefined) {
+    builder.legend(options.legend);
+  }
+
+  for (const [method, value] of [
+    ["axes", options.axes],
+    ["grid", options.grid],
+    ["valueLabels", options.valueLabels],
+    ["dots", options.dots],
+  ]) {
+    if (typeof builder[method] === "function" && value !== undefined) {
+      builder[method](value);
+    }
+  }
+
+  return builder;
+}
+
+/**
+ * Appends datasets through the chart family's concise public grammar.
+ *
+ * @param {object} builder - Series-capable builder.
+ * @param {object} options - Demo chart specification.
+ * @returns {object} Builder containing every dataset.
+ */
+function datasetBuilder(builder, options) {
+  const datasets = options.data.datasets ?? [];
+
+  for (const dataset of datasets) {
+    if (options.type === "mixed") {
+      builder[dataset.chartType](dataset.name, dataset.values, dataset.color);
+
+      continue;
+    }
+
+    builder.dataset(dataset);
+  }
+
+  return builder;
+}
+
+/**
+ * Applies the small type-specific presentation vocabulary used by the demo.
+ *
+ * @param {object} builder - Type-specific builder.
+ * @param {object} options - Demo chart specification.
+ * @returns {object} Configured builder.
+ */
+function typeBuilder(builder, options) {
+  if (options.orientation === "horizontal") {
+    builder.horizontal();
+  }
+
+  if (options.stacked) {
+    builder.stacked();
+  }
+
+  if (options.gradient) {
+    builder.gradient();
+  }
+
+  if (options.area) {
+    builder.area();
+  }
+
+  if (options.yAxisPosition) {
+    builder.yAxis((axis) => axis.position(options.yAxisPosition));
+  }
+
+  for (const [method, value] of [
+    ["maxSlices", options.maxSlices],
+    ["startAngle", options.startAngle],
+    ["padAngle", options.padAngle],
+  ]) {
+    if (typeof builder[method] === "function" && value !== undefined) {
+      builder[method](value);
+    }
+  }
+
+  return builder;
+}
+
+/**
+ * Mounts one demo specification through a named fluent definition.
+ *
+ * @param {string | Element} parent - Demo chart host.
+ * @param {object} options - Demo chart specification.
+ * @returns {object} Mounted public chart.
+ */
+function mountFluentChart(parent, options) {
+  const builder = commonBuilder(chartDefinitions[options.type].make(parent), options);
+
+  if (options.type === "heatmap") {
+    return builder
+      .range(options.data.start, options.data.end)
+      .points(options.data.points)
+      .countLabel(options.countLabel ?? "items")
+      .radius(options.radius ?? 2)
+      .render();
+  }
+
+  if (options.type === "timesheet") {
+    builder.range(options.data.start, options.data.end);
+    for (const task of options.data.tasks) {
+      builder.task(task);
+    }
+
+    return builder.render();
+  }
+
+  return typeBuilder(datasetBuilder(seriesBuilder(builder, options), options), options).render();
+}
+
 /**
  * Mounts a chart with the demo's standard height and preserves its source data.
  *
@@ -550,7 +796,7 @@ export const qualitySpecs = [
  * @returns {{chart: object, source: object}} Mounted chart and immutable update source.
  */
 function mountChart(selector, options) {
-  const chart = createChart(selector, {
+  const chart = mountFluentChart(selector, {
     height: 280,
     ...options,
   });
@@ -564,8 +810,8 @@ if (heroRevenueHost) {
     mountChart(heroRevenueHost, {
       type: "line",
       height: 220,
-      showLegend: false,
-      showDots: false,
+      legend: false,
+      dots: false,
       ariaLabel: "Monthly recurring revenue and plan",
       data: heroRevenueSource,
     }),
@@ -580,34 +826,17 @@ for (const [selector, options] of qualitySpecs) {
     mountChart(selector, options);
   }
 }
+for (const [selector, options] of backgroundSpecs) {
+  if (document.querySelector(selector)) {
+    mountChart(selector, options);
+  }
+}
 
 /*
  * Calendar activity
  */
 
-createChart("#heatmap", {
-  type: "heatmap",
-  height: 320,
-  ariaLabel: "Daily contributions throughout 2026",
-  countLabel: "contributions",
-  radius: 2,
-  colors: ["#f2f2f7", "#d8ecff", "#acd7ff", "#73baff", "#2490ef", "#126fbd", "#084b83"],
-  data: {
-    start: new Date("2026-01-01T00:00:00Z"),
-    end: new Date("2026-12-31T00:00:00Z"),
-    dataPoints: Object.fromEntries(
-      Array.from({ length: 365 }, (_, index) => {
-        const date = new Date(Date.UTC(2026, 0, index + 1));
-        const weekday = date.getUTCDay();
-        const seasonal = Math.sin(index / 19) * 4 + 5;
-        const isWorkday = weekday > 0 && weekday < 6;
-        const workday = isWorkday ? 4 : 0;
-
-        return [date.toISOString().slice(0, 10), Math.max(0, Math.round(seasonal + workday + ((index * 7) % 5)))];
-      }),
-    ),
-  },
-});
+mountFluentChart("#heatmap", heatmapOptions);
 
 /*
  * Frameless charts with every omitted layer configured explicitly
@@ -618,22 +847,28 @@ const sparkSpecs = [
   ["#spark-line", { type: "line", name: "Revenue", color: "#ff5858", ariaLabel: "Revenue trend" }],
   [
     "#spark-area",
-    { type: "line", name: "Users", color: "#2490ef", lineOptions: { regionFill: true }, ariaLabel: "User trend" },
+    {
+      type: "line",
+      name: "Users",
+      color: "#2490ef",
+      area: true,
+      ariaLabel: "User trend",
+    },
   ],
   ["#spark-bar", { type: "bar", name: "Deploys", color: "#29cd42", ariaLabel: "Deployment trend" }],
 ];
 const sparks = sparkSpecs.map(([selector, spec]) => {
   const source = { name: spec.name, color: spec.color, values: sparkValues };
-  const chart = createChart(selector, {
+  const chart = mountFluentChart(selector, {
     type: spec.type,
     height: 90,
-    showAxes: false,
-    showGrid: false,
-    showLabels: false,
-    showLegend: false,
-    showDots: false,
-    showTooltip: false,
-    lineOptions: spec.lineOptions,
+    axes: false,
+    grid: false,
+    valueLabels: false,
+    legend: false,
+    dots: false,
+    tooltipEnabled: false,
+    area: spec.area,
     ariaLabel: spec.ariaLabel,
     data: { datasets: [source] },
   });

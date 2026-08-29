@@ -4,45 +4,6 @@ import { DatasetBuilder } from "./BuilderScopes.js";
 import { appendBuilderDataset, writeBuilderOption } from "./BuilderState.js";
 
 /**
- * Applies a shared slice limit while preserving fluent identity.
- *
- * @param {object} builder - Composition builder receiving the limit.
- * @param {number} value - Positive maximum visible item count.
- * @returns {object} The same builder for fluent chaining.
- */
-function limitSlices(builder, value) {
-  writeBuilderOption(builder, "maxSlices", value);
-
-  return builder;
-}
-
-/**
- * Applies shared polar padding while preserving fluent identity.
- *
- * @param {object} builder - Polar builder receiving the gap.
- * @param {number} degrees - Finite angular gap.
- * @returns {object} The same builder for fluent chaining.
- */
-function padSectors(builder, degrees) {
-  writeBuilderOption(builder, "padAngle", degrees);
-
-  return builder;
-}
-
-/**
- * Applies shared polar corner treatment while preserving fluent identity.
- *
- * @param {object} builder - Polar builder receiving the radius.
- * @param {number} value - Non-negative corner radius.
- * @returns {object} The same builder for fluent chaining.
- */
-function roundSectors(builder, value) {
-  writeBuilderOption(builder, "cornerRadius", value);
-
-  return builder;
-}
-
-/**
  * Adds one-or-more numeric dataset authoring to radial and composition charts.
  */
 class NumericSeriesBuilder extends SeriesChartBuilder {
@@ -55,9 +16,7 @@ class NumericSeriesBuilder extends SeriesChartBuilder {
    * @returns {this} Current builder.
    */
   dataset(first, second, third) {
-    appendBuilderDataset(this, configuredDataset([first, second, third], DatasetBuilder));
-
-    return this;
+    return appendBuilderDataset(this, configuredDataset([first, second, third], DatasetBuilder));
   }
 }
 
@@ -72,7 +31,7 @@ class SectorChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   maxSlices(value) {
-    return limitSlices(this, value);
+    return writeBuilderOption(this, "maxSlices", value);
   }
 
   /**
@@ -82,9 +41,7 @@ class SectorChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   startAngle(degrees) {
-    writeBuilderOption(this, "startAngle", degrees);
-
-    return this;
+    return writeBuilderOption(this, "startAngle", degrees);
   }
 
   /**
@@ -94,7 +51,7 @@ class SectorChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   padAngle(degrees) {
-    return padSectors(this, degrees);
+    return writeBuilderOption(this, "padAngle", degrees);
   }
 
   /**
@@ -104,19 +61,9 @@ class SectorChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   cornerRadius(value) {
-    return roundSectors(this, value);
+    return writeBuilderOption(this, "cornerRadius", value);
   }
 }
-
-/**
- * Authors a standard pie chart.
- */
-class PieChartBuilder extends SectorChartBuilder {}
-
-/**
- * Authors a ring-shaped donut chart.
- */
-class DonutChartBuilder extends SectorChartBuilder {}
 
 /**
  * Authors a compact percentage composition strip.
@@ -129,9 +76,7 @@ class PercentageChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   maxSlices(value) {
-    writeBuilderOption(this, "maxSlices", value);
-
-    return this;
+    return writeBuilderOption(this, "maxSlices", value);
   }
 
   /**
@@ -141,9 +86,7 @@ class PercentageChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   radius(value) {
-    writeBuilderOption(this, "radius", value);
-
-    return this;
+    return writeBuilderOption(this, "radius", value);
   }
 }
 
@@ -158,9 +101,7 @@ class PolarAreaChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   padAngle(degrees) {
-    writeBuilderOption(this, "padAngle", degrees);
-
-    return this;
+    return writeBuilderOption(this, "padAngle", degrees);
   }
 
   /**
@@ -170,9 +111,7 @@ class PolarAreaChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   cornerRadius(value) {
-    writeBuilderOption(this, "cornerRadius", value);
-
-    return this;
+    return writeBuilderOption(this, "cornerRadius", value);
   }
 }
 
@@ -187,16 +126,8 @@ class RadarChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   strokeWidth(value) {
-    writeBuilderOption(this, "strokeWidth", value);
-
-    return this;
+    return writeBuilderOption(this, "strokeWidth", value);
   }
 }
 
-export {
-  DonutChartBuilder,
-  PercentageChartBuilder,
-  PieChartBuilder,
-  PolarAreaChartBuilder,
-  RadarChartBuilder,
-};
+export { PercentageChartBuilder, PolarAreaChartBuilder, RadarChartBuilder, SectorChartBuilder };

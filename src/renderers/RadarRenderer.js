@@ -3,6 +3,8 @@ import { formatLabel, formatValue } from "../support/Formatting.js";
 import { polarPoint } from "../support/Math.js";
 import { datasetSummary, legendLayout } from "../support/Presentation.js";
 
+import LegendRenderer from "./LegendRenderer.js";
+
 const LEGEND_TOP = 20;
 const LEGEND_ROW_HEIGHT = 20;
 const RADAR_RADIUS_RATIO = 0.38;
@@ -223,3 +225,16 @@ export default class RadarRenderer {
     }
   }
 }
+
+/**
+ * Renders one radar chart and its optional series legend.
+ *
+ * @param {object} rendering - Frozen chart snapshot and owned SVG surface.
+ * @returns {void} Radar content is appended to the chart SVG.
+ */
+function renderRadarChart(rendering) {
+  new RadarRenderer(rendering).render();
+  new LegendRenderer(rendering).render();
+}
+
+export { renderRadarChart };

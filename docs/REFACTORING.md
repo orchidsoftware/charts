@@ -364,3 +364,16 @@ scope без `.end()`.
 Этот ADR является целевым. Старый runtime, declarations и tests мигрируют одним
 replacement и не образуют второй постоянный public API. Полный method inventory,
 validation, lifecycle и release gate задаёт только `FLUENT_API.md`.
+
+### ADR-023 — Один lifecycle для callback scopes
+
+Все callback-only dataset, tooltip, axis и annotation builders находятся в
+`core/BuilderScopes.js`. Они используют один module-private `WeakMap`, один
+`runScope` и обязательное завершение через `finally`. Retained scope продолжает
+выбрасывать `TypeError` с доменным именем независимо от успешного или аварийного
+завершения callback.
+
+Validation writers остаются раздельными для dataset/axis, annotations и
+temporal tooltips. Они сохраняют собственные validators и fallback-имена, но
+делят ownership и expiry lifecycle. Новый callback scope добавляется в этот
+модуль; второй state map или второй runner не допускается.

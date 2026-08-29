@@ -226,3 +226,15 @@ export default class TimesheetRenderer {
     return hit;
   }
 }
+
+/**
+ * Renders one timesheet through its family coordinator.
+ *
+ * @param {object} rendering - Frozen chart snapshot and owned SVG surface.
+ * @returns {void} Timesheet content is appended to the chart SVG.
+ */
+function renderTimesheetChart(rendering) {
+  new TimesheetRenderer(rendering).render();
+}
+
+export { renderTimesheetChart };

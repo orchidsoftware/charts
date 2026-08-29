@@ -1,5 +1,5 @@
 import { copyBuilderValue } from "./BuilderState.js";
-import { validateScopedValue } from "./BuilderValidation.js";
+import { validateBuilderOption, validateScopedValue } from "./BuilderValidation.js";
 
 const records = new WeakMap();
 
@@ -19,14 +19,15 @@ function initializeScope(scope, record, name) {
  * Reads an active scoped record and rejects retained callback builders.
  *
  * @param {object} scope - Scoped builder used by caller code.
+ * @param {string} fallbackName - Scope family used for an unknown receiver.
  * @returns {object} Mutable detached record for the active callback.
  * @throws {TypeError} When the callback has already returned.
  */
-function scopeRecord(scope) {
+function activeScopeRecord(scope, fallbackName) {
   const entry = records.get(scope);
 
   if (!entry?.active) {
-    throw new TypeError(`${entry?.name ?? "Builder"} scope has expired`);
+    throw new TypeError(`${entry?.name ?? fallbackName} scope has expired`);
   }
 
   return entry.record;
@@ -52,7 +53,33 @@ function expireScope(scope) {
  */
 function writeScopeValue(scope, name, value) {
   validateScopedValue(name, value);
-  scopeRecord(scope)[name] = copyBuilderValue(value);
+  activeScopeRecord(scope, "Builder")[name] = copyBuilderValue(value);
+}
+
+/**
+ * Writes one validated annotation override into its active record.
+ *
+ * @param {object} scope - Marker or region callback builder.
+ * @param {string} name - Annotation property name.
+ * @param {unknown} value - Caller-controlled property value.
+ * @returns {void} The copied override is retained by the annotation.
+ */
+function writeAnnotationValue(scope, name, value) {
+  validateScopedValue(name, value);
+  activeScopeRecord(scope, "Annotation")[name] = copyBuilderValue(value);
+}
+
+/**
+ * Writes one validated temporal tooltip formatter into its active record.
+ *
+ * @param {object} scope - Heatmap or timesheet tooltip builder.
+ * @param {string} name - Formatter option name.
+ * @param {unknown} value - Caller-controlled formatter.
+ * @returns {void} The formatter is retained by reference.
+ */
+function writeTemporalValue(scope, name, value) {
+  validateBuilderOption(name, value);
+  activeScopeRecord(scope, "Tooltip")[name] = copyBuilderValue(value);
 }
 
 /**
@@ -288,6 +315,236 @@ class AxisBuilder {
 }
 
 /**
+ * Common annotation presentation shared by markers and regions.
+ */
+class AnnotationBuilder {
+  /**
+   * Creates one callback-only annotation builder.
+   *
+   * @param {object} record - Detached annotation input.
+   * @param {string} name - Public scope name used by expiry errors.
+   */
+  constructor(record, name) {
+    initializeScope(this, record, name);
+  }
+
+  /**
+   * Chooses the annotation's primary color.
+   *
+   * @param {string} value - Supported CSS color.
+   * @returns {this} Active annotation scope.
+   */
+  color(value) {
+    writeAnnotationValue(this, "color", value);
+
+    return this;
+  }
+
+  /**
+   * Chooses annotation opacity.
+   *
+   * @param {number} value - Opacity from zero through one.
+   * @returns {this} Active annotation scope.
+   */
+  opacity(value) {
+    writeAnnotationValue(this, "opacity", value);
+
+    return this;
+  }
+
+  /**
+   * Places the annotation label along its visual extent.
+   *
+   * @param {"start" | "center" | "end"} value - Logical label position.
+   * @returns {this} Active annotation scope.
+   */
+  labelPosition(value) {
+    writeAnnotationValue(this, "labelPosition", value);
+
+    return this;
+  }
+
+  /**
+   * Chooses annotation label color independently from its geometry.
+   *
+   * @param {string} value - Supported CSS color.
+   * @returns {this} Active annotation scope.
+   */
+  labelColor(value) {
+    writeAnnotationValue(this, "labelColor", value);
+
+    return this;
+  }
+
+  /**
+   * Chooses whether annotation values expand automatic domains.
+   *
+   * @param {boolean} isIncluded - Whether the annotation participates in domain calculation.
+   * @returns {this} Active annotation scope.
+   */
+  includeInDomain(isIncluded) {
+    writeAnnotationValue(this, "includeInDomain", isIncluded);
+
+    return this;
+  }
+
+  /**
+   * Formats visible and accessible annotation labels.
+   *
+   * @param {(...values: unknown[]) => string} formatter - Synchronous label formatter.
+   * @returns {this} Active annotation scope.
+   */
+  formatLabel(formatter) {
+    writeAnnotationValue(this, "formatLabel", formatter);
+
+    return this;
+  }
+}
+
+/**
+ * Configures line-specific marker presentation.
+ */
+class MarkerBuilder extends AnnotationBuilder {
+  /**
+   * Creates an active marker callback scope.
+   *
+   * @param {object} record - Detached marker input.
+   */
+  constructor(record) {
+    super(record, "Marker");
+  }
+
+  /**
+   * Chooses marker stroke width.
+   *
+   * @param {number} value - Width in non-scaling CSS pixels.
+   * @returns {this} Active marker scope.
+   */
+  width(value) {
+    writeAnnotationValue(this, "width", value);
+
+    return this;
+  }
+
+  /**
+   * Chooses a named marker line pattern.
+   *
+   * @param {"solid" | "dashed" | "dotted"} value - Built-in line pattern.
+   * @returns {this} Active marker scope.
+   */
+  lineStyle(value) {
+    writeAnnotationValue(this, "lineStyle", value);
+
+    return this;
+  }
+
+  /**
+   * Chooses an explicit marker dash pattern.
+   *
+   * @param {readonly number[]} pattern - Alternating dash and gap lengths.
+   * @returns {this} Active marker scope.
+   */
+  dash(pattern) {
+    writeAnnotationValue(this, "dash", pattern);
+
+    return this;
+  }
+}
+
+/**
+ * Configures range-region presentation.
+ */
+class RegionBuilder extends AnnotationBuilder {
+  /**
+   * Creates an active region callback scope.
+   *
+   * @param {object} record - Detached region input.
+   */
+  constructor(record) {
+    super(record, "Region");
+  }
+}
+
+/**
+ * Configures date formatting shared by temporal tooltips.
+ */
+class DateTooltipBuilder {
+  /**
+   * Creates an active date-aware tooltip scope.
+   *
+   * @param {object} record - Detached tooltip formatter record.
+   * @param {string} name - Public scope name used by expiry errors.
+   */
+  constructor(record, name) {
+    initializeScope(this, record, name);
+  }
+
+  /**
+   * Formats calendar dates shown by the tooltip.
+   *
+   * @param {(date: Date) => string} formatter - Synchronous date formatter.
+   * @returns {this} Active temporal tooltip scope.
+   */
+  formatDate(formatter) {
+    writeTemporalValue(this, "formatDate", formatter);
+
+    return this;
+  }
+}
+
+/**
+ * Configures heatmap date and count formatting.
+ */
+class HeatmapTooltipBuilder extends DateTooltipBuilder {
+  /**
+   * Creates an active heatmap tooltip scope.
+   *
+   * @param {object} record - Detached tooltip formatter record.
+   */
+  constructor(record) {
+    super(record, "Heatmap tooltip");
+  }
+
+  /**
+   * Formats heatmap counts shown by the tooltip.
+   *
+   * @param {(value: number, context: object) => string} formatter - Synchronous value formatter.
+   * @returns {this} Active heatmap tooltip scope.
+   */
+  formatValue(formatter) {
+    writeTemporalValue(this, "formatValue", formatter);
+
+    return this;
+  }
+}
+
+/**
+ * Configures timesheet dates and durations shown by the tooltip.
+ */
+class TimesheetTooltipBuilder extends DateTooltipBuilder {
+  /**
+   * Creates an active timesheet tooltip scope.
+   *
+   * @param {object} record - Detached tooltip formatter record.
+   */
+  constructor(record) {
+    super(record, "Timesheet tooltip");
+  }
+
+  /**
+   * Formats task durations shown by the tooltip.
+   *
+   * @param {(milliseconds: number) => string} formatter - Synchronous duration formatter.
+   * @returns {this} Active timesheet tooltip scope.
+   */
+  formatDuration(formatter) {
+    writeTemporalValue(this, "formatDuration", formatter);
+
+    return this;
+  }
+}
+
+/**
  * Invokes a scoped configurator and expires its builder on every exit path.
  *
  * @param {object} scope - Callback-only builder.
@@ -302,4 +559,15 @@ function runScope(scope, configure) {
   }
 }
 
-export { AxisBuilder, BarDatasetBuilder, DatasetBuilder, LineDatasetBuilder, SeriesTooltipBuilder, runScope };
+export {
+  AxisBuilder,
+  BarDatasetBuilder,
+  DatasetBuilder,
+  HeatmapTooltipBuilder,
+  LineDatasetBuilder,
+  MarkerBuilder,
+  RegionBuilder,
+  SeriesTooltipBuilder,
+  TimesheetTooltipBuilder,
+  runScope,
+};

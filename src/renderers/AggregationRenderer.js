@@ -16,27 +16,29 @@ const DONUT_LABEL_OFFSET = 5;
 const VALUE_LABEL_TARGET = "value-label";
 
 /**
- * Names the resolved geometry of one horizontal percentage strip.
+ * Resolves bounds and clipping for one horizontal percentage strip.
+ *
+ * @param {number} width - Available chart width.
+ * @param {object} layout - Vertical aggregation layout.
+ * @param {object} clipping - Radius and unique clip identifier.
+ * @returns {object} Complete percentage strip geometry.
  */
-class PercentageStrip {
-  /**
-   * Resolves strip bounds and clipping policy.
-   *
-   * @param {number} width - Available chart width.
-   * @param {object} layout - Vertical aggregation layout.
-   * @param {object} clipping - Radius and unique clip identifier.
-   */
-  constructor(width, layout, clipping) {
-    this.x = PERCENTAGE_INSET;
-    this.width = width - PERCENTAGE_INSET * 2;
-    this.height = Math.min(
-      layout.contentHeight,
-      Math.max(MINIMUM_SEGMENT_HEIGHT, layout.contentHeight * SEGMENT_HEIGHT_RATIO),
-    );
-    this.y = layout.contentTop + (layout.contentHeight - this.height) / 2;
-    this.radius = Math.min(clipping.radius, this.height / 2, this.width / 2);
-    this.clipId = clipping.id;
-  }
+function percentageStrip(width, layout, clipping) {
+  const stripWidth = width - PERCENTAGE_INSET * 2;
+
+  const height = Math.min(
+    layout.contentHeight,
+    Math.max(MINIMUM_SEGMENT_HEIGHT, layout.contentHeight * SEGMENT_HEIGHT_RATIO),
+  );
+
+  return {
+    x: PERCENTAGE_INSET,
+    width: stripWidth,
+    height,
+    y: layout.contentTop + (layout.contentHeight - height) / 2,
+    radius: Math.min(clipping.radius, height / 2, stripWidth / 2),
+    clipId: clipping.id,
+  };
 }
 
 /**
@@ -108,7 +110,7 @@ export default class AggregationRenderer {
    * @returns {void} Percentage segments are appended to the chart SVG.
    */
   #renderPercentage(composition, { colors, layout, width }) {
-    const strip = new PercentageStrip(width, layout, {
+    const strip = percentageStrip(width, layout, {
       radius: this.#chart.options.radius ?? DEFAULT_PERCENTAGE_RADIUS,
       id: `charts2-percentage-clip-${this.#chart.id}`,
     });
@@ -125,7 +127,7 @@ export default class AggregationRenderer {
    *
    * @param {Composition} composition - Normalized parts and their positive total.
    * @param {string[]} colors - Cyclic segment palette.
-   * @param {PercentageStrip} strip - Resolved strip geometry.
+   * @param {object} strip - Resolved strip geometry.
    * @returns {void} Percentage marks are appended to the chart SVG.
    */
   #renderPercentageSegments(composition, colors, strip) {
@@ -163,7 +165,7 @@ export default class AggregationRenderer {
   /**
    * Appends the rounded clipping boundary shared by all percentage segments.
    *
-   * @param {PercentageStrip} strip - Resolved strip geometry and clip identifier.
+   * @param {object} strip - Resolved strip geometry and clip identifier.
    * @returns {void} A clip definition is appended to the surface.
    */
   #appendPercentageClip(strip) {
@@ -288,3 +290,15 @@ export default class AggregationRenderer {
     );
   }
 }
+
+/**
+ * Renders one aggregation chart through its family coordinator.
+ *
+ * @param {object} rendering - Frozen chart snapshot and owned SVG surface.
+ * @returns {void} Aggregation content is appended to the chart SVG.
+ */
+function renderAggregationChart(rendering) {
+  new AggregationRenderer(rendering).render();
+}
+
+export { renderAggregationChart };

@@ -10,7 +10,6 @@ import {
   writeBuilderOption,
   writeExplicitOption,
 } from "./BuilderState.js";
-import Chart from "./Chart.js";
 
 /**
  * Owns common chart authoring state without resolving DOM until `render()`.
@@ -21,9 +20,10 @@ class CommonChartBuilder {
    *
    * @param {string | Element} parent - Deferred chart host reference.
    * @param {string} type - Internal renderer type.
+   * @param {(parent: string | Element, options: object) => object} mount - Mounted chart factory.
    */
-  constructor(parent, type) {
-    initializeBuilder(this, parent, type);
+  constructor(parent, type, mount) {
+    initializeBuilder(this, { parent, type, mount });
   }
 
   /**
@@ -33,9 +33,7 @@ class CommonChartBuilder {
    * @returns {this} Current builder.
    */
   title(value) {
-    writeBuilderOption(this, "title", value);
-
-    return this;
+    return writeBuilderOption(this, "title", value);
   }
 
   /**
@@ -45,9 +43,7 @@ class CommonChartBuilder {
    * @returns {this} Current builder.
    */
   description(value) {
-    writeBuilderOption(this, "description", value);
-
-    return this;
+    return writeBuilderOption(this, "description", value);
   }
 
   /**
@@ -57,9 +53,7 @@ class CommonChartBuilder {
    * @returns {this} Current builder.
    */
   ariaLabel(value) {
-    writeBuilderOption(this, "ariaLabel", value);
-
-    return this;
+    return writeBuilderOption(this, "ariaLabel", value);
   }
 
   /**
@@ -69,9 +63,7 @@ class CommonChartBuilder {
    * @returns {this} Current builder.
    */
   width(value) {
-    writeBuilderOption(this, "width", value);
-
-    return this;
+    return writeBuilderOption(this, "width", value);
   }
 
   /**
@@ -81,9 +73,7 @@ class CommonChartBuilder {
    * @returns {this} Current builder.
    */
   height(value) {
-    writeBuilderOption(this, "height", value);
-
-    return this;
+    return writeBuilderOption(this, "height", value);
   }
 
   /**
@@ -93,9 +83,7 @@ class CommonChartBuilder {
    * @returns {this} Current builder.
    */
   colors(values) {
-    writeBuilderOption(this, "colors", values);
-
-    return this;
+    return writeBuilderOption(this, "colors", values);
   }
 
   /**
@@ -133,19 +121,17 @@ class CommonChartBuilder {
    * @returns {this} Current builder.
    */
   onSelect(callback) {
-    writeBuilderOption(this, "onSelect", callback);
-
-    return this;
+    return writeBuilderOption(this, "onSelect", callback);
   }
 
   /**
    * Validates, mounts, and consumes this builder after a successful commit.
    *
-   * @returns {Chart} Mounted chart lifecycle façade.
+   * @returns {import("./Chart.js").default} Mounted chart lifecycle façade.
    */
   render() {
-    const { parent, options } = compileBuilder(this);
-    const chart = new Chart(parent, options);
+    const { parent, options, mount } = compileBuilder(this);
+    const chart = mount(parent, options);
     consumeBuilder(this);
 
     return chart;
@@ -163,9 +149,7 @@ class SeriesChartBuilder extends CommonChartBuilder {
    * @returns {this} Current builder.
    */
   legend(visible) {
-    writeExplicitOption(this, "legend", visible);
-
-    return this;
+    return writeExplicitOption(this, "legend", visible);
   }
 
   /**
@@ -175,9 +159,7 @@ class SeriesChartBuilder extends CommonChartBuilder {
    * @returns {this} Current builder.
    */
   labels(values) {
-    writeBuilderLabels(this, values);
-
-    return this;
+    return writeBuilderLabels(this, values);
   }
 
   /**
@@ -187,9 +169,7 @@ class SeriesChartBuilder extends CommonChartBuilder {
    * @returns {this} Current builder.
    */
   formatValue(formatter) {
-    writeBuilderOption(this, "formatValue", formatter);
-
-    return this;
+    return writeBuilderOption(this, "formatValue", formatter);
   }
 
   /**
@@ -199,9 +179,7 @@ class SeriesChartBuilder extends CommonChartBuilder {
    * @returns {this} Current builder.
    */
   formatLabel(formatter) {
-    writeBuilderOption(this, "formatLabel", formatter);
-
-    return this;
+    return writeBuilderOption(this, "formatLabel", formatter);
   }
 }
 
@@ -216,9 +194,7 @@ class CartesianChartBuilder extends SeriesChartBuilder {
    * @returns {this} Current builder.
    */
   axes(visible) {
-    writeExplicitOption(this, "axes", visible);
-
-    return this;
+    return writeExplicitOption(this, "axes", visible);
   }
 
   /**
@@ -228,9 +204,7 @@ class CartesianChartBuilder extends SeriesChartBuilder {
    * @returns {this} Current builder.
    */
   grid(visible) {
-    writeExplicitOption(this, "grid", visible);
-
-    return this;
+    return writeExplicitOption(this, "grid", visible);
   }
 
   /**
@@ -240,9 +214,7 @@ class CartesianChartBuilder extends SeriesChartBuilder {
    * @returns {this} Current builder.
    */
   valueLabels(visible) {
-    writeExplicitOption(this, "valueLabels", visible);
-
-    return this;
+    return writeExplicitOption(this, "valueLabels", visible);
   }
 
   /**
@@ -252,9 +224,7 @@ class CartesianChartBuilder extends SeriesChartBuilder {
    * @returns {this} Current builder.
    */
   frameless(isEnabled = true) {
-    writeBuilderOption(this, "frameless", isEnabled);
-
-    return this;
+    return writeBuilderOption(this, "frameless", isEnabled);
   }
 
   /**
@@ -287,9 +257,7 @@ class CartesianChartBuilder extends SeriesChartBuilder {
    * @returns {this} Current builder.
    */
   marker(first, second, third) {
-    appendBuilderAnnotation(this, "markers", markerInput(first, second, third));
-
-    return this;
+    return appendBuilderAnnotation(this, "markers", markerInput(first, second, third));
   }
 
   /**
@@ -301,9 +269,7 @@ class CartesianChartBuilder extends SeriesChartBuilder {
    * @returns {this} Current builder.
    */
   region(first, second, third) {
-    appendBuilderAnnotation(this, "regions", regionInput(first, second, third));
-
-    return this;
+    return appendBuilderAnnotation(this, "regions", regionInput(first, second, third));
   }
 }
 
@@ -320,9 +286,7 @@ class LineChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   dataset(first, second, third) {
-    appendBuilderDataset(this, lineDataset(first, second, third));
-
-    return this;
+    return appendBuilderDataset(this, lineDataset(first, second, third));
   }
 
   /**
@@ -332,9 +296,7 @@ class LineChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   smooth(isEnabled = true) {
-    writeBuilderOption(this, "smooth", isEnabled);
-
-    return this;
+    return writeBuilderOption(this, "smooth", isEnabled);
   }
 
   /**
@@ -344,9 +306,7 @@ class LineChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   dots(visible) {
-    writeExplicitOption(this, "dots", visible);
-
-    return this;
+    return writeExplicitOption(this, "dots", visible);
   }
 
   /**
@@ -356,9 +316,7 @@ class LineChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   dotSize(value) {
-    writeBuilderOption(this, "dotSize", value);
-
-    return this;
+    return writeBuilderOption(this, "dotSize", value);
   }
 
   /**
@@ -368,9 +326,7 @@ class LineChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   line(visible) {
-    writeBuilderOption(this, "line", visible);
-
-    return this;
+    return writeBuilderOption(this, "line", visible);
   }
 
   /**
@@ -380,9 +336,7 @@ class LineChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   area(isEnabled = true) {
-    writeBuilderOption(this, "area", isEnabled);
-
-    return this;
+    return writeBuilderOption(this, "area", isEnabled);
   }
 
   /**
@@ -392,9 +346,7 @@ class LineChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   gradient(isEnabled = true) {
-    writeBuilderOption(this, "gradient", isEnabled);
-
-    return this;
+    return writeBuilderOption(this, "gradient", isEnabled);
   }
 
   /**
@@ -404,9 +356,7 @@ class LineChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   strokeWidth(value) {
-    writeBuilderOption(this, "strokeWidth", value);
-
-    return this;
+    return writeBuilderOption(this, "strokeWidth", value);
   }
 }
 

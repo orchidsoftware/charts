@@ -9,6 +9,8 @@ import { formatLabel } from "../support/Formatting.js";
 import { paddedSector, polarPoint, roundedSectorPath } from "../support/Math.js";
 import { tooltipText } from "../support/Presentation.js";
 
+import LegendRenderer from "./LegendRenderer.js";
+
 const MINIMUM_POLAR_RADIUS = 8;
 const POLAR_RADIUS_RATIO = 0.42;
 
@@ -53,36 +55,33 @@ function polarLabelWidth({ labelX, anchor, width }) {
 }
 
 /**
- * Names the shared scale and viewport geometry of a polar-area render.
+ * Resolves the shared scale and viewport geometry of a polar-area render.
+ *
+ * @param {object} chart - Frozen polar-area chart data and options.
+ * @returns {object} Complete radial geometry.
  */
-class PolarAreaLayout {
-  /**
-   * Resolves the radial frame from one frozen chart snapshot.
-   *
-   * @param {object} chart - Frozen polar-area chart data and options.
-   */
-  constructor(chart) {
-    this.width = chart.options.width;
-    this.height = chart.options.height;
-    this.values = chart.datasets[0].points;
-    this.maximum = Math.max(...this.values.map((point) => point.y), 1);
-    this.center = { x: this.width / 2, y: this.height / 2 };
+function polarAreaLayout(chart) {
+  const width = chart.options.width;
+  const height = chart.options.height;
+  const values = chart.datasets[0].points;
 
-    const radiusLimits = {
-      horizontal: this.width / 2 - POLAR_LABEL_EDGE_INSET - POLAR_LABEL_GAP - POLAR_LABEL_MIN_WIDTH,
-      vertical: this.height / 2 - POLAR_LABEL_EDGE_INSET - POLAR_LABEL_GAP,
-    };
+  const radiusLimits = {
+    horizontal: width / 2 - POLAR_LABEL_EDGE_INSET - POLAR_LABEL_GAP - POLAR_LABEL_MIN_WIDTH,
+    vertical: height / 2 - POLAR_LABEL_EDGE_INSET - POLAR_LABEL_GAP,
+  };
 
-    this.maximumRadius = Math.max(
+  return Object.freeze({
+    width,
+    height,
+    values,
+    maximum: Math.max(...values.map((point) => point.y), 1),
+    center: { x: width / 2, y: height / 2 },
+    maximumRadius: Math.max(
       MINIMUM_POLAR_RADIUS,
-      Math.min(
-        Math.min(this.width, this.height) * POLAR_RADIUS_RATIO,
-        radiusLimits.horizontal,
-        radiusLimits.vertical,
-      ),
-    );
-    this.slice = (Math.PI * 2) / this.values.length;
-  }
+      Math.min(Math.min(width, height) * POLAR_RADIUS_RATIO, radiusLimits.horizontal, radiusLimits.vertical),
+    ),
+    slice: (Math.PI * 2) / values.length,
+  });
 }
 
 /**
@@ -110,7 +109,7 @@ export default class PolarAreaRenderer {
    * @returns {void} Polar-area content is appended to the chart SVG.
    */
   render() {
-    const layout = new PolarAreaLayout(this.#chart);
+    const layout = polarAreaLayout(this.#chart);
 
     for (const [index, point] of layout.values.entries()) {
       this.#renderSector(point, index, layout);
@@ -122,7 +121,7 @@ export default class PolarAreaRenderer {
    *
    * @param {{y: number}} point - Normalized polar value.
    * @param {number} index - Zero-based sector index.
-   * @param {PolarAreaLayout} layout - Shared radial frame and scale.
+   * @param {object} layout - Shared radial frame and scale.
    * @returns {void} One interactive sector and optional label are appended.
    */
   #renderSector(point, index, layout) {
@@ -158,7 +157,7 @@ export default class PolarAreaRenderer {
   /**
    * Creates the primitive representing one polar-area value.
    *
-   * @param {PolarAreaLayout} layout - Shared radial frame and scale.
+   * @param {object} layout - Shared radial frame and scale.
    * @param {object} shape - Sector radius, padded angles, and corner radius.
    * @returns {SVGElement} Circle for a sole value, otherwise a sector path.
    */
@@ -182,7 +181,7 @@ export default class PolarAreaRenderer {
    *
    * @param {number} index - Zero-based sector index.
    * @param {object} angles - Sector start and sweep angles.
-   * @param {PolarAreaLayout} layout - Shared radial frame and viewport.
+   * @param {object} layout - Shared radial frame and viewport.
    * @returns {void} A label is appended only when the category exists.
    */
   #renderLabel(index, angles, layout) {
@@ -215,3 +214,16 @@ export default class PolarAreaRenderer {
     );
   }
 }
+
+/**
+ * Renders one polar-area chart and its optional series legend.
+ *
+ * @param {object} rendering - Frozen chart snapshot and owned SVG surface.
+ * @returns {void} Polar-area content is appended to the chart SVG.
+ */
+function renderPolarAreaChart(rendering) {
+  new PolarAreaRenderer(rendering).render();
+  new LegendRenderer(rendering).render();
+}
+
+export { renderPolarAreaChart };

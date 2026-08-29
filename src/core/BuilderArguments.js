@@ -1,5 +1,4 @@
-import { MarkerBuilder, RegionBuilder, runAnnotationScope } from "./BuilderAnnotations.js";
-import { LineDatasetBuilder, runScope } from "./BuilderScopes.js";
+import { LineDatasetBuilder, MarkerBuilder, RegionBuilder, runScope } from "./BuilderScopes.js";
 import { copyBuilderValue } from "./BuilderState.js";
 
 /**
@@ -117,7 +116,7 @@ function markerInput(first, second, third) {
   }
 
   if (typeof callbackCandidate === "function") {
-    runAnnotationScope(new MarkerBuilder(marker), callbackCandidate);
+    runScope(new MarkerBuilder(marker), callbackCandidate);
   }
 
   return marker;
@@ -141,7 +140,7 @@ function regionInput(first, second, third) {
   }
 
   if (typeof callbackCandidate === "function") {
-    runAnnotationScope(new RegionBuilder(region), callbackCandidate);
+    runScope(new RegionBuilder(region), callbackCandidate);
   }
 
   return region;

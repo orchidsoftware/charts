@@ -6,7 +6,7 @@ for stateless normalization, layout, formatting, and geometry. Directories are
 boundaries, not buckets.
 
 The package boundary is equally explicit: `src/index.js` and `src/index.d.ts`
-define the public contract, Vite produces ESM/CommonJS/CSS artifacts, and the
+define the public contract, Vite produces a module-preserving ESM build, and the
 `files` allowlist in `package.json` decides what leaves the repository. Tests,
 demo sources, coverage, credentials, and local tooling are never part of the
 published archive.
@@ -27,15 +27,15 @@ src
 ├─ core
 │  ├─ ChartDefinition.js            # Immutable make(parent) entry
 │  ├─ Builder.js                    # Detached fluent authoring and scene compilation
+│  ├─ BuilderScopes.js              # One callback-scope lifecycle and domain builders
 │  ├─ Chart.js                      # Mounted façade; private DOM lifecycle
 │  ├─ Options.js                    # Validation and renderer-ready defaults
-│  ├─ ChartData.js                  # Atomic normalized model replacement
+│  ├─ ChartData.js                  # Family-normalized model snapshots
 │  ├─ ChartSelection.js             # Public selection payload policy
 │  ├─ ChartTooltip.js               # Safe content and viewport placement
 │  ├─ InteractionController.js      # Pointer, focus, keyboard, selection state
-│  └─ NextChartId.js                # Process-local instance identity
 ├─ renderers
-│  ├─ Render.js                     # Frozen registry and fail-closed dispatch
+│  ├─ Render.js                     # Shared surface boundary
 │  ├─ SvgSurface.js                 # Narrow owned SVG mutation boundary
 │  ├─ CartesianRenderer.js          # Cartesian rendering coordinator
 │  ├─ CartesianLayout.js            # Scales, bars, points, and hit bands
@@ -192,25 +192,26 @@ there is no shared stateful algorithm worth forcing into inheritance. They share
 one frozen plain-object chart state plus a narrow `SvgSurface`; a getter-only
 DTO class added no behavior.
 
-`CartesianRenderer` remains the single strategy selected by the registry. Its
-axes, series, and inspector collaborators are cohesive implementation classes, not new chart
-types or public extension points. This keeps the registry small while preventing
-one Cartesian god class from owning layout, presentation, data marks, and interaction targets.
+`CartesianRenderer` remains the stateful Cartesian coordinator. Its definition
+supplies family-specific layout and series functions; no global registry or
+runtime lookup exists. Axes and inspector collaborators remain cohesive
+implementation classes rather than public extension points.
 `CartesianLayout`, `TimesheetLayout`, and `Composition` are behavioral objects:
 they answer domain questions and keep calculated geometry out of DOM code.
 
 ## Dependency direction
 
 ```text
-index → ChartDefinition → Builder → detached scene
-                                  ↘ Chart → ChartData → support
-                                           ↘ Render → frozen chart state + SvgSurface → concrete renderers
+index → ChartDefinition → Builder → detached scene → bound mount
+          ↘ implementation → Chart → ChartData → support
+                                  ↘ Render → frozen chart state + SvgSurface → bound renderer
                                            ↘ InteractionController
 
 concrete renderers → support
 ```
 
-- `ChartDefinition` owns only immutable type identity and `make(parent)`.
+- `ChartDefinition` is the composition root. It binds immutable type identity,
+  one model factory, one renderer function, and `make(parent)`.
   Builders own authoring state and compile it without reading or mutating DOM.
 - Pure support calculations (`Normalize`, `Math`, and `Presentation`) never
   import `core`, a renderer, or browser globals.
@@ -220,8 +221,8 @@ concrete renderers → support
 - `Chart` is the only lifecycle root for hosts, global listeners, resize, and
   destruction. Its owned `ChartTooltip` collaborator owns safe tooltip content
   and viewport placement.
-- `renderChart` chooses a concrete class from a closed registry. Unknown types
-  fail before renderer state is read; no one-method coordinator object exists.
+- `renderChart` validates the bound renderer function before reading state, then
+  supplies frozen chart state and one `SvgSurface`. There is no registry.
 - Concrete renderers receive frozen chart state and one `SvgSurface`. The chart
   state contains no DOM node; the surface exposes only deliberate append, mark,
   text, root-attribute, and root-style operations.
@@ -279,11 +280,11 @@ adapter.
 1. A host owns at most one chart SVG and one tooltip.
 2. A chart owns one resize path and one document-level dismissal listener.
 3. All input is normalized by `ChartData` before a renderer sees it.
-4. Renderer dispatch fails closed for an unknown type.
+4. A missing renderer implementation fails before chart state is read.
 5. Every interactive mark uses `InteractionController`.
 6. `toSvg()` is pure; the side-effecting download is named `download()`.
-7. New chart types add one concrete renderer class and one frozen definition;
-   they do not add another lifecycle or public constructor.
+7. New chart types bind one existing family model/render path in a frozen
+   definition; they do not add another lifecycle or public constructor.
 8. No compatibility adapter may be added without an explicit removal release.
 9. Stateful classes use native `#private` ownership and explanatory JSDoc.
 10. Architecture fitness tests enforce dependency direction, class form, private

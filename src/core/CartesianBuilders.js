@@ -17,9 +17,7 @@ class BarChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   dataset(first, second, third) {
-    appendBuilderDataset(this, configuredDataset([first, second, third], BarDatasetBuilder));
-
-    return this;
+    return appendBuilderDataset(this, configuredDataset([first, second, third], BarDatasetBuilder));
   }
 
   /**
@@ -30,9 +28,8 @@ class BarChartBuilder extends CartesianChartBuilder {
    */
   horizontal(isEnabled = true) {
     validateBoolean(isEnabled, "horizontal");
-    writeBuilderOption(this, "orientation", isEnabled ? "horizontal" : "vertical");
 
-    return this;
+    return writeBuilderOption(this, "orientation", isEnabled ? "horizontal" : "vertical");
   }
 
   /**
@@ -42,9 +39,7 @@ class BarChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   stacked(isEnabled = true) {
-    writeBuilderOption(this, "stacked", isEnabled);
-
-    return this;
+    return writeBuilderOption(this, "stacked", isEnabled);
   }
 
   /**
@@ -54,9 +49,7 @@ class BarChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   radius(value) {
-    writeBuilderOption(this, "radius", value);
-
-    return this;
+    return writeBuilderOption(this, "radius", value);
   }
 }
 
@@ -73,9 +66,7 @@ class ScatterChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   dataset(first, second, third) {
-    appendBuilderDataset(this, configuredDataset([first, second, third], DatasetBuilder));
-
-    return this;
+    return appendBuilderDataset(this, configuredDataset([first, second, third], DatasetBuilder));
   }
 
   /**
@@ -85,16 +76,9 @@ class ScatterChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   dots(visible) {
-    writeExplicitOption(this, "dots", visible);
-
-    return this;
+    return writeExplicitOption(this, "dots", visible);
   }
 }
-
-/**
- * Authors radius-encoded bubble datasets.
- */
-class BubbleChartBuilder extends ScatterChartBuilder {}
 
 /**
  * Authors explicitly typed datasets for the mixed Cartesian grammar.
@@ -110,9 +94,8 @@ class MixedChartBuilder extends CartesianChartBuilder {
    */
   line(name, values, colorOrConfigure) {
     const dataset = configuredDataset([name, values, colorOrConfigure], LineDatasetBuilder);
-    appendBuilderDataset(this, { ...dataset, chartType: "line" });
 
-    return this;
+    return appendBuilderDataset(this, { ...dataset, chartType: "line" });
   }
 
   /**
@@ -125,9 +108,8 @@ class MixedChartBuilder extends CartesianChartBuilder {
    */
   bar(name, values, colorOrConfigure) {
     const dataset = configuredDataset([name, values, colorOrConfigure], BarDatasetBuilder);
-    appendBuilderDataset(this, { ...dataset, chartType: "bar" });
 
-    return this;
+    return appendBuilderDataset(this, { ...dataset, chartType: "bar" });
   }
 
   /**
@@ -140,9 +122,8 @@ class MixedChartBuilder extends CartesianChartBuilder {
    */
   scatter(name, values, colorOrConfigure) {
     const dataset = configuredDataset([name, values, colorOrConfigure], DatasetBuilder);
-    appendBuilderDataset(this, { ...dataset, chartType: "scatter" });
 
-    return this;
+    return appendBuilderDataset(this, { ...dataset, chartType: "scatter" });
   }
 
   /**
@@ -160,9 +141,7 @@ class MixedChartBuilder extends CartesianChartBuilder {
       throw new TypeError("Mixed dataset chartType must be line, bar, or scatter");
     }
 
-    appendBuilderDataset(this, configuredDataset([input, configure], Scope));
-
-    return this;
+    return appendBuilderDataset(this, configuredDataset([input, configure], Scope));
   }
 
   /**
@@ -172,10 +151,8 @@ class MixedChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   gradient(isEnabled = true) {
-    writeBuilderOption(this, "gradient", isEnabled);
-
-    return this;
+    return writeBuilderOption(this, "gradient", isEnabled);
   }
 }
 
-export { BarChartBuilder, BubbleChartBuilder, MixedChartBuilder, ScatterChartBuilder };
+export { BarChartBuilder, MixedChartBuilder, ScatterChartBuilder };

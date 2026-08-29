@@ -34,32 +34,30 @@ const CARTESIAN_SERIES_TYPES = new Set([
 ]);
 
 /**
- * Names one normalized series while retaining supported local presentation.
+ * Creates one normalized series while retaining local presentation.
+ *
+ * @param {object} dataset - Raw dataset input.
+ * @param {number} datasetIndex - Stable palette position.
+ * @returns {object} Immutable-shape renderer record.
  */
-class NormalizedDataset {
-  /**
-   * Creates an immutable-shape renderer record from one validated input.
-   *
-   * @param {object} dataset - Raw dataset input.
-   * @param {number} datasetIndex - Stable palette position.
-   */
-  constructor(dataset, datasetIndex) {
-    this.name = dataset.name ?? `Series ${datasetIndex + 1}`;
-    this.identityName = dataset.name;
-    this.color = dataset.color;
-    this.chartType = dataset.chartType ?? dataset.type;
-    this.opacity = dataset.opacity;
-    this.formatValue = dataset.formatValue;
-    this.gradient = dataset.gradient;
-    this.smooth = dataset.smooth;
-    this.dots = dataset.dots;
-    this.dotSize = dataset.dotSize;
-    this.line = dataset.line;
-    this.area = dataset.area;
-    this.strokeWidth = dataset.strokeWidth;
-    this.radius = dataset.radius;
-    this.points = dataset.values.map((point, pointIndex) => normalizePoint(point, pointIndex));
-  }
+function normalizedDataset(dataset, datasetIndex) {
+  return Object.freeze({
+    name: dataset.name ?? `Series ${datasetIndex + 1}`,
+    identityName: dataset.name,
+    color: dataset.color,
+    chartType: dataset.chartType ?? dataset.type,
+    opacity: dataset.opacity,
+    formatValue: dataset.formatValue,
+    gradient: dataset.gradient,
+    smooth: dataset.smooth,
+    dots: dataset.dots,
+    dotSize: dataset.dotSize,
+    line: dataset.line,
+    area: dataset.area,
+    strokeWidth: dataset.strokeWidth,
+    radius: dataset.radius,
+    points: dataset.values.map((point, pointIndex) => normalizePoint(point, pointIndex)),
+  });
 }
 
 /**
@@ -172,7 +170,7 @@ function normalizeDatasets(data, colors = DEFAULT_COLORS, type) {
       throw new TypeError("Each dataset requires a non-empty array of values");
     }
 
-    return new NormalizedDataset(
+    return normalizedDataset(
       { ...dataset, color: dataset.color ?? colors[datasetIndex % colors.length] },
       datasetIndex,
     );
@@ -736,6 +734,7 @@ export {
   normalizeHeatmapData,
   normalizeDate,
   normalizeTimesheetData,
+  validateObjectKeys,
   validateSeriesScene,
   validateChartData,
 };

@@ -1,11 +1,11 @@
 import { CommonChartBuilder } from "./Builder.js";
+import { HeatmapTooltipBuilder, TimesheetTooltipBuilder, runScope } from "./BuilderScopes.js";
 import {
   appendBuilderData,
   writeBuilderData,
   writeBuilderOption,
   writeExplicitOption,
 } from "./BuilderState.js";
-import { HeatmapTooltipBuilder, TimesheetTooltipBuilder, runTemporalScope } from "./TemporalScopes.js";
 
 const MAXIMUM_POSITIONAL_TASK_ARGUMENTS = 3;
 
@@ -22,9 +22,8 @@ class RangedChartBuilder extends CommonChartBuilder {
    */
   range(start, end) {
     writeBuilderData(this, "start", start);
-    writeBuilderData(this, "end", end);
 
-    return this;
+    return writeBuilderData(this, "end", end);
   }
 
   /**
@@ -34,9 +33,7 @@ class RangedChartBuilder extends CommonChartBuilder {
    * @returns {this} Current builder.
    */
   radius(value) {
-    writeBuilderOption(this, "radius", value);
-
-    return this;
+    return writeBuilderOption(this, "radius", value);
   }
 }
 
@@ -51,9 +48,7 @@ class HeatmapChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   points(values) {
-    writeBuilderData(this, "points", values);
-
-    return this;
+    return writeBuilderData(this, "points", values);
   }
 
   /**
@@ -63,9 +58,7 @@ class HeatmapChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   countLabel(value) {
-    writeBuilderOption(this, "countLabel", value);
-
-    return this;
+    return writeBuilderOption(this, "countLabel", value);
   }
 
   /**
@@ -82,7 +75,7 @@ class HeatmapChartBuilder extends RangedChartBuilder {
     }
 
     const tooltip = {};
-    runTemporalScope(new HeatmapTooltipBuilder(tooltip), value);
+    runScope(new HeatmapTooltipBuilder(tooltip), value);
     writeExplicitOption(this, "tooltip", true);
 
     if (tooltip.formatDate !== undefined) {
@@ -115,9 +108,8 @@ class TimesheetChartBuilder extends RangedChartBuilder {
     }
 
     const task = typeof input === "string" ? { label: input, start, end } : input;
-    appendBuilderData(this, "tasks", task);
 
-    return this;
+    return appendBuilderData(this, "tasks", task);
   }
 
   /**
@@ -127,9 +119,7 @@ class TimesheetChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   axes(visible) {
-    writeBuilderOption(this, "axes", visible);
-
-    return this;
+    return writeBuilderOption(this, "axes", visible);
   }
 
   /**
@@ -139,9 +129,7 @@ class TimesheetChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   grid(visible) {
-    writeBuilderOption(this, "grid", visible);
-
-    return this;
+    return writeBuilderOption(this, "grid", visible);
   }
 
   /**
@@ -151,9 +139,7 @@ class TimesheetChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   valueLabels(visible) {
-    writeBuilderOption(this, "valueLabels", visible);
-
-    return this;
+    return writeBuilderOption(this, "valueLabels", visible);
   }
 
   /**
@@ -163,9 +149,7 @@ class TimesheetChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   formatDate(formatter) {
-    writeBuilderOption(this, "formatDate", formatter);
-
-    return this;
+    return writeBuilderOption(this, "formatDate", formatter);
   }
 
   /**
@@ -175,9 +159,7 @@ class TimesheetChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   formatDuration(formatter) {
-    writeBuilderOption(this, "formatDuration", formatter);
-
-    return this;
+    return writeBuilderOption(this, "formatDuration", formatter);
   }
 
   /**
@@ -187,9 +169,7 @@ class TimesheetChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   formatTick(formatter) {
-    writeBuilderOption(this, "formatTick", formatter);
-
-    return this;
+    return writeBuilderOption(this, "formatTick", formatter);
   }
 
   /**
@@ -206,7 +186,7 @@ class TimesheetChartBuilder extends RangedChartBuilder {
     }
 
     const tooltip = {};
-    runTemporalScope(new TimesheetTooltipBuilder(tooltip), value);
+    runScope(new TimesheetTooltipBuilder(tooltip), value);
     writeExplicitOption(this, "tooltip", true);
 
     if (tooltip.formatDate !== undefined) {

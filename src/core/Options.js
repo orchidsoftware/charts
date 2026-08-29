@@ -159,33 +159,21 @@ function validateChartOptions(options) {
 }
 
 /**
- * Names the renderer-facing presentation defaults as one cohesive value.
- */
-class PresentationOptions {
-  /**
-   * Resolves every presentation choice from validated caller options.
-   *
-   * @param {object} options - Validated caller options.
-   */
-  constructor(options) {
-    this.axes = options.axes ?? true;
-    this.grid = options.grid ?? true;
-    this.valueLabels = options.valueLabels ?? true;
-    this.legend = shouldShowLegend(options);
-    this.tooltip = options.tooltip ?? true;
-    this.orientation = options.orientation ?? ChartOrientation.VERTICAL;
-    this.ariaLabel = options.ariaLabel ?? options.title ?? `${options.type} chart`;
-  }
-}
-
-/**
  * Resolves visibility, accessibility, and orientation defaults.
  *
  * @param {object} options - Validated caller options.
- * @returns {PresentationOptions} Complete presentation choices for every renderer.
+ * @returns {object} Complete presentation choices for every renderer.
  */
 function presentationOptions(options) {
-  return new PresentationOptions(options);
+  return Object.freeze({
+    axes: options.axes ?? true,
+    grid: options.grid ?? true,
+    valueLabels: options.valueLabels ?? true,
+    legend: shouldShowLegend(options),
+    tooltip: options.tooltip ?? true,
+    orientation: options.orientation ?? ChartOrientation.VERTICAL,
+    ariaLabel: options.ariaLabel ?? options.title ?? `${options.type} chart`,
+  });
 }
 
 /**

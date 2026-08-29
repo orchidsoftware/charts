@@ -54,26 +54,24 @@ function timesheetVerticalFrame(chart, height) {
 }
 
 /**
- * Names the complete drawing and tooltip placement of one timesheet task.
+ * Combines row, bar, and formatted values for one timesheet task.
+ *
+ * @param {object} row - Row top and vertical center.
+ * @param {object} bar - Bar x position, width, and corner radius.
+ * @param {object} text - Formatted start, end, and duration values.
+ * @returns {object} Complete drawing and tooltip placement.
  */
-class TimesheetTaskPlacement {
-  /**
-   * Combines row, bar, and formatted temporal values.
-   *
-   * @param {object} row - Row top and vertical center.
-   * @param {object} bar - Bar x position, width, and corner radius.
-   * @param {object} text - Formatted start, end, and duration values.
-   */
-  constructor(row, bar, text) {
-    this.rowTop = row.top;
-    this.centerY = row.center;
-    this.barX = bar.x;
-    this.barWidth = bar.width;
-    this.radius = bar.radius;
-    this.dateStart = text.start;
-    this.dateEnd = text.end;
-    this.duration = text.duration;
-  }
+function taskPlacement(row, bar, text) {
+  return Object.freeze({
+    rowTop: row.top,
+    centerY: row.center,
+    barX: bar.x,
+    barWidth: bar.width,
+    radius: bar.radius,
+    dateStart: text.start,
+    dateEnd: text.end,
+    duration: text.duration,
+  });
 }
 
 /**
@@ -219,7 +217,7 @@ export default class TimesheetLayout {
       this.frame.barHeight / 2,
     );
 
-    return new TimesheetTaskPlacement(
+    return taskPlacement(
       { top: rowTop, center: centerY },
       { x: barX, width: barWidth, radius },
       { start: dateStart, end: dateEnd, duration },

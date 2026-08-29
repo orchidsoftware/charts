@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { chartDefinition } from "../src/core/ChartDefinition.js";
 import * as publicApi from "../src/index.js";
 import { renderChart } from "../src/renderers/Render.js";
 import {
@@ -115,8 +116,8 @@ describe("architecture fitness functions", () => {
 
   it("uses classes for stateful behavior and native private fields for ownership", () => {
     expect(source("core/Chart.js")).toMatch(/class Chart[\s\S]*#host;[\s\S]*#options;[\s\S]*#model;/);
-    expect(source("core/ChartData.js")).toMatch(/class ChartData[\s\S]*#datasets = \[\];/);
-    expect(source("core/ChartSelection.js")).toMatch(/class ChartSelection[\s\S]*#type;/);
+    expect(source("core/ChartData.js")).toMatch(/class ChartData[\s\S]*#datasets;/);
+    expect(source("core/ChartSelection.js")).toMatch(/class ChartSelection[\s\S]*#policy;/);
     expect(source("core/ChartTooltip.js")).toMatch(/class ChartTooltip[\s\S]*#element;/);
     expect(source("core/InteractionController.js")).toMatch(
       /class InteractionController[\s\S]*#selectedIndex;/,
@@ -148,14 +149,18 @@ describe("architecture fitness functions", () => {
   });
 
   it("fails closed before an unknown renderer can touch chart state", () => {
-    expect(() => renderChart({}, "missing-strategy")).toThrow("No render strategy");
+    expect(() => renderChart({}, "missing-strategy")).toThrow("render implementation must be a function");
+    expect(() => chartDefinition(class {}, "line", {})).toThrow("requires createModel and render");
+    expect(() => chartDefinition(class {}, "line", { createModel() {} })).toThrow(
+      "requires createModel and render",
+    );
   });
 
   it("separates configuration, selection, and radial rendering reasons to change", () => {
     expect(source("core/Chart.js")).not.toMatch(/#validate|#normalizeOptions|ALLOWED_OPTIONS/);
     expect(source("core/Options.js")).toContain("function normalizeChartOptions");
     expect(source("core/ChartData.js")).not.toMatch(/#radarSelection|#heatmapSelection|#seriesSelection/);
-    expect(source("core/ChartData.js")).toContain("new ChartSelection");
+    expect(source("core/ChartData.js")).toContain("createSeriesSelection");
     expect(source("renderers/RadarRenderer.js")).not.toContain("polar-area");
     expect(source("renderers/PolarAreaRenderer.js")).not.toContain("charts2-radar");
     expect(source("renderers/RadialRenderer.js")).toBeUndefined();
@@ -164,7 +169,7 @@ describe("architecture fitness functions", () => {
   it("avoids classes that only wrap functions or data", () => {
     expect(source("core/ChartOptions.js")).toBeUndefined();
     expect(source("renderers/RendererContext.js")).toBeUndefined();
-    expect(source("core/NextChartId.js")).not.toMatch(/\bclass\b/);
+    expect(source("core/NextChartId.js")).toBeUndefined();
     expect(source("renderers/ChartRenderer.js")).toBeUndefined();
     expect(source("renderers/Render.js")).toContain("Object.freeze(chartState)");
     expect(source("renderers/Render.js")).toContain("new SvgSurface(element)");

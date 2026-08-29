@@ -30,14 +30,17 @@ function copyBuilderValue(value) {
  * Registers a fresh builder without resolving its parent or touching the DOM.
  *
  * @param {object} builder - Builder instance receiving private module state.
- * @param {string | Element} parent - Deferred chart host reference.
- * @param {string} type - Internal renderer type compiled by this builder.
+ * @param {object} definition - Immutable creation details owned by the chart definition.
+ * @param {string | Element} definition.parent - Deferred chart host reference.
+ * @param {string} definition.type - Internal renderer type compiled by this builder.
+ * @param {(parent: string | Element, options: object) => object} definition.mount - Mounted chart factory.
  * @returns {void} A mutable single-use authoring snapshot is associated with the builder.
  */
-function initializeBuilder(builder, parent, type) {
+function initializeBuilder(builder, { parent, type, mount }) {
   states.set(builder, {
     parent,
     type,
+    mount,
     consumed: false,
     options: {},
     explicit: new Set(),
@@ -68,12 +71,14 @@ function builderState(builder) {
  * @param {object} builder - Builder receiving the option.
  * @param {string} name - Internal option name.
  * @param {unknown} value - Caller-controlled option value.
- * @returns {void} The latest scalar value becomes authoritative.
+ * @returns {object} The same builder for fluent forwarding.
  */
 function writeBuilderOption(builder, name, value) {
   validateBuilderOption(name, value);
   const state = builderState(builder);
   state.options[name] = copyBuilderValue(value);
+
+  return builder;
 }
 
 /**
@@ -82,13 +87,15 @@ function writeBuilderOption(builder, name, value) {
  * @param {object} builder - Builder receiving the setting.
  * @param {string} name - Public setting name.
  * @param {unknown} value - Explicit caller choice.
- * @returns {void} The setting and its explicit provenance are retained.
+ * @returns {object} The same builder for fluent forwarding.
  */
 function writeExplicitOption(builder, name, value) {
   validateBuilderOption(name, value);
   const state = builderState(builder);
   state.explicit.add(name);
   state.options[name] = copyBuilderValue(value);
+
+  return builder;
 }
 
 /**
@@ -96,11 +103,13 @@ function writeExplicitOption(builder, name, value) {
  *
  * @param {object} builder - Series builder receiving category labels.
  * @param {readonly string[]} labels - Caller-controlled labels.
- * @returns {void} Copied labels replace an earlier labels call.
+ * @returns {object} The same builder for fluent forwarding.
  */
 function writeBuilderLabels(builder, labels) {
   validateLabels(labels);
   builderState(builder).data.labels = copyBuilderValue(labels);
+
+  return builder;
 }
 
 /**
@@ -109,7 +118,7 @@ function writeBuilderLabels(builder, labels) {
  * @param {object} builder - Builder receiving the data field.
  * @param {string} name - Public domain-data property.
  * @param {unknown} value - Caller-controlled data value.
- * @returns {void} The latest scalar or collection replaces an earlier call.
+ * @returns {object} The same builder for fluent forwarding.
  */
 function writeBuilderData(builder, name, value) {
   if (name === "points") {
@@ -117,6 +126,8 @@ function writeBuilderData(builder, name, value) {
   }
 
   builderState(builder).data[name] = copyBuilderValue(value);
+
+  return builder;
 }
 
 /**
@@ -125,7 +136,7 @@ function writeBuilderData(builder, name, value) {
  * @param {object} builder - Builder receiving the item.
  * @param {string} collection - Ordered data collection name.
  * @param {unknown} value - Caller-controlled item.
- * @returns {void} Item order matches fluent call order.
+ * @returns {object} The same builder for fluent forwarding.
  */
 function appendBuilderData(builder, collection, value) {
   validateTask(value);
@@ -133,6 +144,8 @@ function appendBuilderData(builder, collection, value) {
   const state = builderState(builder);
   state.data[collection] ??= [];
   state.data[collection].push(copyBuilderValue(value));
+
+  return builder;
 }
 
 /**
@@ -140,7 +153,7 @@ function appendBuilderData(builder, collection, value) {
  *
  * @param {object} builder - Series builder receiving the dataset.
  * @param {object} dataset - Completed dataset record.
- * @returns {void} Dataset order remains observable for palette and legends.
+ * @returns {object} The same builder for fluent forwarding.
  */
 function appendBuilderDataset(builder, dataset) {
   const state = builderState(builder);
@@ -153,6 +166,8 @@ function appendBuilderDataset(builder, dataset) {
   // Keep that owned record instead of recursively cloning large value arrays a
   // second time on every fluent dataset call.
   state.data.datasets.push(dataset);
+
+  return builder;
 }
 
 /**
@@ -206,12 +221,14 @@ function validateTask(value) {
  * @param {object} builder - Cartesian builder receiving the annotation.
  * @param {"markers" | "regions"} collection - Public annotation collection.
  * @param {object} annotation - Completed marker or region record.
- * @returns {void} Annotation layer order matches authoring order.
+ * @returns {object} The same builder for fluent forwarding.
  */
 function appendBuilderAnnotation(builder, collection, annotation) {
   const data = builderState(builder).data;
   data[collection] ??= [];
   data[collection].push(copyBuilderValue(annotation));
+
+  return builder;
 }
 
 /**
@@ -268,7 +285,7 @@ function familyData(data, type) {
  * Produces a detached canonical scene for the runtime boundary.
  *
  * @param {object} builder - Builder to snapshot without consuming it.
- * @returns {{parent: string | Element, options: object}} Deferred parent and copied chart scene.
+ * @returns {{parent: string | Element, options: object, mount: (parent: string | Element, options: object) => object}} Deferred mount command and scene.
  */
 function compileBuilder(builder) {
   const state = builderState(builder);
@@ -289,7 +306,7 @@ function compileBuilder(builder) {
   options.type = state.type;
   options.data = data;
 
-  return { parent: state.parent, options };
+  return { parent: state.parent, options, mount: state.mount };
 }
 
 /**

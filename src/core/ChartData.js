@@ -7,114 +7,116 @@ import {
   validateSeriesScene,
 } from "../support/Normalize.js";
 
-import ChartSelection from "./ChartSelection.js";
+import {
+  createCompositionSelection,
+  createHeatmapSelection,
+  createSeriesSelection,
+  createTimesheetSelection,
+} from "./ChartSelection.js";
 import { normalizeCartesianSource } from "./NormalizeAnnotations.js";
 
 const DEFAULT_MAXIMUM_SLICES = 20;
 const INDEPENDENT_TYPES = new Set([ChartType.SCATTER, ChartType.AXIS_MIXED, ChartType.BUBBLE]);
 
 /**
- * Names one immutable independently-positioned series mark snapshot.
+ * Creates one immutable independently-positioned series mark snapshot.
+ *
+ * @param {object} source - Dataset, point, coordinates, and public index.
+ * @returns {object} Frozen public point snapshot.
  */
-class SeriesMarkSnapshot {
-  /**
-   * Copies one normalized point and its dataset identity.
-   *
-   * @param {object} source - Dataset, point, coordinates, and public index.
-   */
-  constructor(source) {
-    this.index = source.index;
-    this.datasetIndex = source.datasetIndex;
-    this.dataset = source.dataset.name;
-    this.pointIndex = source.pointIndex;
-    this.label = source.label;
-    this.x = source.point.x;
-    this.y = source.point.y;
-    if (source.point.r !== undefined) {
-      this.r = source.point.r;
-    }
+function seriesMarkSnapshot(source) {
+  const snapshot = {
+    index: source.index,
+    datasetIndex: source.datasetIndex,
+    dataset: source.dataset.name,
+    pointIndex: source.pointIndex,
+    label: source.label,
+    x: source.point.x,
+    y: source.point.y,
+  };
 
-    if (source.chartType !== undefined) {
-      this.chartType = source.chartType;
-    }
-
-    Object.freeze(this);
+  if (source.point.r !== undefined) {
+    snapshot.r = source.point.r;
   }
+
+  if (source.chartType !== undefined) {
+    snapshot.chartType = source.chartType;
+  }
+
+  return Object.freeze(snapshot);
 }
 
 /**
- * Owns normalized chart data and atomically replaces model snapshots. Public
- * selection projection is delegated so storage and event payload rules evolve
- * independently.
+ * Owns normalized chart data and projects lifecycle selection through one
+ * cohesive presenter.
  */
 export default class ChartData {
   #type;
   #source;
-  #datasets = [];
-  #labels = [];
-  #heatmap = [];
-  #timesheet = null;
-  #colors;
-  #maxSlices;
+  #datasets;
+  #labels;
+  #heatmap;
+  #timesheet;
   #selection;
 
   /**
-   * Creates a normalized data model for one immutable chart type.
+   * Captures one completely normalized family snapshot.
    *
-   * @param {string} type - Validated chart type that determines normalization rules.
-   * @param {object} data - Initial caller-controlled data payload.
-   * @param {object} [config={}] - Data normalization configuration.
-   * @param {Array<string> | undefined} config.colors - Effective categorical or intensity palette.
-   * @param {number | undefined} config.maxSlices - Optional composition item limit.
-   * @throws {TypeError} When the payload violates its chart type's invariants.
+   * @param {object} state - Type, source, collections, and effective palette.
    */
-  constructor(type, data, config = {}) {
+  constructor(state) {
+    const { type, source, collections, selection } = state;
+    const { datasets = [], labels = [], heatmap = [], timesheet = null } = collections;
+
     this.#type = type;
-    this.#colors = config.colors ?? (type === ChartType.HEATMAP ? HEATMAP_COLORS : DEFAULT_COLORS);
-    this.#maxSlices = config.maxSlices ?? DEFAULT_MAXIMUM_SLICES;
-    this.#replaceData(data);
+    this.#source = source;
+    this.#datasets = datasets;
+    this.#labels = labels;
+    this.#heatmap = heatmap;
+    this.#timesheet = timesheet;
+    this.#selection = selection;
   }
 
   /**
-   * Exposes normalized series to a synchronous renderer snapshot.
+   * Exposes normalized series datasets.
    *
-   * @returns {Array<object>} Canonical datasets, or an empty array for non-series charts.
+   * @returns {Array<object>} Canonical series datasets.
    */
   get datasets() {
     return this.#datasets;
   }
 
   /**
-   * Exposes normalized category labels to a synchronous renderer snapshot.
+   * Exposes normalized category or task labels.
    *
-   * @returns {unknown[]} Labels aligned with datasets or timesheet tasks.
+   * @returns {unknown[]} Canonical category or task labels.
    */
   get labels() {
     return this.#labels;
   }
 
   /**
-   * Exposes sorted heatmap entries to a synchronous renderer snapshot.
+   * Exposes normalized heatmap entries.
    *
-   * @returns {Array<object>} Canonical heatmap entries, or an empty array for other charts.
+   * @returns {Array<object>} Canonical heatmap entries.
    */
   get heatmap() {
     return this.#heatmap;
   }
 
   /**
-   * Exposes normalized timesheet bounds and tasks to a synchronous renderer snapshot.
+   * Exposes normalized timesheet state.
    *
-   * @returns {object | null} Canonical timesheet data, or null for other charts.
+   * @returns {object | null} Canonical timesheet state.
    */
   get timesheet() {
     return this.#timesheet;
   }
 
   /**
-   * Exposes the original payload only to renderers that consume annotations.
+   * Exposes the completely validated caller source.
    *
-   * @returns {object} Latest completely validated caller payload.
+   * @returns {object} Completely validated caller source.
    */
   get source() {
     return this.#source;
@@ -123,8 +125,8 @@ export default class ChartData {
   /**
    * Reads one type-appropriate normalized value without exposing mutable internals.
    *
-   * @param {number} index - Requested point, heatmap entry, or timesheet task index.
-   * @returns {object | undefined} Public-facing data at the requested index.
+   * @param {number} index - Requested point, entry, or task index.
+   * @returns {object | undefined} Defensive public data snapshot.
    */
   pointAt(index) {
     if (this.#type === ChartType.HEATMAP) {
@@ -155,15 +157,33 @@ export default class ChartData {
   }
 
   /**
+   * Projects renderer metadata through the selection presenter.
+   *
+   * @param {SVGElement} mark - Rendered mark carrying source indices.
+   * @returns {object} Frozen public selection payload.
+   */
+  selectionFor(mark) {
+    return this.#selection.from(mark);
+  }
+
+  /**
+   * Resolves a rendered mark into its stable lifecycle identity.
+   *
+   * @param {SVGElement} mark - Rendered mark carrying source indices.
+   * @returns {string | null} Stable identity or null when ambiguous.
+   */
+  identityFor(mark) {
+    return this.#selection.identityFor(mark);
+  }
+
+  /**
    * Reads one independently-positioned mark in renderer navigation order.
    *
    * @param {number} index - Flattened mark position.
-   * @returns {SeriesMarkSnapshot | undefined} Immutable mark snapshot.
+   * @returns {object | undefined} Immutable mark snapshot.
    */
   #seriesMarkAt(index) {
-    const datasets = this.#orderedIndependentDatasets();
-
-    const marks = datasets.flatMap(({ dataset, datasetIndex }) =>
+    const marks = this.#datasets.flatMap((dataset, datasetIndex) =>
       dataset.points.map((point, pointIndex) => ({ dataset, datasetIndex, point, pointIndex })),
     );
 
@@ -173,153 +193,169 @@ export default class ChartData {
       return;
     }
 
-    return new SeriesMarkSnapshot({
+    return seriesMarkSnapshot({
       ...mark,
       index,
       label: this.#labels[mark.pointIndex],
       chartType: this.#type === ChartType.AXIS_MIXED ? mark.dataset.chartType : undefined,
     });
   }
-
-  /**
-   * Orders mixed datasets by render layer while retaining stable source indices.
-   *
-   * @returns {Array<object>} Dataset entries in keyboard navigation order.
-   */
-  #orderedIndependentDatasets() {
-    return this.#datasets.map((dataset, datasetIndex) => ({ dataset, datasetIndex }));
-  }
-
-  /**
-   * Projects renderer metadata through the dedicated selection policy object.
-   *
-   * @param {SVGElement} mark - Rendered mark carrying dataset and point indices.
-   * @returns {object} Payload suitable for callbacks and `data-select` events.
-   */
-  selectionFor(mark) {
-    return this.#selection.from(mark);
-  }
-
-  /**
-   * Resolves a mark into its type-specific normalized lifecycle identity.
-   *
-   * @param {SVGElement} mark - Rendered mark carrying dataset and point indices.
-   * @returns {string | null} Stable identity or null when it cannot be preserved.
-   */
-  identityFor(mark) {
-    return this.#selection.identityFor(mark);
-  }
-
-  /**
-   * Normalizes one payload into temporary values before committing model state.
-   *
-   * @param {object} data - Caller-controlled chart data.
-   * @returns {void} Every derived field is replaced after validation succeeds.
-   */
-  #replaceData(data) {
-    if (this.#type === ChartType.HEATMAP) {
-      const heatmap = normalizeHeatmapData(data);
-      this.#commitSnapshot(data, { heatmap });
-
-      return;
-    }
-
-    if (this.#type === ChartType.TIMESHEET) {
-      const timesheet = normalizeTimesheetData(data, this.#colors);
-      this.#commitSnapshot(data, { timesheet, labels: timesheet.tasks.map((task) => task.label) });
-
-      return;
-    }
-
-    validateSeriesScene(this.#type, data);
-
-    const datasets = normalizeDatasets(data, this.#colors, this.#type);
-
-    if (data.labels !== undefined && !Array.isArray(data.labels)) {
-      throw new TypeError("Chart labels must be an array");
-    }
-
-    if (data.labels?.some((label) => !this.#isNormalizedLabel(label))) {
-      throw new TypeError("Chart labels must contain non-empty strings or generated numbers");
-    }
-
-    const pointCount = Math.max(...datasets.map((dataset) => dataset.points.length));
-
-    const labels =
-      data.labels ??
-      ([ChartType.SCATTER, ChartType.BUBBLE].includes(this.#type)
-        ? []
-        : Array.from({ length: pointCount }, (_value, index) => index + 1));
-
-    validateChartData(this.#type, datasets, labels);
-    const composition = this.#compositionCollections(datasets, labels);
-    this.#commitSnapshot(normalizeCartesianSource(data), composition);
-  }
-
-  /**
-   * Accepts public labels and builder-generated numeric labels.
-   *
-   * @param {unknown} label - Candidate normalized label.
-   * @returns {boolean} Whether the label is valid for the internal scene.
-   */
-  #isNormalizedLabel(label) {
-    if (typeof label === "number") {
-      return Number.isFinite(label);
-    }
-
-    return typeof label === "string" && label.trim() !== "";
-  }
-
-  /**
-   * Applies stable maximum-slice aggregation to eligible composition models.
-   *
-   * @param {Array<object>} datasets - Validated normalized datasets.
-   * @param {unknown[]} labels - Validated labels aligned with the first dataset.
-   * @returns {{datasets: Array<object>, labels: unknown[]}} Render and lifecycle collections.
-   */
-  #compositionCollections(datasets, labels) {
-    if (!AGGREGATION_TYPES.includes(this.#type) || labels.length <= this.#maxSlices) {
-      return { datasets, labels };
-    }
-
-    const entries = labels
-      .map((label, index) => ({ label, point: datasets[0].points[index] }))
-      .toSorted((left, right) => right.point.y - left.point.y);
-
-    const visible = entries.slice(0, this.#maxSlices - 1);
-    const remainder = entries.slice(this.#maxSlices - 1);
-    const restValue = remainder.reduce((sum, entry) => sum + entry.point.y, 0);
-    const points = [...visible.map((entry) => entry.point), { x: visible.length, y: restValue }];
-
-    return {
-      datasets: [{ ...datasets[0], points }],
-      labels: [...visible.map((entry) => entry.label), "Rest"],
-    };
-  }
-
-  /**
-   * Commits one completely validated normalized snapshot.
-   *
-   * @param {object} source - Original caller payload retained for lifecycle consistency.
-   * @param {object} normalized - Type-specific normalized collections.
-   * @param {Array<object>} [normalized.datasets=[]] - Canonical series datasets.
-   * @param {unknown[]} [normalized.labels=[]] - Canonical category or task labels.
-   * @param {Array<object>} [normalized.heatmap=[]] - Canonical heatmap entries.
-   * @param {object | null} [normalized.timesheet=null] - Canonical timesheet model.
-   * @returns {void} Previous model state is replaced in place.
-   */
-  #commitSnapshot(source, { datasets = [], labels = [], heatmap = [], timesheet = null }) {
-    this.#source = source;
-    this.#datasets = datasets;
-    this.#labels = labels;
-    this.#heatmap = heatmap;
-    this.#timesheet = timesheet;
-    this.#selection = new ChartSelection(this.#type, {
-      datasets,
-      labels,
-      heatmap,
-      timesheet,
-      colors: this.#colors,
-    });
-  }
 }
+
+/**
+ * Accepts public labels and builder-generated numeric labels.
+ *
+ * @param {unknown} label - Candidate normalized label.
+ * @returns {boolean} Whether the label is valid for the internal scene.
+ */
+function isNormalizedLabel(label) {
+  if (typeof label === "number") {
+    return Number.isFinite(label);
+  }
+
+  return typeof label === "string" && label.trim() !== "";
+}
+
+/**
+ * Normalizes the shared series grammar without selecting another family.
+ *
+ * @param {string} type - Concrete series or composition type.
+ * @param {object} data - Caller-controlled data.
+ * @param {string[]} colors - Effective palette.
+ * @returns {{source: object, collections: object}} Validated series snapshot.
+ */
+function normalizeSeries(type, data, colors) {
+  validateSeriesScene(type, data);
+  const datasets = normalizeDatasets(data, colors, type);
+
+  if (data.labels !== undefined && !Array.isArray(data.labels)) {
+    throw new TypeError("Chart labels must be an array");
+  }
+
+  if (data.labels?.some((label) => !isNormalizedLabel(label))) {
+    throw new TypeError("Chart labels must contain non-empty strings or generated numbers");
+  }
+
+  const pointCount = Math.max(...datasets.map((dataset) => dataset.points.length));
+
+  const labels =
+    data.labels ??
+    ([ChartType.SCATTER, ChartType.BUBBLE].includes(type)
+      ? []
+      : Array.from({ length: pointCount }, (_value, index) => index + 1));
+
+  validateChartData(type, datasets, labels);
+
+  return { source: normalizeCartesianSource(data), collections: { datasets, labels } };
+}
+
+/**
+ * Aggregates the smallest composition slices behind one stable Rest item.
+ *
+ * @param {object} collections - Validated datasets and aligned labels.
+ * @param {number} maximum - Maximum visible composition item count.
+ * @returns {object} Original or aggregated collections.
+ */
+function aggregateComposition(collections, maximum) {
+  const { datasets, labels } = collections;
+
+  if (labels.length <= maximum) {
+    return collections;
+  }
+
+  const entries = labels
+    .map((label, index) => ({ label, point: datasets[0].points[index] }))
+    .toSorted((left, right) => right.point.y - left.point.y);
+
+  const visible = entries.slice(0, maximum - 1);
+  const remainder = entries.slice(maximum - 1);
+  let restValue = 0;
+
+  for (const entry of remainder) {
+    restValue += entry.point.y;
+  }
+
+  return {
+    datasets: [
+      {
+        ...datasets[0],
+        points: [...visible.map((entry) => entry.point), { x: visible.length, y: restValue }],
+      },
+    ],
+    labels: [...visible.map((entry) => entry.label), "Rest"],
+  };
+}
+
+/**
+ * Creates a normalized Cartesian series model.
+ *
+ * @param {string} type - Concrete Cartesian type.
+ * @param {object} data - Caller-controlled data.
+ * @param {object} config - Effective chart configuration.
+ * @returns {ChartData} Normalized series model.
+ */
+function createSeriesModel(type, data, config) {
+  const colors = config.colors ?? DEFAULT_COLORS;
+  const normalized = normalizeSeries(type, data, colors);
+  const selection = createSeriesSelection(type, { ...normalized.collections, colors });
+
+  return new ChartData({ type, ...normalized, selection });
+}
+
+/**
+ * Creates a normalized composition or radial model.
+ *
+ * @param {string} type - Concrete composition type.
+ * @param {object} data - Caller-controlled data.
+ * @param {object} config - Effective chart configuration.
+ * @returns {ChartData} Normalized composition model.
+ */
+function createCompositionModel(type, data, config) {
+  const colors = config.colors ?? DEFAULT_COLORS;
+  const normalized = normalizeSeries(type, data, colors);
+  const maximum = config.maxSlices ?? DEFAULT_MAXIMUM_SLICES;
+
+  const collections = AGGREGATION_TYPES.includes(type)
+    ? aggregateComposition(normalized.collections, maximum)
+    : normalized.collections;
+
+  const selection = createCompositionSelection(type, { ...collections, colors });
+
+  return new ChartData({ type, source: normalized.source, collections, selection });
+}
+
+/**
+ * Creates a normalized heatmap model.
+ *
+ * @param {string} type - Heatmap chart type.
+ * @param {object} data - Caller-controlled heatmap data.
+ * @param {object} config - Effective chart configuration.
+ * @returns {ChartData} Normalized heatmap model.
+ */
+function createHeatmapModel(type, data, config) {
+  const colors = config.colors ?? HEATMAP_COLORS;
+  const collections = { heatmap: normalizeHeatmapData(data) };
+  const selection = createHeatmapSelection({ ...collections, colors });
+
+  return new ChartData({ type, source: data, collections, selection });
+}
+
+/**
+ * Creates a normalized timesheet model.
+ *
+ * @param {string} type - Timesheet chart type.
+ * @param {object} data - Caller-controlled timesheet data.
+ * @param {object} config - Effective chart configuration.
+ * @returns {ChartData} Normalized timesheet model.
+ */
+function createTimesheetModel(type, data, config) {
+  const colors = config.colors ?? DEFAULT_COLORS;
+  const timesheet = normalizeTimesheetData(data, colors);
+  const labels = timesheet.tasks.map((task) => task.label);
+  const collections = { timesheet, labels };
+  const selection = createTimesheetSelection(collections);
+
+  return new ChartData({ type, source: data, collections, selection });
+}
+
+export { createCompositionModel, createHeatmapModel, createSeriesModel, createTimesheetModel };

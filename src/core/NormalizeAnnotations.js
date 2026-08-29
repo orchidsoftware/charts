@@ -1,3 +1,5 @@
+import { validateObjectKeys } from "../support/Normalize.js";
+
 const MARKER_KEYS = [
   "label",
   "value",
@@ -35,60 +37,40 @@ const DASH_PATTERNS = Object.freeze({
 });
 
 /**
- * Names one complete marker renderer record.
- */
-class NormalizedMarker {
-  /**
-   * Applies marker defaults without mutating public input.
-   *
-   * @param {object} marker - Validated marker input.
-   */
-  constructor(marker) {
-    Object.assign(this, marker);
-    this.color = marker.color ?? "var(--charts-secondary-label-color, #6e6e73)";
-    this.width = marker.width ?? 1;
-    this.opacity = marker.opacity ?? 1;
-    this.dash = marker.dash ?? DASH_PATTERNS[marker.lineStyle ?? "dashed"];
-    this.labelPosition = marker.labelPosition ?? "end";
-    this.labelColor = marker.labelColor ?? "var(--charts-label-color, #3a3a3c)";
-    this.includeInDomain = marker.includeInDomain ?? true;
-  }
-}
-
-/**
- * Names one complete region renderer record.
- */
-class NormalizedRegion {
-  /**
-   * Applies ascending range and region defaults without mutating public input.
-   *
-   * @param {object} region - Validated region input.
-   */
-  constructor(region) {
-    Object.assign(this, region);
-    this.range = [Math.min(...region.range), Math.max(...region.range)];
-    this.color = region.color ?? "var(--charts-focus-ring, #007aff)";
-    this.opacity = region.opacity ?? DEFAULT_REGION_OPACITY;
-    this.labelPosition = region.labelPosition ?? "end";
-    this.labelColor = region.labelColor ?? "var(--charts-label-color, #3a3a3c)";
-    this.includeInDomain = region.includeInDomain ?? true;
-  }
-}
-
-/**
- * Rejects unknown annotation keys without leaking renderer terminology.
+ * Applies marker defaults without mutating public input.
  *
- * @param {object} input - Candidate marker or region.
- * @param {string[]} allowed - Exhaustive keys.
- * @param {string} concept - Public concept name.
- * @returns {void} Supported input passes unchanged.
+ * @param {object} marker - Validated marker input.
+ * @returns {object} Complete marker renderer record.
  */
-function validateKeys(input, allowed, concept) {
-  const unknown = Object.keys(input).find((key) => !allowed.includes(key));
+function normalizedMarker(marker) {
+  return Object.freeze({
+    ...marker,
+    color: marker.color ?? "var(--charts-secondary-label-color, #6e6e73)",
+    width: marker.width ?? 1,
+    opacity: marker.opacity ?? 1,
+    dash: marker.dash ?? DASH_PATTERNS[marker.lineStyle ?? "dashed"],
+    labelPosition: marker.labelPosition ?? "end",
+    labelColor: marker.labelColor ?? "var(--charts-label-color, #3a3a3c)",
+    includeInDomain: marker.includeInDomain ?? true,
+  });
+}
 
-  if (unknown) {
-    throw new TypeError(`Unsupported ${concept} key: ${unknown}`);
-  }
+/**
+ * Applies ascending range and region defaults without mutating public input.
+ *
+ * @param {object} region - Validated region input.
+ * @returns {object} Complete region renderer record.
+ */
+function normalizedRegion(region) {
+  return Object.freeze({
+    ...region,
+    range: [Math.min(...region.range), Math.max(...region.range)],
+    color: region.color ?? "var(--charts-focus-ring, #007aff)",
+    opacity: region.opacity ?? DEFAULT_REGION_OPACITY,
+    labelPosition: region.labelPosition ?? "end",
+    labelColor: region.labelColor ?? "var(--charts-label-color, #3a3a3c)",
+    includeInDomain: region.includeInDomain ?? true,
+  });
 }
 
 /**
@@ -115,7 +97,7 @@ function normalizeMarker(marker) {
     throw new TypeError("marker must be an object or positional marker arguments");
   }
 
-  validateKeys(marker, MARKER_KEYS, "marker");
+  validateObjectKeys(marker, MARKER_KEYS, "marker");
   validateLabel(marker.label, "marker");
   if (!Number.isFinite(marker.value)) {
     throw new TypeError("marker value must be finite");
@@ -136,7 +118,7 @@ function normalizeMarker(marker) {
     );
   }
 
-  return new NormalizedMarker(marker);
+  return normalizedMarker(marker);
 }
 
 /**
@@ -164,7 +146,7 @@ function normalizeRegion(region) {
     throw new TypeError("region must be an object or positional region arguments");
   }
 
-  validateKeys(region, REGION_KEYS, "region");
+  validateObjectKeys(region, REGION_KEYS, "region");
   validateLabel(region.label, "region");
   if (
     !Array.isArray(region.range) ||
@@ -176,7 +158,7 @@ function normalizeRegion(region) {
 
   validateAnnotationPresentation(region, "region");
 
-  return new NormalizedRegion(region);
+  return normalizedRegion(region);
 }
 
 /**

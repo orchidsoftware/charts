@@ -50,31 +50,31 @@ function heatmapHorizontalPadding(width) {
 }
 
 /**
- * Names the viewport and overflow dimensions shared by heatmap rendering.
+ * Resolves viewport and overflow dimensions for one heatmap.
+ *
+ * @param {number} width - Requested chart width.
+ * @param {number} height - Requested chart height.
+ * @param {object} chart - Frozen chart snapshot.
+ * @returns {object} Complete heatmap dimensions.
  */
-class HeatmapDimensions {
-  /**
-   * Resolves grid bounds from chart dimensions and data density.
-   *
-   * @param {number} width - Requested chart width.
-   * @param {number} height - Requested chart height.
-   * @param {object} chart - Frozen chart snapshot.
-   */
-  constructor(width, height, chart) {
-    this.horizontalPadding = heatmapHorizontalPadding(width);
-    this.weeks = Math.max(1, Math.ceil(chart.heatmap.length / DAYS_PER_WEEK));
-    this.rows = Math.min(DAYS_PER_WEEK, Math.max(1, chart.heatmap.length));
-    this.hasWeekInspector = this.weeks > INSPECTOR_WEEK_THRESHOLD && width < HEATMAP_COMPACT_WIDTH;
+function heatmapDimensions(width, height, chart) {
+  const horizontalPadding = heatmapHorizontalPadding(width);
+  const weeks = Math.max(1, Math.ceil(chart.heatmap.length / DAYS_PER_WEEK));
+  const rows = Math.min(DAYS_PER_WEEK, Math.max(1, chart.heatmap.length));
+  const hasWeekInspector = weeks > INSPECTOR_WEEK_THRESHOLD && width < HEATMAP_COMPACT_WIDTH;
 
-    const minimumScrollableWidth =
-      this.horizontalPadding * 2 +
-      this.weeks * HEATMAP_MIN_CELL_WIDTH +
-      (this.weeks - 1) * PREFERRED_CELL_GAP;
+  const minimumScrollableWidth =
+    horizontalPadding * 2 + weeks * HEATMAP_MIN_CELL_WIDTH + (weeks - 1) * PREFERRED_CELL_GAP;
 
-    this.layoutWidth = this.hasWeekInspector ? Math.max(width, minimumScrollableWidth) : width;
-    this.gridTop = GRID_TOP;
-    this.gridBottom = height - GRID_PADDING - LEGEND_HEIGHT - LEGEND_GAP;
-  }
+  return Object.freeze({
+    horizontalPadding,
+    weeks,
+    rows,
+    hasWeekInspector,
+    layoutWidth: hasWeekInspector ? Math.max(width, minimumScrollableWidth) : width,
+    gridTop: GRID_TOP,
+    gridBottom: height - GRID_PADDING - LEGEND_HEIGHT - LEGEND_GAP,
+  });
 }
 
 /**
@@ -139,7 +139,7 @@ export default class HeatmapRenderer {
    * @returns {object} Stable heatmap dimensions.
    */
   #dimensions(width, height) {
-    return new HeatmapDimensions(width, height, this.#chart);
+    return heatmapDimensions(width, height, this.#chart);
   }
 
   /**
@@ -402,3 +402,15 @@ export default class HeatmapRenderer {
     return this.#chart.options.countLabel ? ` ${this.#chart.options.countLabel}` : "";
   }
 }
+
+/**
+ * Renders one heatmap through its family coordinator.
+ *
+ * @param {object} rendering - Frozen chart snapshot and owned SVG surface.
+ * @returns {void} Heatmap content is appended to the chart SVG.
+ */
+function renderHeatmapChart(rendering) {
+  new HeatmapRenderer(rendering).render();
+}
+
+export { renderHeatmapChart };

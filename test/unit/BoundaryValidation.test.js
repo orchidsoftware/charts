@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import ChartData from "../../src/core/ChartData.js";
+import { createHeatmapModel, createSeriesModel } from "../../src/core/ChartData.js";
 import { normalizeChartOptions, validateChartOptions } from "../../src/core/Options.js";
 import {
   normalizeTimesheetData,
@@ -48,7 +48,11 @@ describe("internal boundary validation", () => {
       ),
     ).toThrow("exactly one dataset");
 
-    const data = new ChartData("line", { labels: [1], datasets: [{ values: [1] }] });
+    const data = createSeriesModel("line", { labels: [1], datasets: [{ values: [1] }] }, {});
     expect(data.labels).toEqual([1]);
+
+    const heatmap = createHeatmapModel("heatmap", { points: { "2026-01-01": 0 } }, {});
+    const selection = heatmap.selectionFor({ dataset: { pointIndex: "0" } });
+    expect(selection.color).toBe("#E5E5EA");
   });
 });

@@ -2,15 +2,25 @@ import { renderChart } from "../renderers/Render.js";
 import { ChartOrientation, ChartType } from "../support/Constants.js";
 import { measureParentWidth, resolveParent, svg } from "../support/Dom.js";
 
-import ChartData from "./ChartData.js";
 import ChartTooltip from "./ChartTooltip.js";
 import InteractionController from "./InteractionController.js";
-import { nextChartId } from "./NextChartId.js";
-import { normalizeChartOptions, validateChartColors, validateChartOptions } from "./Options.js";
+import { normalizeChartOptions, validateChartColors } from "./Options.js";
 
 const MARK_SELECTOR = ".charts2-mark";
 const SCROLLABLE_HEATMAP_CLASS = "charts2-scrollable-heatmap";
 const SVG_EXTENSION = ".svg";
+const chartIdSequence = { latest: 0 };
+
+/**
+ * Allocates a process-local identifier for chart-owned DOM nodes.
+ *
+ * @returns {number} Monotonically increasing module-local identifier.
+ */
+function nextChartId() {
+  chartIdSequence.latest += 1;
+
+  return chartIdSequence.latest;
+}
 
 const EXPORT_STYLE_PROPERTIES = Object.freeze([
   "color",
@@ -41,6 +51,7 @@ const EXPORT_STYLE_PROPERTIES = Object.freeze([
 export default class Chart {
   #host;
   #type;
+  #implementation;
   #hasCustomColors;
   #id;
   #autoWidth;
@@ -64,20 +75,21 @@ export default class Chart {
    *
    * @param {string | Element} parent - CSS selector or element that will host generated markup.
    * @param {import("../index.js").ChartOptions} options - Complete chart configuration and initial data.
+   * @param {object} implementation - Frozen model and rendering functions for one chart family.
    * @throws {TypeError} When options, dimensions, renderer settings, or data violate the public contract.
    */
-  constructor(parent, options) {
-    validateChartOptions(options);
-
-    const model = new ChartData(options.type, options.data, {
+  constructor(parent, options, implementation) {
+    const model = implementation.createModel(options.type, options.data, {
       colors: options.colors,
       maxSlices: options.maxSlices,
     });
 
     const host = resolveParent(parent);
     const chartConfig = normalizeChartOptions(host, options);
+
     this.#host = host;
     this.#type = chartConfig.options.type;
+    this.#implementation = implementation;
     this.#id = nextChartId();
     this.#hasCustomColors = chartConfig.hasCustomColors;
     this.#autoWidth = options.width === undefined;
@@ -180,7 +192,7 @@ export default class Chart {
   update(data) {
     this.#assertMounted();
 
-    const model = new ChartData(this.#type, data, {
+    const model = this.#implementation.createModel(this.#type, data, {
       colors: this.#options.colors,
       maxSlices: this.#options.maxSlices,
     });
@@ -364,7 +376,7 @@ export default class Chart {
    * Rebuilds SVG content through class-based renderer dispatch.
    *
    * @param {SVGSVGElement} element - Detached SVG receiving rendered content.
-   * @param {ChartData} model - Fully normalized model exposed to the renderer snapshot.
+   * @param {import("./ChartData.js").default} model - Fully normalized model exposed to the renderer snapshot.
    * @param {object} [options=this.#options] - Candidate rendering options.
    * @returns {void} The detached SVG contains a complete candidate scene.
    */
@@ -391,14 +403,14 @@ export default class Chart {
         hasCustomColors: this.#hasCustomColors,
         id: this.#id,
       },
-      this.#type,
+      this.#implementation.render,
     );
   }
 
   /**
    * Builds a concise accessible summary when no authored description exists.
    *
-   * @param {ChartData} model - Fully normalized current model.
+   * @param {import("./ChartData.js").default} model - Fully normalized current model.
    * @returns {string} Plain-text chart description.
    */
   #generatedDescription(model) {
@@ -423,7 +435,7 @@ export default class Chart {
    * Commits a validated data model and completely rendered SVG together.
    *
    * @param {SVGSVGElement} staged - Detached rendered candidate.
-   * @param {ChartData} model - Fully normalized replacement model.
+   * @param {import("./ChartData.js").default} model - Fully normalized replacement model.
    * @returns {void} Mounted data, SVG, and interactions advance together.
    */
   #commitUpdate(staged, model) {
@@ -443,7 +455,7 @@ export default class Chart {
    * Finds the sole candidate mark matching the current logical selection.
    *
    * @param {SVGSVGElement} staged - Completely rendered candidate surface.
-   * @param {ChartData} model - Candidate normalized data model.
+   * @param {import("./ChartData.js").default} model - Candidate normalized data model.
    * @returns {number} Matching mark index, or -1 for absent or ambiguous identity.
    */
   #preservedIndex(staged, model) {

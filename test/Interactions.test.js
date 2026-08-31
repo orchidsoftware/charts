@@ -144,13 +144,20 @@ describe("shared chart interaction contract", () => {
 
   it("uses highlighted shared areas for easy scatter and bubble hover", () => {
     for (const type of ["scatter", "bubble"]) {
-      const values = type === "bubble" ? [{ x: 1, y: 2, r: 5 }] : [{ x: 1, y: 2 }];
-      const chart = createChart("#chart", { type, data: { datasets: [{ values }] } });
+      const values = type === "bubble" ? [1, 2, 3, 4].map((x) => ({ x, y: x + 1, r: 5 })) : [2, 3, 4, 5];
+      const chart = createChart("#chart", {
+        type,
+        data: { labels: ["A", "B", "C", "D"], datasets: [{ values }] },
+      });
       const hits = [...chart.element.querySelectorAll(".charts2-x-hit")];
       const visibleMarks = [...chart.element.querySelectorAll(".charts2-visual-mark")];
+      const widths = hits.map((hit) => Number(hit.getAttribute("width")));
 
       expect(hits).toHaveLength(visibleMarks.length);
       expect(chart.element.querySelector(".charts2-point-hit")).toBeNull();
+      expect(widths[0]).toBeCloseTo(widths[1], 8);
+      expect(widths.at(-1)).toBeCloseTo(widths.at(-2), 8);
+      expect(Number(visibleMarks[0].getAttribute("cx"))).toBeGreaterThan(Number(hits[0].getAttribute("x")));
       for (const hit of hits) {
         hit.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
         expect(hit).toHaveClass("is-hovered");
@@ -160,6 +167,18 @@ describe("shared chart interaction contract", () => {
       }
       chart.destroy();
     }
+
+    const line = createChart("#chart", {
+      type: "line",
+      data: { labels: ["A", "B", "C", "D"], datasets: [{ values: [2, 3, 4, 5] }] },
+    });
+    const lineWidths = [...line.element.querySelectorAll(".charts2-x-hit")].map((hit) =>
+      Number(hit.getAttribute("width")),
+    );
+
+    expect(lineWidths[0] * 2).toBeCloseTo(lineWidths[1], 8);
+    expect(lineWidths.at(-1) * 2).toBeCloseTo(lineWidths.at(-2), 8);
+    line.destroy();
   });
 
   it("keeps aligned mixed hover shared while selection remains point-specific", () => {
@@ -205,6 +224,10 @@ describe("shared chart interaction contract", () => {
       expect(categories).toHaveLength(labels.length);
       expect(categoryLabels.map((label) => label.textContent)).toEqual(labels);
       for (const [index, category] of categories.entries()) {
+        expect(Number(categoryLabels[index].getAttribute("x"))).toBeCloseTo(
+          Number(category.getAttribute("x")) + Number(category.getAttribute("width")) / 2,
+          8,
+        );
         category.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
         expect(tooltipFor(chart).querySelector(".charts2-tooltip-heading").textContent).toBe(labels[index]);
         expect(tooltipFor(chart).querySelectorAll(".charts2-tooltip-row")).toHaveLength(3);

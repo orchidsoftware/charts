@@ -15,6 +15,7 @@ import {
 } from "../support/Presentation.js";
 
 const BAR_SLOT_RATIO = 0.64;
+const PENULTIMATE_INDEX = -2;
 const STANDARD_FRAME_PADDING = 28;
 const SLOT_MIDPOINT = 0.5;
 
@@ -100,6 +101,7 @@ export default class CartesianLayout {
       orientation: state.orientation,
       isHorizontal: state.isHorizontal,
       hasBars: state.barDatasets.length > 0,
+      type: state.type,
     };
 
     const scales = this.#scalesFor(state.frame, scaleData, categoryScale);
@@ -118,6 +120,16 @@ export default class CartesianLayout {
    */
   pointAt(point, index) {
     return { x: this.#pointX(point, index), y: this.#y(point.y) };
+  }
+
+  /**
+   * Maps one category index to its horizontal screen coordinate.
+   *
+   * @param {number} index - Zero-based category position.
+   * @returns {number} Screen-space category coordinate.
+   */
+  categoryAt(index) {
+    return this.#pointX(this.#chart.datasets[0].points[index], index);
   }
 
   /**
@@ -283,7 +295,9 @@ export default class CartesianLayout {
    * @returns {object} Bound x, y, value, and point-position functions.
    */
   #scalesFor(frame, data, category) {
-    const xDomain = extent(data.points.map((point) => point.x));
+    const xValues = data.points.map((point) => point.x);
+    const keepsEdgeDomain = category.hasBars || category.type === ChartType.LINE;
+    const xDomain = keepsEdgeDomain ? extent(xValues) : this.#paddedXDomain(xValues);
     const x = (value) => scale(value, xDomain, [frame.left, frame.right]);
     const y = (value) => scale(value, data.values.domain, [frame.bottom, frame.top]);
     let value = y;
@@ -302,6 +316,30 @@ export default class CartesianLayout {
     }
 
     return { x, y, value, pointX };
+  }
+
+  /**
+   * Adds half of each outer neighbor interval to an independent x-domain.
+   *
+   * Line charts intentionally keep their endpoints on the plot boundary,
+   * while point-based charts need room for complete outer inspection cells.
+   *
+   * @param {number[]} values - X coordinates from every rendered dataset.
+   * @returns {[number, number]} Domain including both outer half intervals.
+   */
+  #paddedXDomain(values) {
+    const ordered = [...new Set(values)].toSorted((left, right) => left - right);
+
+    if (ordered.length < 2) {
+      return extent(ordered);
+    }
+
+    const first = ordered[0];
+    const second = ordered[1];
+    const last = ordered.at(-1);
+    const previous = ordered.at(PENULTIMATE_INDEX);
+
+    return [first - (second - first) / 2, last + (last - previous) / 2];
   }
 
   /**
@@ -439,9 +477,7 @@ export default class CartesianLayout {
         return top + ((index + SLOT_MIDPOINT) * (bottom - top)) / this.categories.count;
       }
 
-      const point = this.#chart.datasets[0].points[index];
-
-      return this.#pointX(point, index);
+      return this.categoryAt(index);
     });
 
     return Object.freeze(

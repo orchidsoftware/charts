@@ -1,4 +1,5 @@
 import {
+  ChartType,
   HORIZONTAL_LABEL_EDGE_INSET,
   HORIZONTAL_LABEL_GAP,
   MAJOR_GRID_DIVISIONS,
@@ -468,7 +469,9 @@ export default class CartesianAxesRenderer {
    */
   #renderVerticalLabels() {
     const { height, left, right } = this.#layout.frame;
-    const step = (right - left) / Math.max(1, this.#chart.labels.length - 1);
+    const shouldCenterCategories = this.#layout.type !== ChartType.LINE;
+    const intervals = shouldCenterCategories ? this.#chart.labels.length : this.#chart.labels.length - 1;
+    const step = (right - left) / Math.max(1, intervals);
     const stride = Math.max(1, Math.ceil(TARGET_CATEGORY_LABEL_SPACING / Math.max(1, step)));
     const visibleIndexes = [];
 
@@ -484,7 +487,10 @@ export default class CartesianAxesRenderer {
     }
 
     for (const [visibleIndex, index] of visibleIndexes.entries()) {
-      const placement = this.#verticalLabelPlacement({ visibleIndexes, visibleIndex, index, step });
+      const placement = shouldCenterCategories
+        ? this.#centeredLabelPlacement({ visibleIndexes, visibleIndex, index })
+        : this.#verticalLabelPlacement({ visibleIndexes, visibleIndex, index, step });
+
       const formatted = this.#layout.categories.labels[index];
       const value = Array.isArray(formatted) ? formatted.join(" ") : formatted;
 
@@ -502,6 +508,43 @@ export default class CartesianAxesRenderer {
 
       this.#surface.append(text);
     }
+  }
+
+  /**
+   * Centers a category label on the same slot or point used by its mark.
+   *
+   * @param {object} state - Visible indexes and the current sampled label.
+   * @param {number[]} state.visibleIndexes - Ordered source indexes that remain visible.
+   * @param {number} state.visibleIndex - Position in the sampled visible collection.
+   * @param {number} state.index - Source category index.
+   * @returns {{x: number, anchor: string, width: number}} Bounded centered label placement.
+   */
+  #centeredLabelPlacement({ visibleIndexes, visibleIndex, index }) {
+    const { left: plotLeft, right: plotRight } = this.#layout.frame;
+    const position = this.#layout.categoryAt(index);
+
+    if (visibleIndexes.length === 1) {
+      return { x: position, anchor: "middle", width: plotRight - plotLeft };
+    }
+
+    const previousBoundary =
+      visibleIndex === 0
+        ? plotLeft
+        : (this.#layout.categoryAt(visibleIndexes[visibleIndex - 1]) + position) / 2;
+
+    const nextBoundary =
+      visibleIndex === visibleIndexes.length - 1
+        ? plotRight
+        : (position + this.#layout.categoryAt(visibleIndexes[visibleIndex + 1])) / 2;
+
+    return {
+      x: position,
+      anchor: "middle",
+      width: Math.max(
+        MINIMUM_CATEGORY_LABEL_WIDTH,
+        2 * Math.min(position - previousBoundary, nextBoundary - position) - CATEGORY_LABEL_TOTAL_GAP,
+      ),
+    };
   }
 
   /**

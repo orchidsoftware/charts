@@ -8,6 +8,9 @@ All notable changes to Charts2 are documented in this file. The format follows
 
 ### Changed
 
+- Updated the public declaration compatibility gate to TypeScript 7. SonarJS
+  remains isolated on TypeScript 5.9.3 until its analyzer supports the newer
+  compiler API.
 - Switched the unpublished package to ESM-only module-preserving output with
   closed exports and explicit CSS loading.
 - Bound each named definition directly to its model and renderer functions so

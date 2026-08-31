@@ -71,6 +71,11 @@
   "engines": {
     "node": ">=22.12"
   },
+  "overrides": {
+    "eslint-plugin-sonarjs": {
+      "typescript": "5.9.3"
+    }
+  },
   "keywords": [
     "accessible",
     "calendar-heatmap",
@@ -116,7 +121,7 @@
     "stylelint-config-recess-order": "^7.8.0",
     "stylelint-config-standard": "^40.0.0",
     "terser": "^5.51.2",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "vite": "^8.2.2",
     "vitest": "^4.1.11"
   }

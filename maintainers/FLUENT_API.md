@@ -1436,7 +1436,7 @@ The implementation migration MUST use this single vocabulary:
 
 A release claiming conformance MUST make the following files and surfaces tell
 the same story: package exports, JavaScript runtime, TypeScript declarations,
-README, `docs/API.md`, positioning copy, demo source, tests, and generated
+README, `docs/api-reference.md`, positioning copy, demo source, tests, and generated
 package contents. The release MUST expose exactly the named definitions in
 section 3 and MUST NOT expose both the legacy factory and the fluent API.
 

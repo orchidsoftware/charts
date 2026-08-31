@@ -18,7 +18,10 @@ function namedDatasetArguments(name, values, colorOrConfigure) {
 
   const configure = typeof colorOrConfigure === "function" ? colorOrConfigure : undefined;
 
-  return { dataset, configure };
+  return {
+    dataset,
+    configure,
+  };
 }
 
 /**
@@ -37,7 +40,10 @@ function unnamedDatasetArguments(values, colorOrConfigure) {
 
   const configure = typeof colorOrConfigure === "function" ? colorOrConfigure : undefined;
 
-  return { dataset, configure };
+  return {
+    dataset,
+    configure,
+  };
 }
 
 /**

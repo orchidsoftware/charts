@@ -151,7 +151,10 @@ function requireFiniteNumber(value, name) {
  */
 function normalizePoint(point, index) {
   if (typeof point === "number") {
-    return { x: index, y: requireFiniteNumber(point, "Point") };
+    return {
+      x: index,
+      y: requireFiniteNumber(point, "Point"),
+    };
   }
 
   if (!point || typeof point !== "object") {
@@ -453,6 +456,7 @@ function validateCoordinatePoint(value, type) {
  * @returns {Array<{date: Date, key: string, value: number}>} Chronologically sorted daily entries.
  * @throws {TypeError} When bounds, dates, or values are invalid.
  */
+// eslint-disable-next-line max-lines-per-function -- Returned-object layout lines do not add behavior.
 function normalizeHeatmapData(data = {}) {
   validateObjectKeys(
     data,
@@ -485,7 +489,11 @@ function normalizeHeatmapData(data = {}) {
         throw new TypeError(`Invalid heatmap date: ${key}`);
       }
 
-      return { date, key: date.toISOString().slice(0, ISO_DATE_LENGTH), value };
+      return {
+        date,
+        key: date.toISOString().slice(0, ISO_DATE_LENGTH),
+        value,
+      };
     },
   );
 
@@ -731,7 +739,11 @@ function normalizeTimesheetData(data = {}, colors = DEFAULT_COLORS) {
     throw new TypeError("Timesheet bounds must contain every task");
   }
 
-  return { start, end, tasks };
+  return {
+    start,
+    end,
+    tasks,
+  };
 }
 
 /**

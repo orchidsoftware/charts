@@ -1473,7 +1473,10 @@ function mountChart(selector, options) {
     height: 280,
     ...options,
   });
-  return { chart, source: options.data };
+  return {
+    chart,
+    source: options.data,
+  };
 }
 
 const heroRevenueHost = document.querySelector("#hero-revenue");
@@ -1581,7 +1584,10 @@ const sparks = sparkSpecs.map(
         ],
       },
     });
-    return { chart, source };
+    return {
+      chart,
+      source,
+    };
   },
 );
 

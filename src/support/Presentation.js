@@ -122,7 +122,11 @@ function legendLayout(width, items) {
     return position;
   });
 
-  return { labelOffset, positions, rows };
+  return {
+    labelOffset,
+    positions,
+    rows,
+  };
 }
 
 /**

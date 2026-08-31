@@ -167,15 +167,24 @@ export default class ChartTooltip {
       }
 
       case "right": {
-        return { left: anchor.left + TOOLTIP_ANCHOR_OFFSET, top: anchor.top - size.height / 2 };
+        return {
+          left: anchor.left + TOOLTIP_ANCHOR_OFFSET,
+          top: anchor.top - size.height / 2,
+        };
       }
 
       case "bottom": {
-        return { left: anchor.left - size.width / 2, top: anchor.top + TOOLTIP_ANCHOR_OFFSET };
+        return {
+          left: anchor.left - size.width / 2,
+          top: anchor.top + TOOLTIP_ANCHOR_OFFSET,
+        };
       }
 
       default: {
-        return { left: anchor.left - size.width - TOOLTIP_ANCHOR_OFFSET, top: anchor.top - size.height / 2 };
+        return {
+          left: anchor.left - size.width - TOOLTIP_ANCHOR_OFFSET,
+          top: anchor.top - size.height / 2,
+        };
       }
     }
   }

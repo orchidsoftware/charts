@@ -350,7 +350,11 @@ function compileBuilder(builder) {
   options.type = state.type;
   options.data = data;
 
-  return { parent: state.parent, options, mount: state.mount };
+  return {
+    parent: state.parent,
+    options,
+    mount: state.mount,
+  };
 }
 
 /**

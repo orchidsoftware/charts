@@ -367,10 +367,16 @@ export default class CartesianAxesRenderer {
     const { bottom, left, right, top } = this.#layout.frame;
 
     if (this.#layout.isHorizontal) {
-      return { minimum: left, maximum: right };
+      return {
+        minimum: left,
+        maximum: right,
+      };
     }
 
-    return { minimum: top, maximum: bottom };
+    return {
+      minimum: top,
+      maximum: bottom,
+    };
   }
 
   /**
@@ -569,7 +575,11 @@ export default class CartesianAxesRenderer {
     const position = this.#layout.categoryAt(index);
 
     if (visibleIndexes.length === 1) {
-      return { x: position, anchor: "middle", width: plotRight - plotLeft };
+      return {
+        x: position,
+        anchor: "middle",
+        width: plotRight - plotLeft,
+      };
     }
 
     const previousBoundary =
@@ -606,7 +616,11 @@ export default class CartesianAxesRenderer {
     const { left: plotLeft, right: plotRight } = this.#layout.frame;
 
     if (visibleIndexes.length === 1) {
-      return { x: plotLeft, anchor: "start", width: plotRight - plotLeft };
+      return {
+        x: plotLeft,
+        anchor: "start",
+        width: plotRight - plotLeft,
+      };
     }
 
     const position = plotLeft + index * step;

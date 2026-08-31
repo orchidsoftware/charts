@@ -235,7 +235,10 @@ function chartDimensions(host, options) {
 
   const defaultHeight = options.type === ChartType.TIMESHEET ? timesheetHeight : DEFAULT_CHART_HEIGHT;
 
-  return { width: options.width ?? measureParentWidth(host), height: options.height ?? defaultHeight };
+  return {
+    width: options.width ?? measureParentWidth(host),
+    height: options.height ?? defaultHeight,
+  };
 }
 
 /**
@@ -276,7 +279,10 @@ function normalizeChartOptions(host, options) {
     throw new TypeError("Chart colors must be a non-empty array");
   }
 
-  return { options: normalized, hasCustomColors: options.colors !== undefined };
+  return {
+    options: normalized,
+    hasCustomColors: options.colors !== undefined,
+  };
 }
 
 /**

@@ -75,7 +75,11 @@ export default class CartesianInspectorRenderer {
 
       const size = point.r === undefined ? "" : `, size ${point.r}`;
 
-      return { name: dataset.name, value: `${formattedValue}${size}`, color: dataset.color };
+      return {
+        name: dataset.name,
+        value: `${formattedValue}${size}`,
+        color: dataset.color,
+      };
     });
   }
 }

@@ -119,7 +119,10 @@ export default class CartesianLayout {
    * @returns {{x: number, y: number}} Screen-space point.
    */
   pointAt(point, index) {
-    return { x: this.#pointX(point, index), y: this.#y(point.y) };
+    return {
+      x: this.#pointX(point, index),
+      y: this.#y(point.y),
+    };
   }
 
   /**
@@ -240,7 +243,14 @@ export default class CartesianLayout {
 
     const usesInspector = supportsInspector && data.count <= MAX_X_INSPECTOR_POINTS;
 
-    return { orientation, type, ...presentation, ...data, frame, usesInspector };
+    return {
+      orientation,
+      type,
+      ...presentation,
+      ...data,
+      frame,
+      usesInspector,
+    };
   }
 
   /**
@@ -266,7 +276,14 @@ export default class CartesianLayout {
 
     const isYAxisRight = this.#chart.options.yAxisPosition === YAxisPosition.RIGHT;
 
-    return { isFrameless, padding, top, isHorizontal, labels, isYAxisRight };
+    return {
+      isFrameless,
+      padding,
+      top,
+      isHorizontal,
+      labels,
+      isYAxisRight,
+    };
   }
 
   /**
@@ -283,7 +300,14 @@ export default class CartesianLayout {
     const values = this.#valueScale(points, { datasets: barDatasets, isStacked }, state);
     const gutter = this.#valueGutter(state.labels, values, state);
 
-    return { points, count, barDatasets, isStacked, values, gutter };
+    return {
+      points,
+      count,
+      barDatasets,
+      isStacked,
+      values,
+      gutter,
+    };
   }
 
   /**
@@ -294,6 +318,7 @@ export default class CartesianLayout {
    * @param {object} category - Category count, direction, and slot policy.
    * @returns {object} Bound x, y, value, and point-position functions.
    */
+  // eslint-disable-next-line max-lines-per-function -- Returned-object layout lines do not add behavior.
   #scalesFor(frame, data, category) {
     const xValues = data.points.map((point) => point.x);
     const keepsEdgeDomain = category.hasBars || category.type === ChartType.LINE;
@@ -330,7 +355,12 @@ export default class CartesianLayout {
       pointX = (_point, index) => center(index);
     }
 
-    return { x, y, value, pointX };
+    return {
+      x,
+      y,
+      value,
+      pointX,
+    };
   }
 
   /**

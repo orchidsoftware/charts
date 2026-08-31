@@ -13,7 +13,10 @@ const DEGREES_PER_CIRCLE = 360;
  * @returns {{x: number, y: number}} Cartesian point on the requested ray.
  */
 function polarPoint({ cx, cy, radius, angle }) {
-  return { x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius };
+  return {
+    x: cx + Math.cos(angle) * radius,
+    y: cy + Math.sin(angle) * radius,
+  };
 }
 
 /**
@@ -279,7 +282,10 @@ function paddedSector({ angles, radii, padding }) {
   const sweep = angles.end - angles.start;
 
   if (padding.count <= 1 || padding.angle === 0 || sweep <= 0) {
-    return { outer: { ...angles }, inner: { ...angles } };
+    return {
+      outer: { ...angles },
+      inner: { ...angles },
+    };
   }
 
   const halfPad = (padding.angle * Math.PI) / DEGREES_PER_CIRCLE;

@@ -61,15 +61,24 @@ function formatTimeTick(value, span, formatter) {
  */
 function timeFormatOptions(span) {
   if (span <= 2 * DAY) {
-    return { hour: "numeric", minute: "2-digit" };
+    return {
+      hour: "numeric",
+      minute: "2-digit",
+    };
   }
 
   if (span <= QUARTER_YEAR_DAYS * DAY) {
-    return { month: "short", day: "numeric" };
+    return {
+      month: "short",
+      day: "numeric",
+    };
   }
 
   if (span <= 2 * DAYS_PER_YEAR * DAY) {
-    return { month: "short", year: "2-digit" };
+    return {
+      month: "short",
+      year: "2-digit",
+    };
   }
 
   return { year: "numeric" };

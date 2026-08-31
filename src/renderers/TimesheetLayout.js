@@ -127,7 +127,11 @@ function timesheetGeometry(chart) {
     span: values.end - values.start,
   });
 
-  return { frame, values, maximumTicks };
+  return {
+    frame,
+    values,
+    maximumTicks,
+  };
 }
 
 /**

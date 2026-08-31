@@ -196,7 +196,13 @@ export default class HeatmapRenderer {
 
     const cellHeight = Math.max(1, (availableGridHeight - (dimensions.rows - 1) * rowGap) / dimensions.rows);
 
-    return { availableGridHeight, rowGap, columnGap, cellWidth, cellHeight };
+    return {
+      availableGridHeight,
+      rowGap,
+      columnGap,
+      cellWidth,
+      cellHeight,
+    };
   }
 
   /**
@@ -224,7 +230,10 @@ export default class HeatmapRenderer {
         colors.length,
       );
 
-    return { colors, colorLevel };
+    return {
+      colors,
+      colorLevel,
+    };
   }
 
   /**

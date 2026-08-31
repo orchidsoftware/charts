@@ -20,11 +20,51 @@ const NODE_FILES = [
 ];
 const MAX_CONSECUTIVE_DECLARATIONS = 8;
 const MINIMUM_MULTILINE_ARRAY_ITEMS = 3;
+const MINIMUM_MULTILINE_RETURN_PROPERTIES = 2;
 const declarationSequence = Array.from(
   { length: MAX_CONSECUTIVE_DECLARATIONS + 1 },
   () => "VariableDeclaration",
 ).join(" + ");
 const declarationWallSelector = `:matches(FunctionDeclaration, FunctionExpression, ArrowFunctionExpression) BlockStatement > ${declarationSequence}`;
+
+function hasOneItemPerLine(sourceCode, containerNode, items) {
+  const boundaryTokens = [
+    sourceCode.getFirstToken(containerNode),
+    ...items,
+    sourceCode.getLastToken(containerNode),
+  ];
+
+  return boundaryTokens.every((token, index) => {
+    const previousToken = boundaryTokens[index - 1];
+
+    return previousToken === undefined || previousToken.loc.end.line < token.loc.start.line;
+  });
+}
+
+function multilineContainerFixes(fixer, sourceCode, containerNode, items) {
+  const openingToken = sourceCode.getFirstToken(containerNode);
+  const closingToken = sourceCode.getLastToken(containerNode);
+  const fixes = [];
+
+  if (openingToken.loc.end.line === items[0].loc.start.line) {
+    fixes.push(fixer.insertTextAfter(openingToken, "\n"));
+  }
+
+  for (let index = 1; index < items.length; index += 1) {
+    const previousItem = items[index - 1];
+    const item = items[index];
+
+    if (previousItem.loc.end.line === item.loc.start.line) {
+      fixes.push(fixer.insertTextBefore(item, "\n"));
+    }
+  }
+
+  if (items.at(-1).loc.end.line === closingToken.loc.start.line) {
+    fixes.push(fixer.insertTextBefore(closingToken, "\n"));
+  }
+
+  return fixes;
+}
 
 const multilineArrayRule = {
   meta: {
@@ -44,18 +84,7 @@ const multilineArrayRule = {
           return;
         }
 
-        const boundaryTokens = [
-          sourceCode.getFirstToken(arrayNode),
-          ...elements,
-          sourceCode.getLastToken(arrayNode),
-        ];
-        const isMultiline = boundaryTokens.every((token, index) => {
-          const previousToken = boundaryTokens[index - 1];
-
-          return previousToken === undefined || previousToken.loc.end.line < token.loc.start.line;
-        });
-
-        if (!isMultiline) {
+        if (!hasOneItemPerLine(sourceCode, arrayNode, elements)) {
           context.report({ messageId: "multiline", node: arrayNode });
         }
       },
@@ -63,7 +92,51 @@ const multilineArrayRule = {
   },
 };
 
-const charts2Plugin = { rules: { "multiline-array": multilineArrayRule } };
+const multilineReturnObjectRule = {
+  meta: {
+    type: "layout",
+    docs: {
+      description: "Require returned objects with two or more properties to use one line per property.",
+    },
+    messages: {
+      multiline: "Returned objects with two or more properties must place each property on its own line.",
+    },
+    fixable: "whitespace",
+    schema: [],
+  },
+  create(context) {
+    const sourceCode = context.sourceCode;
+
+    return {
+      ReturnStatement(returnNode) {
+        const objectNode = returnNode.argument;
+
+        if (objectNode?.type !== "ObjectExpression") {
+          return;
+        }
+
+        if (objectNode.properties.length < MINIMUM_MULTILINE_RETURN_PROPERTIES) {
+          return;
+        }
+
+        if (!hasOneItemPerLine(sourceCode, objectNode, objectNode.properties)) {
+          context.report({
+            fix: (fixer) => multilineContainerFixes(fixer, sourceCode, objectNode, objectNode.properties),
+            messageId: "multiline",
+            node: objectNode,
+          });
+        }
+      },
+    };
+  },
+};
+
+const charts2Plugin = {
+  rules: {
+    "multiline-array": multilineArrayRule,
+    "multiline-return-object": multilineReturnObjectRule,
+  },
+};
 
 const correctnessRules = {
   ...eslint.configs.recommended.rules,
@@ -170,6 +243,7 @@ const correctnessRules = {
   "require-atomic-updates": "error",
   "require-await": "error",
   "charts2/multiline-array": "error",
+  "charts2/multiline-return-object": "error",
   "import-x/first": "error",
   "import-x/newline-after-import": "error",
   "import-x/no-cycle": [

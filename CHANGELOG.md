@@ -10,6 +10,8 @@ All notable changes to Charts2 are documented in this file. The format follows
 
 - Require JavaScript array literals with three or more elements to place each
   element on its own line, with matching ESLint and Prettier enforcement.
+- Require directly returned object literals with two or more properties to
+  place each property on its own line.
 - Updated the public declaration compatibility gate to TypeScript 7. SonarJS
   remains isolated on TypeScript 5.9.3 until its analyzer supports the newer
   compiler API.

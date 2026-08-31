@@ -254,7 +254,10 @@ function normalizeSeries(type, data, colors) {
 
   validateChartData(type, datasets, labels);
 
-  return { source: normalizeCartesianSource(data), collections: { datasets, labels } };
+  return {
+    source: normalizeCartesianSource(data),
+    collections: { datasets, labels },
+  };
 }
 
 /**

@@ -40,7 +40,20 @@ if (bundleSizeValue && bundleSizeGzip) {
  * Shared presentation helpers
  */
 
-const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const months = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 const denseLabels = Array.from({ length: 48 }, (_, index) => `W${String(index + 1).padStart(2, "0")}`);
 const denseValues = denseLabels.map((_, index) =>
   Math.round(42 + Math.sin(index / 3) * 18 + Math.cos(index / 7) * 9 + index * 0.6),
@@ -52,12 +65,38 @@ const heroRevenueSource = {
     {
       name: "Revenue",
       color: "var(--charts2-demo-blue)",
-      values: [42, 47, 45, 53, 58, 61, 60, 68, 72, 76, 79, 84],
+      values: [
+        42,
+        47,
+        45,
+        53,
+        58,
+        61,
+        60,
+        68,
+        72,
+        76,
+        79,
+        84,
+      ],
     },
     {
       name: "Plan",
       color: "var(--charts2-demo-coral)",
-      values: [44, 47, 49, 53, 56, 60, 63, 67, 71, 75, 80, 85],
+      values: [
+        44,
+        47,
+        49,
+        53,
+        56,
+        60,
+        63,
+        67,
+        71,
+        75,
+        80,
+        85,
+      ],
     },
   ],
 };
@@ -67,7 +106,15 @@ const heatmapOptions = {
   ariaLabel: "Daily contributions throughout 2026",
   countLabel: "contributions",
   radius: 2,
-  colors: ["#f2f2f7", "#d8ecff", "#acd7ff", "#73baff", "#2490ef", "#126fbd", "#084b83"],
+  colors: [
+    "#f2f2f7",
+    "#d8ecff",
+    "#acd7ff",
+    "#73baff",
+    "#2490ef",
+    "#126fbd",
+    "#084b83",
+  ],
   data: {
     start: new Date("2026-01-01T00:00:00Z"),
     end: new Date("2026-12-31T00:00:00Z"),
@@ -151,10 +198,55 @@ export const showcaseSpecs = [
         datasets: [
           {
             name: "Downloads",
-            values: [42.1, 46.8, 44.5, 53.2, 57.9, 61.4, 59.8, 68.3, 71.6, 76.2, 79.4, 84.2],
+            values: [
+              42.1,
+              46.8,
+              44.5,
+              53.2,
+              57.9,
+              61.4,
+              59.8,
+              68.3,
+              71.6,
+              76.2,
+              79.4,
+              84.2,
+            ],
           },
-          { name: "Plan", values: [44, 47, 49, 53, 56, 60, 63, 67, 71, 75, 80, 85] },
-          { name: "Previous year", values: [35, 39, 41, 45, 48, 52, 54, 57, 61, 65, 69, 73] },
+          {
+            name: "Plan",
+            values: [
+              44,
+              47,
+              49,
+              53,
+              56,
+              60,
+              63,
+              67,
+              71,
+              75,
+              80,
+              85,
+            ],
+          },
+          {
+            name: "Previous year",
+            values: [
+              35,
+              39,
+              41,
+              45,
+              48,
+              52,
+              54,
+              57,
+              61,
+              65,
+              69,
+              73,
+            ],
+          },
         ],
       },
     },
@@ -170,9 +262,60 @@ export const showcaseSpecs = [
       data: {
         labels: months,
         datasets: [
-          { name: "Free", color: "#2490ef", values: [22, 27, 31, 35, 40, 45, 51, 57, 63, 70, 76, 82] },
-          { name: "Individual", color: "#af52de", values: [14, 17, 21, 25, 30, 35, 40, 46, 51, 56, 61, 65] },
-          { name: "Family", color: "#ff9500", values: [6, 8, 11, 14, 17, 20, 24, 28, 31, 34, 37, 40] },
+          {
+            name: "Free",
+            color: "#2490ef",
+            values: [
+              22,
+              27,
+              31,
+              35,
+              40,
+              45,
+              51,
+              57,
+              63,
+              70,
+              76,
+              82,
+            ],
+          },
+          {
+            name: "Individual",
+            color: "#af52de",
+            values: [
+              14,
+              17,
+              21,
+              25,
+              30,
+              35,
+              40,
+              46,
+              51,
+              56,
+              61,
+              65,
+            ],
+          },
+          {
+            name: "Family",
+            color: "#ff9500",
+            values: [
+              6,
+              8,
+              11,
+              14,
+              17,
+              20,
+              24,
+              28,
+              31,
+              34,
+              37,
+              40,
+            ],
+          },
         ],
       },
     },
@@ -184,11 +327,52 @@ export const showcaseSpecs = [
       height: 220,
       ariaLabel: "Notifications received from Messages Calendar and Home this week",
       data: {
-        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        labels: [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri",
+          "Sat",
+          "Sun",
+        ],
         datasets: [
-          { name: "Messages", values: [18, 24, 21, 31, 28, 16, 12] },
-          { name: "Calendar", values: [6, 8, 5, 7, 9, 2, 1] },
-          { name: "Home", values: [4, 6, 3, 8, 5, 7, 6] },
+          {
+            name: "Messages",
+            values: [
+              18,
+              24,
+              21,
+              31,
+              28,
+              16,
+              12,
+            ],
+          },
+          {
+            name: "Calendar",
+            values: [
+              6,
+              8,
+              5,
+              7,
+              9,
+              2,
+              1,
+            ],
+          },
+          {
+            name: "Home",
+            values: [
+              4,
+              6,
+              3,
+              8,
+              5,
+              7,
+              6,
+            ],
+          },
         ],
       },
     },
@@ -202,10 +386,33 @@ export const showcaseSpecs = [
       formatTooltipValue: (value) => `${formatDemoValue(value)} h`,
       ariaLabel: "Standard and express delivery time by region in hours",
       data: {
-        labels: ["North America", "Europe", "Asia-Pacific", "Latin America"],
+        labels: [
+          "North America",
+          "Europe",
+          "Asia-Pacific",
+          "Latin America",
+        ],
         datasets: [
-          { name: "Standard", color: "#2490ef", values: [42, 36, 54, 61] },
-          { name: "Express", color: "#ff9500", values: [18, 16, 24, 28] },
+          {
+            name: "Standard",
+            color: "#2490ef",
+            values: [
+              42,
+              36,
+              54,
+              61,
+            ],
+          },
+          {
+            name: "Express",
+            color: "#ff9500",
+            values: [
+              18,
+              16,
+              24,
+              28,
+            ],
+          },
         ],
       },
     },
@@ -219,11 +426,43 @@ export const showcaseSpecs = [
       stacked: true,
       ariaLabel: "Orders by channel and fulfillment status",
       data: {
-        labels: ["Online Store", "Retail pickup", "Marketplace", "Partner"],
+        labels: [
+          "Online Store",
+          "Retail pickup",
+          "Marketplace",
+          "Partner",
+        ],
         datasets: [
-          { name: "Shipped", color: "#248a3d", values: [52, 38, 49, 12] },
-          { name: "Processing", color: "#2490ef", values: [14, 9, 18, 5] },
-          { name: "Delayed", color: "#ff9500", values: [4, 3, 7, 3] },
+          {
+            name: "Shipped",
+            color: "#248a3d",
+            values: [
+              52,
+              38,
+              49,
+              12,
+            ],
+          },
+          {
+            name: "Processing",
+            color: "#2490ef",
+            values: [
+              14,
+              9,
+              18,
+              5,
+            ],
+          },
+          {
+            name: "Delayed",
+            color: "#ff9500",
+            values: [
+              4,
+              3,
+              7,
+              3,
+            ],
+          },
         ],
       },
     },
@@ -236,10 +475,37 @@ export const showcaseSpecs = [
       formatTooltipValue: (value) => `${formatDemoValue(value)} h`,
       ariaLabel: "Battery life by device price for phones and tablets",
       data: {
-        labels: ["$699", "$799", "$899", "$999", "$1,099", "$1,199"],
+        labels: [
+          "$699",
+          "$799",
+          "$899",
+          "$999",
+          "$1,099",
+          "$1,199",
+        ],
         datasets: [
-          { name: "Phone", values: [18, 20, 22, 24, 26, 28] },
-          { name: "Tablet", values: [24, 26, 29, 31, 34, 36] },
+          {
+            name: "Phone",
+            values: [
+              18,
+              20,
+              22,
+              24,
+              26,
+              28,
+            ],
+          },
+          {
+            name: "Tablet",
+            values: [
+              24,
+              26,
+              29,
+              31,
+              34,
+              36,
+            ],
+          },
         ],
       },
     },
@@ -251,7 +517,13 @@ export const showcaseSpecs = [
       height: 300,
       ariaLabel: "Weekly reach and installed size across an app portfolio",
       data: {
-        labels: ["Photos", "Music", "Maps", "Fitness", "Notes"],
+        labels: [
+          "Photos",
+          "Music",
+          "Maps",
+          "Fitness",
+          "Notes",
+        ],
         datasets: [
           {
             name: "Weekly users",
@@ -275,10 +547,39 @@ export const showcaseSpecs = [
       height: 320,
       ariaLabel: "Current and previous phone comparison",
       data: {
-        labels: ["Performance", "Battery", "Camera", "Display", "Portability", "Value"],
+        labels: [
+          "Performance",
+          "Battery",
+          "Camera",
+          "Display",
+          "Portability",
+          "Value",
+        ],
         datasets: [
-          { name: "Current phone", color: "#2490ef", values: [92, 84, 89, 91, 76, 72] },
-          { name: "Previous phone", color: "#8e8e93", values: [74, 77, 71, 78, 84, 81] },
+          {
+            name: "Current phone",
+            color: "#2490ef",
+            values: [
+              92,
+              84,
+              89,
+              91,
+              76,
+              72,
+            ],
+          },
+          {
+            name: "Previous phone",
+            color: "#8e8e93",
+            values: [
+              74,
+              77,
+              71,
+              78,
+              84,
+              81,
+            ],
+          },
         ],
       },
     },
@@ -291,8 +592,26 @@ export const showcaseSpecs = [
       formatTooltipValue: (value) => `${formatDemoValue(value)} min`,
       ariaLabel: "Screen Time by app category",
       data: {
-        labels: ["Social", "Entertainment", "Productivity", "Creativity", "Reading", "Other"],
-        datasets: [{ values: [74, 68, 52, 41, 24, 18] }],
+        labels: [
+          "Social",
+          "Entertainment",
+          "Productivity",
+          "Creativity",
+          "Reading",
+          "Other",
+        ],
+        datasets: [
+          {
+            values: [
+              74,
+              68,
+              52,
+              41,
+              24,
+              18,
+            ],
+          },
+        ],
       },
     },
   ],
@@ -303,11 +622,62 @@ export const showcaseSpecs = [
       height: 300,
       ariaLabel: "Weekly store visits compared with plan and capacity",
       data: {
-        labels: ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"],
+        labels: [
+          "W1",
+          "W2",
+          "W3",
+          "W4",
+          "W5",
+          "W6",
+          "W7",
+          "W8",
+        ],
         datasets: [
-          { name: "Visits", chartType: "bar", color: "#2490ef", values: [28, 37, 34, 49, 46, 61, 58, 72] },
-          { name: "Plan", chartType: "line", color: "#af52de", values: [32, 35, 39, 44, 49, 54, 60, 66] },
-          { name: "Capacity", chartType: "line", color: "#ff9500", values: [48, 48, 52, 55, 58, 64, 70, 76] },
+          {
+            name: "Visits",
+            chartType: "bar",
+            color: "#2490ef",
+            values: [
+              28,
+              37,
+              34,
+              49,
+              46,
+              61,
+              58,
+              72,
+            ],
+          },
+          {
+            name: "Plan",
+            chartType: "line",
+            color: "#af52de",
+            values: [
+              32,
+              35,
+              39,
+              44,
+              49,
+              54,
+              60,
+              66,
+            ],
+          },
+          {
+            name: "Capacity",
+            chartType: "line",
+            color: "#ff9500",
+            values: [
+              48,
+              48,
+              52,
+              55,
+              58,
+              64,
+              70,
+              76,
+            ],
+          },
         ],
       },
     },
@@ -322,25 +692,61 @@ export const showcaseSpecs = [
       ariaLabel:
         "Daily account balance movement with right-side value axis, rolling trend, and alert threshold",
       data: {
-        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Today"],
+        labels: [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri",
+          "Sat",
+          "Sun",
+          "Today",
+        ],
         datasets: [
           {
             name: "Daily change",
             chartType: "bar",
             color: "#2490ef",
-            values: [-18, 9, -6, 22, 0, -14, 17, 28],
+            values: [
+              -18,
+              9,
+              -6,
+              22,
+              0,
+              -14,
+              17,
+              28,
+            ],
           },
           {
             name: "Rolling trend",
             chartType: "line",
             color: "#af52de",
-            values: [-8, -4, -2, 5, 7, 3, 8, 14],
+            values: [
+              -8,
+              -4,
+              -2,
+              5,
+              7,
+              3,
+              8,
+              14,
+            ],
           },
           {
             name: "Alert threshold",
             chartType: "line",
             color: "#ff9500",
-            values: [12, 12, 12, 12, 12, 12, 12, 12],
+            values: [
+              12,
+              12,
+              12,
+              12,
+              12,
+              12,
+              12,
+              12,
+            ],
           },
         ],
       },
@@ -410,7 +816,22 @@ export const showcaseSpecs = [
       type: "pie",
       height: 260,
       ariaLabel: "Website traffic sources",
-      data: { labels: ["Search", "Direct", "Referrals"], datasets: [{ values: [48, 34, 18] }] },
+      data: {
+        labels: [
+          "Search",
+          "Direct",
+          "Referrals",
+        ],
+        datasets: [
+          {
+            values: [
+              48,
+              34,
+              18,
+            ],
+          },
+        ],
+      },
     },
   ],
   [
@@ -420,7 +841,22 @@ export const showcaseSpecs = [
       height: 260,
       padAngle: 3,
       ariaLabel: "Members by subscription plan",
-      data: { labels: ["Individual", "Family", "Student"], datasets: [{ values: [6100, 2700, 1200] }] },
+      data: {
+        labels: [
+          "Individual",
+          "Family",
+          "Student",
+        ],
+        datasets: [
+          {
+            values: [
+              6100,
+              2700,
+              1200,
+            ],
+          },
+        ],
+      },
     },
   ],
   [
@@ -430,10 +866,35 @@ export const showcaseSpecs = [
       height: 140,
       formatTooltipValue: (value) => `${formatDemoValue(value)} GB`,
       ariaLabel: "iPhone storage usage by category",
-      colors: ["#ff9f0a", "#0a84ff", "#30d158", "#8e8e93", "#bf5af2", "#d1d1d6"],
+      colors: [
+        "#ff9f0a",
+        "#0a84ff",
+        "#30d158",
+        "#8e8e93",
+        "#bf5af2",
+        "#d1d1d6",
+      ],
       data: {
-        labels: ["Photos", "Apps", "Messages", "iOS", "System Data", "Free"],
-        datasets: [{ values: [72, 58, 21, 18, 23, 64] }],
+        labels: [
+          "Photos",
+          "Apps",
+          "Messages",
+          "iOS",
+          "System Data",
+          "Free",
+        ],
+        datasets: [
+          {
+            values: [
+              72,
+              58,
+              21,
+              18,
+              23,
+              64,
+            ],
+          },
+        ],
       },
     },
   ],
@@ -457,8 +918,24 @@ export const qualitySpecs = [
           "Final stabilized sample",
         ],
         datasets: [
-          { name: "Sensor A — fractional precision", values: [0.00012, 0.00018, 0.00013, 0.00021] },
-          { name: "Sensor B — comparison", values: [0.00009, 0.00014, 0.00016, 0.00019] },
+          {
+            name: "Sensor A — fractional precision",
+            values: [
+              0.00012,
+              0.00018,
+              0.00013,
+              0.00021,
+            ],
+          },
+          {
+            name: "Sensor B — comparison",
+            values: [
+              0.00009,
+              0.00014,
+              0.00016,
+              0.00019,
+            ],
+          },
         ],
       },
     },
@@ -471,9 +948,18 @@ export const qualitySpecs = [
       ariaLabel: "Large values with long category labels",
       formatLabel: (label) =>
         ({
-          "North America enterprise accounts": ["North America", "enterprise accounts"],
-          "Europe, Middle East, and Africa": ["Europe, Middle", "East, and Africa"],
-          "Asia-Pacific strategic partnerships": ["Asia-Pacific", "strategic partnerships"],
+          "North America enterprise accounts": [
+            "North America",
+            "enterprise accounts",
+          ],
+          "Europe, Middle East, and Africa": [
+            "Europe, Middle",
+            "East, and Africa",
+          ],
+          "Asia-Pacific strategic partnerships": [
+            "Asia-Pacific",
+            "strategic partnerships",
+          ],
         })[label] ?? label,
       data: {
         labels: [
@@ -482,8 +968,22 @@ export const qualitySpecs = [
           "Asia-Pacific strategic partnerships",
         ],
         datasets: [
-          { name: "Annual processing volume", values: [9_800_000, 12_750_000, 6_450_000] },
-          { name: "Previous annual volume", values: [8_400_000, 10_900_000, 5_900_000] },
+          {
+            name: "Annual processing volume",
+            values: [
+              9_800_000,
+              12_750_000,
+              6_450_000,
+            ],
+          },
+          {
+            name: "Previous annual volume",
+            values: [
+              8_400_000,
+              10_900_000,
+              5_900_000,
+            ],
+          },
         ],
       },
     },
@@ -525,8 +1025,24 @@ export const qualitySpecs = [
           "طلبات المؤسسات التي تتطلب مراجعة يدوية إضافية قبل الموافقة النهائية",
         ],
         datasets: [
-          { name: "Current", values: [72, 61, 48, 66] },
-          { name: "Previous", values: [64, 57, 52, 59] },
+          {
+            name: "Current",
+            values: [
+              72,
+              61,
+              48,
+              66,
+            ],
+          },
+          {
+            name: "Previous",
+            values: [
+              64,
+              57,
+              52,
+              59,
+            ],
+          },
         ],
       },
     },
@@ -537,10 +1053,39 @@ export const qualitySpecs = [
       type: "bar",
       ariaLabel: "Monthly losses zero and gains",
       data: {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+        labels: [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+        ],
         datasets: [
-          { name: "Actual delta", color: "#2490ef", values: [-42, 18, 0, -17, 51, -8] },
-          { name: "Previous delta", color: "#af52de", values: [-31, 12, -6, 9, 38, -14] },
+          {
+            name: "Actual delta",
+            color: "#2490ef",
+            values: [
+              -42,
+              18,
+              0,
+              -17,
+              51,
+              -8,
+            ],
+          },
+          {
+            name: "Previous delta",
+            color: "#af52de",
+            values: [
+              -31,
+              12,
+              -6,
+              9,
+              38,
+              -14,
+            ],
+          },
         ],
       },
     },
@@ -551,10 +1096,45 @@ export const qualitySpecs = [
       type: "line",
       ariaLabel: "Two signals repeatedly crossing zero",
       data: {
-        labels: ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8"],
+        labels: [
+          "T1",
+          "T2",
+          "T3",
+          "T4",
+          "T5",
+          "T6",
+          "T7",
+          "T8",
+        ],
         datasets: [
-          { name: "Signal A", color: "#2490ef", values: [-0.75, -0.2, 0.35, 0.9, 0.1, -0.45, -0.05, 0.62] },
-          { name: "Signal B", color: "#ff3b30", values: [0.4, -0.1, -0.55, 0.2, 0.78, 0.34, -0.28, -0.7] },
+          {
+            name: "Signal A",
+            color: "#2490ef",
+            values: [
+              -0.75,
+              -0.2,
+              0.35,
+              0.9,
+              0.1,
+              -0.45,
+              -0.05,
+              0.62,
+            ],
+          },
+          {
+            name: "Signal B",
+            color: "#ff3b30",
+            values: [
+              0.4,
+              -0.1,
+              -0.55,
+              0.2,
+              0.78,
+              0.34,
+              -0.28,
+              -0.7,
+            ],
+          },
         ],
       },
     },
@@ -583,10 +1163,45 @@ export const qualitySpecs = [
       type: "line",
       ariaLabel: "Flat and zero value series",
       data: {
-        labels: ["A", "B", "C", "D", "E", "F", "G", "H"],
+        labels: [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+        ],
         datasets: [
-          { name: "No activity", color: "#8e8e93", values: [0, 0, 0, 0, 0, 0, 0, 0] },
-          { name: "Constant baseline", color: "#2490ef", values: [12, 12, 12, 12, 12, 12, 12, 12] },
+          {
+            name: "No activity",
+            color: "#8e8e93",
+            values: [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+            ],
+          },
+          {
+            name: "Constant baseline",
+            color: "#2490ef",
+            values: [
+              12,
+              12,
+              12,
+              12,
+              12,
+              12,
+              12,
+              12,
+            ],
+          },
         ],
       },
     },
@@ -613,7 +1228,14 @@ const chartDefinitions = Object.freeze({
 });
 const backgroundSpecs = Object.keys(chartDefinitions).map((type) => {
   const source =
-    type === "heatmap" ? heatmapOptions : showcaseSpecs.find(([, options]) => options.type === type)?.[1];
+    type === "heatmap"
+      ? heatmapOptions
+      : showcaseSpecs.find(
+          ([
+            ,
+            options,
+          ]) => options.type === type,
+        )?.[1];
 
   if (!source) {
     throw new TypeError(`Missing background-boundary example for chart type: ${type}`);
@@ -638,14 +1260,38 @@ const backgroundSpecs = Object.keys(chartDefinitions).map((type) => {
  * @returns {object} The same configured builder.
  */
 function commonBuilder(builder, options) {
-  for (const [name, value] of [
-    ["height", options.height ?? 280],
-    ["width", options.width],
-    ["colors", options.colors],
-    ["ariaLabel", options.ariaLabel],
-    ["description", options.description],
-    ["formatLabel", options.formatLabel],
-    ["onSelect", options.onSelect],
+  for (const [
+    name,
+    value,
+  ] of [
+    [
+      "height",
+      options.height ?? 280,
+    ],
+    [
+      "width",
+      options.width,
+    ],
+    [
+      "colors",
+      options.colors,
+    ],
+    [
+      "ariaLabel",
+      options.ariaLabel,
+    ],
+    [
+      "description",
+      options.description,
+    ],
+    [
+      "formatLabel",
+      options.formatLabel,
+    ],
+    [
+      "onSelect",
+      options.onSelect,
+    ],
   ]) {
     if (value !== undefined) {
       builder[name](value);
@@ -679,11 +1325,26 @@ function seriesBuilder(builder, options) {
     builder.legend(options.legend);
   }
 
-  for (const [method, value] of [
-    ["axes", options.axes],
-    ["grid", options.grid],
-    ["valueLabels", options.valueLabels],
-    ["dots", options.dots],
+  for (const [
+    method,
+    value,
+  ] of [
+    [
+      "axes",
+      options.axes,
+    ],
+    [
+      "grid",
+      options.grid,
+    ],
+    [
+      "valueLabels",
+      options.valueLabels,
+    ],
+    [
+      "dots",
+      options.dots,
+    ],
   ]) {
     if (typeof builder[method] === "function" && value !== undefined) {
       builder[method](value);
@@ -744,10 +1405,22 @@ function typeBuilder(builder, options) {
     builder.yAxis((axis) => axis.position(options.yAxisPosition));
   }
 
-  for (const [method, value] of [
-    ["maxSlices", options.maxSlices],
-    ["startAngle", options.startAngle],
-    ["padAngle", options.padAngle],
+  for (const [
+    method,
+    value,
+  ] of [
+    [
+      "maxSlices",
+      options.maxSlices,
+    ],
+    [
+      "startAngle",
+      options.startAngle,
+    ],
+    [
+      "padAngle",
+      options.padAngle,
+    ],
   ]) {
     if (typeof builder[method] === "function" && value !== undefined) {
       builder[method](value);
@@ -818,15 +1491,24 @@ if (heroRevenueHost) {
   );
 }
 
-for (const [selector, options] of showcaseSpecs) {
+for (const [
+  selector,
+  options,
+] of showcaseSpecs) {
   updatableCharts.push(mountChart(selector, options));
 }
-for (const [selector, options] of qualitySpecs) {
+for (const [
+  selector,
+  options,
+] of qualitySpecs) {
   if (document.querySelector(selector)) {
     mountChart(selector, options);
   }
 }
-for (const [selector, options] of backgroundSpecs) {
+for (const [
+  selector,
+  options,
+] of backgroundSpecs) {
   if (document.querySelector(selector)) {
     mountChart(selector, options);
   }
@@ -842,9 +1524,25 @@ mountFluentChart("#heatmap", heatmapOptions);
  * Frameless charts with every omitted layer configured explicitly
  */
 
-const sparkValues = [12, 18, 16, 25, 21, 35, 29, 42, 38, 51, 47, 62];
+const sparkValues = [
+  12,
+  18,
+  16,
+  25,
+  21,
+  35,
+  29,
+  42,
+  38,
+  51,
+  47,
+  62,
+];
 const sparkSpecs = [
-  ["#spark-line", { type: "line", name: "Revenue", color: "#ff5858", ariaLabel: "Revenue trend" }],
+  [
+    "#spark-line",
+    { type: "line", name: "Revenue", color: "#ff5858", ariaLabel: "Revenue trend" },
+  ],
   [
     "#spark-area",
     {
@@ -855,25 +1553,37 @@ const sparkSpecs = [
       ariaLabel: "User trend",
     },
   ],
-  ["#spark-bar", { type: "bar", name: "Deploys", color: "#29cd42", ariaLabel: "Deployment trend" }],
+  [
+    "#spark-bar",
+    { type: "bar", name: "Deploys", color: "#29cd42", ariaLabel: "Deployment trend" },
+  ],
 ];
-const sparks = sparkSpecs.map(([selector, spec]) => {
-  const source = { name: spec.name, color: spec.color, values: sparkValues };
-  const chart = mountFluentChart(selector, {
-    type: spec.type,
-    height: 90,
-    axes: false,
-    grid: false,
-    valueLabels: false,
-    legend: false,
-    dots: false,
-    tooltipEnabled: false,
-    area: spec.area,
-    ariaLabel: spec.ariaLabel,
-    data: { datasets: [source] },
-  });
-  return { chart, source };
-});
+const sparks = sparkSpecs.map(
+  ([
+    selector,
+    spec,
+  ]) => {
+    const source = { name: spec.name, color: spec.color, values: sparkValues };
+    const chart = mountFluentChart(selector, {
+      type: spec.type,
+      height: 90,
+      axes: false,
+      grid: false,
+      valueLabels: false,
+      legend: false,
+      dots: false,
+      tooltipEnabled: false,
+      area: spec.area,
+      ariaLabel: spec.ariaLabel,
+      data: {
+        datasets: [
+          source,
+        ],
+      },
+    });
+    return { chart, source };
+  },
+);
 
 /*
  * Live data update

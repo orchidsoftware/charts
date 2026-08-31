@@ -21,7 +21,22 @@ describe("shared chart interaction contract", () => {
       orientation: "horizontal",
       ariaLabel: "Regional response",
       onSelect: vi.fn(),
-      data: { labels: ["EU", "US", "APAC"], datasets: [{ values: [42, 68, 51] }] },
+      data: {
+        labels: [
+          "EU",
+          "US",
+          "APAC",
+        ],
+        datasets: [
+          {
+            values: [
+              42,
+              68,
+              51,
+            ],
+          },
+        ],
+      },
     });
     const marks = scenario.marks();
     expect(marks).toHaveLength(3);
@@ -44,10 +59,28 @@ describe("shared chart interaction contract", () => {
       type: "radar",
       onSelect: vi.fn(),
       data: {
-        labels: ["Speed", "Quality", "Stability"],
+        labels: [
+          "Speed",
+          "Quality",
+          "Stability",
+        ],
         datasets: [
-          { name: "Current", values: [72, 88, 81] },
-          { name: "Previous", values: [64, 84, 76] },
+          {
+            name: "Current",
+            values: [
+              72,
+              88,
+              81,
+            ],
+          },
+          {
+            name: "Previous",
+            values: [
+              64,
+              84,
+              76,
+            ],
+          },
         ],
       },
     });
@@ -78,7 +111,20 @@ describe("shared chart interaction contract", () => {
       type: "pie",
       ariaLabel: "Acquisition sources",
       onSelect: vi.fn(),
-      data: { labels: ["Direct", "Search"], datasets: [{ values: [60, 40] }] },
+      data: {
+        labels: [
+          "Direct",
+          "Search",
+        ],
+        datasets: [
+          {
+            values: [
+              60,
+              40,
+            ],
+          },
+        ],
+      },
     });
     const marks = scenario.marks();
     expect(scenario.chart().element.getAttribute("role")).toBe("group");
@@ -91,12 +137,33 @@ describe("shared chart interaction contract", () => {
   });
 
   it("keeps radial popovers outside their sectors and percentage popovers on segments", () => {
-    for (const type of ["pie", "donut", "percentage"]) {
+    for (const type of [
+      "pie",
+      "donut",
+      "percentage",
+    ]) {
       const chart = createChart("#chart", {
         type,
-        data: { labels: ["Direct", "Search", "Partners"], datasets: [{ values: [1, 1, 1] }] },
+        data: {
+          labels: [
+            "Direct",
+            "Search",
+            "Partners",
+          ],
+          datasets: [
+            {
+              values: [
+                1,
+                1,
+                1,
+              ],
+            },
+          ],
+        },
       });
-      const marks = [...chart.element.querySelectorAll(".charts2-interactive-mark")];
+      const marks = [
+        ...chart.element.querySelectorAll(".charts2-interactive-mark"),
+      ];
 
       expect(marks).toHaveLength(3);
       const bottomMark = marks.find((mark) => mark.dataset.tooltipPlacement === "bottom");
@@ -118,7 +185,12 @@ describe("shared chart interaction contract", () => {
         if (type !== "percentage") {
           expect(Number(mark.dataset.tooltipAnchorX)).toBeGreaterThan(0);
           expect(Number(mark.dataset.tooltipAnchorY)).toBeGreaterThan(0);
-          expect(["top", "right", "bottom", "left"]).toContain(mark.dataset.tooltipPlacement);
+          expect([
+            "top",
+            "right",
+            "bottom",
+            "left",
+          ]).toContain(mark.dataset.tooltipPlacement);
         }
         mark.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
         expect(mark).toHaveClass("is-hovered");
@@ -132,7 +204,18 @@ describe("shared chart interaction contract", () => {
 
     const whole = createChart("#chart", {
       type: "pie",
-      data: { labels: ["Complete"], datasets: [{ values: [100] }] },
+      data: {
+        labels: [
+          "Complete",
+        ],
+        datasets: [
+          {
+            values: [
+              100,
+            ],
+          },
+        ],
+      },
     });
     const topMark = whole.element.querySelector(".charts2-interactive-mark");
 
@@ -143,14 +226,44 @@ describe("shared chart interaction contract", () => {
   });
 
   it("uses highlighted shared areas for easy scatter and bubble hover", () => {
-    for (const type of ["scatter", "bubble"]) {
-      const values = type === "bubble" ? [1, 2, 3, 4].map((x) => ({ x, y: x + 1, r: 5 })) : [2, 3, 4, 5];
+    for (const type of [
+      "scatter",
+      "bubble",
+    ]) {
+      const values =
+        type === "bubble"
+          ? [
+              1,
+              2,
+              3,
+              4,
+            ].map((x) => ({ x, y: x + 1, r: 5 }))
+          : [
+              2,
+              3,
+              4,
+              5,
+            ];
       const chart = createChart("#chart", {
         type,
-        data: { labels: ["A", "B", "C", "D"], datasets: [{ values }] },
+        data: {
+          labels: [
+            "A",
+            "B",
+            "C",
+            "D",
+          ],
+          datasets: [
+            { values },
+          ],
+        },
       });
-      const hits = [...chart.element.querySelectorAll(".charts2-x-hit")];
-      const visibleMarks = [...chart.element.querySelectorAll(".charts2-visual-mark")];
+      const hits = [
+        ...chart.element.querySelectorAll(".charts2-x-hit"),
+      ];
+      const visibleMarks = [
+        ...chart.element.querySelectorAll(".charts2-visual-mark"),
+      ];
       const widths = hits.map((hit) => Number(hit.getAttribute("width")));
 
       expect(hits).toHaveLength(visibleMarks.length);
@@ -170,11 +283,28 @@ describe("shared chart interaction contract", () => {
 
     const line = createChart("#chart", {
       type: "line",
-      data: { labels: ["A", "B", "C", "D"], datasets: [{ values: [2, 3, 4, 5] }] },
+      data: {
+        labels: [
+          "A",
+          "B",
+          "C",
+          "D",
+        ],
+        datasets: [
+          {
+            values: [
+              2,
+              3,
+              4,
+              5,
+            ],
+          },
+        ],
+      },
     });
-    const lineWidths = [...line.element.querySelectorAll(".charts2-x-hit")].map((hit) =>
-      Number(hit.getAttribute("width")),
-    );
+    const lineWidths = [
+      ...line.element.querySelectorAll(".charts2-x-hit"),
+    ].map((hit) => Number(hit.getAttribute("width")));
 
     expect(lineWidths[0] * 2).toBeCloseTo(lineWidths[1], 8);
     expect(lineWidths.at(-1) * 2).toBeCloseTo(lineWidths.at(-2), 8);
@@ -183,10 +313,27 @@ describe("shared chart interaction contract", () => {
 
   it("keeps aligned mixed hover shared while selection remains point-specific", () => {
     const data = {
-      labels: ["W1", "W2"],
+      labels: [
+        "W1",
+        "W2",
+      ],
       datasets: [
-        { name: "Actual", chartType: "bar", values: [2, 3] },
-        { name: "Plan", chartType: "line", values: [3, 4] },
+        {
+          name: "Actual",
+          chartType: "bar",
+          values: [
+            2,
+            3,
+          ],
+        },
+        {
+          name: "Plan",
+          chartType: "line",
+          values: [
+            3,
+            4,
+          ],
+        },
       ],
     };
     const hoverChart = createChart("#chart", { type: "mixed", data });
@@ -206,24 +353,66 @@ describe("shared chart interaction contract", () => {
   });
 
   it("keeps every mixed and dual-axis category aligned with a shared popover", () => {
-    const labels = ["Mon", "Tue", "Wed", "Thu"];
+    const labels = [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+    ];
     const data = {
       labels,
       datasets: [
-        { name: "Daily change", chartType: "bar", values: [-8, 4, -3, 9] },
-        { name: "Rolling trend", chartType: "line", values: [-4, -2, 2, 5] },
-        { name: "Alert threshold", chartType: "line", values: [3, 3, 3, 3] },
+        {
+          name: "Daily change",
+          chartType: "bar",
+          values: [
+            -8,
+            4,
+            -3,
+            9,
+          ],
+        },
+        {
+          name: "Rolling trend",
+          chartType: "line",
+          values: [
+            -4,
+            -2,
+            2,
+            5,
+          ],
+        },
+        {
+          name: "Alert threshold",
+          chartType: "line",
+          values: [
+            3,
+            3,
+            3,
+            3,
+          ],
+        },
       ],
     };
 
-    for (const yAxisPosition of ["left", "right"]) {
+    for (const yAxisPosition of [
+      "left",
+      "right",
+    ]) {
       const chart = createChart("#chart", { type: "mixed", yAxisPosition, data });
-      const categories = [...chart.element.querySelectorAll(".charts2-x-hit")];
-      const categoryLabels = [...chart.element.querySelectorAll(".charts2-label")].slice(-labels.length);
+      const categories = [
+        ...chart.element.querySelectorAll(".charts2-x-hit"),
+      ];
+      const categoryLabels = [
+        ...chart.element.querySelectorAll(".charts2-label"),
+      ].slice(-labels.length);
 
       expect(categories).toHaveLength(labels.length);
       expect(categoryLabels.map((label) => label.textContent)).toEqual(labels);
-      for (const [index, category] of categories.entries()) {
+      for (const [
+        index,
+        category,
+      ] of categories.entries()) {
         expect(Number(categoryLabels[index].getAttribute("x"))).toBeCloseTo(
           Number(category.getAttribute("x")) + Number(category.getAttribute("width")) / 2,
           8,
@@ -240,7 +429,22 @@ describe("shared chart interaction contract", () => {
   it("keeps tooltip width stable at the first and last chart positions", () => {
     const percentage = createChart("#chart", {
       type: "percentage",
-      data: { labels: ["Same", "Same", "Same"], datasets: [{ values: [10, 10, 10] }] },
+      data: {
+        labels: [
+          "Same",
+          "Same",
+          "Same",
+        ],
+        datasets: [
+          {
+            values: [
+              10,
+              10,
+              10,
+            ],
+          },
+        ],
+      },
     });
     const percentageMarks = percentage.element.querySelectorAll(".charts2-interactive-mark");
     percentageMarks[0].focus();
@@ -252,10 +456,28 @@ describe("shared chart interaction contract", () => {
     const fractions = createChart("#chart", {
       type: "line",
       data: {
-        labels: ["Same measurement", "Same measurement", "Same measurement"],
+        labels: [
+          "Same measurement",
+          "Same measurement",
+          "Same measurement",
+        ],
         datasets: [
-          { name: "Sensor A — fractional precision", values: [0.00012, 0.00012, 0.00012] },
-          { name: "Sensor B — comparison", values: [0.00009, 0.00009, 0.00009] },
+          {
+            name: "Sensor A — fractional precision",
+            values: [
+              0.00012,
+              0.00012,
+              0.00012,
+            ],
+          },
+          {
+            name: "Sensor B — comparison",
+            values: [
+              0.00009,
+              0.00009,
+              0.00009,
+            ],
+          },
         ],
       },
     });
@@ -273,7 +495,22 @@ describe("shared chart interaction contract", () => {
     const scenario = ChartScenario.mount({
       type: "percentage",
       onSelect,
-      data: { labels: ["Photos", "Apps", "Free"], datasets: [{ values: [72, 58, 64] }] },
+      data: {
+        labels: [
+          "Photos",
+          "Apps",
+          "Free",
+        ],
+        datasets: [
+          {
+            values: [
+              72,
+              58,
+              64,
+            ],
+          },
+        ],
+      },
     });
     const mark = scenario.mark();
 
@@ -294,20 +531,62 @@ describe("shared chart interaction contract", () => {
         options: {
           type: "percentage",
           tooltipFormatValue: (value) => `${value} GB`,
-          data: { labels: ["Photos", "Free"], datasets: [{ values: [72, 28] }] },
+          data: {
+            labels: [
+              "Photos",
+              "Free",
+            ],
+            datasets: [
+              {
+                values: [
+                  72,
+                  28,
+                ],
+              },
+            ],
+          },
         },
         heading: "Photos",
         value: "72 GB (72%)",
       },
       {
-        options: { type: "pie", data: { labels: ["Search", "Direct"], datasets: [{ values: [60, 40] }] } },
+        options: {
+          type: "pie",
+          data: {
+            labels: [
+              "Search",
+              "Direct",
+            ],
+            datasets: [
+              {
+                values: [
+                  60,
+                  40,
+                ],
+              },
+            ],
+          },
+        },
         heading: "Search",
         value: "60 (60%)",
       },
       {
         options: {
           type: "donut",
-          data: { labels: ["Individual", "Family"], datasets: [{ values: [70, 30] }] },
+          data: {
+            labels: [
+              "Individual",
+              "Family",
+            ],
+            datasets: [
+              {
+                values: [
+                  70,
+                  30,
+                ],
+              },
+            ],
+          },
         },
         heading: "Individual",
         value: "70 (70%)",
@@ -315,7 +594,20 @@ describe("shared chart interaction contract", () => {
       {
         options: {
           type: "polar-area",
-          data: { labels: ["Social", "Reading"], datasets: [{ values: [74, 26] }] },
+          data: {
+            labels: [
+              "Social",
+              "Reading",
+            ],
+            datasets: [
+              {
+                values: [
+                  74,
+                  26,
+                ],
+              },
+            ],
+          },
         },
         heading: "Social",
         value: "74",
@@ -337,9 +629,11 @@ describe("shared chart interaction contract", () => {
       expect(row.querySelector("strong").textContent).toBe(value);
       expect(getComputedStyle(row.querySelector("span")).fontWeight).toBe("500");
       expect(getComputedStyle(row.querySelector("strong")).fontWeight).toBe("600");
-      expect([...tooltipFor(chart).childNodes].every((node) => node.nodeType === Node.ELEMENT_NODE)).toBe(
-        true,
-      );
+      expect(
+        [
+          ...tooltipFor(chart).childNodes,
+        ].every((node) => node.nodeType === Node.ELEMENT_NODE),
+      ).toBe(true);
       chart.destroy();
     }
 
@@ -347,25 +641,43 @@ describe("shared chart interaction contract", () => {
       type: "bar",
       orientation: "horizontal",
       data: {
-        labels: ["Europe"],
+        labels: [
+          "Europe",
+        ],
         datasets: [
-          { name: "Standard", values: [36] },
-          { name: "Express", values: [16] },
+          {
+            name: "Standard",
+            values: [
+              36,
+            ],
+          },
+          {
+            name: "Express",
+            values: [
+              16,
+            ],
+          },
         ],
       },
     });
     cartesian.element.querySelector(".charts2-x-hit").focus();
     expect(tooltipFor(cartesian).querySelector(".charts2-tooltip-heading").textContent).toBe("Europe");
     expect(
-      [...tooltipFor(cartesian).querySelectorAll(".charts2-tooltip-row span")].map(
-        (node) => node.textContent,
-      ),
-    ).toEqual(["Standard", "Express"]);
+      [
+        ...tooltipFor(cartesian).querySelectorAll(".charts2-tooltip-row span"),
+      ].map((node) => node.textContent),
+    ).toEqual([
+      "Standard",
+      "Express",
+    ]);
     expect(
-      [...tooltipFor(cartesian).querySelectorAll(".charts2-tooltip-row strong")].map(
-        (node) => node.textContent,
-      ),
-    ).toEqual(["36", "16"]);
+      [
+        ...tooltipFor(cartesian).querySelectorAll(".charts2-tooltip-row strong"),
+      ].map((node) => node.textContent),
+    ).toEqual([
+      "36",
+      "16",
+    ]);
 
     expect(tooltipFor(cartesian).querySelector("i").style.background).toBe("rgb(0, 122, 255)");
   });
@@ -373,7 +685,20 @@ describe("shared chart interaction contract", () => {
   it("keeps charts read-only unless an onSelect callback opts into selection", () => {
     const chart = createChart("#chart", {
       type: "line",
-      data: { labels: ["A", "B"], datasets: [{ values: [1, 2] }] },
+      data: {
+        labels: [
+          "A",
+          "B",
+        ],
+        datasets: [
+          {
+            values: [
+              1,
+              2,
+            ],
+          },
+        ],
+      },
     });
     const mark = chart.element.querySelector(".charts2-interactive-mark");
 
@@ -396,10 +721,25 @@ describe("shared chart interaction contract", () => {
     const chart = createChart("#chart", {
       type: "line",
       data: {
-        labels: [heading, "Short"],
+        labels: [
+          heading,
+          "Short",
+        ],
         datasets: [
-          { name: "Observed", values: [12, 18] },
-          { name: "Baseline", values: [10, 15] },
+          {
+            name: "Observed",
+            values: [
+              12,
+              18,
+            ],
+          },
+          {
+            name: "Baseline",
+            values: [
+              10,
+              15,
+            ],
+          },
         ],
       },
     });
@@ -421,11 +761,28 @@ describe("shared chart interaction contract", () => {
       valueLabels: false,
       legend: false,
       dots: false,
-      data: { labels: ["Value 1", "Value 2", "Value 3"], datasets: [{ values: [12, 18, 16] }] },
+      data: {
+        labels: [
+          "Value 1",
+          "Value 2",
+          "Value 3",
+        ],
+        datasets: [
+          {
+            values: [
+              12,
+              18,
+              16,
+            ],
+          },
+        ],
+      },
       ariaLabel: "Revenue trend",
       onSelect,
     });
-    const marks = [...chart.element.querySelectorAll(".charts2-interactive-mark")];
+    const marks = [
+      ...chart.element.querySelectorAll(".charts2-interactive-mark"),
+    ];
     expect(marks).toHaveLength(3);
     expect(marks.filter((mark) => mark.getAttribute("tabindex") === "0")).toHaveLength(1);
     marks[0].focus();
@@ -434,7 +791,22 @@ describe("shared chart interaction contract", () => {
     expect(tooltipFor(chart).hidden).toBe(false);
     marks[0].dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(marks[0]).toHaveClass("is-active");
-    chart.update({ labels: ["Value 1", "Value 2", "Value 3"], datasets: [{ values: [20, 24, 22] }] });
+    chart.update({
+      labels: [
+        "Value 1",
+        "Value 2",
+        "Value 3",
+      ],
+      datasets: [
+        {
+          values: [
+            20,
+            24,
+            22,
+          ],
+        },
+      ],
+    });
     expect(chart.element.querySelector(".is-active")).toBeNull();
     expect(tooltipFor(chart).hidden).toBe(true);
     expect(onSelect).toHaveBeenCalledTimes(1);
@@ -445,7 +817,21 @@ describe("shared chart interaction contract", () => {
     const chart = createChart("#chart", {
       type: "line",
       tooltip: false,
-      data: { labels: ["Mon", "Tue"], datasets: [{ name: "Revenue", values: [12, 18] }] },
+      data: {
+        labels: [
+          "Mon",
+          "Tue",
+        ],
+        datasets: [
+          {
+            name: "Revenue",
+            values: [
+              12,
+              18,
+            ],
+          },
+        ],
+      },
     });
     const line = chart.element.querySelector(".charts2-line");
 
@@ -464,7 +850,21 @@ describe("shared chart interaction contract", () => {
       type: "line",
       tooltip: false,
       onSelect,
-      data: { labels: ["Mon", "Tue"], datasets: [{ name: "Revenue", values: [12, 18] }] },
+      data: {
+        labels: [
+          "Mon",
+          "Tue",
+        ],
+        datasets: [
+          {
+            name: "Revenue",
+            values: [
+              12,
+              18,
+            ],
+          },
+        ],
+      },
     });
     const mark = chart.element.querySelector(".charts2-x-hit");
 
@@ -503,7 +903,9 @@ describe("shared chart interaction contract", () => {
       data: {
         start: "2026-09-01",
         end: "2026-09-07",
-        tasks: [{ label: "Implementation", start: "2026-09-02", end: "2026-09-04", group: "Engineering" }],
+        tasks: [
+          { label: "Implementation", start: "2026-09-02", end: "2026-09-04", group: "Engineering" },
+        ],
       },
     });
     const hit = chart.element.querySelector(".charts2-timesheet-hit");

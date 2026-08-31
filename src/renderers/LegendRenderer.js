@@ -50,7 +50,10 @@ export default class LegendRenderer {
     const { labelOffset, positions } = legendLayout(this.#chart.options.width, items);
     const group = svg("g", { class: "charts2-legend-group", "aria-label": "Legend" });
 
-    for (const [index, item] of items.entries()) {
+    for (const [
+      index,
+      item,
+    ] of items.entries()) {
       const { labelMaxWidth, x, yOffset } = positions[index];
       const y = baseline + yOffset;
       group.append(

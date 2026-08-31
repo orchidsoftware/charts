@@ -298,12 +298,27 @@ export default class CartesianLayout {
     const xValues = data.points.map((point) => point.x);
     const keepsEdgeDomain = category.hasBars || category.type === ChartType.LINE;
     const xDomain = keepsEdgeDomain ? extent(xValues) : this.#paddedXDomain(xValues);
-    const x = (value) => scale(value, xDomain, [frame.left, frame.right]);
-    const y = (value) => scale(value, data.values.domain, [frame.bottom, frame.top]);
+
+    const x = (value) =>
+      scale(value, xDomain, [
+        frame.left,
+        frame.right,
+      ]);
+
+    const y = (value) =>
+      scale(value, data.values.domain, [
+        frame.bottom,
+        frame.top,
+      ]);
+
     let value = y;
 
     if (category.isHorizontal) {
-      value = (entry) => scale(entry, data.values.domain, [frame.left, frame.right]);
+      value = (entry) =>
+        scale(entry, data.values.domain, [
+          frame.left,
+          frame.right,
+        ]);
     }
 
     const slot = (frame.right - frame.left) / category.count;
@@ -328,7 +343,9 @@ export default class CartesianLayout {
    * @returns {[number, number]} Domain including both outer half intervals.
    */
   #paddedXDomain(values) {
-    const ordered = [...new Set(values)].toSorted((left, right) => left - right);
+    const ordered = [
+      ...new Set(values),
+    ].toSorted((left, right) => left - right);
 
     if (ordered.length < 2) {
       return extent(ordered);
@@ -339,7 +356,10 @@ export default class CartesianLayout {
     const last = ordered.at(-1);
     const previous = ordered.at(PENULTIMATE_INDEX);
 
-    return [first - (second - first) / 2, last + (last - previous) / 2];
+    return [
+      first - (second - first) / 2,
+      last + (last - previous) / 2,
+    ];
   }
 
   /**
@@ -389,7 +409,12 @@ export default class CartesianLayout {
   #valueScale(points, bars, presentation) {
     const stackValues = bars.isStacked ? stackedBarValues(bars.datasets) : [];
     const annotationValues = this.#annotationValues();
-    let data = [...points.map((point) => point.y), ...stackValues, ...annotationValues, 0];
+    let data = [
+      ...points.map((point) => point.y),
+      ...stackValues,
+      ...annotationValues,
+      0,
+    ];
 
     if (presentation.isFrameless && presentation.type === ChartType.LINE) {
       data = points.map((point) => point.y);
@@ -412,7 +437,10 @@ export default class CartesianLayout {
       .filter((region) => region.includeInDomain)
       .flatMap((region) => region.range);
 
-    return [...markers, ...regions];
+    return [
+      ...markers,
+      ...regions,
+    ];
   }
 
   /**
@@ -439,20 +467,34 @@ export default class CartesianLayout {
    * @param {string} type - Current Cartesian chart type.
    * @returns {boolean} True when a shared category inspector is valid.
    */
+  // eslint-disable-next-line max-lines-per-function -- Array layout lines do not add behavior.
   #supportsInspector(type) {
     if (type === ChartType.AXIS_MIXED) {
       return (
         typeof this.#chart.options.onSelect !== "function" &&
-        this.#chart.datasets.every((dataset) => [ChartType.LINE, ChartType.BAR].includes(dataset.chartType))
+        this.#chart.datasets.every((dataset) =>
+          [
+            ChartType.LINE,
+            ChartType.BAR,
+          ].includes(dataset.chartType),
+        )
       );
     }
 
-    if ([ChartType.SCATTER, ChartType.BUBBLE].includes(type)) {
+    if (
+      [
+        ChartType.SCATTER,
+        ChartType.BUBBLE,
+      ].includes(type)
+    ) {
       if (typeof this.#chart.options.onSelect === "function") {
         return false;
       }
 
-      const [firstDataset, ...otherDatasets] = this.#chart.datasets;
+      const [
+        firstDataset,
+        ...otherDatasets
+      ] = this.#chart.datasets;
 
       return otherDatasets.every(
         (dataset) =>
@@ -461,7 +503,10 @@ export default class CartesianLayout {
       );
     }
 
-    return [ChartType.LINE, ChartType.BAR].includes(type);
+    return [
+      ChartType.LINE,
+      ChartType.BAR,
+    ].includes(type);
   }
 
   /**

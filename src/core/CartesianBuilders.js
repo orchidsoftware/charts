@@ -17,7 +17,17 @@ class BarChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   dataset(first, second, third) {
-    return appendBuilderDataset(this, configuredDataset([first, second, third], BarDatasetBuilder));
+    return appendBuilderDataset(
+      this,
+      configuredDataset(
+        [
+          first,
+          second,
+          third,
+        ],
+        BarDatasetBuilder,
+      ),
+    );
   }
 
   /**
@@ -66,7 +76,17 @@ class ScatterChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   dataset(first, second, third) {
-    return appendBuilderDataset(this, configuredDataset([first, second, third], DatasetBuilder));
+    return appendBuilderDataset(
+      this,
+      configuredDataset(
+        [
+          first,
+          second,
+          third,
+        ],
+        DatasetBuilder,
+      ),
+    );
   }
 
   /**
@@ -93,7 +113,14 @@ class MixedChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   line(name, values, colorOrConfigure) {
-    const dataset = configuredDataset([name, values, colorOrConfigure], LineDatasetBuilder);
+    const dataset = configuredDataset(
+      [
+        name,
+        values,
+        colorOrConfigure,
+      ],
+      LineDatasetBuilder,
+    );
 
     return appendBuilderDataset(this, { ...dataset, chartType: "line" });
   }
@@ -107,7 +134,14 @@ class MixedChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   bar(name, values, colorOrConfigure) {
-    const dataset = configuredDataset([name, values, colorOrConfigure], BarDatasetBuilder);
+    const dataset = configuredDataset(
+      [
+        name,
+        values,
+        colorOrConfigure,
+      ],
+      BarDatasetBuilder,
+    );
 
     return appendBuilderDataset(this, { ...dataset, chartType: "bar" });
   }
@@ -121,7 +155,14 @@ class MixedChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   scatter(name, values, colorOrConfigure) {
-    const dataset = configuredDataset([name, values, colorOrConfigure], DatasetBuilder);
+    const dataset = configuredDataset(
+      [
+        name,
+        values,
+        colorOrConfigure,
+      ],
+      DatasetBuilder,
+    );
 
     return appendBuilderDataset(this, { ...dataset, chartType: "scatter" });
   }
@@ -141,7 +182,16 @@ class MixedChartBuilder extends CartesianChartBuilder {
       throw new TypeError("Mixed dataset chartType must be line, bar, or scatter");
     }
 
-    return appendBuilderDataset(this, configuredDataset([input, configure], Scope));
+    return appendBuilderDataset(
+      this,
+      configuredDataset(
+        [
+          input,
+          configure,
+        ],
+        Scope,
+      ),
+    );
   }
 
   /**

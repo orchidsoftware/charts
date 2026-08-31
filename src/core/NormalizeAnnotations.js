@@ -32,8 +32,14 @@ const DEFAULT_REGION_OPACITY = 0.08;
 
 const DASH_PATTERNS = Object.freeze({
   solid: [],
-  dashed: [DASHED_LENGTH, DASHED_GAP],
-  dotted: [DOTTED_LENGTH, DASHED_GAP],
+  dashed: [
+    DASHED_LENGTH,
+    DASHED_GAP,
+  ],
+  dotted: [
+    DOTTED_LENGTH,
+    DASHED_GAP,
+  ],
 });
 
 /**
@@ -64,7 +70,10 @@ function normalizedMarker(marker) {
 function normalizedRegion(region) {
   return Object.freeze({
     ...region,
-    range: [Math.min(...region.range), Math.max(...region.range)],
+    range: [
+      Math.min(...region.range),
+      Math.max(...region.range),
+    ],
     color: region.color ?? "var(--charts-focus-ring, #007aff)",
     opacity: region.opacity ?? DEFAULT_REGION_OPACITY,
     labelPosition: region.labelPosition ?? "end",
@@ -180,7 +189,11 @@ function validateAnnotationPresentation(annotation, concept) {
 
   if (
     annotation.labelPosition !== undefined &&
-    !["start", "center", "end"].includes(annotation.labelPosition)
+    ![
+      "start",
+      "center",
+      "end",
+    ].includes(annotation.labelPosition)
   ) {
     throw new TypeError(`${concept} labelPosition must be start, center, or end`);
   }

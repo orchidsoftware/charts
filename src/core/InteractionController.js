@@ -1,5 +1,13 @@
-const FORWARD_KEYS = new Set(["ArrowRight", "ArrowDown"]);
-const BACKWARD_KEYS = new Set(["ArrowLeft", "ArrowUp"]);
+const FORWARD_KEYS = new Set([
+  "ArrowRight",
+  "ArrowDown",
+]);
+
+const BACKWARD_KEYS = new Set([
+  "ArrowLeft",
+  "ArrowUp",
+]);
+
 const ACTIVE_CLASS = "is-active";
 const PRESSED_CLASS = "is-pressed";
 const PRESSED_ATTRIBUTE = "aria-pressed";
@@ -77,7 +85,9 @@ export default class InteractionController {
    * @param {object} callbacks - Label, preview, and persistent-selection effects.
    */
   constructor(marks, behavior, callbacks) {
-    this.#items = [...marks];
+    this.#items = [
+      ...marks,
+    ];
     this.#labelFor = callbacks.labelFor;
     this.#onActiveChange = callbacks.onActiveChange;
     this.#onHide = callbacks.onHide;
@@ -90,7 +100,10 @@ export default class InteractionController {
 
     const initialFocusIndex = Math.max(this.#selectedIndex, 0);
 
-    for (const [index, item] of this.#items.entries()) {
+    for (const [
+      index,
+      item,
+    ] of this.#items.entries()) {
       this.#bindItem(item, index, initialFocusIndex);
     }
 
@@ -177,7 +190,10 @@ export default class InteractionController {
     }
 
     this.#selectedIndex = nextIndex;
-    for (const [index, item] of this.#items.entries()) {
+    for (const [
+      index,
+      item,
+    ] of this.#items.entries()) {
       const isSelected = index === this.#selectedIndex;
       this.#toggleVisualState(item, ACTIVE_CLASS, isSelected);
       InteractionController.#reflectBoolean(item, PRESSED_ATTRIBUTE, isSelected);

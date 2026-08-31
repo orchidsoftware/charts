@@ -31,14 +31,53 @@ describe("cross-browser lifecycle compatibility", () => {
   });
 
   it("covers line charts", async () => {
-    const data = { labels: ["A", "B"], datasets: [{ name: "Series", values: [1, 2] }] };
+    const data = {
+      labels: [
+        "A",
+        "B",
+      ],
+      datasets: [
+        {
+          name: "Series",
+          values: [
+            1,
+            2,
+          ],
+        },
+      ],
+    };
     const chart = LineChart.make("#chart").labels(data.labels).dataset(data.datasets[0]).render();
 
-    await exerciseLifecycle(chart, { ...data, datasets: [{ name: "Series", values: [2, 3] }] });
+    await exerciseLifecycle(chart, {
+      ...data,
+      datasets: [
+        {
+          name: "Series",
+          values: [
+            2,
+            3,
+          ],
+        },
+      ],
+    });
   });
 
   it("covers pie and donut charts", async () => {
-    const data = { labels: ["A", "B"], datasets: [{ name: "Share", values: [2, 3] }] };
+    const data = {
+      labels: [
+        "A",
+        "B",
+      ],
+      datasets: [
+        {
+          name: "Share",
+          values: [
+            2,
+            3,
+          ],
+        },
+      ],
+    };
 
     const pie = PieChart.make("#chart").labels(data.labels).dataset(data.datasets[0]).render();
     await exerciseLifecycle(pie, data);
@@ -55,7 +94,9 @@ describe("cross-browser lifecycle compatibility", () => {
   });
 
   it("covers timesheets", async () => {
-    const tasks = [{ label: "Build", start: "2026-01-01", end: "2026-01-03" }];
+    const tasks = [
+      { label: "Build", start: "2026-01-01", end: "2026-01-03" },
+    ];
     const chart = TimesheetChart.make("#chart").task(tasks[0]).render();
 
     await exerciseLifecycle(chart, { tasks });

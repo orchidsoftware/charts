@@ -71,7 +71,12 @@ const SCOPED_OPTIONS = Object.freeze([
   "tooltipFormatValue",
   "yAxisPosition",
 ]);
-const SUPPORTED_OPTIONS = new Set(["data", "type", ...DIRECT_METHODS, ...SCOPED_OPTIONS]);
+const SUPPORTED_OPTIONS = new Set([
+  "data",
+  "type",
+  ...DIRECT_METHODS,
+  ...SCOPED_OPTIONS,
+]);
 
 /**
  * Keeps product scenarios on the public fluent vocabulary.
@@ -165,7 +170,13 @@ function applyDirectOptions(builder, options) {
  * @returns {void} Scoped formatters retain their public ownership.
  */
 function applyScopedOptions(builder, options) {
-  if (options.orientation !== undefined && !["horizontal", "vertical"].includes(options.orientation)) {
+  if (
+    options.orientation !== undefined &&
+    ![
+      "horizontal",
+      "vertical",
+    ].includes(options.orientation)
+  ) {
     throw new TypeError("Chart orientation must be horizontal or vertical");
   }
 

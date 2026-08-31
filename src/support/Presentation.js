@@ -59,7 +59,11 @@ function horizontalCategoryPadding(labels, width) {
   const maximumLabelWidth = maximum - HORIZONTAL_LABEL_EDGE_INSET - HORIZONTAL_LABEL_GAP;
 
   const displayedWidths = labels.map((label) => {
-    const lines = Array.isArray(label) ? label : [String(label)];
+    const lines = Array.isArray(label)
+      ? label
+      : [
+          String(label),
+        ];
 
     return Math.min(
       maximumLabelWidth,
@@ -184,7 +188,11 @@ function datasetSummary(dataset, labels, { options = {}, datasetIndex = 0 } = {}
   };
 
   if (dataset.points.length > DATASET_SUMMARY_LIMIT) {
-    const [minimum, maximum] = extent(dataset.points.map((point) => point.y));
+    const [
+      minimum,
+      maximum,
+    ] = extent(dataset.points.map((point) => point.y));
+
     const first = formatPoint(dataset.points[0], 0);
     const last = formatPoint(dataset.points.at(-1), dataset.points.length - 1);
 

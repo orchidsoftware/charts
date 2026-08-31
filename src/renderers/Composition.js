@@ -53,7 +53,10 @@ export default class Composition {
     const positiveCount = this.parts.filter((part) => part.value > 0).length;
     const sectors = [];
 
-    for (const [index, part] of this.parts.entries()) {
+    for (const [
+      index,
+      part,
+    ] of this.parts.entries()) {
       const next = angle + this.shareOf(part) * Math.PI * 2;
 
       if (part.value > 0) {

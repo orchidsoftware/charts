@@ -17,57 +17,169 @@ const screenshotOptions = {
 };
 
 const demoCards = [
-  ["line", "#line"],
-  ["line-gradient", "#line-gradient"],
-  ["bar-vertical", "#bar-vertical"],
-  ["bar-horizontal", "#bar-horizontal"],
-  ["bar-horizontal-stacked", "#bar-horizontal-stacked"],
-  ["scatter", "#scatter"],
-  ["bubble", "#bubble"],
-  ["radar", "#radar"],
-  ["polar", "#polar"],
-  ["mixed", "#mixed"],
-  ["axis-mixed-signed", "#mixed-signed"],
-  ["pie", "#pie"],
-  ["donut", "#donut"],
-  ["percentage", "#percentage"],
-  ["timesheet", "#timesheet"],
-  ["heatmap", "#heatmap"],
-  ["spark-line", "#spark-line"],
-  ["spark-area", "#spark-area"],
-  ["spark-bar", "#spark-bar"],
+  [
+    "line",
+    "#line",
+  ],
+  [
+    "line-gradient",
+    "#line-gradient",
+  ],
+  [
+    "bar-vertical",
+    "#bar-vertical",
+  ],
+  [
+    "bar-horizontal",
+    "#bar-horizontal",
+  ],
+  [
+    "bar-horizontal-stacked",
+    "#bar-horizontal-stacked",
+  ],
+  [
+    "scatter",
+    "#scatter",
+  ],
+  [
+    "bubble",
+    "#bubble",
+  ],
+  [
+    "radar",
+    "#radar",
+  ],
+  [
+    "polar",
+    "#polar",
+  ],
+  [
+    "mixed",
+    "#mixed",
+  ],
+  [
+    "axis-mixed-signed",
+    "#mixed-signed",
+  ],
+  [
+    "pie",
+    "#pie",
+  ],
+  [
+    "donut",
+    "#donut",
+  ],
+  [
+    "percentage",
+    "#percentage",
+  ],
+  [
+    "timesheet",
+    "#timesheet",
+  ],
+  [
+    "heatmap",
+    "#heatmap",
+  ],
+  [
+    "spark-line",
+    "#spark-line",
+  ],
+  [
+    "spark-area",
+    "#spark-area",
+  ],
+  [
+    "spark-bar",
+    "#spark-bar",
+  ],
 ];
 
 const responsiveCards = [
-  ["line", "#line"],
-  ["bar-horizontal", "#bar-horizontal"],
-  ["radar", "#radar"],
-  ["percentage", "#percentage"],
-  ["timesheet", "#timesheet"],
-  ["heatmap", "#heatmap"],
+  [
+    "line",
+    "#line",
+  ],
+  [
+    "bar-horizontal",
+    "#bar-horizontal",
+  ],
+  [
+    "radar",
+    "#radar",
+  ],
+  [
+    "percentage",
+    "#percentage",
+  ],
+  [
+    "timesheet",
+    "#timesheet",
+  ],
+  [
+    "heatmap",
+    "#heatmap",
+  ],
 ];
 
 const sharedMixedCards = [
-  ["mixed-shared-hover", "#mixed"],
-  ["mixed-dual-axis-shared-hover", "#mixed-signed"],
+  [
+    "mixed-shared-hover",
+    "#mixed",
+  ],
+  [
+    "mixed-dual-axis-shared-hover",
+    "#mixed-signed",
+  ],
 ];
 
 const demoXYCards = [
-  ["scatter-real-hover", "#scatter", "$799", 2],
-  ["bubble-real-hover", "#bubble", "Music", 1],
+  [
+    "scatter-real-hover",
+    "#scatter",
+    "$799",
+    2,
+  ],
+  [
+    "bubble-real-hover",
+    "#bubble",
+    "Music",
+    1,
+  ],
 ];
 
 const demoCompositionCards = [
-  ["pie-real-hover", "#pie"],
-  ["donut-real-hover", "#donut"],
-  ["percentage-real-hover", "#percentage"],
+  [
+    "pie-real-hover",
+    "#pie",
+  ],
+  [
+    "donut-real-hover",
+    "#donut",
+  ],
+  [
+    "percentage-real-hover",
+    "#percentage",
+  ],
 ];
 
 const demoSections = [
-  ["supported-families", "#supported-charts"],
-  ["trends-and-targets", "#gallery"],
-  ["compare-and-diagnose", "section[aria-labelledby='comparison-title']"],
-  ["composition-and-activity", "section[aria-labelledby='composition-title']"],
+  [
+    "supported-families",
+    "#supported-charts",
+  ],
+  [
+    "trends-and-targets",
+    "#gallery",
+  ],
+  [
+    "compare-and-diagnose",
+    "section[aria-labelledby='comparison-title']",
+  ],
+  [
+    "composition-and-activity",
+    "section[aria-labelledby='composition-title']",
+  ],
 ];
 
 const stateFixtures = [
@@ -76,10 +188,37 @@ const stateFixtures = [
     {
       type: "line",
       data: {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+        labels: [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+        ],
         datasets: [
-          { name: "Actual", values: [18, 31, 27, 44, 39, 56] },
-          { name: "Plan", values: [20, 25, 31, 37, 44, 50] },
+          {
+            name: "Actual",
+            values: [
+              18,
+              31,
+              27,
+              44,
+              39,
+              56,
+            ],
+          },
+          {
+            name: "Plan",
+            values: [
+              20,
+              25,
+              31,
+              37,
+              44,
+              50,
+            ],
+          },
         ],
       },
     },
@@ -90,10 +229,31 @@ const stateFixtures = [
       type: "bar",
       orientation: "horizontal",
       data: {
-        labels: ["Europe", "Americas", "Asia-Pacific", "Africa"],
+        labels: [
+          "Europe",
+          "Americas",
+          "Asia-Pacific",
+          "Africa",
+        ],
         datasets: [
-          { name: "Standard", values: [36, 42, 54, 61] },
-          { name: "Express", values: [16, 18, 24, 28] },
+          {
+            name: "Standard",
+            values: [
+              36,
+              42,
+              54,
+              61,
+            ],
+          },
+          {
+            name: "Express",
+            values: [
+              16,
+              18,
+              24,
+              28,
+            ],
+          },
         ],
       },
     },
@@ -102,21 +262,66 @@ const stateFixtures = [
     "pie",
     {
       type: "pie",
-      data: { labels: ["Search", "Direct", "Referrals"], datasets: [{ values: [48, 34, 18] }] },
+      data: {
+        labels: [
+          "Search",
+          "Direct",
+          "Referrals",
+        ],
+        datasets: [
+          {
+            values: [
+              48,
+              34,
+              18,
+            ],
+          },
+        ],
+      },
     },
   ],
   [
     "donut",
     {
       type: "donut",
-      data: { labels: ["Individual", "Family", "Student"], datasets: [{ values: [61, 27, 12] }] },
+      data: {
+        labels: [
+          "Individual",
+          "Family",
+          "Student",
+        ],
+        datasets: [
+          {
+            values: [
+              61,
+              27,
+              12,
+            ],
+          },
+        ],
+      },
     },
   ],
   [
     "percentage",
     {
       type: "percentage",
-      data: { labels: ["Photos", "Apps", "Free"], datasets: [{ values: [72, 58, 64] }] },
+      data: {
+        labels: [
+          "Photos",
+          "Apps",
+          "Free",
+        ],
+        datasets: [
+          {
+            values: [
+              72,
+              58,
+              64,
+            ],
+          },
+        ],
+      },
     },
   ],
   [
@@ -165,10 +370,30 @@ const stateFixtures = [
     {
       type: "mixed",
       data: {
-        labels: ["W1", "W2", "W3"],
+        labels: [
+          "W1",
+          "W2",
+          "W3",
+        ],
         datasets: [
-          { name: "Actual", chartType: "bar", values: [28, 37, 34] },
-          { name: "Plan", chartType: "line", values: [32, 35, 39] },
+          {
+            name: "Actual",
+            chartType: "bar",
+            values: [
+              28,
+              37,
+              34,
+            ],
+          },
+          {
+            name: "Plan",
+            chartType: "line",
+            values: [
+              32,
+              35,
+              39,
+            ],
+          },
         ],
       },
     },
@@ -179,10 +404,30 @@ const stateFixtures = [
       type: "mixed",
       yAxisPosition: "right",
       data: {
-        labels: ["Mon", "Tue", "Wed"],
+        labels: [
+          "Mon",
+          "Tue",
+          "Wed",
+        ],
         datasets: [
-          { name: "Change", chartType: "bar", values: [-18, 9, -6] },
-          { name: "Trend", chartType: "line", values: [-8, -4, -2] },
+          {
+            name: "Change",
+            chartType: "bar",
+            values: [
+              -18,
+              9,
+              -6,
+            ],
+          },
+          {
+            name: "Trend",
+            chartType: "line",
+            values: [
+              -8,
+              -4,
+              -2,
+            ],
+          },
         ],
       },
     },
@@ -192,10 +437,34 @@ const stateFixtures = [
     {
       type: "radar",
       data: {
-        labels: ["Speed", "Battery", "Camera", "Display", "Value"],
+        labels: [
+          "Speed",
+          "Battery",
+          "Camera",
+          "Display",
+          "Value",
+        ],
         datasets: [
-          { name: "Current", values: [92, 84, 89, 91, 72] },
-          { name: "Previous", values: [74, 77, 71, 78, 81] },
+          {
+            name: "Current",
+            values: [
+              92,
+              84,
+              89,
+              91,
+              72,
+            ],
+          },
+          {
+            name: "Previous",
+            values: [
+              74,
+              77,
+              71,
+              78,
+              81,
+            ],
+          },
         ],
       },
     },
@@ -236,7 +505,10 @@ const stateFixtures = [
         points: Object.fromEntries(
           Array.from({ length: 90 }, (_, index) => {
             const date = new Date(Date.UTC(2026, 0, index + 1)).toISOString().slice(0, 10);
-            return [date, (index * 7 + (index % 5)) % 13];
+            return [
+              date,
+              (index * 7 + (index % 5)) % 13,
+            ];
           }),
         ),
       },
@@ -244,7 +516,13 @@ const stateFixtures = [
   ],
 ];
 
-const stateVariants = ["hover", "pressed", "pointer-active", "keyboard-focus", "keyboard-active"];
+const stateVariants = [
+  "hover",
+  "pressed",
+  "pointer-active",
+  "keyboard-focus",
+  "keyboard-active",
+];
 const charts = [];
 
 function setTheme(theme) {
@@ -284,7 +562,10 @@ function setTheme(theme) {
   document.documentElement.style.colorScheme = theme;
   document.documentElement.style.color = isDark ? "#f2f2f7" : "#192734";
   document.documentElement.style.background = tokens["--charts2-demo-background"];
-  for (const [name, value] of Object.entries(tokens)) {
+  for (const [
+    name,
+    value,
+  ] of Object.entries(tokens)) {
     document.documentElement.style.setProperty(name, value);
   }
 }
@@ -328,7 +609,9 @@ async function matchScreenshot(element, name) {
 
 function applyState(name, variant) {
   const card = stateCard(name);
-  const marks = [...card.querySelectorAll(".charts2-interactive-mark")];
+  const marks = [
+    ...card.querySelectorAll(".charts2-interactive-mark"),
+  ];
   const mark = marks[Math.min(1, marks.length - 1)];
 
   switch (variant) {
@@ -399,14 +682,19 @@ beforeAll(async () => {
   lab.className = "visual-state-lab";
   const fixtureMarkup = stateFixtures
     .map(
-      ([name]) =>
+      ([
+        name,
+      ]) =>
         `<article data-visual-state="${name}"><header><div><span class="tag">INTERACTION</span><h2>${name}</h2></div><strong>states</strong></header><div data-chart></div></article>`,
     )
     .join("");
   lab.innerHTML = `<h2>Interaction state laboratory</h2><div class="visual-state-grid">${fixtureMarkup}</div>`;
   document.body.append(lab);
 
-  for (const [name, options] of stateFixtures) {
+  for (const [
+    name,
+    options,
+  ] of stateFixtures) {
     charts.push(
       createChart(stateCard(name).querySelector("[data-chart]"), {
         height: 300,
@@ -448,13 +736,19 @@ describe.sequential("visual regression baselines", () => {
     await matchScreenshot(document.body, "demo-body-mobile-light");
   });
 
-  for (const [name, selector] of demoCards) {
+  for (const [
+    name,
+    selector,
+  ] of demoCards) {
     it(`keeps the desktop ${name} card stable`, async () => {
       await matchScreenshot(demoCard(selector), `demo-desktop-light-${name}`);
     });
   }
 
-  for (const [name, selector] of sharedMixedCards) {
+  for (const [
+    name,
+    selector,
+  ] of sharedMixedCards) {
     it(`keeps the ${name} popover stable`, async () => {
       const card = demoCard(selector);
       const mark = card.querySelectorAll(".charts2-x-hit")[1];
@@ -466,7 +760,12 @@ describe.sequential("visual regression baselines", () => {
     });
   }
 
-  for (const [name, selector, heading, rowCount] of demoXYCards) {
+  for (const [
+    name,
+    selector,
+    heading,
+    rowCount,
+  ] of demoXYCards) {
     it(`keeps the ${name} popover stable`, async () => {
       const card = demoCard(selector);
       const mark = card.querySelectorAll(".charts2-x-hit")[1];
@@ -478,7 +777,10 @@ describe.sequential("visual regression baselines", () => {
     });
   }
 
-  for (const [name, selector] of demoCompositionCards) {
+  for (const [
+    name,
+    selector,
+  ] of demoCompositionCards) {
     it(`keeps the ${name} popover stable`, async () => {
       const card = demoCard(selector);
       const mark = card.querySelectorAll(".charts2-mark")[1];
@@ -490,13 +792,19 @@ describe.sequential("visual regression baselines", () => {
     });
   }
 
-  for (const [name, selector] of demoSections) {
+  for (const [
+    name,
+    selector,
+  ] of demoSections) {
     it(`keeps the desktop ${name} section stable`, async () => {
       await matchScreenshot(document.querySelector(selector), `demo-section-light-${name}`);
     });
   }
 
-  for (const [name, selector] of responsiveCards) {
+  for (const [
+    name,
+    selector,
+  ] of responsiveCards) {
     it(`keeps the mobile ${name} card stable`, async () => {
       await page.viewport(390, 900);
       await matchScreenshot(demoCard(selector), `demo-mobile-light-${name}`);
@@ -508,7 +816,9 @@ describe.sequential("visual regression baselines", () => {
     });
   }
 
-  for (const [name] of stateFixtures) {
+  for (const [
+    name,
+  ] of stateFixtures) {
     for (const variant of stateVariants) {
       it(`keeps ${name} ${variant} feedback stable`, async () => {
         applyState(name, variant);

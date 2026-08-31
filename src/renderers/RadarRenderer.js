@@ -133,7 +133,10 @@ export default class RadarRenderer {
    * @returns {void} Dataset polygons and tooltip metadata are appended.
    */
   #renderDatasets(center, scale) {
-    for (const [datasetIndex, dataset] of this.#chart.datasets.entries()) {
+    for (const [
+      datasetIndex,
+      dataset,
+    ] of this.#chart.datasets.entries()) {
       const shape = dataset.points.map((point, index) =>
         polarPoint({
           cx: center.x,
@@ -203,7 +206,10 @@ export default class RadarRenderer {
    * @returns {void} Category labels are appended when present.
    */
   #renderLabels({ frame, centerX, centerY, width }) {
-    for (const [index, point] of frame.slice(0, this.#chart.labels.length).entries()) {
+    for (const [
+      index,
+      point,
+    ] of frame.slice(0, this.#chart.labels.length).entries()) {
       const directionX = point.x - centerX;
       const directionY = point.y - centerY;
       const length = Math.hypot(directionX, directionY);

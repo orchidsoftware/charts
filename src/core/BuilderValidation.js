@@ -1,6 +1,21 @@
-const STRING_OPTIONS = new Set(["title", "description", "ariaLabel", "countLabel"]);
-const POSITIVE_OPTIONS = new Set(["width", "height"]);
-const NON_NEGATIVE_OPTIONS = new Set(["dotSize", "strokeWidth", "radius", "cornerRadius"]);
+const STRING_OPTIONS = new Set([
+  "title",
+  "description",
+  "ariaLabel",
+  "countLabel",
+]);
+
+const POSITIVE_OPTIONS = new Set([
+  "width",
+  "height",
+]);
+
+const NON_NEGATIVE_OPTIONS = new Set([
+  "dotSize",
+  "strokeWidth",
+  "radius",
+  "cornerRadius",
+]);
 
 const BOOLEAN_OPTIONS = new Set([
   "smooth",
@@ -173,7 +188,13 @@ function validateGradient(value) {
     throw new TypeError("gradient must be a boolean or GradientOptions object");
   }
 
-  const unknown = Object.keys(value).find((key) => !["fromOpacity", "toOpacity"].includes(key));
+  const unknown = Object.keys(value).find(
+    (key) =>
+      ![
+        "fromOpacity",
+        "toOpacity",
+      ].includes(key),
+  );
 
   if (unknown) {
     throw new TypeError(`Unsupported gradient option: ${unknown}`);
@@ -210,25 +231,57 @@ function validateLabels(labels) {
  * @param {unknown} value - Candidate scoped value.
  * @returns {void} Valid local configuration passes unchanged.
  */
+// eslint-disable-next-line max-lines-per-function -- Array layout lines do not add behavior.
 function validateScopedValue(name, value) {
-  if (["color", "labelColor"].includes(name)) {
+  if (
+    [
+      "color",
+      "labelColor",
+    ].includes(name)
+  ) {
     validateText(value, name);
   }
 
-  if (["opacity", "fromOpacity", "toOpacity"].includes(name)) {
+  if (
+    [
+      "opacity",
+      "fromOpacity",
+      "toOpacity",
+    ].includes(name)
+  ) {
     validateOpacity(value, name);
   }
 
-  if (["radius", "strokeWidth", "dotSize", "width"].includes(name)) {
+  if (
+    [
+      "radius",
+      "strokeWidth",
+      "dotSize",
+      "width",
+    ].includes(name)
+  ) {
     validateNumber(value, name, 0);
   }
 
-  if (["smooth", "dots", "line", "area", "includeInDomain"].includes(name)) {
+  if (
+    [
+      "smooth",
+      "dots",
+      "line",
+      "area",
+      "includeInDomain",
+    ].includes(name)
+  ) {
     validateBoolean(value, name);
   }
 
   if (
-    ["formatValue", "formatLabel", "tooltipValue", "axisValue"].includes(name) &&
+    [
+      "formatValue",
+      "formatLabel",
+      "tooltipValue",
+      "axisValue",
+    ].includes(name) &&
     typeof value !== "function"
   ) {
     throw new TypeError(`${name} must be a function`);
@@ -267,15 +320,35 @@ function validateOpacity(value, name) {
  * @returns {void} Supported choices pass unchanged.
  */
 function validateScopedChoice(name, value) {
-  if (name === "position" && !["left", "right"].includes(value)) {
+  if (
+    name === "position" &&
+    ![
+      "left",
+      "right",
+    ].includes(value)
+  ) {
     throw new TypeError("position must be left or right");
   }
 
-  if (name === "lineStyle" && !["solid", "dashed", "dotted"].includes(value)) {
+  if (
+    name === "lineStyle" &&
+    ![
+      "solid",
+      "dashed",
+      "dotted",
+    ].includes(value)
+  ) {
     throw new TypeError("lineStyle must be solid, dashed, or dotted");
   }
 
-  if (name === "labelPosition" && !["start", "center", "end"].includes(value)) {
+  if (
+    name === "labelPosition" &&
+    ![
+      "start",
+      "center",
+      "end",
+    ].includes(value)
+  ) {
     throw new TypeError("labelPosition must be start, center, or end");
   }
 }

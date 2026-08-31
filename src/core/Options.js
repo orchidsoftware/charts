@@ -17,7 +17,12 @@ const FULL_CIRCLE_DEGREES = 360;
 const MINIMUM_TIMESHEET_HEIGHT = 220;
 const TIMESHEET_FRAME_HEIGHT = 52;
 const TIMESHEET_ROW_HEIGHT = 40;
-const COLOR_PROPERTIES = new Set(["color", "labelColor"]);
+
+const COLOR_PROPERTIES = new Set([
+  "color",
+  "labelColor",
+]);
+
 const CSS_VARIABLE_PREFIX_LENGTH = 4;
 
 const ALLOWED_OPTIONS = Object.freeze([
@@ -106,9 +111,18 @@ function validateGeometry(options) {
     throw new TypeError("Pad angle must be a finite number from 0 up to 360 degrees");
   }
 
-  for (const [value, name] of [
-    [options.radius, "Radius"],
-    [options.cornerRadius, "Corner radius"],
+  for (const [
+    value,
+    name,
+  ] of [
+    [
+      options.radius,
+      "Radius",
+    ],
+    [
+      options.cornerRadius,
+      "Corner radius",
+    ],
   ]) {
     validateRadius(value, name);
   }
@@ -191,7 +205,13 @@ function shouldShowLegend(options) {
     return options.legend;
   }
 
-  if ([...AGGREGATION_TYPES, ChartType.POLAR_AREA, ChartType.HEATMAP].includes(options.type)) {
+  if (
+    [
+      ...AGGREGATION_TYPES,
+      ChartType.POLAR_AREA,
+      ChartType.HEATMAP,
+    ].includes(options.type)
+  ) {
     return true;
   }
 
@@ -231,7 +251,11 @@ function normalizeChartOptions(host, options) {
   validateChartColors(host, options);
 
   const normalized = {
-    colors: options.colors ? [...options.colors] : DEFAULT_COLORS,
+    colors: options.colors
+      ? [
+          ...options.colors,
+        ]
+      : DEFAULT_COLORS,
     strokeWidth: DEFAULT_STROKE_WIDTH,
     padAngle: options.padAngle ?? DEFAULT_PAD_ANGLE,
     ...options,
@@ -239,7 +263,12 @@ function normalizeChartOptions(host, options) {
     ...chartDimensions(host, options),
   };
 
-  if ([normalized.width, normalized.height].some((value) => !(Number.isFinite(value) && value > 0))) {
+  if (
+    [
+      normalized.width,
+      normalized.height,
+    ].some((value) => !(Number.isFinite(value) && value > 0))
+  ) {
     throw new TypeError("Chart width and height must be positive finite numbers");
   }
 
@@ -280,17 +309,24 @@ function collectColors(value) {
     return value.flatMap((item) => collectColors(item));
   }
 
-  return Object.entries(value).flatMap(([name, item]) => {
-    if (name === "colors" && Array.isArray(item)) {
-      return item;
-    }
+  return Object.entries(value).flatMap(
+    ([
+      name,
+      item,
+    ]) => {
+      if (name === "colors" && Array.isArray(item)) {
+        return item;
+      }
 
-    if (COLOR_PROPERTIES.has(name)) {
-      return [item];
-    }
+      if (COLOR_PROPERTIES.has(name)) {
+        return [
+          item,
+        ];
+      }
 
-    return collectColors(item);
-  });
+      return collectColors(item);
+    },
+  );
 }
 
 /**
@@ -325,7 +361,11 @@ function resolvedColor(host, value) {
     return value;
   }
 
-  const [name, ...fallbackParts] = value.slice(CSS_VARIABLE_PREFIX_LENGTH, -1).split(",");
+  const [
+    name,
+    ...fallbackParts
+  ] = value.slice(CSS_VARIABLE_PREFIX_LENGTH, -1).split(",");
+
   const resolved = getComputedStyle(host).getPropertyValue(name.trim()).trim();
   const fallback = fallbackParts.join(",").trim();
   const candidate = resolved || fallback;

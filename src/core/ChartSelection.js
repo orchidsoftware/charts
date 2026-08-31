@@ -8,9 +8,18 @@ import { ChartType } from "../support/Constants.js";
  * @returns {string | null} Serialized identity, or null when a part is absent.
  */
 function identityKey(family, parts) {
-  return parts.some((part) => [undefined, null, ""].includes(part))
+  return parts.some((part) =>
+    [
+      undefined,
+      null,
+      "",
+    ].includes(part),
+  )
     ? null
-    : JSON.stringify([family, ...parts]);
+    : JSON.stringify([
+        family,
+        ...parts,
+      ]);
 }
 
 /**
@@ -84,8 +93,12 @@ function seriesPayload(type, identity, point) {
     x: point.x,
     y: point.y,
     value: point.y,
-    values: [point.y],
-    points: [point],
+    values: [
+      point.y,
+    ],
+    points: [
+      point,
+    ],
   });
 }
 
@@ -140,8 +153,12 @@ function compositionPayload(type, index, collections) {
     x: point.x,
     y: point.y,
     value: point.y,
-    values: [point.y],
-    points: [point],
+    values: [
+      point.y,
+    ],
+    points: [
+      point,
+    ],
     color: collections.colors[index % collections.colors.length],
   });
 }
@@ -270,7 +287,10 @@ function createSeriesSelection(type, collections) {
       if (datasetIndex === -1) {
         const names = collections.datasets.map((dataset) => dataset.identityName);
 
-        return identityKey("series-category", [...names, pointLabel(collections, 0, pointIndex)]);
+        return identityKey("series-category", [
+          ...names,
+          pointLabel(collections, 0, pointIndex),
+        ]);
       }
 
       return identityKey("series", [
@@ -303,8 +323,13 @@ function createCompositionSelection(type, collections) {
       const pointIndex = Number(mark.dataset.pointIndex);
 
       return type === ChartType.RADAR
-        ? identityKey("series", [collections.datasets[datasetIndex]?.identityName, "dataset"])
-        : identityKey("composition", [pointLabel(collections, 0, pointIndex)]);
+        ? identityKey("series", [
+            collections.datasets[datasetIndex]?.identityName,
+            "dataset",
+          ])
+        : identityKey("composition", [
+            pointLabel(collections, 0, pointIndex),
+          ]);
     },
   });
 }
@@ -331,7 +356,9 @@ function createHeatmapSelection(collections) {
       };
     },
     identityFor: (mark) =>
-      identityKey("heatmap", [collections.heatmap[Number(mark.dataset.pointIndex)]?.key]),
+      identityKey("heatmap", [
+        collections.heatmap[Number(mark.dataset.pointIndex)]?.key,
+      ]),
   });
 }
 
@@ -362,7 +389,11 @@ function createTimesheetSelection(collections) {
     identityFor: (mark) => {
       const task = collections.timesheet.tasks[Number(mark.dataset.pointIndex)];
 
-      return identityKey("timesheet", [task?.label, task?.start.valueOf(), task?.end.valueOf()]);
+      return identityKey("timesheet", [
+        task?.label,
+        task?.start.valueOf(),
+        task?.end.valueOf(),
+      ]);
     },
   });
 }

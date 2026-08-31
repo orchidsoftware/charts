@@ -8,15 +8,62 @@ import sonarjs from "eslint-plugin-sonarjs";
 import unicorn from "eslint-plugin-unicorn";
 import globals from "globals";
 
-const JAVASCRIPT_FILES = ["**/*.{js,mjs,cjs}"];
-const SOURCE_FILES = ["src/**/*.js"];
-const NODE_FILES = ["scripts/**/*.mjs", "*.config.js"];
+const JAVASCRIPT_FILES = [
+  "**/*.{js,mjs,cjs}",
+];
+const SOURCE_FILES = [
+  "src/**/*.js",
+];
+const NODE_FILES = [
+  "scripts/**/*.mjs",
+  "*.config.js",
+];
 const MAX_CONSECUTIVE_DECLARATIONS = 8;
+const MINIMUM_MULTILINE_ARRAY_ITEMS = 3;
 const declarationSequence = Array.from(
   { length: MAX_CONSECUTIVE_DECLARATIONS + 1 },
   () => "VariableDeclaration",
 ).join(" + ");
 const declarationWallSelector = `:matches(FunctionDeclaration, FunctionExpression, ArrowFunctionExpression) BlockStatement > ${declarationSequence}`;
+
+const multilineArrayRule = {
+  meta: {
+    type: "layout",
+    docs: { description: "Require arrays with three or more elements to use one line per element." },
+    messages: { multiline: "Arrays with three or more elements must place each element on its own line." },
+    schema: [],
+  },
+  create(context) {
+    const sourceCode = context.sourceCode;
+
+    return {
+      ArrayExpression(arrayNode) {
+        const elements = arrayNode.elements.filter(Boolean);
+
+        if (elements.length < MINIMUM_MULTILINE_ARRAY_ITEMS) {
+          return;
+        }
+
+        const boundaryTokens = [
+          sourceCode.getFirstToken(arrayNode),
+          ...elements,
+          sourceCode.getLastToken(arrayNode),
+        ];
+        const isMultiline = boundaryTokens.every((token, index) => {
+          const previousToken = boundaryTokens[index - 1];
+
+          return previousToken === undefined || previousToken.loc.end.line < token.loc.start.line;
+        });
+
+        if (!isMultiline) {
+          context.report({ messageId: "multiline", node: arrayNode });
+        }
+      },
+    };
+  },
+};
+
+const charts2Plugin = { rules: { "multiline-array": multilineArrayRule } };
 
 const correctnessRules = {
   ...eslint.configs.recommended.rules,
@@ -26,19 +73,39 @@ const correctnessRules = {
   ...sonarjs.configs.recommended.rules,
   ...unicorn.configs.recommended.rules,
   "array-callback-return": "error",
-  "arrow-body-style": ["error", "as-needed"],
-  curly: ["error", "all"],
-  eqeqeq: ["error", "always"],
+  "arrow-body-style": [
+    "error",
+    "as-needed",
+  ],
+  curly: [
+    "error",
+    "all",
+  ],
+  eqeqeq: [
+    "error",
+    "always",
+  ],
   "no-alert": "error",
   "no-await-in-loop": "error",
-  "no-console": ["error", { allow: ["warn", "error"] }],
+  "no-console": [
+    "error",
+    {
+      allow: [
+        "warn",
+        "error",
+      ],
+    },
+  ],
   "no-debugger": "error",
   "no-duplicate-imports": "off",
   "no-floating-decimal": "error",
   "no-implicit-coercion": "error",
   "no-multi-assign": "error",
   "no-nested-ternary": "error",
-  "no-param-reassign": ["error", { props: true }],
+  "no-param-reassign": [
+    "error",
+    { props: true },
+  ],
   "no-promise-executor-return": "error",
   "no-return-assign": "error",
   "no-restricted-syntax": [
@@ -85,20 +152,30 @@ const correctnessRules = {
       varsIgnorePattern: "^_",
     },
   ],
-  "no-use-before-define": ["error", { classes: true, functions: false, variables: true }],
+  "no-use-before-define": [
+    "error",
+    { classes: true, functions: false, variables: true },
+  ],
   "no-useless-concat": "error",
   "no-useless-return": "error",
   "no-var": "error",
-  "object-shorthand": ["error", "always"],
+  "object-shorthand": [
+    "error",
+    "always",
+  ],
   "prefer-arrow-callback": "error",
   "prefer-const": "error",
   "prefer-promise-reject-errors": "error",
   "prefer-template": "error",
   "require-atomic-updates": "error",
   "require-await": "error",
+  "charts2/multiline-array": "error",
   "import-x/first": "error",
   "import-x/newline-after-import": "error",
-  "import-x/no-cycle": ["error", { ignoreExternal: true, maxDepth: 8 }],
+  "import-x/no-cycle": [
+    "error",
+    { ignoreExternal: true, maxDepth: 8 },
+  ],
   "import-x/no-duplicates": "error",
   "import-x/no-self-import": "error",
   "import-x/no-useless-path-segments": "error",
@@ -106,7 +183,14 @@ const correctnessRules = {
     "error",
     {
       alphabetize: { caseInsensitive: true, order: "asc" },
-      groups: ["builtin", "external", "internal", "parent", "sibling", "index"],
+      groups: [
+        "builtin",
+        "external",
+        "internal",
+        "parent",
+        "sibling",
+        "index",
+      ],
       "newlines-between": "always",
     },
   ],
@@ -124,7 +208,9 @@ const correctnessRules = {
     {
       case: "pascalCase",
       checkDirectories: false,
-      ignore: [/^(eslint|stylelint|vite)\.config\.js$/],
+      ignore: [
+        /^(eslint|stylelint|vite)\.config\.js$/,
+      ],
     },
   ],
   "unicorn/no-null": "off",
@@ -148,17 +234,43 @@ const correctnessRules = {
 };
 
 const maintainabilityRules = {
-  complexity: ["error", 12],
-  "max-depth": ["error", 3],
-  "max-lines": ["error", { max: 1000, skipBlankLines: true, skipComments: true }],
-  "max-lines-per-function": ["error", { max: 35, skipBlankLines: true, skipComments: true }],
-  "max-nested-callbacks": ["error", 3],
-  "max-params": ["error", 3],
-  "max-statements": ["error", 20],
+  complexity: [
+    "error",
+    12,
+  ],
+  "max-depth": [
+    "error",
+    3,
+  ],
+  "max-lines": [
+    "error",
+    { max: 1000, skipBlankLines: true, skipComments: true },
+  ],
+  "max-lines-per-function": [
+    "error",
+    { max: 35, skipBlankLines: true, skipComments: true },
+  ],
+  "max-nested-callbacks": [
+    "error",
+    3,
+  ],
+  "max-params": [
+    "error",
+    3,
+  ],
+  "max-statements": [
+    "error",
+    20,
+  ],
   "no-magic-numbers": [
     "error",
     {
-      ignore: [-1, 0, 1, 2],
+      ignore: [
+        -1,
+        0,
+        1,
+        2,
+      ],
       ignoreArrayIndexes: true,
       ignoreDefaultValues: true,
       ignoreClassFieldInitialValues: true,
@@ -172,15 +284,41 @@ const maintainabilityRules = {
     { blankLine: "always", prev: "multiline-const", next: "*" },
     {
       blankLine: "always",
-      prev: ["const", "let", "var"],
-      next: ["if", "for", "while", "switch", "try"],
+      prev: [
+        "const",
+        "let",
+        "var",
+      ],
+      next: [
+        "if",
+        "for",
+        "while",
+        "switch",
+        "try",
+      ],
     },
     { blankLine: "always", prev: "block-like", next: "*" },
-    { blankLine: "always", prev: "*", next: ["return", "throw"] },
+    {
+      blankLine: "always",
+      prev: "*",
+      next: [
+        "return",
+        "throw",
+      ],
+    },
   ],
-  "sonarjs/cognitive-complexity": ["error", 15],
-  "sonarjs/expression-complexity": ["error", { max: 2 }],
-  "sonarjs/no-duplicate-string": ["error", { threshold: 3 }],
+  "sonarjs/cognitive-complexity": [
+    "error",
+    15,
+  ],
+  "sonarjs/expression-complexity": [
+    "error",
+    { max: 2 },
+  ],
+  "sonarjs/no-duplicate-string": [
+    "error",
+    { threshold: 3 },
+  ],
 };
 
 const architectureRules = {
@@ -191,7 +329,10 @@ const architectureRules = {
       zones: [
         {
           target: "./src/support",
-          from: ["./src/core", "./src/renderers"],
+          from: [
+            "./src/core",
+            "./src/renderers",
+          ],
           message: "Support policies must not depend on lifecycle or rendering.",
         },
         {
@@ -220,7 +361,10 @@ const legacyVocabularyRules = [
 const jsdocRules = {
   ...jsdocConfigs["flat/recommended-error"].rules,
   "jsdoc/informative-docs": "error",
-  "jsdoc/multiline-blocks": ["error", { noSingleLineBlocks: true }],
+  "jsdoc/multiline-blocks": [
+    "error",
+    { noSingleLineBlocks: true },
+  ],
   "jsdoc/no-defaults": "off",
   "jsdoc/require-description": "error",
   "jsdoc/require-description-complete-sentence": "error",
@@ -228,17 +372,31 @@ const jsdocRules = {
   "jsdoc/require-jsdoc": [
     "error",
     {
-      contexts: ["FunctionDeclaration", "MethodDefinition", "Property[method=true]"],
+      contexts: [
+        "FunctionDeclaration",
+        "MethodDefinition",
+        "Property[method=true]",
+      ],
     },
   ],
   "jsdoc/require-param-description": "error",
   "jsdoc/require-returns-description": "error",
-  "jsdoc/tag-lines": ["error", "never", { startLines: 1 }],
+  "jsdoc/tag-lines": [
+    "error",
+    "never",
+    { startLines: 1 },
+  ],
 };
 
 export default [
   {
-    ignores: ["coverage/**", "dist/**", "node_modules/**", "vendor/**", ".vitest-attachments/**"],
+    ignores: [
+      "coverage/**",
+      "dist/**",
+      "node_modules/**",
+      "vendor/**",
+      ".vitest-attachments/**",
+    ],
   },
   {
     files: JAVASCRIPT_FILES,
@@ -249,6 +407,7 @@ export default [
     },
     linterOptions: { reportUnusedDisableDirectives: "error" },
     plugins: {
+      charts2: charts2Plugin,
       "import-x": importX,
       n: node,
       promise,
@@ -265,9 +424,15 @@ export default [
     settings: { jsdoc: { mode: "typescript" } },
   },
   {
-    files: ["src/**/*.js", "test/**/*.js"],
+    files: [
+      "src/**/*.js",
+      "test/**/*.js",
+    ],
     rules: {
-      "no-restricted-syntax": [...correctnessRules["no-restricted-syntax"], ...legacyVocabularyRules],
+      "no-restricted-syntax": [
+        ...correctnessRules["no-restricted-syntax"],
+        ...legacyVocabularyRules,
+      ],
     },
   },
   {
@@ -289,7 +454,10 @@ export default [
         {
           patterns: [
             {
-              group: ["../src/core/**", "../../src/core/**"],
+              group: [
+                "../src/core/**",
+                "../../src/core/**",
+              ],
               message:
                 "Product tests must exercise the package entry point instead of internal lifecycle classes.",
             },
@@ -299,7 +467,9 @@ export default [
     },
   },
   {
-    files: ["src/support/Constants.js"],
+    files: [
+      "src/support/Constants.js",
+    ],
     rules: { "no-magic-numbers": "off" },
   },
   {
@@ -310,12 +480,23 @@ export default [
       "n/no-process-exit": "error",
       "n/no-unpublished-import": "off",
       "n/prefer-node-protocol": "error",
-      "no-console": ["error", { allow: ["error", "log", "warn"] }],
+      "no-console": [
+        "error",
+        {
+          allow: [
+            "error",
+            "log",
+            "warn",
+          ],
+        },
+      ],
       "security/detect-non-literal-fs-filename": "off",
     },
   },
   {
-    files: ["demo/Main.js"],
+    files: [
+      "demo/Main.js",
+    ],
     rules: {
       "sonarjs/pseudo-random": "off",
       "unicorn/no-top-level-side-effects": "off",

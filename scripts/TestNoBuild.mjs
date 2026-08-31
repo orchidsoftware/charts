@@ -147,7 +147,9 @@ async function testBrowser(name, browserType, origin) {
     }
 
     const expected = {
-      definitionKeys: ["make"],
+      definitionKeys: [
+        "make",
+      ],
       destroyed: true,
       display: "block",
       exportCount: 12,
@@ -156,7 +158,12 @@ async function testBrowser(name, browserType, origin) {
     };
     const matches =
       Object.keys(result).length === Object.keys(expected).length &&
-      Object.entries(expected).every(([key, value]) => JSON.stringify(result[key]) === JSON.stringify(value));
+      Object.entries(expected).every(
+        ([
+          key,
+          value,
+        ]) => JSON.stringify(result[key]) === JSON.stringify(value),
+      );
 
     if (!matches) {
       throw new Error(`${name} returned an unexpected no-build result: ${JSON.stringify(result)}`);
@@ -172,7 +179,12 @@ const server = await startServer();
 
 try {
   await Promise.all(
-    Object.entries(browsers).map(([name, browserType]) => testBrowser(name, browserType, server.origin)),
+    Object.entries(browsers).map(
+      ([
+        name,
+        browserType,
+      ]) => testBrowser(name, browserType, server.origin),
+    ),
   );
 } finally {
   await server.close();

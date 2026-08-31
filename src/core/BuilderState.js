@@ -20,7 +20,17 @@ function copyBuilderValue(value) {
   }
 
   if (value && typeof value === "object") {
-    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, copyBuilderValue(item)]));
+    return Object.fromEntries(
+      Object.entries(value).map(
+        ([
+          key,
+          item,
+        ]) => [
+          key,
+          copyBuilderValue(item),
+        ],
+      ),
+    );
   }
 
   return value;
@@ -158,7 +168,15 @@ function appendBuilderData(builder, collection, value) {
 function appendBuilderDataset(builder, dataset) {
   const state = builderState(builder);
 
-  if (["pie", "donut", "percentage", "polar-area"].includes(state.type) && state.data.datasets.length > 0) {
+  if (
+    [
+      "pie",
+      "donut",
+      "percentage",
+      "polar-area",
+    ].includes(state.type) &&
+    state.data.datasets.length > 0
+  ) {
     throw new TypeError(`${state.type} accepts exactly one dataset`);
   }
 
@@ -202,7 +220,14 @@ function validateTask(value) {
   }
 
   const unknown = Object.keys(value).find(
-    (key) => !["label", "start", "end", "group", "color"].includes(key),
+    (key) =>
+      ![
+        "label",
+        "start",
+        "end",
+        "group",
+        "color",
+      ].includes(key),
   );
 
   if (unknown) {
@@ -242,7 +267,13 @@ function applyPresentation(state, sourceOptions) {
   const options = { ...sourceOptions };
   const isFrameless = options.frameless === true;
 
-  for (const setting of ["axes", "grid", "valueLabels", "legend", "tooltip"]) {
+  for (const setting of [
+    "axes",
+    "grid",
+    "valueLabels",
+    "legend",
+    "tooltip",
+  ]) {
     if (!state.explicit.has(setting) && isFrameless) {
       options[setting] = false;
     }
@@ -265,7 +296,15 @@ function applyPresentation(state, sourceOptions) {
  * @returns {object} Family-appropriate domain data.
  */
 function familyData(data, type) {
-  if (["line", "bar", "scatter", "mixed", "bubble"].includes(type)) {
+  if (
+    [
+      "line",
+      "bar",
+      "scatter",
+      "mixed",
+      "bubble",
+    ].includes(type)
+  ) {
     return data;
   }
 
@@ -274,7 +313,12 @@ function familyData(data, type) {
   Reflect.deleteProperty(family, "markers");
   Reflect.deleteProperty(family, "regions");
 
-  if (["heatmap", "timesheet"].includes(type)) {
+  if (
+    [
+      "heatmap",
+      "timesheet",
+    ].includes(type)
+  ) {
     Reflect.deleteProperty(family, "datasets");
   }
 

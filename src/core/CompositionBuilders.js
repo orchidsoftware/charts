@@ -16,7 +16,17 @@ class NumericSeriesBuilder extends SeriesChartBuilder {
    * @returns {this} Current builder.
    */
   dataset(first, second, third) {
-    return appendBuilderDataset(this, configuredDataset([first, second, third], DatasetBuilder));
+    return appendBuilderDataset(
+      this,
+      configuredDataset(
+        [
+          first,
+          second,
+          third,
+        ],
+        DatasetBuilder,
+      ),
+    );
   }
 }
 

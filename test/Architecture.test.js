@@ -23,7 +23,9 @@ function source(path) {
 }
 
 function imports(path) {
-  return [...source(path).matchAll(/from\s+["']([^"']+)["']/g)].map((match) => match[1]);
+  return [
+    ...source(path).matchAll(/from\s+["']([^"']+)["']/g),
+  ].map((match) => match[1]);
 }
 
 describe("architecture fitness functions", () => {
@@ -44,9 +46,14 @@ describe("architecture fitness functions", () => {
     ].toSorted((left, right) => left.localeCompare(right));
 
     expect(Object.keys(publicApi)).toEqual(names);
-    for (const [name, definition] of Object.entries(publicApi)) {
+    for (const [
+      name,
+      definition,
+    ] of Object.entries(publicApi)) {
       expect(Object.isFrozen(definition), name).toBe(true);
-      expect(Object.keys(definition), name).toEqual(["make"]);
+      expect(Object.keys(definition), name).toEqual([
+        "make",
+      ]);
     }
   });
 
@@ -60,7 +67,11 @@ describe("architecture fitness functions", () => {
       ),
     ].toSorted((left, right) => left.localeCompare(right));
 
-    expect(areas).toEqual(["core", "renderers", "support"]);
+    expect(areas).toEqual([
+      "core",
+      "renderers",
+      "support",
+    ]);
   });
 
   it("keeps closed vocabularies and shared value collections immutable", () => {
@@ -182,9 +193,17 @@ describe("architecture fitness functions", () => {
       .map((line) => line.trimStart());
     const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    for (const prefix of ["get", "set"]) {
+    for (const prefix of [
+      "get",
+      "set",
+    ]) {
       const forbidden = declarations.some((line) => {
-        const candidates = [prefix, `#${prefix}`, `static #${prefix}`, `function ${prefix}`];
+        const candidates = [
+          prefix,
+          `#${prefix}`,
+          `static #${prefix}`,
+          `function ${prefix}`,
+        ];
         return candidates.some(
           (candidate) => line.startsWith(candidate) && uppercase.includes(line[candidate.length]),
         );
@@ -195,8 +214,17 @@ describe("architecture fitness functions", () => {
 
   it("contains no removed compatibility implementation", () => {
     const runtime = Object.entries(sources)
-      .filter(([path]) => !path.endsWith("core/Chart.js"))
-      .map(([, contents]) => contents)
+      .filter(
+        ([
+          path,
+        ]) => !path.endsWith("core/Chart.js"),
+      )
+      .map(
+        ([
+          ,
+          contents,
+        ]) => contents,
+      )
       .join("\n");
 
     expect(runtime).not.toMatch(/\bSparkline\b|isSparklineAlias|normalizeSparkline|charts2-compact-chart/);
@@ -205,12 +233,19 @@ describe("architecture fitness functions", () => {
   it("routes closed chart choices through frozen enum values", () => {
     const runtime = Object.entries(sources)
       .filter(
-        ([path]) =>
+        ([
+          path,
+        ]) =>
           !path.endsWith("support/Constants.js") &&
           !path.includes("Builder") &&
           !path.endsWith("core/ChartDefinition.js"),
       )
-      .map(([, contents]) => contents)
+      .map(
+        ([
+          ,
+          contents,
+        ]) => contents,
+      )
       .join("\n");
 
     expect(runtime).not.toMatch(

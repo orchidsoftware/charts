@@ -51,7 +51,9 @@ function formatterLabel(value) {
   }
 
   if (Array.isArray(value) && value.length > 0 && value.every((line) => typeof line === "string")) {
-    return Object.freeze([...value]);
+    return Object.freeze([
+      ...value,
+    ]);
   }
 
   throw new TypeError("Label formatter must return a string or a non-empty string array");
@@ -97,9 +99,12 @@ function formatValue(options, value, details) {
   const tooltipFormatter = details.target === "tooltip" ? options.tooltipFormatValue : undefined;
   const axisFormatter = details.target === "axis" ? options.axisFormatValue : undefined;
 
-  const formatter = [datasetFormatter, tooltipFormatter, axisFormatter, options.formatValue].find(
-    (candidate) => typeof candidate === "function",
-  );
+  const formatter = [
+    datasetFormatter,
+    tooltipFormatter,
+    axisFormatter,
+    options.formatValue,
+  ].find((candidate) => typeof candidate === "function");
 
   if (!formatter) {
     return formatNumber(value);

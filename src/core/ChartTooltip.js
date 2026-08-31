@@ -160,7 +160,10 @@ export default class ChartTooltip {
   #besideOrigin(anchor, size) {
     switch (anchor.placement) {
       case "top": {
-        return { left: anchor.left - size.width / 2, top: anchor.top - size.height - TOOLTIP_ANCHOR_OFFSET };
+        return {
+          left: anchor.left - size.width / 2,
+          top: anchor.top - size.height - TOOLTIP_ANCHOR_OFFSET,
+        };
       }
 
       case "right": {
@@ -371,8 +374,21 @@ export default class ChartTooltip {
    * @returns {string} CSS color used for a tooltip swatch.
    */
   #colorForMark(mark) {
-    const candidates = [mark.getAttribute("fill"), mark.getAttribute("stroke"), mark.style.color];
+    const candidates = [
+      mark.getAttribute("fill"),
+      mark.getAttribute("stroke"),
+      mark.style.color,
+    ];
 
-    return candidates.find((color) => color && !["none", "transparent"].includes(color)) ?? DEFAULT_COLORS[0];
+    return (
+      candidates.find(
+        (color) =>
+          color &&
+          ![
+            "none",
+            "transparent",
+          ].includes(color),
+      ) ?? DEFAULT_COLORS[0]
+    );
   }
 }

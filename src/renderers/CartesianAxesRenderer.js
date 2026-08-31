@@ -93,13 +93,17 @@ export default class CartesianAxesRenderer {
    *
    * @returns {void} Region rectangles are appended to the chart SVG.
    */
-  // eslint-disable-next-line max-lines-per-function
+  // eslint-disable-next-line max-lines-per-function -- Array layout lines do not add behavior.
   #renderRegions() {
     const { bottom, left, right, top } = this.#layout.frame;
     const regions = this.#chart.source.yRegions;
 
     for (const region of regions) {
-      const [rangeStart, rangeEnd] = region.range;
+      const [
+        rangeStart,
+        rangeEnd,
+      ] = region.range;
+
       requireFiniteNumber(rangeStart, "Region start");
       requireFiniteNumber(rangeEnd, "Region end");
       const start = this.#layout.valueAt(rangeStart);
@@ -188,7 +192,9 @@ export default class CartesianAxesRenderer {
         ? formatterText(
             region.formatLabel(
               region.label,
-              Object.freeze([...region.range]),
+              Object.freeze([
+                ...region.range,
+              ]),
               formatContext(this.#chart.options, "accessibility"),
             ),
             "Region label",
@@ -229,7 +235,9 @@ export default class CartesianAxesRenderer {
         : marker.label;
 
       this.#surface.text(label, {
-        ...this.#annotationLabelAttributes(marker.labelPosition, [position]),
+        ...this.#annotationLabelAttributes(marker.labelPosition, [
+          position,
+        ]),
         fill: marker.labelColor,
       });
     }
@@ -242,12 +250,20 @@ export default class CartesianAxesRenderer {
    * @param {number[]} values - One marker coordinate or two region coordinates.
    * @returns {object} Bounded SVG text attributes.
    */
+  // eslint-disable-next-line max-lines-per-function -- Array layout lines do not add behavior.
   #annotationLabelAttributes(placement, values) {
     const { bottom, left, right, top } = this.#layout.frame;
     const value = this.#boundedValuePosition(values.reduce((sum, item) => sum + item, 0) / values.length);
 
     if (this.#layout.isHorizontal) {
-      const y = this.#placementCoordinate([bottom, (top + bottom) / 2, top], placement);
+      const y = this.#placementCoordinate(
+        [
+          bottom,
+          (top + bottom) / 2,
+          top,
+        ],
+        placement,
+      );
 
       return {
         x: value + MARKER_LABEL_OFFSET,
@@ -257,8 +273,23 @@ export default class CartesianAxesRenderer {
       };
     }
 
-    const x = this.#placementCoordinate([left, (left + right) / 2, right], placement);
-    const anchor = this.#placementCoordinate(["start", "middle", "end"], placement);
+    const x = this.#placementCoordinate(
+      [
+        left,
+        (left + right) / 2,
+        right,
+      ],
+      placement,
+    );
+
+    const anchor = this.#placementCoordinate(
+      [
+        "start",
+        "middle",
+        "end",
+      ],
+      placement,
+    );
 
     return {
       x,
@@ -275,7 +306,14 @@ export default class CartesianAxesRenderer {
    * @param {string} placement - Logical placement.
    * @returns {unknown} Selected physical value.
    */
-  #placementCoordinate([start, center, end], placement) {
+  #placementCoordinate(
+    [
+      start,
+      center,
+      end,
+    ],
+    placement,
+  ) {
     if (placement === "start") {
       return start;
     }
@@ -445,7 +483,10 @@ export default class CartesianAxesRenderer {
     const { bottom, left, right, top } = this.#layout.frame;
     const step = (bottom - top) / this.#chart.labels.length;
 
-    for (const [index, value] of this.#layout.categories.labels.entries()) {
+    for (const [
+      index,
+      value,
+    ] of this.#layout.categories.labels.entries()) {
       const text = wrappedLabelElement({
         value,
         attributes: {
@@ -467,6 +508,7 @@ export default class CartesianAxesRenderer {
    *
    * @returns {void} Vertical category labels are appended to the chart SVG.
    */
+  // eslint-disable-next-line max-lines-per-function -- Array layout lines do not add behavior.
   #renderVerticalLabels() {
     const { height, left, right } = this.#layout.frame;
     const shouldCenterCategories = this.#layout.type !== ChartType.LINE;
@@ -486,7 +528,10 @@ export default class CartesianAxesRenderer {
       visibleIndexes.push(lastIndex);
     }
 
-    for (const [visibleIndex, index] of visibleIndexes.entries()) {
+    for (const [
+      visibleIndex,
+      index,
+    ] of visibleIndexes.entries()) {
       const placement = shouldCenterCategories
         ? this.#centeredLabelPlacement({ visibleIndexes, visibleIndex, index })
         : this.#verticalLabelPlacement({ visibleIndexes, visibleIndex, index, step });

@@ -150,7 +150,17 @@ export default class TimesheetLayout {
 
     this.#options = chart.options;
     this.#x = (value) =>
-      scale(value, [geometry.values.start, geometry.values.end], [geometry.frame.left, geometry.frame.right]);
+      scale(
+        value,
+        [
+          geometry.values.start,
+          geometry.values.end,
+        ],
+        [
+          geometry.frame.left,
+          geometry.frame.right,
+        ],
+      );
     this.#dateFormatter = chart.options.tooltipFormatDate ?? chart.options.formatDate;
     this.#tickFormatter = chart.options.formatTick ?? chart.options.formatDate;
     this.#durationFormatter = chart.options.tooltipFormatDuration ?? chart.options.formatDuration;

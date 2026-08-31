@@ -24,7 +24,13 @@ function timeTicks(start, end, maximumTicks) {
     interior.push(value);
   }
 
-  return [...new Set([start, ...interior, end])];
+  return [
+    ...new Set([
+      start,
+      ...interior,
+      end,
+    ]),
+  ];
 }
 
 /**

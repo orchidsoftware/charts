@@ -14,7 +14,11 @@ beforeEach(() => {
 describe("InteractionController", () => {
   it("covers the complete pointer and keyboard state machine", async () => {
     const namespace = "http://www.w3.org/2000/svg";
-    const marks = [0, 1, 2].map(() => document.createElementNS(namespace, "rect"));
+    const marks = [
+      0,
+      1,
+      2,
+    ].map(() => document.createElementNS(namespace, "rect"));
     const shown = [];
     const hidden = [];
     const active = [];
@@ -99,7 +103,13 @@ describe("InteractionController", () => {
       onActiveChange: () => {},
       onFocusChange: () => {},
     };
-    const controller = new InteractionController([hit], { previewable: true, selectable: false }, callbacks);
+    const controller = new InteractionController(
+      [
+        hit,
+      ],
+      { previewable: true, selectable: false },
+      callbacks,
+    );
 
     hit.dispatchEvent(new PointerEvent("pointerenter"));
     hit.dispatchEvent(new PointerEvent("pointerenter"));

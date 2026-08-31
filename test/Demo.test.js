@@ -30,10 +30,19 @@ const stressIds = [
   "dense-line",
   "flat-values",
 ];
-const auxiliaryIds = ["heatmap", "spark-line", "spark-area", "spark-bar"];
+const auxiliaryIds = [
+  "heatmap",
+  "spark-line",
+  "spark-area",
+  "spark-bar",
+];
 
 beforeEach(() => {
-  const cards = [...showcaseIds, ...stressIds, ...auxiliaryIds]
+  const cards = [
+    ...showcaseIds,
+    ...stressIds,
+    ...auxiliaryIds,
+  ]
     .map(
       (id) =>
         `<article style="box-sizing:border-box;width:362px;padding:24px;border:1px solid transparent"><div id="${id}"></div></article>`,
@@ -50,8 +59,12 @@ describe("real-world demo", () => {
   it("introduces every supported chart family before the gallery", () => {
     const demo = new DOMParser().parseFromString(demoMarkup, "text/html");
     const overview = demo.querySelector("#supported-charts");
-    const families = [...overview.querySelectorAll(":scope > .support-families > .support-family")];
-    const links = [...overview.querySelectorAll(".support-types a")];
+    const families = [
+      ...overview.querySelectorAll(":scope > .support-families > .support-family"),
+    ];
+    const links = [
+      ...overview.querySelectorAll(".support-types a"),
+    ];
 
     expect(demo.querySelector("nav a").getAttribute("href")).toBe("#supported-charts");
     expect(families.map((family) => family.querySelector("h3").textContent)).toEqual([
@@ -82,23 +95,51 @@ describe("real-world demo", () => {
     expect(document.querySelector("#radar svg").getAttribute("height")).toBe("320");
     expect(document.querySelector("#fractions svg").getAttribute("height")).toBe("280");
 
-    const localizedLabels = [...document.querySelectorAll("#absurd-labels .charts2-multiline-label")];
+    const localizedLabels = [
+      ...document.querySelectorAll("#absurd-labels .charts2-multiline-label"),
+    ];
     expect(
-      localizedLabels.map((label) => [...label.querySelectorAll("tspan")].map((line) => line.textContent)),
+      localizedLabels.map((label) =>
+        [
+          ...label.querySelectorAll("tspan"),
+        ].map((line) => line.textContent),
+      ),
     ).toEqual([
-      ["Manual verification", "after inconclusive", "compliance review"],
-      ["Партнёрские интеграции", "проверка доступности", "и локализации"],
-      ["顧客向け分析", "プラットフォーム", "段階的な移行"],
-      ["طلبات المؤسسات", "مراجعة يدوية إضافية", "قبل الموافقة النهائية"],
+      [
+        "Manual verification",
+        "after inconclusive",
+        "compliance review",
+      ],
+      [
+        "Партнёрские интеграции",
+        "проверка доступности",
+        "и локализации",
+      ],
+      [
+        "顧客向け分析",
+        "プラットフォーム",
+        "段階的な移行",
+      ],
+      [
+        "طلبات المؤسسات",
+        "مراجعة يدوية إضافية",
+        "قبل الموافقة النهائية",
+      ],
     ]);
     expect(localizedLabels.every((label) => !label.textContent.includes("…"))).toBe(true);
     expect(
-      [...document.querySelectorAll("#large-values .charts2-multiline-label")].map(
-        (label) => label.querySelectorAll("tspan").length,
-      ),
-    ).toEqual([2, 2, 2]);
+      [
+        ...document.querySelectorAll("#large-values .charts2-multiline-label"),
+      ].map((label) => label.querySelectorAll("tspan").length),
+    ).toEqual([
+      2,
+      2,
+      2,
+    ]);
 
-    const cards = [...document.querySelectorAll("article")];
+    const cards = [
+      ...document.querySelectorAll("article"),
+    ];
     const overflow = cards.flatMap((article) => {
       const articleRight = article.getBoundingClientRect().right;
       const visible = [
@@ -124,7 +165,9 @@ describe("real-world demo", () => {
       );
       return visibleRight <= articleRight + 0.5
         ? []
-        : [{ id: article.querySelector("div").id, visibleRight, articleRight }];
+        : [
+            { id: article.querySelector("div").id, visibleRight, articleRight },
+          ];
     });
     expect(cards).toHaveLength(26);
     expect(overflow).toEqual([]);
@@ -133,14 +176,16 @@ describe("real-world demo", () => {
     expect(timesheetSvg.querySelectorAll(".charts2-timesheet-bar")).toHaveLength(6);
     expect(
       Math.max(
-        ...[...timesheetSvg.querySelectorAll(".charts2-timesheet-task-label, .charts2-timesheet-tick")].map(
-          (label) => label.getBoundingClientRect().right,
-        ),
+        ...[
+          ...timesheetSvg.querySelectorAll(".charts2-timesheet-task-label, .charts2-timesheet-tick"),
+        ].map((label) => label.getBoundingClientRect().right),
       ),
     ).toBeLessThanOrEqual(timesheetBounds.right);
     expect(document.querySelector("#heatmap svg").style.minWidth).toBe("");
     const heatmapHost = document.querySelector("#heatmap");
-    const heatmapCells = [...heatmapHost.querySelectorAll(".charts2-heat-cell")];
+    const heatmapCells = [
+      ...heatmapHost.querySelectorAll(".charts2-heat-cell"),
+    ];
     expect(heatmapHost).toHaveClass("charts2-scrollable-heatmap");
     expect(heatmapHost.scrollWidth).toBeGreaterThan(heatmapHost.clientWidth);
     expect(
@@ -155,7 +200,9 @@ describe("real-world demo", () => {
     expect(heatmapTooltipBounds.right).toBeLessThanOrEqual(heatmapHostBounds.right - 4);
 
     const signedMixed = document.querySelector("#mixed-signed svg");
-    const signedValueLabels = [...signedMixed.querySelectorAll(".charts2-value-label")];
+    const signedValueLabels = [
+      ...signedMixed.querySelectorAll(".charts2-value-label"),
+    ];
     expect(signedValueLabels.every((label) => label.getAttribute("text-anchor") === "start")).toBe(true);
     expect(
       Math.max(...signedValueLabels.map((label) => label.getBoundingClientRect().right)),
@@ -172,7 +219,11 @@ describe("real-world demo", () => {
       expect(bounds.right).toBeLessThanOrEqual(polarBounds.right - 12);
     }
 
-    for (const id of ["spark-line", "spark-area", "spark-bar"]) {
+    for (const id of [
+      "spark-line",
+      "spark-area",
+      "spark-bar",
+    ]) {
       const svg = document.querySelector(`#${id} svg`);
       expect(svg).not.toHaveClass("charts2-compact-chart");
       expect(svg.querySelector(".charts2-axis")).toBeNull();
@@ -185,7 +236,9 @@ describe("real-world demo", () => {
       expect(document.querySelector(`#${id} .charts2-tooltip`).hidden).toBe(true);
     }
 
-    const storageSegments = [...document.querySelectorAll("#percentage .charts2-percentage-segment")];
+    const storageSegments = [
+      ...document.querySelectorAll("#percentage .charts2-percentage-segment"),
+    ];
     expect(storageSegments).toHaveLength(6);
     expect(storageSegments.map((segment) => segment.dataset.tooltip)).toEqual([
       "Photos: 72 GB (28%)",
@@ -197,11 +250,26 @@ describe("real-world demo", () => {
     ]);
 
     const xyCases = [
-      ["scatter", "$799", "Phone", "20 h"],
-      ["bubble", "Music", "Weekly users", "64, size 18"],
+      [
+        "scatter",
+        "$799",
+        "Phone",
+        "20 h",
+      ],
+      [
+        "bubble",
+        "Music",
+        "Weekly users",
+        "64, size 18",
+      ],
     ];
 
-    for (const [id, heading, name, value] of xyCases) {
+    for (const [
+      id,
+      heading,
+      name,
+      value,
+    ] of xyCases) {
       const host = document.querySelector(`#${id}`);
       const hit = host.querySelectorAll(".charts2-x-hit")[1];
 

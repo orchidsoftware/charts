@@ -95,7 +95,14 @@ function configuredDataset(inputs, Scope) {
  * @returns {object} Completed detached line dataset.
  */
 function lineDataset(first, second, third) {
-  return configuredDataset([first, second, third], LineDatasetBuilder);
+  return configuredDataset(
+    [
+      first,
+      second,
+      third,
+    ],
+    LineDatasetBuilder,
+  );
 }
 
 /**

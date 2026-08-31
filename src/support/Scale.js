@@ -17,7 +17,15 @@ function extent(values) {
   const minimum = Math.min(...values);
   const maximum = Math.max(...values);
 
-  return minimum === maximum ? [minimum - 1, maximum + 1] : [minimum, maximum];
+  return minimum === maximum
+    ? [
+        minimum - 1,
+        maximum + 1,
+      ]
+    : [
+        minimum,
+        maximum,
+      ];
 }
 
 /**
@@ -68,7 +76,17 @@ function niceValueScale(values) {
   const maximum = Math.max(...values);
 
   if (minimum === maximum) {
-    return { domain: [minimum - 1, maximum + 1], ticks: [minimum - 1, minimum, maximum + 1] };
+    return {
+      domain: [
+        minimum - 1,
+        maximum + 1,
+      ],
+      ticks: [
+        minimum - 1,
+        minimum,
+        maximum + 1,
+      ],
+    };
   }
 
   const integerValues = values.every((value) => Number.isSafeInteger(value));
@@ -81,7 +99,13 @@ function niceValueScale(values) {
     Number((niceMinimum + index * step).toPrecision(TICK_PRECISION)),
   );
 
-  return { domain: [niceMinimum, niceMaximum], ticks };
+  return {
+    domain: [
+      niceMinimum,
+      niceMaximum,
+    ],
+    ticks,
+  };
 }
 
 /**

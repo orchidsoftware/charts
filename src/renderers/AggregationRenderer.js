@@ -133,7 +133,10 @@ export default class AggregationRenderer {
   #renderPercentageSegments(composition, colors, strip) {
     let x = strip.x;
 
-    for (const [index, part] of composition.parts.entries()) {
+    for (const [
+      index,
+      part,
+    ] of composition.parts.entries()) {
       const segmentWidth = strip.width * composition.shareOf(part);
 
       this.#surface.mark(

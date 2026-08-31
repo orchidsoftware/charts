@@ -111,7 +111,10 @@ export default class PolarAreaRenderer {
   render() {
     const layout = polarAreaLayout(this.#chart);
 
-    for (const [index, point] of layout.values.entries()) {
+    for (const [
+      index,
+      point,
+    ] of layout.values.entries()) {
       this.#renderSector(point, index, layout);
     }
   }

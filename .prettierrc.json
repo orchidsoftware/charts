@@ -1,8 +1,18 @@
 {
+  "plugins": ["prettier-plugin-multiline-arrays"],
   "printWidth": 110,
   "semi": true,
   "singleQuote": false,
   "tabWidth": 2,
   "trailingComma": "all",
-  "useTabs": false
+  "useTabs": false,
+  "overrides": [
+    {
+      "files": "*.{js,mjs,cjs}",
+      "options": {
+        "multilineArraysLinePattern": "1",
+        "multilineArraysWrapThreshold": 2
+      }
+    }
+  ]
 }

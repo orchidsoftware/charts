@@ -24,9 +24,18 @@ const DEFINITIONS = Object.freeze([
   "TimesheetChart",
 ]);
 const COMBINATIONS = Object.freeze({
-  "Line + Bar": ["LineChart", "BarChart"],
-  "Line + Heatmap": ["LineChart", "HeatmapChart"],
-  "Line + Pie": ["LineChart", "PieChart"],
+  "Line + Bar": [
+    "LineChart",
+    "BarChart",
+  ],
+  "Line + Heatmap": [
+    "LineChart",
+    "HeatmapChart",
+  ],
+  "Line + Pie": [
+    "LineChart",
+    "PieChart",
+  ],
   "All definitions": DEFINITIONS,
 });
 const root = process.cwd();
@@ -48,7 +57,11 @@ async function productionFiles(directory) {
         return await productionFiles(entryPath);
       }
 
-      return /\.(?:css|js)$/u.test(entry.name) ? [entryPath] : [];
+      return /\.(?:css|js)$/u.test(entry.name)
+        ? [
+            entryPath,
+          ]
+        : [];
     }),
   );
 
@@ -156,11 +169,26 @@ function enforce(condition, message) {
 
 const sources = await sourceMetrics();
 const familySizes = Object.fromEntries(
-  await Promise.all(DEFINITIONS.map(async (definition) => [definition, await consumerSize([definition])])),
+  await Promise.all(
+    DEFINITIONS.map(async (definition) => [
+      definition,
+      await consumerSize([
+        definition,
+      ]),
+    ]),
+  ),
 );
 const combinationSizes = Object.fromEntries(
   await Promise.all(
-    Object.entries(COMBINATIONS).map(async ([name, definitions]) => [name, await consumerSize(definitions)]),
+    Object.entries(COMBINATIONS).map(
+      async ([
+        name,
+        definitions,
+      ]) => [
+        name,
+        await consumerSize(definitions),
+      ],
+    ),
   ),
 );
 const largestFamily = Object.entries(familySizes).toSorted(
@@ -170,7 +198,12 @@ const aggregate = combinationSizes["All definitions"];
 
 console.log(
   Object.entries(familySizes)
-    .map(([name, size]) => `${name}: ${(size.gzipBytes / 1000).toFixed(2)} kB gzip`)
+    .map(
+      ([
+        name,
+        size,
+      ]) => `${name}: ${(size.gzipBytes / 1000).toFixed(2)} kB gzip`,
+    )
     .join("\n"),
 );
 console.log(`Largest family: ${largestFamily[0]} ${(largestFamily[1].gzipBytes / 1000).toFixed(2)} kB gzip`);
@@ -181,14 +214,20 @@ console.log(
   `Production source: ${sources.lines} lines, ${sources.bytes} bytes, ${sources.files} files, ${sources.imports} imports`,
 );
 
-for (const [name, size] of Object.entries(familySizes)) {
+for (const [
+  name,
+  size,
+] of Object.entries(familySizes)) {
   enforce(
     size.gzipBytes <= MAXIMUM_GZIP_BYTES,
     `${name} exceeds the 15.00 kB gzip limit by ${((size.gzipBytes - MAXIMUM_GZIP_BYTES) / 1000).toFixed(2)} kB`,
   );
 }
 
-for (const [metric, maximum] of Object.entries(SOURCE_BUDGET)) {
+for (const [
+  metric,
+  maximum,
+] of Object.entries(SOURCE_BUDGET)) {
   enforce(
     sources[metric] <= maximum,
     `Production source ${metric} exceeds ${maximum} by ${sources[metric] - maximum}`,

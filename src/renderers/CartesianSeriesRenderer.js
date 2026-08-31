@@ -124,7 +124,9 @@ function renderPointHit(rendering, series, target) {
 
   if (target.tooltip) {
     hit.dataset.tooltipHeading = target.tooltip.heading;
-    hit.dataset.tooltipItems = JSON.stringify([target.tooltip.item]);
+    hit.dataset.tooltipItems = JSON.stringify([
+      target.tooltip.item,
+    ]);
   }
 
   surface.append(titled(hit, target.label));
@@ -213,11 +215,15 @@ function renderLineStroke(rendering, entry) {
  * @param {object} entry - Dataset, source index, and presentation.
  * @returns {void} Visible marker circles are appended.
  */
+// eslint-disable-next-line max-lines-per-function -- Array layout lines do not add behavior.
 function renderVisibleLinePoints(rendering, entry) {
   const { layout, surface } = rendering;
   const { dataset, datasetIndex, presentation } = entry;
 
-  for (const [pointIndex, point] of dataset.points.entries()) {
+  for (const [
+    pointIndex,
+    point,
+  ] of dataset.points.entries()) {
     const coordinates = layout.pointAt(point, pointIndex);
     const label = linePointLabel(rendering, { dataset, datasetIndex, pointIndex, point });
 
@@ -261,7 +267,10 @@ function renderLineHits(rendering, entry) {
   const { layout } = rendering;
   const { dataset, datasetIndex, presentation } = entry;
 
-  for (const [pointIndex, point] of dataset.points.entries()) {
+  for (const [
+    pointIndex,
+    point,
+  ] of dataset.points.entries()) {
     const { x, y } = layout.pointAt(point, pointIndex);
 
     renderPointHit(
@@ -348,10 +357,14 @@ function pointTooltip(rendering, state) {
  * @param {object} series - Dataset, source index, and concrete point type.
  * @returns {void} Point marks and hit targets are appended.
  */
+// eslint-disable-next-line max-lines-per-function -- Array layout lines do not add behavior.
 function renderPoints(rendering, series) {
   const { layout, surface } = rendering;
 
-  for (const [pointIndex, source] of series.dataset.points.entries()) {
+  for (const [
+    pointIndex,
+    source,
+  ] of series.dataset.points.entries()) {
     const radius = series.datasetType === ChartType.BUBBLE ? source.r : DEFAULT_POINT_RADIUS;
     const tooltip = pointTooltip(rendering, { series, source, pointIndex });
     const isOutlined = series.datasetType === ChartType.SCATTER;
@@ -502,7 +515,10 @@ function renderBars(rendering, entry) {
   const { dataset, datasetIndex } = entry;
   const barDatasetIndex = Math.max(0, layout.bars.datasets.indexOf(dataset));
 
-  for (const [pointIndex, point] of dataset.points.entries()) {
+  for (const [
+    pointIndex,
+    point,
+  ] of dataset.points.entries()) {
     const position = { point, pointIndex, barDatasetIndex };
 
     const geometry = layout.barFor(point, {
@@ -524,7 +540,10 @@ function renderBars(rendering, entry) {
  * @returns {void} Line datasets are appended.
  */
 function renderLineSeries(rendering) {
-  for (const [datasetIndex, dataset] of rendering.chart.datasets.entries()) {
+  for (const [
+    datasetIndex,
+    dataset,
+  ] of rendering.chart.datasets.entries()) {
     renderLine(rendering, { dataset, datasetIndex });
   }
 }
@@ -536,7 +555,10 @@ function renderLineSeries(rendering) {
  * @returns {void} Bar datasets are appended.
  */
 function renderBarSeries(rendering) {
-  for (const [datasetIndex, dataset] of rendering.chart.datasets.entries()) {
+  for (const [
+    datasetIndex,
+    dataset,
+  ] of rendering.chart.datasets.entries()) {
     renderBars(rendering, { dataset, datasetIndex });
   }
 }
@@ -548,7 +570,10 @@ function renderBarSeries(rendering) {
  * @returns {void} Point datasets are appended.
  */
 function renderPointSeries(rendering) {
-  for (const [datasetIndex, dataset] of rendering.chart.datasets.entries()) {
+  for (const [
+    datasetIndex,
+    dataset,
+  ] of rendering.chart.datasets.entries()) {
     renderPoints(rendering, { dataset, datasetIndex, datasetType: rendering.layout.type });
   }
 }
@@ -573,7 +598,12 @@ function renderMixedSeries(rendering) {
       continue;
     }
 
-    if ([ChartType.BUBBLE, ChartType.SCATTER].includes(entry.dataset.chartType)) {
+    if (
+      [
+        ChartType.BUBBLE,
+        ChartType.SCATTER,
+      ].includes(entry.dataset.chartType)
+    ) {
       renderPoints(rendering, { ...entry, datasetType: entry.dataset.chartType });
 
       continue;

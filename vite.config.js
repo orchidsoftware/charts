@@ -7,7 +7,9 @@ export default defineConfig({
   build: {
     lib: {
       entry: "src/index.js",
-      formats: ["es"],
+      formats: [
+        "es",
+      ],
       fileName: "index",
     },
     minify: "terser",
@@ -29,14 +31,26 @@ export default defineConfig({
     },
   },
   test: {
-    include: isCompatibility ? ["test/Compatibility.test.js"] : ["test/**/*.test.js"],
+    include: isCompatibility
+      ? [
+          "test/Compatibility.test.js",
+        ]
+      : [
+          "test/**/*.test.js",
+        ],
     browser: {
       enabled: true,
       headless: true,
       provider: playwright(),
       instances: isCompatibility
-        ? [{ browser: "chromium" }, { browser: "firefox" }, { browser: "webkit" }]
-        : [{ browser: "chromium" }],
+        ? [
+            { browser: "chromium" },
+            { browser: "firefox" },
+            { browser: "webkit" },
+          ]
+        : [
+            { browser: "chromium" },
+          ],
       expect: {
         toMatchScreenshot: {
           comparatorName: "pixelmatch",
@@ -49,8 +63,14 @@ export default defineConfig({
     },
     coverage: {
       provider: "v8",
-      include: ["src/**/*.js"],
-      reporter: ["text", "html", "lcov"],
+      include: [
+        "src/**/*.js",
+      ],
+      reporter: [
+        "text",
+        "html",
+        "lcov",
+      ],
       thresholds: { lines: 100, functions: 100, branches: 100, statements: 100 },
     },
   },

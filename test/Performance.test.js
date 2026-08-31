@@ -19,7 +19,12 @@ describe("performance budgets in Chromium", () => {
     const duration = measure(() =>
       createChart("#chart", {
         type: "line",
-        data: { labels, datasets: [{ name: "Daily value", values }] },
+        data: {
+          labels,
+          datasets: [
+            { name: "Daily value", values },
+          ],
+        },
       }),
     );
 
@@ -31,17 +36,39 @@ describe("performance budgets in Chromium", () => {
 
   it("renders a 50,000-point line in under one second", () => {
     const values = Array.from({ length: 50_000 }, (_, index) => Math.sin(index / 100) * 100);
-    const duration = measure(() => createChart("#chart", { type: "line", data: { datasets: [{ values }] } }));
+    const duration = measure(() =>
+      createChart("#chart", {
+        type: "line",
+        data: {
+          datasets: [
+            { values },
+          ],
+        },
+      }),
+    );
     expect(document.querySelector(".charts2-line").getAttribute("d").length).toBeGreaterThan(1_000_000);
     expect(duration).toBeLessThan(1000);
   });
 
   it("handles 200 live updates of 100 points in under one second", () => {
-    const chart = createChart("#chart", { type: "line", data: { datasets: [{ values: [1] }] } });
+    const chart = createChart("#chart", {
+      type: "line",
+      data: {
+        datasets: [
+          {
+            values: [
+              1,
+            ],
+          },
+        ],
+      },
+    });
     const duration = measure(() => {
       for (let iteration = 0; iteration < 200; iteration += 1) {
         chart.update({
-          datasets: [{ values: Array.from({ length: 100 }, (_, index) => index + iteration) }],
+          datasets: [
+            { values: Array.from({ length: 100 }, (_, index) => index + iteration) },
+          ],
         });
       }
     });

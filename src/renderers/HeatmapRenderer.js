@@ -29,7 +29,14 @@ const MINIMUM_SWATCH_GAP = 2;
  * @param {number} colorCount - Number of supplied intensity colors.
  * @returns {number} Bounded zero-based palette bucket.
  */
-function intensityLevel(value, [minimum, maximum], colorCount) {
+function intensityLevel(
+  value,
+  [
+    minimum,
+    maximum,
+  ],
+  colorCount,
+) {
   if (minimum === maximum) {
     return value === 0 ? 0 : colorCount - 1;
   }
@@ -199,10 +206,23 @@ export default class HeatmapRenderer {
    */
   #palette() {
     const values = this.#chart.heatmap.map((item) => item.value);
-    const [minimum, maximum] = extent(values);
+
+    const [
+      minimum,
+      maximum,
+    ] = extent(values);
+
     const colors = this.#chart.hasCustomColors ? this.#chart.options.colors : HEATMAP_COLORS;
 
-    const colorLevel = (value) => intensityLevel(value, [minimum, maximum], colors.length);
+    const colorLevel = (value) =>
+      intensityLevel(
+        value,
+        [
+          minimum,
+          maximum,
+        ],
+        colors.length,
+      );
 
     return { colors, colorLevel };
   }
@@ -216,7 +236,10 @@ export default class HeatmapRenderer {
   #renderCells(layout) {
     const suffix = this.#countSuffix();
 
-    for (const [index, item] of this.#chart.heatmap.entries()) {
+    for (const [
+      index,
+      item,
+    ] of this.#chart.heatmap.entries()) {
       const level = layout.colorLevel(item.value);
       const column = Math.floor(index / DAYS_PER_WEEK);
       const row = index % DAYS_PER_WEEK;
@@ -335,7 +358,10 @@ export default class HeatmapRenderer {
    * @returns {void} Palette rectangles are appended.
    */
   #appendLegendSwatches(legend, colors, geometry) {
-    for (const [index, color] of colors.entries()) {
+    for (const [
+      index,
+      color,
+    ] of colors.entries()) {
       legend.append(
         svg("rect", {
           x: geometry.scaleX + index * (geometry.swatchWidth + geometry.swatchGap),

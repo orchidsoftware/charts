@@ -6,11 +6,23 @@ const MILLISECONDS_PER_SECOND = 1000;
 const UNIX_SECONDS_THRESHOLD = 100_000;
 const YEAR_LENGTH = 4;
 const YEAR_MONTH_LENGTH = 7;
-const DATE_SEPARATOR_INDICES = new Set([YEAR_LENGTH, YEAR_MONTH_LENGTH]);
+
+const DATE_SEPARATOR_INDICES = new Set([
+  YEAR_LENGTH,
+  YEAR_MONTH_LENGTH,
+]);
+
 const TIMEZONE_OFFSET_LENGTH = 6;
 const TIMEZONE_HOUR_END = 3;
 const TIMEZONE_MINUTE_START = 4;
-const DATASET_BASE_KEYS = ["name", "values", "color", "opacity", "formatValue"];
+
+const DATASET_BASE_KEYS = [
+  "name",
+  "values",
+  "color",
+  "opacity",
+  "formatValue",
+];
 
 const DATASET_LINE_KEYS = [
   ...DATASET_BASE_KEYS,
@@ -23,7 +35,10 @@ const DATASET_LINE_KEYS = [
   "strokeWidth",
 ];
 
-const DATASET_BAR_KEYS = [...DATASET_BASE_KEYS, "radius"];
+const DATASET_BAR_KEYS = [
+  ...DATASET_BASE_KEYS,
+  "radius",
+];
 
 const CARTESIAN_SERIES_TYPES = new Set([
   ChartType.LINE,
@@ -190,8 +205,16 @@ function validateSeriesScene(type, data) {
   }
 
   const allowed = CARTESIAN_SERIES_TYPES.has(type)
-    ? ["labels", "datasets", "markers", "regions"]
-    : ["labels", "datasets"];
+    ? [
+        "labels",
+        "datasets",
+        "markers",
+        "regions",
+      ]
+    : [
+        "labels",
+        "datasets",
+      ];
 
   validateObjectKeys(data, allowed, "chart data");
 }
@@ -212,13 +235,25 @@ function validateDatasetInput(dataset, type) {
 
   if (
     type === ChartType.AXIS_MIXED &&
-    ![ChartType.LINE, ChartType.BAR, ChartType.SCATTER].includes(subtype)
+    ![
+      ChartType.LINE,
+      ChartType.BAR,
+      ChartType.SCATTER,
+    ].includes(subtype)
   ) {
     throw new TypeError("Mixed dataset chartType must be line, bar, or scatter");
   }
 
   const localKeys = datasetKeysFor(subtype);
-  const allowed = type === ChartType.AXIS_MIXED ? [...localKeys, "chartType"] : localKeys;
+
+  const allowed =
+    type === ChartType.AXIS_MIXED
+      ? [
+          ...localKeys,
+          "chartType",
+        ]
+      : localKeys;
+
   validateObjectKeys(dataset, allowed, "dataset");
   validateDatasetProperties(dataset, subtype);
 }
@@ -254,7 +289,10 @@ function validateDatasetProperties(dataset, type) {
   validateDatasetGradient(dataset.gradient);
 
   if (Array.isArray(dataset.values)) {
-    for (const [index, value] of dataset.values.entries()) {
+    for (const [
+      index,
+      value,
+    ] of dataset.values.entries()) {
       validatePublicPoint(value, type, index);
     }
   }
@@ -293,13 +331,22 @@ function validateDatasetPresentation(dataset) {
     throw new TypeError("Dataset opacity must be from 0 through 1");
   }
 
-  for (const property of ["smooth", "dots", "line", "area"]) {
+  for (const property of [
+    "smooth",
+    "dots",
+    "line",
+    "area",
+  ]) {
     if (dataset[property] !== undefined && typeof dataset[property] !== "boolean") {
       throw new TypeError(`Dataset ${property} must be a boolean`);
     }
   }
 
-  for (const property of ["dotSize", "strokeWidth", "radius"]) {
+  for (const property of [
+    "dotSize",
+    "strokeWidth",
+    "radius",
+  ]) {
     if (dataset[property] !== undefined && (!Number.isFinite(dataset[property]) || dataset[property] < 0)) {
       throw new TypeError(`Dataset ${property} must be a non-negative finite number`);
     }
@@ -321,7 +368,14 @@ function validateDatasetGradient(gradient) {
     throw new TypeError("Dataset gradient must be a boolean or object");
   }
 
-  validateObjectKeys(gradient, ["fromOpacity", "toOpacity"], "gradient");
+  validateObjectKeys(
+    gradient,
+    [
+      "fromOpacity",
+      "toOpacity",
+    ],
+    "gradient",
+  );
   for (const value of Object.values(gradient)) {
     if (!Number.isFinite(value) || value < 0 || value > 1) {
       throw new TypeError("Gradient opacity must be from 0 through 1");
@@ -342,7 +396,10 @@ function validatePublicPoint(value, type, index) {
     return;
   }
 
-  const isPointSeries = [ChartType.SCATTER, ChartType.BUBBLE].includes(type);
+  const isPointSeries = [
+    ChartType.SCATTER,
+    ChartType.BUBBLE,
+  ].includes(type);
 
   if (!isPointSeries) {
     if (!Number.isFinite(value)) {
@@ -367,7 +424,17 @@ function validateCoordinatePoint(value, type) {
     throw new TypeError(`${type} points must be objects with finite coordinates`);
   }
 
-  const pointKeys = type === ChartType.BUBBLE ? ["x", "y", "r"] : ["x", "y"];
+  const pointKeys =
+    type === ChartType.BUBBLE
+      ? [
+          "x",
+          "y",
+          "r",
+        ]
+      : [
+          "x",
+          "y",
+        ];
 
   validateObjectKeys(value, pointKeys, `${type} point`);
   if (!Number.isFinite(value.x) || !Number.isFinite(value.y)) {
@@ -387,7 +454,15 @@ function validateCoordinatePoint(value, type) {
  * @throws {TypeError} When bounds, dates, or values are invalid.
  */
 function normalizeHeatmapData(data = {}) {
-  validateObjectKeys(data, ["start", "end", "points"], "heatmap data");
+  validateObjectKeys(
+    data,
+    [
+      "start",
+      "end",
+      "points",
+    ],
+    "heatmap data",
+  );
   const source = data.points;
 
   if (!source || typeof source !== "object") {
@@ -398,16 +473,21 @@ function normalizeHeatmapData(data = {}) {
     throw new TypeError("Heatmap points must contain at least one entry");
   }
 
-  const entries = Object.entries(source).map(([key, value]) => {
-    requireFiniteNumber(value, "Heatmap value");
-    const date = heatmapDate(key);
+  const entries = Object.entries(source).map(
+    ([
+      key,
+      value,
+    ]) => {
+      requireFiniteNumber(value, "Heatmap value");
+      const date = heatmapDate(key);
 
-    if (Number.isNaN(date.valueOf())) {
-      throw new TypeError(`Invalid heatmap date: ${key}`);
-    }
+      if (Number.isNaN(date.valueOf())) {
+        throw new TypeError(`Invalid heatmap date: ${key}`);
+      }
 
-    return { date, key: date.toISOString().slice(0, ISO_DATE_LENGTH), value };
-  });
+      return { date, key: date.toISOString().slice(0, ISO_DATE_LENGTH), value };
+    },
+  );
 
   const sorted = entries.toSorted((left, right) => left.date - right.date);
   validateHeatmapRange(data, sorted);
@@ -533,9 +613,9 @@ function isDateOnly(value) {
     return false;
   }
 
-  return [...value].every(
-    (character, index) => DATE_SEPARATOR_INDICES.has(index) || (character >= "0" && character <= "9"),
-  );
+  return [
+    ...value,
+  ].every((character, index) => DATE_SEPARATOR_INDICES.has(index) || (character >= "0" && character <= "9"));
 }
 
 /**
@@ -556,7 +636,13 @@ function isNumericKey(value) {
 
   return (
     parts.length <= 2 &&
-    parts.every((part) => part !== "" && [...part].every((character) => character >= "0" && character <= "9"))
+    parts.every(
+      (part) =>
+        part !== "" &&
+        [
+          ...part,
+        ].every((character) => character >= "0" && character <= "9"),
+    )
   );
 }
 
@@ -580,9 +666,14 @@ function hasExplicitTimezone(value) {
   const digits = `${offset.slice(1, TIMEZONE_HOUR_END)}${offset.slice(TIMEZONE_MINUTE_START)}`;
 
   return (
-    ["+", "-"].includes(sign) &&
+    [
+      "+",
+      "-",
+    ].includes(sign) &&
     offset[TIMEZONE_HOUR_END] === ":" &&
-    [...digits].every((character) => character >= "0" && character <= "9")
+    [
+      ...digits,
+    ].every((character) => character >= "0" && character <= "9")
   );
 }
 
@@ -611,7 +702,15 @@ function validateObjectKeys(input, allowed, concept) {
  * @throws {TypeError} When tasks, dates, durations, or explicit bounds are invalid.
  */
 function normalizeTimesheetData(data = {}, colors = DEFAULT_COLORS) {
-  validateObjectKeys(data, ["start", "end", "tasks"], "timesheet data");
+  validateObjectKeys(
+    data,
+    [
+      "start",
+      "end",
+      "tasks",
+    ],
+    "timesheet data",
+  );
   if (!Array.isArray(data.tasks) || data.tasks.length === 0) {
     throw new TypeError("Timesheet data requires a non-empty tasks array");
   }
@@ -648,7 +747,17 @@ function normalizeTimesheetTask(task, index, palette) {
     throw new TypeError("Each timesheet task must be an object");
   }
 
-  validateObjectKeys(task, ["label", "start", "end", "group", "color"], "timesheet task");
+  validateObjectKeys(
+    task,
+    [
+      "label",
+      "start",
+      "end",
+      "group",
+      "color",
+    ],
+    "timesheet task",
+  );
   if (typeof task.label !== "string" || task.label.trim() === "") {
     throw new TypeError("Timesheet task label must be a non-empty string");
   }
@@ -692,18 +801,32 @@ function validateChartData(type, datasets, labels) {
   }
 
   const hasGeneratedIndependentLabels =
-    [ChartType.SCATTER, ChartType.BUBBLE].includes(type) &&
-    labels.every((label) => typeof label === "number");
+    [
+      ChartType.SCATTER,
+      ChartType.BUBBLE,
+    ].includes(type) && labels.every((label) => typeof label === "number");
 
   if (!hasGeneratedIndependentLabels && datasets.some((dataset) => dataset.points.length !== labels.length)) {
     throw new TypeError("Chart labels length must match every dataset");
   }
 
-  if ([...AGGREGATION_TYPES, ChartType.POLAR_AREA].includes(type) && datasets.length !== 1) {
+  if (
+    [
+      ...AGGREGATION_TYPES,
+      ChartType.POLAR_AREA,
+    ].includes(type) &&
+    datasets.length !== 1
+  ) {
     throw new TypeError(`${type} requires exactly one dataset`);
   }
 
-  if ([...AGGREGATION_TYPES, ChartType.POLAR_AREA, ChartType.RADAR].includes(type)) {
+  if (
+    [
+      ...AGGREGATION_TYPES,
+      ChartType.POLAR_AREA,
+      ChartType.RADAR,
+    ].includes(type)
+  ) {
     validateNonNegativeData(type, datasets);
   }
 }
@@ -722,7 +845,13 @@ function validateNonNegativeData(type, datasets) {
     throw new TypeError(`${type} values must be non-negative`);
   }
 
-  if ([...AGGREGATION_TYPES, ChartType.POLAR_AREA].includes(type) && values.every((value) => value === 0)) {
+  if (
+    [
+      ...AGGREGATION_TYPES,
+      ChartType.POLAR_AREA,
+    ].includes(type) &&
+    values.every((value) => value === 0)
+  ) {
     throw new TypeError(`${type} requires at least one positive value`);
   }
 }

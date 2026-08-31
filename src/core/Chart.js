@@ -236,10 +236,21 @@ export default class Chart {
     this.#assertMounted();
     const clone = this.#element.cloneNode(true);
     clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-    const originals = [this.#element, ...this.#element.querySelectorAll("*")];
-    const copies = [clone, ...clone.querySelectorAll("*")];
 
-    for (const [index, original] of originals.entries()) {
+    const originals = [
+      this.#element,
+      ...this.#element.querySelectorAll("*"),
+    ];
+
+    const copies = [
+      clone,
+      ...clone.querySelectorAll("*"),
+    ];
+
+    for (const [
+      index,
+      original,
+    ] of originals.entries()) {
       const computed = getComputedStyle(original);
       const copy = copies[index];
 
@@ -268,7 +279,16 @@ export default class Chart {
     const normalizedFilename = filename.toLowerCase().endsWith(SVG_EXTENSION) ? filename : `${filename}.svg`;
     const link = document.createElement("a");
     link.download = normalizedFilename;
-    const url = URL.createObjectURL(new Blob([this.toSvg()], { type: "image/svg+xml" }));
+
+    const url = URL.createObjectURL(
+      new Blob(
+        [
+          this.toSvg(),
+        ],
+        { type: "image/svg+xml" },
+      ),
+    );
+
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
@@ -466,7 +486,11 @@ export default class Chart {
     const marks = this.#orderedMarks(staged);
 
     const matches = marks.flatMap((mark, index) =>
-      model.identityFor(mark) === this.#selectionIdentity ? [index] : [],
+      model.identityFor(mark) === this.#selectionIdentity
+        ? [
+            index,
+          ]
+        : [],
     );
 
     return matches.length === 1 ? matches[0] : -1;
@@ -479,7 +503,9 @@ export default class Chart {
    * @returns {void} Public element identity is preserved across redraws.
    */
   #replaceSurface(staged) {
-    const currentAttributes = [...this.#element.attributes];
+    const currentAttributes = [
+      ...this.#element.attributes,
+    ];
 
     for (const attribute of currentAttributes) {
       this.#element.removeAttribute(attribute.name);
@@ -559,7 +585,9 @@ export default class Chart {
    * @returns {SVGElement[]} Stable keyboard and `point()` order.
    */
   #orderedMarks(element) {
-    const marks = [...element.querySelectorAll(MARK_SELECTOR)];
+    const marks = [
+      ...element.querySelectorAll(MARK_SELECTOR),
+    ];
 
     if (this.#type !== ChartType.AXIS_MIXED) {
       return marks;

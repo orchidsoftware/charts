@@ -37,13 +37,20 @@ afterAll(async () => {
 
 describe("QA chart laboratory", () => {
   it("groups every fixture once and renders it through the public demo entry", () => {
-    const groups = [...document.querySelectorAll("[data-fixture-group]")];
-    const fixtures = [...document.querySelectorAll("[data-fixture]")];
+    const groups = [
+      ...document.querySelectorAll("[data-fixture-group]"),
+    ];
+    const fixtures = [
+      ...document.querySelectorAll("[data-fixture]"),
+    ];
     const fixtureNames = fixtures.map((fixture) => fixture.dataset.fixture);
 
     expect(
       Object.fromEntries(
-        groups.map((group) => [group.dataset.fixtureGroup, group.querySelectorAll("[data-fixture]").length]),
+        groups.map((group) => [
+          group.dataset.fixtureGroup,
+          group.querySelectorAll("[data-fixture]").length,
+        ]),
       ),
     ).toEqual(expectedGroups);
     expect(fixtures).toHaveLength(38);
@@ -80,13 +87,19 @@ describe("QA chart laboratory", () => {
     await page.viewport(390, 900);
     await settle();
 
-    const overflowing = [...document.querySelectorAll("[data-fixture]")].flatMap((fixture) => {
+    const overflowing = [
+      ...document.querySelectorAll("[data-fixture]"),
+    ].flatMap((fixture) => {
       const fixtureBounds = fixture.getBoundingClientRect();
       const host = fixture.querySelector(`[id="${CSS.escape(fixture.dataset.fixture)}"]`);
       const hostBounds = host.getBoundingClientRect();
       const isInside =
         hostBounds.left >= fixtureBounds.left - 0.5 && hostBounds.right <= fixtureBounds.right + 0.5;
-      return isInside ? [] : [fixture.dataset.fixture];
+      return isInside
+        ? []
+        : [
+            fixture.dataset.fixture,
+          ];
     });
 
     expect(overflowing).toEqual([]);

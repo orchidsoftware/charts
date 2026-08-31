@@ -23,9 +23,20 @@ describe("LineChart fluent API", () => {
 
   it("renders the canonical palette, height, and whole-chart gradient path", () => {
     const chart = LineChart.make("#chart")
-      .labels(["Jan", "Feb", "Mar"])
-      .dataset([42, 48, 57])
-      .colors(["#00bdff", "#1b3bff"])
+      .labels([
+        "Jan",
+        "Feb",
+        "Mar",
+      ])
+      .dataset([
+        42,
+        48,
+        57,
+      ])
+      .colors([
+        "#00bdff",
+        "#1b3bff",
+      ])
       .height(300)
       .gradient()
       .render();
@@ -33,13 +44,27 @@ describe("LineChart fluent API", () => {
     expect(chart.element.getAttribute("height")).toBe("300");
     expect(chart.element.querySelector(".charts2-line").getAttribute("stroke")).toBe("#00bdff");
     expect(chart.element.querySelectorAll("linearGradient")).toHaveLength(1);
-    expect(chart.point(0)).toEqual({ index: 0, label: "Jan", values: [42] });
+    expect(chart.point(0)).toEqual({
+      index: 0,
+      label: "Jan",
+      values: [
+        42,
+      ],
+    });
   });
 
   it("does not resolve or mutate the parent before render and copies inputs at each call", () => {
-    const labels = ["Jan", "Feb"];
-    const values = [10, 20];
-    const colors = ["#123456"];
+    const labels = [
+      "Jan",
+      "Feb",
+    ];
+    const values = [
+      10,
+      20,
+    ];
+    const colors = [
+      "#123456",
+    ];
     const builder = LineChart.make("#chart").labels(labels).dataset(values).colors(colors);
 
     labels.push("Changed");
@@ -48,13 +73,23 @@ describe("LineChart fluent API", () => {
     expect(document.querySelector("#chart").textContent).toBe("existing content");
 
     const chart = builder.render();
-    expect(chart.point(0)).toEqual({ index: 0, label: "Jan", values: [10] });
+    expect(chart.point(0)).toEqual({
+      index: 0,
+      label: "Jan",
+      values: [
+        10,
+      ],
+    });
     expect(chart.point(2)).toBeUndefined();
     expect(chart.element.querySelector(".charts2-line").getAttribute("stroke")).toBe("#123456");
   });
 
   it("consumes a builder only after successful rendering", () => {
-    const builder = LineChart.make("#later").dataset([1, 2, 3]);
+    const builder = LineChart.make("#later").dataset([
+      1,
+      2,
+      3,
+    ]);
     expect(() => builder.render()).toThrow("parent");
 
     const host = document.createElement("div");
@@ -70,10 +105,17 @@ describe("LineChart fluent API", () => {
   it("expires local dataset scopes when their callback returns", () => {
     let retained;
     const chart = LineChart.make("#chart")
-      .dataset("Revenue", [1, 2], (dataset) => {
-        retained = dataset;
-        dataset.color("#654321").gradient();
-      })
+      .dataset(
+        "Revenue",
+        [
+          1,
+          2,
+        ],
+        (dataset) => {
+          retained = dataset;
+          dataset.color("#654321").gradient();
+        },
+      )
       .render();
 
     expect(chart.element.querySelector(".charts2-line").getAttribute("stroke")).toBe("#654321");
@@ -81,13 +123,33 @@ describe("LineChart fluent API", () => {
   });
 
   it("rejects an unnamed dataset before resolving the DOM when more than one series exists", () => {
-    const builder = LineChart.make("#missing").dataset([1, 2]).dataset("Plan", [2, 3]);
+    const builder = LineChart.make("#missing")
+      .dataset([
+        1,
+        2,
+      ])
+      .dataset(
+        "Plan",
+        [
+          2,
+          3,
+        ],
+      );
 
     expect(() => builder.render()).toThrow("unnamed dataset");
   });
 
   it("lets explicit presentation choices override frameless regardless of call order", () => {
-    const chart = LineChart.make("#chart").dataset([1, 2, 3]).axes(true).dots(true).frameless().render();
+    const chart = LineChart.make("#chart")
+      .dataset([
+        1,
+        2,
+        3,
+      ])
+      .axes(true)
+      .dots(true)
+      .frameless()
+      .render();
 
     expect(chart.element.querySelectorAll(".charts2-axis").length).toBeGreaterThan(0);
     expect(chart.element.querySelectorAll(".charts2-point")).toHaveLength(3);
@@ -96,8 +158,14 @@ describe("LineChart fluent API", () => {
 
   it("leaves existing host content untouched when initial rendering fails", () => {
     const builder = LineChart.make("#chart")
-      .labels(["Jan", "Feb"])
-      .dataset([1, 2])
+      .labels([
+        "Jan",
+        "Feb",
+      ])
+      .dataset([
+        1,
+        2,
+      ])
       .formatLabel(() => {
         throw new Error("format failed");
       });
@@ -112,8 +180,14 @@ describe("LineChart fluent API", () => {
 
   it("preserves model, SVG, and lifecycle when an update renderer fails", () => {
     const chart = LineChart.make("#chart")
-      .labels(["Jan", "Feb"])
-      .dataset([1, 2])
+      .labels([
+        "Jan",
+        "Feb",
+      ])
+      .dataset([
+        1,
+        2,
+      ])
       .formatLabel((label) => {
         if (label === "Bad") {
           throw new Error("update format failed");
@@ -124,18 +198,46 @@ describe("LineChart fluent API", () => {
       .render();
     const before = chart.toSvg();
 
-    expect(() => chart.update({ labels: ["Bad", "Data"], datasets: [{ values: [9, 10] }] })).toThrow(
-      "update format failed",
-    );
+    expect(() =>
+      chart.update({
+        labels: [
+          "Bad",
+          "Data",
+        ],
+        datasets: [
+          {
+            values: [
+              9,
+              10,
+            ],
+          },
+        ],
+      }),
+    ).toThrow("update format failed");
     expect(chart.toSvg()).toBe(before);
-    expect(chart.point(0)).toEqual({ index: 0, label: "Jan", values: [1] });
+    expect(chart.point(0)).toEqual({
+      index: 0,
+      label: "Jan",
+      values: [
+        1,
+      ],
+    });
   });
 
   it("preserves a unique named selection by identity without notifying user code", () => {
     const onSelect = vi.fn();
     const chart = LineChart.make("#chart")
-      .labels(["Jan", "Feb"])
-      .dataset("Revenue", [10, 20])
+      .labels([
+        "Jan",
+        "Feb",
+      ])
+      .dataset(
+        "Revenue",
+        [
+          10,
+          20,
+        ],
+      )
       .onSelect(onSelect)
       .render();
 
@@ -143,7 +245,21 @@ describe("LineChart fluent API", () => {
       .querySelector('.charts2-mark[data-point-index="0"]')
       .dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(onSelect).toHaveBeenCalledTimes(1);
-    chart.update({ labels: ["Feb", "Jan"], datasets: [{ name: "Revenue", values: [25, 15] }] });
+    chart.update({
+      labels: [
+        "Feb",
+        "Jan",
+      ],
+      datasets: [
+        {
+          name: "Revenue",
+          values: [
+            25,
+            15,
+          ],
+        },
+      ],
+    });
 
     expect(chart.element.querySelector(".is-active").dataset.pointIndex).toBe("1");
     expect(onSelect).toHaveBeenCalledTimes(1);
@@ -151,27 +267,74 @@ describe("LineChart fluent API", () => {
 
   it("clears selection when update identity is unnamed or duplicated", () => {
     const named = LineChart.make("#chart")
-      .labels(["Jan", "Feb"])
-      .dataset("Revenue", [10, 20])
+      .labels([
+        "Jan",
+        "Feb",
+      ])
+      .dataset(
+        "Revenue",
+        [
+          10,
+          20,
+        ],
+      )
       .onSelect(vi.fn())
       .render();
 
     named.element
       .querySelector('.charts2-mark[data-point-index="0"]')
       .dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    named.update({ labels: ["Jan", "Jan"], datasets: [{ name: "Revenue", values: [12, 18] }] });
+    named.update({
+      labels: [
+        "Jan",
+        "Jan",
+      ],
+      datasets: [
+        {
+          name: "Revenue",
+          values: [
+            12,
+            18,
+          ],
+        },
+      ],
+    });
     expect(named.element.querySelector(".is-active")).toBeNull();
     named.destroy();
 
     document.body.innerHTML = '<div id="chart"></div>';
-    const unnamed = LineChart.make("#chart").labels(["Jan"]).dataset([10]).onSelect(vi.fn()).render();
+    const unnamed = LineChart.make("#chart")
+      .labels([
+        "Jan",
+      ])
+      .dataset([
+        10,
+      ])
+      .onSelect(vi.fn())
+      .render();
     unnamed.element.querySelector(".charts2-mark").dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    unnamed.update({ labels: ["Jan"], datasets: [{ values: [12] }] });
+    unnamed.update({
+      labels: [
+        "Jan",
+      ],
+      datasets: [
+        {
+          values: [
+            12,
+          ],
+        },
+      ],
+    });
     expect(unnamed.element.querySelector(".is-active")).toBeNull();
   });
 
   it("keeps the detached element inspectable after idempotent destruction", () => {
-    const chart = LineChart.make("#chart").dataset([1, 2]).render();
+    const chart = LineChart.make("#chart")
+      .dataset([
+        1,
+        2,
+      ])
+      .render();
     const element = chart.element;
 
     chart.destroy();
@@ -179,7 +342,18 @@ describe("LineChart fluent API", () => {
     expect(chart.element).toBe(element);
     expect(element.isConnected).toBe(false);
     expect(() => chart.point(0)).toThrow("destroyed");
-    expect(() => chart.update({ datasets: [{ values: [2, 3] }] })).toThrow("destroyed");
+    expect(() =>
+      chart.update({
+        datasets: [
+          {
+            values: [
+              2,
+              3,
+            ],
+          },
+        ],
+      }),
+    ).toThrow("destroyed");
   });
 });
 
@@ -189,32 +363,143 @@ describe("named fluent chart definitions", () => {
   });
 
   it.each([
-    ["bar", () => BarChart.make("#chart").labels(["A", "B"]).dataset([1, 2]).horizontal().render()],
+    [
+      "bar",
+      () =>
+        BarChart.make("#chart")
+          .labels([
+            "A",
+            "B",
+          ])
+          .dataset([
+            1,
+            2,
+          ])
+          .horizontal()
+          .render(),
+    ],
     [
       "scatter",
       () =>
         ScatterChart.make("#chart")
-          .dataset([{ x: 1, y: 2 }])
+          .dataset([
+            { x: 1, y: 2 },
+          ])
           .render(),
     ],
     [
       "mixed",
-      () => MixedChart.make("#chart").labels(["A", "B"]).bar("Actual", [1, 2]).line("Plan", [2, 3]).render(),
+      () =>
+        MixedChart.make("#chart")
+          .labels([
+            "A",
+            "B",
+          ])
+          .bar(
+            "Actual",
+            [
+              1,
+              2,
+            ],
+          )
+          .line(
+            "Plan",
+            [
+              2,
+              3,
+            ],
+          )
+          .render(),
     ],
     [
       "bubble",
       () =>
         BubbleChart.make("#chart")
-          .dataset([{ x: 1, y: 2, r: 4 }])
+          .dataset([
+            { x: 1, y: 2, r: 4 },
+          ])
           .render(),
     ],
-    ["pie", () => PieChart.make("#chart").labels(["A", "B"]).dataset([1, 2]).render()],
-    ["donut", () => DonutChart.make("#chart").labels(["A", "B"]).dataset([1, 2]).render()],
-    ["percentage", () => PercentageChart.make("#chart").labels(["A", "B"]).dataset([1, 2]).render()],
-    ["radar", () => RadarChart.make("#chart").labels(["A", "B", "C"]).dataset([1, 2, 3]).render()],
-    ["polar-area", () => PolarAreaChart.make("#chart").labels(["A", "B"]).dataset([1, 2]).render()],
-    ["heatmap", () => HeatmapChart.make("#chart").points({ "2026-01-01": 2 }).render()],
-    ["timesheet", () => TimesheetChart.make("#chart").task("Design", "2026-01-01", "2026-01-02").render()],
+    [
+      "pie",
+      () =>
+        PieChart.make("#chart")
+          .labels([
+            "A",
+            "B",
+          ])
+          .dataset([
+            1,
+            2,
+          ])
+          .render(),
+    ],
+    [
+      "donut",
+      () =>
+        DonutChart.make("#chart")
+          .labels([
+            "A",
+            "B",
+          ])
+          .dataset([
+            1,
+            2,
+          ])
+          .render(),
+    ],
+    [
+      "percentage",
+      () =>
+        PercentageChart.make("#chart")
+          .labels([
+            "A",
+            "B",
+          ])
+          .dataset([
+            1,
+            2,
+          ])
+          .render(),
+    ],
+    [
+      "radar",
+      () =>
+        RadarChart.make("#chart")
+          .labels([
+            "A",
+            "B",
+            "C",
+          ])
+          .dataset([
+            1,
+            2,
+            3,
+          ])
+          .render(),
+    ],
+    [
+      "polar-area",
+      () =>
+        PolarAreaChart.make("#chart")
+          .labels([
+            "A",
+            "B",
+          ])
+          .dataset([
+            1,
+            2,
+          ])
+          .render(),
+    ],
+    [
+      "heatmap",
+      () => HeatmapChart.make("#chart").points({ "2026-01-01": 2 }).render(),
+    ],
+    [
+      "timesheet",
+      () => TimesheetChart.make("#chart").task("Design", "2026-01-01", "2026-01-02").render(),
+    ],
   ])("renders the minimum useful %s chain", (_name, render) => {
     const chart = render();
 
@@ -247,7 +532,9 @@ describe("named fluent chart definitions", () => {
       TimesheetChart,
     ]) {
       expect(Object.isFrozen(definition)).toBe(true);
-      expect(Object.keys(definition)).toEqual(["make"]);
+      expect(Object.keys(definition)).toEqual([
+        "make",
+      ]);
     }
   });
 
@@ -256,7 +543,12 @@ describe("named fluent chart definitions", () => {
 
     expect(() => line.width(0)).toThrow("width");
     expect(() => line.colors([])).toThrow("colors");
-    expect(() => line.labels(["Valid", " "])).toThrow("label");
+    expect(() =>
+      line.labels([
+        "Valid",
+        " ",
+      ]),
+    ).toThrow("label");
     expect(() => line.dots("yes")).toThrow("dots");
     expect(() => line.gradient({ fromOpacity: 2 })).toThrow("opacity");
     expect(() => PieChart.make("#missing").maxSlices(1.5)).toThrow("positive integer");
@@ -265,17 +557,38 @@ describe("named fluent chart definitions", () => {
   });
 
   it("rejects a second composition dataset without resolving the parent", () => {
-    const pie = PieChart.make("#missing").dataset([1, 2]);
+    const pie = PieChart.make("#missing").dataset([
+      1,
+      2,
+    ]);
 
-    expect(() => pie.dataset("Extra", [2, 3])).toThrow("exactly one");
+    expect(() =>
+      pie.dataset(
+        "Extra",
+        [
+          2,
+          3,
+        ],
+      ),
+    ).toThrow("exactly one");
   });
 
   it("applies local line and bar presentation over chart defaults", () => {
     const line = LineChart.make("#chart")
-      .labels(["A", "B"])
+      .labels([
+        "A",
+        "B",
+      ])
       .dots(false)
       .strokeWidth(2)
-      .dataset("Local", [1, 2], (dataset) => dataset.dots(true).dotSize(7).strokeWidth(5).area())
+      .dataset(
+        "Local",
+        [
+          1,
+          2,
+        ],
+        (dataset) => dataset.dots(true).dotSize(7).strokeWidth(5).area(),
+      )
       .render();
 
     expect(line.element.querySelector(".charts2-line").getAttribute("stroke-width")).toBe("5");
@@ -286,23 +599,59 @@ describe("named fluent chart definitions", () => {
 
     document.body.innerHTML = '<div id="chart"></div>';
     const bar = BarChart.make("#chart")
-      .labels(["A"])
+      .labels([
+        "A",
+      ])
       .radius(1)
-      .dataset("Local", [4], (dataset) => dataset.radius(9).opacity(0.4))
+      .dataset(
+        "Local",
+        [
+          4,
+        ],
+        (dataset) => dataset.radius(9).opacity(0.4),
+      )
       .render();
     expect(bar.element.querySelector(".charts2-bar").getAttribute("opacity")).toBe("0.4");
   });
 
   it("normalizes maxSlices into point and selection identity data", () => {
     const chart = PieChart.make("#chart")
-      .labels(["A", "B", "C", "D"])
-      .dataset([1, 5, 2, 4])
+      .labels([
+        "A",
+        "B",
+        "C",
+        "D",
+      ])
+      .dataset([
+        1,
+        5,
+        2,
+        4,
+      ])
       .maxSlices(3)
       .render();
 
-    expect(chart.point(0)).toEqual({ index: 0, label: "B", values: [5] });
-    expect(chart.point(1)).toEqual({ index: 1, label: "D", values: [4] });
-    expect(chart.point(2)).toEqual({ index: 2, label: "Rest", values: [3] });
+    expect(chart.point(0)).toEqual({
+      index: 0,
+      label: "B",
+      values: [
+        5,
+      ],
+    });
+    expect(chart.point(1)).toEqual({
+      index: 1,
+      label: "D",
+      values: [
+        4,
+      ],
+    });
+    expect(chart.point(2)).toEqual({
+      index: 2,
+      label: "Rest",
+      values: [
+        3,
+      ],
+    });
     expect(chart.element.querySelectorAll(".charts2-mark")).toHaveLength(3);
   });
 
@@ -316,9 +665,17 @@ describe("named fluent chart definitions", () => {
     });
 
     const chart = BarChart.make("#chart")
-      .labels(["A"])
+      .labels([
+        "A",
+      ])
       .formatValue(chartFormatter)
-      .dataset("Revenue", [12], (dataset) => dataset.formatValue(datasetFormatter))
+      .dataset(
+        "Revenue",
+        [
+          12,
+        ],
+        (dataset) => dataset.formatValue(datasetFormatter),
+      )
       .render();
 
     expect(chart.element.querySelector(".charts2-interactive-mark").getAttribute("aria-label")).toContain(
@@ -328,7 +685,13 @@ describe("named fluent chart definitions", () => {
   });
 
   it("renders title as safe visible text and accessible-name fallback", () => {
-    const chart = LineChart.make("#chart").title("Revenue <strong>").dataset([1, 2]).render();
+    const chart = LineChart.make("#chart")
+      .title("Revenue <strong>")
+      .dataset([
+        1,
+        2,
+      ])
+      .render();
 
     expect(chart.element.getAttribute("aria-label")).toBe("Revenue <strong>");
     expect(chart.element.querySelector(".charts2-title").textContent).toBe("Revenue <strong>");

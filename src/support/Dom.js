@@ -38,14 +38,19 @@ function lineBalanceScore(lines, maxWidth) {
  * @returns {string[]} Best balanced lines for the requested count.
  */
 function balancedPartition(words, lineCount, maxWidth) {
-  let best = [words.join(" ")];
+  let best = [
+    words.join(" "),
+  ];
   let bestScore = Infinity;
 
   for (let first = 1; first < words.length; first += 1) {
     const lastStart = lineCount === MINIMUM_BALANCED_LABEL_LINES ? words.length : first + 1;
 
     for (let second = lastStart; second <= words.length; second += 1) {
-      const lines = [words.slice(0, first).join(" "), words.slice(first, second).join(" ")];
+      const lines = [
+        words.slice(0, first).join(" "),
+        words.slice(first, second).join(" "),
+      ];
 
       if (lineCount === MAXIMUM_BALANCED_LABEL_LINES) {
         lines.push(words.slice(second).join(" "));
@@ -74,13 +79,17 @@ function balancedTextLines(value, maxWidth) {
   const text = value.trim();
 
   if (measuredTextWidth(text) <= maxWidth) {
-    return [text];
+    return [
+      text,
+    ];
   }
 
   const words = text.split(/\s+/u);
 
   if (words.length < 2) {
-    return [text];
+    return [
+      text,
+    ];
   }
 
   for (
@@ -108,7 +117,10 @@ function balancedTextLines(value, maxWidth) {
 function svg(name, attributes = {}) {
   const element = document.createElementNS(SVG_NS, name);
 
-  for (const [key, value] of Object.entries(attributes)) {
+  for (const [
+    key,
+    value,
+  ] of Object.entries(attributes)) {
     element.setAttribute(key, String(value));
   }
 
@@ -256,7 +268,10 @@ function wrappedLabelElement({ value, attributes, maxWidth, originalValue = valu
   const visibleLines = lines.map((line) => truncateText(line, maxWidth));
   const element = svg("text", { ...attributes, class: `${attributes.class} charts2-multiline-label` });
 
-  for (const [index, line] of visibleLines.entries()) {
+  for (const [
+    index,
+    line,
+  ] of visibleLines.entries()) {
     const tspan = svg("tspan", {
       x: attributes.x,
       dy: index === 0 ? (-MULTILINE_LABEL_HEIGHT * (visibleLines.length - 1)) / 2 : MULTILINE_LABEL_HEIGHT,

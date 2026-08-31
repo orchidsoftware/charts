@@ -38,7 +38,13 @@ const DEFAULT_COLORS = Object.freeze([
   "#008C95",
 ]);
 
-const HEATMAP_COLORS = Object.freeze(["#E5E5EA", "#B7E4C7", "#74C69D", "#40916C", "#1B6B47"]);
+const HEATMAP_COLORS = Object.freeze([
+  "#E5E5EA",
+  "#B7E4C7",
+  "#74C69D",
+  "#40916C",
+  "#1B6B47",
+]);
 
 const CARTESIAN_TYPES = Object.freeze([
   ChartType.LINE,
@@ -48,7 +54,11 @@ const CARTESIAN_TYPES = Object.freeze([
   ChartType.BUBBLE,
 ]);
 
-const AGGREGATION_TYPES = Object.freeze([ChartType.PIE, ChartType.DONUT, ChartType.PERCENTAGE]);
+const AGGREGATION_TYPES = Object.freeze([
+  ChartType.PIE,
+  ChartType.DONUT,
+  ChartType.PERCENTAGE,
+]);
 
 const TYPES = Object.freeze([
   ...CARTESIAN_TYPES,

@@ -16,7 +16,12 @@ import {
 import { normalizeCartesianSource } from "./NormalizeAnnotations.js";
 
 const DEFAULT_MAXIMUM_SLICES = 20;
-const INDEPENDENT_TYPES = new Set([ChartType.SCATTER, ChartType.AXIS_MIXED, ChartType.BUBBLE]);
+
+const INDEPENDENT_TYPES = new Set([
+  ChartType.SCATTER,
+  ChartType.AXIS_MIXED,
+  ChartType.BUBBLE,
+]);
 
 /**
  * Creates one immutable independently-positioned series mark snapshot.
@@ -240,7 +245,10 @@ function normalizeSeries(type, data, colors) {
 
   const labels =
     data.labels ??
-    ([ChartType.SCATTER, ChartType.BUBBLE].includes(type)
+    ([
+      ChartType.SCATTER,
+      ChartType.BUBBLE,
+    ].includes(type)
       ? []
       : Array.from({ length: pointCount }, (_value, index) => index + 1));
 
@@ -279,10 +287,16 @@ function aggregateComposition(collections, maximum) {
     datasets: [
       {
         ...datasets[0],
-        points: [...visible.map((entry) => entry.point), { x: visible.length, y: restValue }],
+        points: [
+          ...visible.map((entry) => entry.point),
+          { x: visible.length, y: restValue },
+        ],
       },
     ],
-    labels: [...visible.map((entry) => entry.label), "Rest"],
+    labels: [
+      ...visible.map((entry) => entry.label),
+      "Rest",
+    ],
   };
 }
 

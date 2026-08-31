@@ -8,7 +8,15 @@ import {
   validateChartData,
 } from "../../src/support/Normalize.js";
 
-const scene = { datasets: [{ values: [1] }] };
+const scene = {
+  datasets: [
+    {
+      values: [
+        1,
+      ],
+    },
+  ],
+};
 
 beforeEach(() => {
   document.body.innerHTML = '<div id="chart" style="width: 640px"></div>';
@@ -16,13 +24,34 @@ beforeEach(() => {
 
 describe("internal boundary validation", () => {
   it.each([
-    [null, "options"],
-    [{ type: "line", data: scene, unknown: true }, "Unsupported chart option"],
-    [{ type: "unknown", data: scene }, "Chart type"],
-    [{ type: "bar", data: scene, orientation: "diagonal" }, "orientation"],
-    [{ type: "line", data: scene, yAxisPosition: "center" }, "position"],
-    [{ type: "pie", data: scene, padAngle: Infinity }, "Pad angle"],
-    [{ type: "pie", data: scene, radius: -1 }, "Radius"],
+    [
+      null,
+      "options",
+    ],
+    [
+      { type: "line", data: scene, unknown: true },
+      "Unsupported chart option",
+    ],
+    [
+      { type: "unknown", data: scene },
+      "Chart type",
+    ],
+    [
+      { type: "bar", data: scene, orientation: "diagonal" },
+      "orientation",
+    ],
+    [
+      { type: "line", data: scene, yAxisPosition: "center" },
+      "position",
+    ],
+    [
+      { type: "pie", data: scene, padAngle: Infinity },
+      "Pad angle",
+    ],
+    [
+      { type: "pie", data: scene, radius: -1 },
+      "Radius",
+    ],
   ])("rejects invalid runtime options", (options, message) => {
     expect(() => validateChartOptions(options)).toThrow(message);
   });
@@ -36,20 +65,60 @@ describe("internal boundary validation", () => {
 
   it("covers normalization invariants used by updates and generated labels", () => {
     expect(() => requireFiniteNumber(NaN, "Value")).toThrow("finite");
-    expect(() => normalizeTimesheetData({ tasks: [null] }, ["#007aff"])).toThrow("object");
+    expect(() =>
+      normalizeTimesheetData(
+        {
+          tasks: [
+            null,
+          ],
+        },
+        [
+          "#007aff",
+        ],
+      ),
+    ).toThrow("object");
     expect(() =>
       validateChartData(
         "pie",
         [
-          { identityName: "A", points: [{ y: 1 }] },
-          { identityName: "B", points: [{ y: 1 }] },
+          {
+            identityName: "A",
+            points: [
+              { y: 1 },
+            ],
+          },
+          {
+            identityName: "B",
+            points: [
+              { y: 1 },
+            ],
+          },
         ],
-        ["One"],
+        [
+          "One",
+        ],
       ),
     ).toThrow("exactly one dataset");
 
-    const data = createSeriesModel("line", { labels: [1], datasets: [{ values: [1] }] }, {});
-    expect(data.labels).toEqual([1]);
+    const data = createSeriesModel(
+      "line",
+      {
+        labels: [
+          1,
+        ],
+        datasets: [
+          {
+            values: [
+              1,
+            ],
+          },
+        ],
+      },
+      {},
+    );
+    expect(data.labels).toEqual([
+      1,
+    ]);
 
     const heatmap = createHeatmapModel("heatmap", { points: { "2026-01-01": 0 } }, {});
     const selection = heatmap.selectionFor({ dataset: { pointIndex: "0" } });

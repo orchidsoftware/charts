@@ -33,7 +33,9 @@ export default class ChartScenario {
    * @returns {Element[]} Ordered interactive marks.
    */
   marks(selector = ".charts2-interactive-mark") {
-    return [...this.#chart.element.querySelectorAll(selector)];
+    return [
+      ...this.#chart.element.querySelectorAll(selector),
+    ];
   }
 
   /**

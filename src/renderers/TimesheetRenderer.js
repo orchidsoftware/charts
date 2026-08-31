@@ -56,7 +56,10 @@ export default class TimesheetRenderer {
   #renderTicks(layout) {
     const { bottom, height, top } = layout.frame;
 
-    for (const [index, value] of layout.ticks.entries()) {
+    for (const [
+      index,
+      value,
+    ] of layout.ticks.entries()) {
       const tick = layout.tickAt(value, index);
 
       if (this.#chart.options.grid) {
@@ -95,7 +98,10 @@ export default class TimesheetRenderer {
    * @returns {void} Task rows are appended to the chart SVG.
    */
   #renderTasks(tasks, layout) {
-    for (const [index, task] of tasks.entries()) {
+    for (const [
+      index,
+      task,
+    ] of tasks.entries()) {
       this.#renderTask(task, index, layout);
     }
   }

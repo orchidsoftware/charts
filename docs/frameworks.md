@@ -1,0 +1,116 @@
+# React and Vue
+
+## Introduction
+
+Charts2 does not require a framework wrapper. A chart owns one host element and
+returns a small lifecycle that maps directly to component mounting, updates,
+and cleanup.
+
+## React
+
+Create the chart after the host element mounts. Keep the chart in a ref so data
+changes can call `update()`, then destroy it from the effect cleanup:
+
+```jsx
+import { useEffect, useRef } from "react";
+import { LineChart } from "@charts2/core";
+import "@charts2/core/style.css";
+
+export function RevenueChart({ labels, values }) {
+  const host = useRef(null);
+  const chart = useRef(null);
+  const initialData = useRef({ labels, values });
+
+  useEffect(() => {
+    const initial = initialData.current;
+
+    chart.current = LineChart.make(host.current)
+      .labels(initial.labels)
+      .dataset("Revenue", initial.values)
+      .gradient()
+      .render();
+
+    return () => {
+      chart.current?.destroy();
+      chart.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    chart.current?.update({
+      labels,
+      datasets: [{ name: "Revenue", values }],
+    });
+  }, [labels, values]);
+
+  return <div ref={host} />;
+}
+```
+
+The first effect owns the chart lifecycle. The second replaces its data without
+recreating the SVG or its event listeners.
+
+If presentation methods such as `gradient()` or `height()` depend on props,
+recreate the chart when those presentation props change. `update()` replaces
+data; it does not reconfigure the chart type or builder options.
+
+## Vue
+
+Mount the chart in `onMounted()`, watch the data that may change, and destroy
+the chart before the component unmounts:
+
+```vue
+<script setup>
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { BarChart } from "@charts2/core";
+import "@charts2/core/style.css";
+
+const props = defineProps({
+  labels: { type: Array, required: true },
+  values: { type: Array, required: true },
+});
+
+const host = ref(null);
+let chart;
+
+onMounted(() => {
+  chart = BarChart.make(host.value)
+    .labels(props.labels)
+    .dataset("Orders", props.values)
+    .horizontal()
+    .render();
+});
+
+watch(
+  () => [props.labels, props.values],
+  ([labels, values]) => {
+    chart?.update({
+      labels,
+      datasets: [{ name: "Orders", values }],
+    });
+  },
+);
+
+onBeforeUnmount(() => chart?.destroy());
+</script>
+
+<template>
+  <div ref="host" />
+</template>
+```
+
+## Resizing
+
+Do not calculate the component width for Charts2. Unless `width()` is set, the
+chart follows its host element and observes width changes automatically. Use
+ordinary CSS to size the host:
+
+```css
+.analytics-chart {
+  width: 100%;
+  min-width: 0;
+}
+```
+
+Continue with [Updates and interaction](./updates-and-interaction.md) for data,
+selection, point snapshots, and cleanup details.

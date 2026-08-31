@@ -44,7 +44,7 @@ make CI green.
 
 - Explain the user-visible behavior and the smallest public API involved.
 - Add a failing regression test before a bug fix.
-- Update `README.md`, `docs/API.md`, architecture decisions, and
+- Update `README.md`, `docs/api-reference.md`, relevant files in `maintainers/`, and
   `CHANGELOG.md` when their contracts change.
 - Run `npm run pack:check` when package exports or shipped files change.
 - Do not include generated `dist`, `coverage`, `.tgz`, or browser diagnostic

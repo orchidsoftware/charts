@@ -12,6 +12,7 @@ const DEFAULT_LABEL_FONT_SIZE = 11;
 const BALANCE_OVERFLOW_WEIGHT = 10_000;
 const MINIMUM_BALANCED_LABEL_LINES = 2;
 const MAXIMUM_BALANCED_LABEL_LINES = 3;
+const measurementSurface = { context: null };
 
 /**
  * Scores a contiguous line partition by overflow first and raggedness second.
@@ -225,6 +226,17 @@ function labelElement({ value, attributes, measurement, originalValue = value })
 }
 
 /**
+ * Lazily creates the process-local canvas context shared by text measurements.
+ *
+ * @returns {CanvasRenderingContext2D} Detached measurement context.
+ */
+function textMeasurementContext() {
+  measurementSurface.context ??= document.createElement("canvas").getContext("2d");
+
+  return measurementSurface.context;
+}
+
+/**
  * Measures text using the same platform font stack as chart labels.
  *
  * @param {unknown} value - Value converted to text before measurement.
@@ -232,7 +244,7 @@ function labelElement({ value, attributes, measurement, originalValue = value })
  * @returns {number} Measured text width in CSS pixels.
  */
 function measuredTextWidth(value, fontSize = 11) {
-  const context = document.createElement("canvas").getContext("2d");
+  const context = textMeasurementContext();
   context.font = `${fontSize}px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif`;
 
   return context.measureText(String(value)).width;

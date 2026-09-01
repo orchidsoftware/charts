@@ -18,12 +18,12 @@ const MINIMUM_TIMESHEET_HEIGHT = 220;
 const TIMESHEET_FRAME_HEIGHT = 52;
 const TIMESHEET_ROW_HEIGHT = 40;
 
-const COLOR_PROPERTIES = new Set([
+const CSS_VARIABLE_PREFIX_LENGTH = 4;
+
+const ANNOTATION_COLOR_PROPERTIES = Object.freeze([
   "color",
   "labelColor",
 ]);
-
-const CSS_VARIABLE_PREFIX_LENGTH = 4;
 
 const ALLOWED_OPTIONS = Object.freeze([
   "area",
@@ -301,38 +301,64 @@ function validateChartColors(host, input) {
 }
 
 /**
- * Recursively collects only public color properties and palette entries.
+ * Adds explicitly supplied color fields from one public record collection.
  *
- * @param {unknown} value - Candidate nested public input.
- * @returns {string[]} Explicit color strings.
+ * @param {unknown[]} colors - Accumulator receiving explicit color values.
+ * @param {unknown} records - Candidate dataset, annotation, or task collection.
+ * @param {string[]} properties - Color fields supported by the record schema.
+ * @returns {void} Missing and malformed collections add no colors.
  */
-function collectColors(value) {
-  if (!value || typeof value !== "object") {
+function appendRecordColors(colors, records, properties) {
+  if (!Array.isArray(records)) {
+    return;
+  }
+
+  for (const record of records) {
+    if (!record || typeof record !== "object" || Array.isArray(record)) {
+      continue;
+    }
+
+    for (const property of properties) {
+      if (Object.hasOwn(record, property)) {
+        colors.push(record[property]);
+      }
+    }
+  }
+}
+
+/**
+ * Collects colors only from fields declared by the public chart-data schemas.
+ *
+ * Numeric point collections are intentionally never traversed: colors can be
+ * supplied by palettes, datasets, annotations, and timesheet tasks only.
+ *
+ * @param {unknown} input - Complete chart options or one public update payload.
+ * @returns {unknown[]} Explicit color values awaiting browser validation.
+ */
+function collectColors(input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
     return [];
   }
 
-  if (Array.isArray(value)) {
-    return value.flatMap((item) => collectColors(item));
+  const colors = [];
+
+  if (Array.isArray(input.colors)) {
+    colors.push(...input.colors);
   }
 
-  return Object.entries(value).flatMap(
-    ([
-      name,
-      item,
-    ]) => {
-      if (name === "colors" && Array.isArray(item)) {
-        return item;
-      }
+  const hasData = input.data && typeof input.data === "object";
+  const data = hasData ? input.data : input;
 
-      if (COLOR_PROPERTIES.has(name)) {
-        return [
-          item,
-        ];
-      }
+  appendRecordColors(colors, data.datasets, [
+    "color",
+  ]);
+  appendRecordColors(colors, data.markers, ANNOTATION_COLOR_PROPERTIES);
+  appendRecordColors(colors, data.regions, ANNOTATION_COLOR_PROPERTIES);
+  appendRecordColors(colors, data.tasks, [
+    "color",
+  ]);
 
-      return collectColors(item);
-    },
-  );
+  return colors;
 }
 
 /**

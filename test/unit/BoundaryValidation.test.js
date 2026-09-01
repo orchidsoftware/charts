@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { createHeatmapModel, createSeriesModel } from "../../src/core/ChartData.js";
-import { normalizeChartOptions, validateChartOptions } from "../../src/core/Options.js";
+import { normalizeChartOptions, validateChartColors, validateChartOptions } from "../../src/core/Options.js";
 import {
   normalizeTimesheetData,
   requireFiniteNumber,
@@ -61,6 +61,80 @@ describe("internal boundary validation", () => {
 
     expect(() => normalizeChartOptions(host, { type: "line", data: scene, width: 0 })).toThrow("width");
     expect(() => normalizeChartOptions(host, { type: "line", data: scene, colors: [] })).toThrow("colors");
+  });
+
+  it("validates only color-bearing fields declared by public data schemas", () => {
+    const host = document.querySelector("#chart");
+    const unreadableValues = new Proxy([], {
+      get() {
+        throw new Error("numeric values must not be inspected while collecting colors");
+      },
+    });
+
+    expect(() =>
+      validateChartColors(host, {
+        colors: [
+          "red",
+        ],
+        data: {
+          datasets: [
+            null,
+            [],
+            { values: unreadableValues },
+            { values: unreadableValues, color: "blue" },
+          ],
+          markers: [
+            { color: "green", labelColor: "purple" },
+          ],
+          regions: [
+            { color: "orange", labelColor: "black" },
+          ],
+          tasks: [
+            { color: "white" },
+          ],
+        },
+      }),
+    ).not.toThrow();
+
+    for (const input of [
+      {
+        colors: [
+          "definitely-not-a-color",
+        ],
+      },
+      {
+        datasets: [
+          { color: "definitely-not-a-color" },
+        ],
+      },
+      {
+        markers: [
+          { labelColor: "definitely-not-a-color" },
+        ],
+      },
+      {
+        regions: [
+          { color: "definitely-not-a-color" },
+        ],
+      },
+      {
+        tasks: [
+          { color: "definitely-not-a-color" },
+        ],
+      },
+    ]) {
+      expect(() => validateChartColors(host, input)).toThrow("Unsupported CSS color");
+    }
+
+    expect(() =>
+      validateChartColors(host, {
+        datasets: [
+          { color: undefined },
+        ],
+      }),
+    ).toThrow("non-empty supported CSS color");
+    expect(() => validateChartColors(host, null)).not.toThrow();
+    expect(() => validateChartColors(host, [])).not.toThrow();
   });
 
   it("covers normalization invariants used by updates and generated labels", () => {

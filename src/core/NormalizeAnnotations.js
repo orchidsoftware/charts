@@ -29,6 +29,7 @@ const DASHED_LENGTH = 4;
 const DASHED_GAP = 3;
 const DOTTED_LENGTH = 1;
 const DEFAULT_REGION_OPACITY = 0.08;
+const SECONDARY_LABEL_COLOR = "var(--charts-secondary-label-color, #6e6e73)";
 
 const DASH_PATTERNS = Object.freeze({
   solid: [],
@@ -51,12 +52,12 @@ const DASH_PATTERNS = Object.freeze({
 function normalizedMarker(marker) {
   return Object.freeze({
     ...marker,
-    color: marker.color ?? "var(--charts-secondary-label-color, #6e6e73)",
+    color: marker.color ?? SECONDARY_LABEL_COLOR,
     width: marker.width ?? 1,
     opacity: marker.opacity ?? 1,
     dash: marker.dash ?? DASH_PATTERNS[marker.lineStyle ?? "dashed"],
     labelPosition: marker.labelPosition ?? "end",
-    labelColor: marker.labelColor ?? "var(--charts-label-color, #3a3a3c)",
+    labelColor: marker.labelColor ?? SECONDARY_LABEL_COLOR,
     includeInDomain: marker.includeInDomain ?? true,
   });
 }
@@ -77,7 +78,7 @@ function normalizedRegion(region) {
     color: region.color ?? "var(--charts-focus-ring, #007aff)",
     opacity: region.opacity ?? DEFAULT_REGION_OPACITY,
     labelPosition: region.labelPosition ?? "end",
-    labelColor: region.labelColor ?? "var(--charts-label-color, #3a3a3c)",
+    labelColor: region.labelColor ?? SECONDARY_LABEL_COLOR,
     includeInDomain: region.includeInDomain ?? true,
   });
 }

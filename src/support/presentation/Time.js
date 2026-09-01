@@ -1,4 +1,5 @@
-import { HOUR, DAY, TIME_TICK_STEPS } from "./Constants.js";
+import { HOUR, DAY, TIME_TICK_STEPS } from "../Constants.js";
+
 import { formatterText } from "./Formatting.js";
 
 const DAYS_PER_YEAR = 365;

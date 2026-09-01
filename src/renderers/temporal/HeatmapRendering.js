@@ -1,7 +1,8 @@
-import { HEATMAP_COLORS, HEATMAP_COMPACT_WIDTH, HEATMAP_MIN_CELL_WIDTH } from "../support/Constants.js";
-import { formatNumber, markMetadata, measuredTextWidth, svg, titled } from "../support/Dom.js";
-import { formatContext, formatterText } from "../support/Formatting.js";
-import { extent } from "../support/Math.js";
+import { HEATMAP_COLORS, HEATMAP_COMPACT_WIDTH, HEATMAP_MIN_CELL_WIDTH } from "../../support/Constants.js";
+import { formatNumber, markMetadata, measuredTextWidth, svg, titled } from "../../support/Dom.js";
+import { extent } from "../../support/geometry/Math.js";
+import { formatContext, formatterText } from "../../support/presentation/Formatting.js";
+import { intensityLevel } from "../../support/presentation/Presentation.js";
 
 const GRID_PADDING = 24;
 const MINIMUM_HORIZONTAL_PADDING = 4;
@@ -20,31 +21,6 @@ const DESIRED_SWATCH_WIDTH = 11;
 const DESIRED_SWATCH_GAP = 3;
 const MINIMUM_SWATCH_WIDTH = 5;
 const MINIMUM_SWATCH_GAP = 2;
-
-/**
- * Maps one heatmap value onto the complete ordered intensity palette.
- *
- * @param {number} value - Normalized heatmap value.
- * @param {[number, number]} domain - Complete data minimum and maximum.
- * @param {number} colorCount - Number of supplied intensity colors.
- * @returns {number} Bounded zero-based palette bucket.
- */
-function intensityLevel(
-  value,
-  [
-    minimum,
-    maximum,
-  ],
-  colorCount,
-) {
-  if (minimum === maximum) {
-    return value === 0 ? 0 : colorCount - 1;
-  }
-
-  const ratio = (value - minimum) / (maximum - minimum);
-
-  return Math.min(colorCount - 1, Math.floor(ratio * colorCount));
-}
 
 /**
  * Calculates responsive horizontal padding for the heatmap grid.
@@ -87,9 +63,7 @@ function heatmapDimensions(width, height, chart) {
 /**
  * Renders calendar heatmaps and owns their overflow presentation policy.
  */
-export { intensityLevel };
-
-export default class HeatmapRenderer {
+class HeatmapRenderer {
   #chart;
   #surface;
 
@@ -98,7 +72,7 @@ export default class HeatmapRenderer {
    *
    * @param {object} rendering - Collaborators for one heatmap pass.
    * @param {object} rendering.chart - Frozen heatmap data and options.
-   * @param {import("./SvgSurface.js").default} rendering.surface - Owned SVG drawing surface.
+   * @param {import("../SvgSurface.js").default} rendering.surface - Owned SVG drawing surface.
    */
   constructor({ chart, surface }) {
     this.#chart = chart;
@@ -439,7 +413,7 @@ export default class HeatmapRenderer {
 }
 
 /**
- * Renders one heatmap through its family coordinator.
+ * Renders one heatmap through its family renderer.
  *
  * @param {object} rendering - Frozen chart snapshot and owned SVG surface.
  * @returns {void} Heatmap content is appended to the chart SVG.

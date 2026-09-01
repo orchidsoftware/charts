@@ -1,3 +1,5 @@
+import LegendRenderer from "../LegendRenderer.js";
+
 import CartesianAxesRenderer from "./CartesianAxesRenderer.js";
 import CartesianInspectorRenderer from "./CartesianInspectorRenderer.js";
 import CartesianLayout from "./CartesianLayout.js";
@@ -6,13 +8,12 @@ import {
   renderLineSeries,
   renderMixedSeries,
   renderPointSeries,
-} from "./CartesianSeriesRenderer.js";
-import LegendRenderer from "./LegendRenderer.js";
+} from "./CartesianSeriesRendering.js";
 
 /**
  * Coordinates one Cartesian pass across layout, axes, series, and inspection.
  */
-export default class CartesianRenderer {
+class CartesianRenderer {
   #chart;
   #surface;
   #renderSeries;
@@ -22,7 +23,7 @@ export default class CartesianRenderer {
    *
    * @param {object} rendering - Collaborators for one Cartesian pass.
    * @param {object} rendering.chart - Frozen Cartesian data and options.
-   * @param {import("./SvgSurface.js").default} rendering.surface - Owned SVG drawing surface.
+   * @param {import("../SvgSurface.js").default} rendering.surface - Owned SVG drawing surface.
    * @param {(rendering: object) => void} renderSeries - Family-specific series drawing function.
    */
   constructor({ chart, surface }, renderSeries) {

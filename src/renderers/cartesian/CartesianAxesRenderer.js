@@ -4,12 +4,15 @@ import {
   HORIZONTAL_LABEL_GAP,
   MAJOR_GRID_DIVISIONS,
   VALUE_LABEL_GAP,
-} from "../support/Constants.js";
-import { labelElement, wrappedLabelElement } from "../support/Dom.js";
-import { formatContext, formatterText, formatValue } from "../support/Formatting.js";
-import { requireFiniteNumber } from "../support/Normalize.js";
+} from "../../support/Constants.js";
+import { labelElement, measuredTextWidth, wrappedLabelElement } from "../../support/Dom.js";
+import { requireFiniteNumber } from "../../support/Normalize.js";
+import { formatContext, formatterText, formatValue } from "../../support/presentation/Formatting.js";
 
-const MARKER_LABEL_OFFSET = 4;
+const ANNOTATION_EDGE_INSET = 8;
+const ANNOTATION_MARKER_GAP = 6;
+const ANNOTATION_FONT_SIZE = 12;
+const ANNOTATION_TAG_HEIGHT = 18;
 const VALUE_LABEL_BASELINE_OFFSET = 7;
 const VALUE_LABEL_CENTER_OFFSET = 3;
 const CATEGORY_MIDPOINT = 0.5;
@@ -49,7 +52,7 @@ export default class CartesianAxesRenderer {
    * @param {object} state - Collaborators required for one axes pass.
    * @param {object} state.chart - Frozen chart data and options.
    * @param {object} state.layout - Scales, bounds, and renderer flags resolved by `CartesianRenderer`.
-   * @param {import("./SvgSurface.js").default} state.surface - Owned SVG drawing surface.
+   * @param {import("../SvgSurface.js").default} state.surface - Owned SVG drawing surface.
    */
   constructor({ chart, layout, surface }) {
     this.#chart = chart;
@@ -201,9 +204,11 @@ export default class CartesianAxesRenderer {
           )
         : region.label;
 
-      this.#surface.text(label, {
-        ...this.#annotationLabelAttributes(region.labelPosition, positions),
-        fill: region.labelColor,
+      this.#renderAnnotationLabel({
+        kind: "region",
+        label,
+        placement: this.#annotationLabelAttributes("region", region.labelPosition, positions),
+        annotation: region,
       });
     }
   }
@@ -234,50 +239,103 @@ export default class CartesianAxesRenderer {
           )
         : marker.label;
 
-      this.#surface.text(label, {
-        ...this.#annotationLabelAttributes(marker.labelPosition, [
+      this.#renderAnnotationLabel({
+        kind: "marker",
+        label,
+        placement: this.#annotationLabelAttributes("marker", marker.labelPosition, [
           position,
         ]),
-        fill: marker.labelColor,
+        annotation: marker,
       });
     }
   }
 
   /**
+   * Renders one visually secondary annotation label without a surrounding container.
+   *
+   * @param {object} tag - Complete static annotation presentation.
+   * @param {"marker" | "region"} tag.kind - Annotation role used for semantic styling.
+   * @param {string} tag.label - Visible annotation text.
+   * @param {object} tag.placement - Static anchor coordinates and alignment.
+   * @param {object} tag.annotation - Normalized marker or region presentation.
+   * @returns {void} The annotation text is appended to the surface.
+   */
+  #renderAnnotationLabel({ kind, label, placement, annotation }) {
+    const textWidth = measuredTextWidth(label, ANNOTATION_FONT_SIZE) + 2;
+    const left = this.#annotationLabelLeft(placement.x, placement.anchor, textWidth);
+
+    this.#surface.text(label, {
+      x: left,
+      y: placement.y,
+      "text-anchor": "start",
+      "dominant-baseline": "middle",
+      style: `fill: ${annotation.labelColor}`,
+      class: `charts2-annotation charts2-${kind}-label`,
+    });
+  }
+
+  /**
+   * Converts a logical text anchor into the label's physical left edge.
+   *
+   * @param {number} x - Static anchor coordinate.
+   * @param {"start" | "middle" | "end"} anchor - Logical alignment.
+   * @param {number} width - Measured label width.
+   * @returns {number} Left edge preserving the requested alignment.
+   */
+  #annotationLabelLeft(x, anchor, width) {
+    if (anchor === "end") {
+      return x - width;
+    }
+
+    return anchor === "middle" ? x - width / 2 : x;
+  }
+
+  /**
    * Resolves one logical annotation-label position for either orientation.
    *
-   * @param {"start" | "center" | "end"} placement - Logical label placement.
+   * @param {"marker" | "region"} kind - Annotation semantic controlling value-axis placement.
+   * @param {"start" | "center" | "end"} placement - Logical category-axis placement.
    * @param {number[]} values - One marker coordinate or two region coordinates.
    * @returns {object} Bounded SVG text attributes.
    */
   // eslint-disable-next-line max-lines-per-function -- Array layout lines do not add behavior.
-  #annotationLabelAttributes(placement, values) {
+  #annotationLabelAttributes(kind, placement, values) {
     const { bottom, left, right, top } = this.#layout.frame;
-    const value = this.#boundedValuePosition(values.reduce((sum, item) => sum + item, 0) / values.length);
+    const boundedValues = values.map((value) => this.#boundedValuePosition(value));
+    const value = boundedValues.reduce((sum, item) => sum + item, 0) / boundedValues.length;
 
     if (this.#layout.isHorizontal) {
       const y = this.#placementCoordinate(
         [
-          bottom,
+          bottom - ANNOTATION_TAG_HEIGHT / 2,
           (top + bottom) / 2,
-          top,
+          top + ANNOTATION_TAG_HEIGHT / 2,
         ],
         placement,
       );
 
+      if (kind === "region") {
+        return {
+          x: value,
+          y,
+          anchor: "middle",
+        };
+      }
+
+      const isNearRightEdge = value > (left + right) / 2;
+
       return {
-        x: value + MARKER_LABEL_OFFSET,
+        x: value + (isNearRightEdge ? -ANNOTATION_MARKER_GAP : ANNOTATION_MARKER_GAP),
         y,
-        class: "charts2-annotation",
-        "dominant-baseline": "middle",
+        anchor: isNearRightEdge ? "end" : "start",
       };
     }
 
     const x = this.#placementCoordinate(
       [
-        left,
+        left + ANNOTATION_EDGE_INSET,
         (left + right) / 2,
-        right,
+        right - ANNOTATION_EDGE_INSET,
       ],
       placement,
     );
@@ -291,11 +349,18 @@ export default class CartesianAxesRenderer {
       placement,
     );
 
+    if (kind === "region") {
+      return {
+        x,
+        y: value,
+        anchor,
+      };
+    }
+
     return {
       x,
-      y: value - MARKER_LABEL_OFFSET,
-      class: "charts2-annotation",
-      "text-anchor": anchor,
+      y: Math.max(top + ANNOTATION_TAG_HEIGHT / 2, value - ANNOTATION_MARKER_GAP - ANNOTATION_TAG_HEIGHT / 2),
+      anchor,
     };
   }
 

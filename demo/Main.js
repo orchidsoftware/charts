@@ -321,6 +321,102 @@ export const showcaseSpecs = [
     },
   ],
   [
+    "#line-region",
+    {
+      type: "line",
+      height: 280,
+      ariaLabel: "Weekly service latency with a healthy operating region",
+      description: "The shaded region marks the healthy latency range from 40 to 60 milliseconds.",
+      formatTooltipValue: (value) => `${formatDemoValue(value)} ms`,
+      data: {
+        labels: [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri",
+          "Sat",
+          "Sun",
+        ],
+        regions: [
+          {
+            label: "Healthy range",
+            range: [
+              40,
+              60,
+            ],
+            color: "#248a3d",
+            opacity: 0.14,
+            labelPosition: "end",
+          },
+        ],
+        datasets: [
+          {
+            name: "P95 latency",
+            color: "#2490ef",
+            values: [
+              54,
+              48,
+              57,
+              63,
+              51,
+              46,
+              43,
+            ],
+          },
+        ],
+      },
+    },
+  ],
+  [
+    "#line-marker",
+    {
+      type: "line",
+      height: 280,
+      ariaLabel: "Weekly activation rate compared with a target marker",
+      description: "The dashed marker shows the activation target at 75 percent.",
+      formatTooltipValue: (value) => `${formatDemoValue(value)}%`,
+      data: {
+        labels: [
+          "W1",
+          "W2",
+          "W3",
+          "W4",
+          "W5",
+          "W6",
+          "W7",
+          "W8",
+        ],
+        markers: [
+          {
+            label: "Target · 75%",
+            value: 75,
+            color: "#ff3b30",
+            width: 2,
+            lineStyle: "dashed",
+            labelPosition: "end",
+          },
+        ],
+        datasets: [
+          {
+            name: "Activation rate",
+            color: "#af52de",
+            values: [
+              61,
+              64,
+              66,
+              70,
+              69,
+              73,
+              76,
+              79,
+            ],
+          },
+        ],
+      },
+    },
+  ],
+  [
     "#bar-vertical",
     {
       type: "bar",
@@ -906,6 +1002,329 @@ export const showcaseSpecs = [
 
 export const qualitySpecs = [
   [
+    "#annotation-collision",
+    {
+      type: "mixed",
+      height: 320,
+      ariaLabel: "Annotation readability stress test with labels crossing dense points and bars",
+      data: {
+        labels: [
+          "W1",
+          "W2",
+          "W3",
+          "W4",
+          "W5",
+          "W6",
+          "W7",
+          "W8",
+        ],
+        regions: [
+          {
+            label: "Operating band · 42–58",
+            range: [
+              42,
+              58,
+            ],
+            color: "#248a3d",
+            opacity: 0.18,
+            labelPosition: "end",
+          },
+        ],
+        markers: [
+          {
+            label: "SLA ceiling · 70",
+            value: 70,
+            color: "#ff3b30",
+            width: 2,
+            lineStyle: "dashed",
+            labelPosition: "end",
+          },
+        ],
+        datasets: [
+          {
+            chartType: "bar",
+            name: "Requests",
+            color: "#2490ef",
+            values: [
+              64,
+              72,
+              68,
+              75,
+              66,
+              73,
+              69,
+              76,
+            ],
+          },
+          {
+            chartType: "line",
+            name: "Band crossing",
+            color: "#af52de",
+            values: [
+              46,
+              53,
+              48,
+              56,
+              45,
+              54,
+              52,
+              50,
+            ],
+          },
+          {
+            chartType: "line",
+            name: "Ceiling crossing",
+            color: "#ff9500",
+            values: [
+              61,
+              66,
+              72,
+              68,
+              74,
+              67,
+              71,
+              74,
+            ],
+          },
+        ],
+      },
+    },
+  ],
+  [
+    "#annotation-bars-vertical",
+    {
+      type: "bar",
+      height: 320,
+      ariaLabel: "Annotation readability stress test across grouped vertical bars",
+      data: {
+        labels: [
+          "W1",
+          "W2",
+          "W3",
+          "W4",
+          "W5",
+          "W6",
+          "W7",
+          "W8",
+        ],
+        regions: [
+          {
+            label: "Expected throughput · 42–58",
+            range: [
+              42,
+              58,
+            ],
+            color: "#248a3d",
+            opacity: 0.18,
+            labelPosition: "end",
+          },
+        ],
+        markers: [
+          {
+            label: "Capacity ceiling · 70",
+            value: 70,
+            color: "#ff3b30",
+            width: 2,
+            lineStyle: "dashed",
+            labelPosition: "end",
+          },
+        ],
+        datasets: [
+          {
+            name: "Primary",
+            color: "#2490ef",
+            values: [
+              64,
+              72,
+              68,
+              75,
+              66,
+              73,
+              69,
+              76,
+            ],
+          },
+          {
+            name: "Secondary",
+            color: "#af52de",
+            values: [
+              48,
+              55,
+              51,
+              59,
+              46,
+              57,
+              53,
+              50,
+            ],
+          },
+        ],
+      },
+    },
+  ],
+  [
+    "#annotation-bars-horizontal",
+    {
+      type: "bar",
+      orientation: "horizontal",
+      height: 320,
+      ariaLabel: "Annotation readability stress test across grouped horizontal bars",
+      data: {
+        labels: [
+          "North",
+          "South",
+          "East",
+          "West",
+          "Central",
+        ],
+        regions: [
+          {
+            label: "Expected volume · 42–58",
+            range: [
+              42,
+              58,
+            ],
+            color: "#248a3d",
+            opacity: 0.18,
+            labelPosition: "center",
+          },
+        ],
+        markers: [
+          {
+            label: "Capacity · 70",
+            value: 70,
+            color: "#ff3b30",
+            width: 2,
+            lineStyle: "dashed",
+            labelPosition: "end",
+          },
+        ],
+        datasets: [
+          {
+            name: "Primary",
+            color: "#2490ef",
+            values: [
+              76,
+              68,
+              73,
+              64,
+              71,
+            ],
+          },
+          {
+            name: "Secondary",
+            color: "#af52de",
+            values: [
+              52,
+              47,
+              56,
+              49,
+              54,
+            ],
+          },
+        ],
+      },
+    },
+  ],
+  [
+    "#annotation-regions-experimental",
+    {
+      type: "line",
+      height: 340,
+      ariaLabel: "Chart with the complete plot divided into green, yellow, and red operating zones",
+      data: {
+        labels: [
+          "W1",
+          "W2",
+          "W3",
+          "W4",
+          "W5",
+          "W6",
+          "W7",
+          "W8",
+        ],
+        regions: [
+          {
+            label: "Healthy · 0–33",
+            range: [
+              0,
+              33,
+            ],
+            color: "#34c759",
+            opacity: 0.18,
+            labelPosition: "start",
+          },
+          {
+            label: "Warning · 33–66",
+            range: [
+              33,
+              66,
+            ],
+            color: "#ffcc00",
+            opacity: 0.18,
+            labelPosition: "center",
+          },
+          {
+            label: "Critical · 66–100",
+            range: [
+              66,
+              100,
+            ],
+            color: "#ff3b30",
+            opacity: 0.18,
+            labelPosition: "end",
+          },
+        ],
+        markers: [
+          {
+            label: "Review boundary · 33",
+            value: 33,
+            color: "#ff9500",
+            lineStyle: "dotted",
+            labelPosition: "center",
+          },
+          {
+            label: "Escalation boundary · 66",
+            value: 66,
+            color: "#ff3b30",
+            lineStyle: "dashed",
+            labelPosition: "end",
+          },
+        ],
+        datasets: [
+          {
+            name: "Observed",
+            color: "#2490ef",
+            values: [
+              18,
+              42,
+              31,
+              67,
+              54,
+              83,
+              63,
+              34,
+            ],
+          },
+          {
+            name: "Forecast",
+            color: "#af52de",
+            values: [
+              27,
+              36,
+              49,
+              58,
+              71,
+              62,
+              78,
+              66,
+            ],
+          },
+        ],
+      },
+    },
+  ],
+  [
     "#fractions",
     {
       type: "line",
@@ -1349,6 +1768,17 @@ function seriesBuilder(builder, options) {
     if (typeof builder[method] === "function" && value !== undefined) {
       builder[method](value);
     }
+  }
+
+  const markers = options.data.markers ?? [];
+  const regions = options.data.regions ?? [];
+
+  for (const marker of markers) {
+    builder.marker(marker);
+  }
+
+  for (const region of regions) {
+    builder.region(region);
   }
 
   return builder;

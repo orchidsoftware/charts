@@ -1,4 +1,4 @@
-import { labelElement, markMetadata, svg, titled } from "../support/Dom.js";
+import { labelElement, markMetadata, svg, titled } from "../../support/Dom.js";
 
 import TimesheetLayout from "./TimesheetLayout.js";
 
@@ -9,7 +9,7 @@ const TASK_LABEL_GAP = 8;
 /**
  * Renders tasks against a shared temporal axis.
  */
-export default class TimesheetRenderer {
+class TimesheetRenderer {
   #chart;
   #surface;
 
@@ -18,7 +18,7 @@ export default class TimesheetRenderer {
    *
    * @param {object} rendering - Collaborators for one timesheet pass.
    * @param {object} rendering.chart - Frozen timesheet data and options.
-   * @param {import("./SvgSurface.js").default} rendering.surface - Owned SVG drawing surface.
+   * @param {import("../SvgSurface.js").default} rendering.surface - Owned SVG drawing surface.
    */
   constructor({ chart, surface }) {
     this.#chart = chart;
@@ -234,7 +234,7 @@ export default class TimesheetRenderer {
 }
 
 /**
- * Renders one timesheet through its family coordinator.
+ * Renders one timesheet through its family renderer.
  *
  * @param {object} rendering - Frozen chart snapshot and owned SVG surface.
  * @returns {void} Timesheet content is appended to the chart SVG.

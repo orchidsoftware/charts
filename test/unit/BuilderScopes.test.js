@@ -11,7 +11,7 @@ import {
   SeriesTooltipBuilder,
   TimesheetTooltipBuilder,
   runScope,
-} from "../../src/core/BuilderScopes.js";
+} from "../../src/core/builders/BuilderScopes.js";
 
 const formatter = String;
 

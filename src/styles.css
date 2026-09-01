@@ -88,6 +88,14 @@
   fill: var(--charts-label-color, #313b44);
 }
 
+.charts2-annotation {
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  opacity: 0.58;
+}
+
 .charts2-direct-value {
   font:
     600 15px/1 -apple-system,
@@ -95,11 +103,6 @@
     "SF Pro Display",
     sans-serif;
   fill: var(--charts-label-color);
-}
-
-.charts2-region {
-  opacity: 0.08;
-  fill: var(--charts-focus-ring);
 }
 
 .charts2-marker {
@@ -330,5 +333,15 @@
   .charts2-interactive-mark:focus-visible,
   .charts2-interactive-mark.is-active {
     filter: drop-shadow(0 0 3px var(--charts-focus-ring));
+  }
+
+  .charts2-annotation {
+    font-weight: 600;
+  }
+}
+
+@media (forced-colors: active) {
+  .charts2-annotation {
+    fill: CanvasText !important;
   }
 }

@@ -26,7 +26,7 @@
 
       <section class="lab-intro" aria-labelledby="lab-title">
         <div>
-          <p class="lab-kicker">QA reference surface · 38 deterministic fixtures</p>
+          <p class="lab-kicker">QA reference surface · 44 deterministic fixtures</p>
           <h1 id="lab-title">Chart laboratory</h1>
         </div>
         <div class="lab-intro-copy">
@@ -39,8 +39,9 @@
       </section>
 
       <nav id="fixture-index" class="lab-index" aria-label="Fixture groups">
-        <a href="#line-fixtures"><strong>08</strong><span>Line &amp; area</span></a>
+        <a href="#line-fixtures"><strong>10</strong><span>Line &amp; area</span></a>
         <a href="#bar-fixtures"><strong>07</strong><span>Bar</span></a>
+        <a href="#annotation-fixtures"><strong>04</strong><span>Annotation stress</span></a>
         <a href="#mixed-fixtures"><strong>02</strong><span>Mixed axes</span></a>
         <a href="#xy-fixtures"><strong>02</strong><span>XY plots</span></a>
         <a href="#radial-fixtures"><strong>05</strong><span>Radial</span></a>
@@ -73,6 +74,26 @@
               <code>#line-gradient</code>
             </header>
             <div id="line-gradient"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="line-region">
+            <header>
+              <div>
+                <span class="tag">ANNOTATION · REGION</span>
+                <h3>Healthy operating range</h3>
+              </div>
+              <code>#line-region</code>
+            </header>
+            <div id="line-region"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="line-marker">
+            <header>
+              <div>
+                <span class="tag">ANNOTATION · MARKER</span>
+                <h3>Target threshold</h3>
+              </div>
+              <code>#line-marker</code>
+            </header>
+            <div id="line-marker"></div>
           </article>
           <article class="lab-fixture" data-fixture="fractions">
             <header>
@@ -133,6 +154,63 @@
               <code>#spark-area</code>
             </header>
             <div id="spark-area"></div>
+          </article>
+        </div>
+      </section>
+
+      <section
+        id="annotation-fixtures"
+        class="lab-group"
+        data-fixture-group="annotation"
+        aria-labelledby="annotation-title"
+      >
+        <header class="lab-group-header">
+          <h2 id="annotation-title">Annotation stress</h2>
+          <p>
+            Fixed annotation placement under deliberate collisions with points, vertical and horizontal bars,
+            dense regions, and long labels.
+          </p>
+        </header>
+        <div class="lab-grid">
+          <article class="lab-fixture lab-fixture-wide" data-fixture="annotation-collision">
+            <header>
+              <div>
+                <span class="tag">MIXED · POINTS + BARS</span>
+                <h3>Labels across points and columns</h3>
+              </div>
+              <code>#annotation-collision</code>
+            </header>
+            <div id="annotation-collision"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="annotation-bars-vertical">
+            <header>
+              <div>
+                <span class="tag">BAR · VERTICAL COLLISIONS</span>
+                <h3>Labels across grouped columns</h3>
+              </div>
+              <code>#annotation-bars-vertical</code>
+            </header>
+            <div id="annotation-bars-vertical"></div>
+          </article>
+          <article class="lab-fixture" data-fixture="annotation-bars-horizontal">
+            <header>
+              <div>
+                <span class="tag">BAR · HORIZONTAL COLLISIONS</span>
+                <h3>Labels across horizontal bars</h3>
+              </div>
+              <code>#annotation-bars-horizontal</code>
+            </header>
+            <div id="annotation-bars-horizontal"></div>
+          </article>
+          <article class="lab-fixture lab-fixture-wide" data-fixture="annotation-regions-experimental">
+            <header>
+              <div>
+                <span class="tag">ANNOTATION · THREE-ZONE PARTITION</span>
+                <h3>Green, yellow, and red operating zones</h3>
+              </div>
+              <code>#annotation-regions-experimental</code>
+            </header>
+            <div id="annotation-regions-experimental"></div>
           </article>
         </div>
       </section>
@@ -506,7 +584,7 @@
     </main>
 
     <footer class="site-footer lab-footer">
-      <span>Charts2 QA laboratory · 38 fixtures · public API only</span>
+      <span>Charts2 QA laboratory · 44 fixtures · public API only</span>
       <a href="#top">Back to top ↑</a>
     </footer>
     <script type="module" src="./Main.js"></script>

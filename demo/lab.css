@@ -55,7 +55,7 @@
 
 .lab-index {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   margin-bottom: 88px;
   overflow: hidden;
   background: var(--charts2-demo-elevated);

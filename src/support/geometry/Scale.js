@@ -1,4 +1,4 @@
-import { MAJOR_GRID_DIVISIONS } from "./Constants.js";
+import { MAJOR_GRID_DIVISIONS } from "../Constants.js";
 
 const DECIMAL_BASE = 10;
 const FIVE_STEP = 5;

@@ -1,5 +1,5 @@
-import { markMetadata, svg, titled } from "../support/Dom.js";
-import { formatLabel, formatValue } from "../support/Formatting.js";
+import { markMetadata, svg, titled } from "../../support/Dom.js";
+import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
 
 /**
  * Renders category-sized interaction targets for dense Cartesian series.
@@ -15,7 +15,7 @@ export default class CartesianInspectorRenderer {
    * @param {object} state - Collaborators required for one inspector pass.
    * @param {object} state.chart - Frozen chart data and options.
    * @param {object} state.layout - Scales and bounds resolved by `CartesianRenderer`.
-   * @param {import("./SvgSurface.js").default} state.surface - Owned SVG drawing surface.
+   * @param {import("../SvgSurface.js").default} state.surface - Owned SVG drawing surface.
    */
   constructor({ chart, layout, surface }) {
     this.#chart = chart;

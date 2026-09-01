@@ -1,8 +1,8 @@
-import { ChartType, DEFAULT_BAR_RADIUS } from "../support/Constants.js";
-import { formatNumber, markMetadata, svg, titled } from "../support/Dom.js";
-import { formatLabel, formatValue } from "../support/Formatting.js";
-import { linePath, roundedBarPath } from "../support/Math.js";
-import { datasetSummary, tooltipText } from "../support/Presentation.js";
+import { ChartType, DEFAULT_BAR_RADIUS } from "../../support/Constants.js";
+import { formatNumber, markMetadata, svg, titled } from "../../support/Dom.js";
+import { linePath, roundedBarPath } from "../../support/geometry/Math.js";
+import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
+import { datasetSummary, tooltipText } from "../../support/presentation/Presentation.js";
 
 const CARTESIAN_LAYER = Object.freeze({
   [ChartType.BAR]: 0,

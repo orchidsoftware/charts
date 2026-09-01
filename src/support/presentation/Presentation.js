@@ -8,10 +8,11 @@ import {
   AGGREGATION_INSET,
   AGGREGATION_LEGEND_BASELINE_INSET,
   AGGREGATION_LEGEND_GAP,
-} from "./Constants.js";
-import { formatNumber, truncateText, measuredTextWidth, measuredLegendTextWidth } from "./Dom.js";
+} from "../Constants.js";
+import { formatNumber, truncateText, measuredTextWidth, measuredLegendTextWidth } from "../Dom.js";
+import { extent } from "../geometry/Math.js";
+
 import { formatLabel, formatValue } from "./Formatting.js";
-import { extent } from "./Math.js";
 
 const AGGREGATION_MINIMUM_CONTENT_HEIGHT = 8;
 const HORIZONTAL_LABEL_MAXIMUM_PADDING = 176;
@@ -25,6 +26,31 @@ const LEGEND_MAXIMUM_LABEL_WIDTH = 160;
 const LEGEND_RIGHT_INSET = 8;
 const VALUE_LABEL_TRAILING_INSET = 4;
 const DATASET_SUMMARY_LIMIT = 12;
+
+/**
+ * Maps one heatmap value onto the complete ordered intensity palette.
+ *
+ * @param {number} value - Normalized heatmap value.
+ * @param {[number, number]} domain - Complete data minimum and maximum.
+ * @param {number} colorCount - Number of supplied intensity colors.
+ * @returns {number} Bounded zero-based palette bucket.
+ */
+function intensityLevel(
+  value,
+  [
+    minimum,
+    maximum,
+  ],
+  colorCount,
+) {
+  if (minimum === maximum) {
+    return value === 0 ? 0 : colorCount - 1;
+  }
+
+  const ratio = (value - minimum) / (maximum - minimum);
+
+  return Math.min(colorCount - 1, Math.floor(ratio * colorCount));
+}
 
 /**
  * Applies the optional category formatter and validates its display contract.
@@ -231,6 +257,7 @@ function tooltipText(content) {
 }
 
 export {
+  intensityLevel,
   formatCategoryLabel,
   horizontalCategoryPadding,
   verticalValuePadding,

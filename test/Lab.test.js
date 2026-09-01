@@ -6,13 +6,22 @@ import "../demo/style.css";
 import "../demo/lab.css";
 
 const expectedGroups = {
-  line: 8,
+  line: 10,
   bar: 7,
+  annotation: 4,
   mixed: 2,
   xy: 2,
   radial: 5,
   time: 2,
   background: 12,
+};
+const screenshotOptions = {
+  comparatorName: "pixelmatch",
+  comparatorOptions: {
+    allowedMismatchedPixelRatio: 0.0005,
+    threshold: 0.1,
+  },
+  timeout: 10_000,
 };
 
 async function settle() {
@@ -20,6 +29,13 @@ async function settle() {
   await new Promise((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(resolve));
   });
+}
+
+function intersects(first, second) {
+  const a = first.getBoundingClientRect();
+  const b = second.getBoundingClientRect();
+
+  return !(a.right < b.left || b.right < a.left || a.bottom < b.top || b.bottom < a.top);
 }
 
 beforeAll(async () => {
@@ -53,7 +69,7 @@ describe("QA chart laboratory", () => {
         ]),
       ),
     ).toEqual(expectedGroups);
-    expect(fixtures).toHaveLength(38);
+    expect(fixtures).toHaveLength(44);
     expect(new Set(fixtureNames).size).toBe(fixtures.length);
     expect(document.querySelectorAll(".lab-index a")).toHaveLength(groups.length);
 
@@ -61,6 +77,74 @@ describe("QA chart laboratory", () => {
       const host = fixture.querySelector(`#${CSS.escape(fixture.dataset.fixture)}`);
       expect(host, fixture.dataset.fixture).not.toBeNull();
       expect(host.querySelector("svg"), fixture.dataset.fixture).not.toBeNull();
+    }
+  });
+
+  it("keeps annotation labels readable when points and bars deliberately cross them", () => {
+    const fixture = document.querySelector('[data-fixture="annotation-collision"]');
+    const labels = [
+      ...fixture.querySelectorAll(".charts2-annotation"),
+    ];
+    const points = [
+      ...fixture.querySelectorAll(".charts2-point"),
+    ];
+    const bars = [
+      ...fixture.querySelectorAll(".charts2-bar"),
+    ];
+    expect(labels).toHaveLength(2);
+    expect(labels.every((label) => points.some((point) => intersects(label, point)))).toBe(true);
+    expect(labels.every((label) => bars.some((bar) => intersects(label, bar)))).toBe(true);
+    for (const label of fixture.querySelectorAll(".charts2-annotation")) {
+      const style = getComputedStyle(label);
+
+      expect(style.fillOpacity).toBe("1");
+      expect(style.stroke).toBe("none");
+      expect(style.fontWeight).toBe("500");
+    }
+    expect(fixture.querySelectorAll(".charts2-annotation-sample")).toHaveLength(0);
+  });
+
+  it("covers fixed annotations across both bar orientations and a full region partition", () => {
+    const vertical = document.querySelector('[data-fixture="annotation-bars-vertical"]');
+    const horizontal = document.querySelector('[data-fixture="annotation-bars-horizontal"]');
+    const experimental = document.querySelector('[data-fixture="annotation-regions-experimental"]');
+
+    for (const fixture of [
+      vertical,
+      horizontal,
+    ]) {
+      const labels = [
+        ...fixture.querySelectorAll(".charts2-annotation"),
+      ];
+      const bars = [
+        ...fixture.querySelectorAll(".charts2-bar"),
+      ];
+
+      expect(labels).toHaveLength(2);
+      expect(labels.every((label) => bars.some((bar) => intersects(label, bar)))).toBe(true);
+    }
+
+    expect(experimental.querySelectorAll(".charts2-region-label")).toHaveLength(3);
+    expect(experimental.querySelectorAll(".charts2-marker-label")).toHaveLength(2);
+    expect(experimental.querySelectorAll(".charts2-annotation-background")).toHaveLength(0);
+    expect(experimental.querySelectorAll(".charts2-annotation-sample")).toHaveLength(0);
+    expect(
+      [
+        ...experimental.querySelectorAll(".charts2-region"),
+      ].map((region) => getComputedStyle(region).fill),
+    ).toEqual([
+      "rgb(52, 199, 89)",
+      "rgb(255, 204, 0)",
+      "rgb(255, 59, 48)",
+    ]);
+  });
+
+  it("keeps every annotation stress fixture visually stable", async () => {
+    for (const fixture of document.querySelectorAll('[data-fixture-group="annotation"] [data-fixture]')) {
+      // eslint-disable-next-line no-await-in-loop -- Element screenshots share one browser page.
+      await expect
+        .element(page.elementLocator(fixture))
+        .toMatchScreenshot(`lab-${fixture.dataset.fixture}.png`, screenshotOptions);
     }
   });
 

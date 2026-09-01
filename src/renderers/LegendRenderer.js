@@ -1,6 +1,6 @@
 import { SERIES_SWATCH_DIAMETER } from "../support/Constants.js";
 import { svg, labelElement } from "../support/Dom.js";
-import { legendLayout } from "../support/Presentation.js";
+import { legendLayout } from "../support/presentation/Presentation.js";
 
 const DEFAULT_LEGEND_BASELINE = 16;
 

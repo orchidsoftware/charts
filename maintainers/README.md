@@ -13,9 +13,19 @@ instructions live in [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 - [Launch readiness audit](./LAUNCH_AUDIT.md)
 - [Fluent API specification](./FLUENT_API.md)
 - [Architecture](./ARCHITECTURE.md)
+- [Naming policy](./NAMING.md)
 - [Performance budgets](./PERFORMANCE.md)
 - [Release process](./RELEASING.md)
 
-Files with `REVIEW`, `AUDIT`, or `MATRIX` in their names are historical design
-evidence. They should not be linked from the README or shipped in the npm
-package.
+## Historical evidence
+
+- [Architecture refactoring decisions](./REFACTORING.md)
+- [Design audit](./DESIGN_AUDIT.md)
+- [Code map review](./CODE_MAP_REVIEW.md)
+- [Fluent API review](./FLUENT_API_REVIEW.md)
+- [Harmony matrix](./HARMONY_MATRIX.md)
+- [Pie/donut tooltip review](./PIE_DONUT_TOOLTIP_REVIEW.md)
+
+Historical files preserve the evidence and context behind accepted decisions;
+they are not descriptions of the current public API. No file in this directory
+is shipped in the npm package.

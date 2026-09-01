@@ -97,9 +97,9 @@ Laravel-like constructor collaboration и polymorphic dispatch Мартина б
 
 ### ADR-003 — Pure inward rules
 
-Pure modules `support/Normalize.js`, `support/Math.js`, `support/Scale.js`,
-`support/CartesianGeometry.js`, `support/SectorGeometry.js` и
-`support/Presentation.js` не импортируют `core` или browser interaction.
+Pure modules `support/Normalize.js`, `support/geometry/Math.js` и
+`support/presentation/Presentation.js` не импортируют `core` или
+browser interaction.
 Это применяет Dependency Rule Мартина там, где в библиотеке действительно есть
 архитектурная граница, без интерфейсов «на всякий случай».
 
@@ -144,16 +144,17 @@ Security, SonarJS, Unicorn и JSDoc. Ограничены complexity, nesting, �
 документировано здесь, а не размазано inline-disable комментариями.
 
 Cartesian rendering дополнительно разделён на coordinator,
-`CartesianAxesRenderer`, `CartesianSeriesRenderer` и
-`CartesianInspectorRenderer`. Это не слой ради слоя: классы владеют разными
+`CartesianAxesRenderer`, функциональные стратегии `CartesianSeriesRendering` и
+`CartesianInspectorRenderer`. Это не слой ради слоя: модули владеют разными
 изменениями — axes/annotations, data marks и category interaction targets — и
 получают один behavioral `CartesianLayout` через композицию.
 
 ### ADR-009 — Закрытые словари являются frozen runtime contracts
 
 Типы графиков, ориентации и позиции оси определены через `Object.freeze` и
-используются во validation, dispatch и rendering вместо повторяющихся magic
-strings. Renderer registry также является frozen object. Общие палитры,
+используются во validation и rendering вместо повторяющихся magic strings.
+Каждая frozen chart definition напрямую связывает тип с model и renderer functions;
+отдельного runtime registry нет. Общие палитры,
 membership lists и time steps — frozen arrays: в отличие от `Object.freeze(new
 Set())`, это действительно запрещает изменение содержимого. Architecture tests
 проверяют runtime-неизменяемость и запрещают возвращение прямых сравнений с
@@ -163,7 +164,7 @@ Set())`, это действительно запрещает изменение
 
 Подтверждённые SRP/OCP-нарушения разделены по независимым политикам:
 
-- `options.js` владеет stateless validation/defaulting functions; `Chart`
+- `Options.js` владеет stateless validation/defaulting functions; `Chart`
   остаётся lifecycle façade/composition root.
 - `ChartData` владеет атомарным normalized state, а `ChartSelection` — формой
   публичных selection events.
@@ -235,17 +236,18 @@ machine, а не пользовательский сценарий.
 
 ### ADR-016 — Каталог появляется только для настоящей области
 
-Однофайловые `data`, `geometry`, `layout` и `interactions` удалены. Их имена
-создавали четыре точки выбора, но не выражали четыре самостоятельных модуля.
-Структура сведена к трём зонам: `core` владеет lifecycle и interaction state,
-`renderers` содержит стратегии визуальных грамматик, а `support` — stateless
-normalization, geometry, presentation и browser primitives.
+Верхний уровень сохраняет три границы: `core` владеет lifecycle и interaction
+state, `renderers` содержит стратегии визуальных грамматик, а `support` —
+stateless normalization, geometry, presentation и browser primitives. Внутри
+них каталоги появляются только для подтверждённых групп из нескольких файлов:
+`core/builders`, chart families `renderers/cartesian|composition|temporal` и
+чистые политики `support/geometry|presentation`.
 
 Это Laravel-style DX-интерпретация, а не утверждение о личном решении Taylor
-Otwell: сначала используется плоская предсказуемая структура, а новый каталог
-появляется только когда несколько cohesive файлов образуют устойчивую область.
-Fitness-тесты по-прежнему запрещают pure support calculations зависеть от
-`core` или renderer classes и запрещают renderer-ам импортировать lifecycle.
+Otwell: новый каталог появляется, когда несколько cohesive файлов образуют
+устойчивую область. Fitness-тесты проверяют точный набор областей,
+запрещают support зависеть от `core` или renderers, а renderer families —
+импортировать соседние families.
 
 ### ADR-017 — Formatter и linters имеют разные обязанности
 
@@ -267,12 +269,12 @@ cascade и visual states защищены browser/visual suite.
 минимальной поддерживаемой и актуальной Node.js, отдельно выполняются CodeQL и
 dependency review.
 
-До появления реальных GitHub/npm identities workflow `Release candidate`
-только собирает проверенный `.tgz`. Он не создаёт tag, GitHub Release или npm
-publication. Это сохраняет лаконичный happy path, но не маскирует необратимое
-внешнее действие удобной кнопкой. После первой ручной публикации registry URL,
-trusted publishing и release automation добавляются как отдельное решение с
-реальными, а не предполагаемыми идентификаторами.
+GitHub repository и workflow `Release candidate` существуют, но workflow только
+собирает проверенный `.tgz`: он не создаёт tag, GitHub Release или npm
+publication. Это не маскирует необратимое внешнее действие удобной
+кнопкой. После первой ручной npm-публикации trusted publishing и release
+automation добавляются как отдельное решение с проверенным package
+identity и процедурой восстановления.
 
 ### ADR-019 — Demo разделяет product narrative и quality evidence
 
@@ -298,7 +300,7 @@ product-ready defaults, progressive disclosure и документация, на
 charts, но Charts2 не заявляет совместимость и не копирует его публичный язык.
 
 Поэтому README сначала называет аудиторию и показывает install с полным
-`createChart` call site, затем объясняет продуктовые задачи и только после них —
+named fluent call site, затем объясняет продуктовые задачи и только после них —
 interaction и измеримые quality guarantees. SVG, zero dependencies,
 accessibility и MIT являются доказательствами законченности и низкого риска, а
 не главным обещанием. Architecture, naming policy и release mechanics остаются
@@ -368,7 +370,7 @@ validation, lifecycle и release gate задаёт только `FLUENT_API.md`.
 ### ADR-023 — Один lifecycle для callback scopes
 
 Все callback-only dataset, tooltip, axis и annotation builders находятся в
-`core/BuilderScopes.js`. Они используют один module-private `WeakMap`, один
+`core/builders/BuilderScopes.js`. Они используют один module-private `WeakMap`, один
 `runScope` и обязательное завершение через `finally`. Retained scope продолжает
 выбрасывать `TypeError` с доменным именем независимо от успешного или аварийного
 завершения callback.

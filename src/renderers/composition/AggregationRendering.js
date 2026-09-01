@@ -1,10 +1,10 @@
-import { AGGREGATION_INSET, ChartType, DEFAULT_PERCENTAGE_RADIUS } from "../support/Constants.js";
-import { svg } from "../support/Dom.js";
-import { formatLabel, formatValue } from "../support/Formatting.js";
-import { aggregationLayout, tooltipText } from "../support/Presentation.js";
+import { AGGREGATION_INSET, ChartType, DEFAULT_PERCENTAGE_RADIUS } from "../../support/Constants.js";
+import { svg } from "../../support/Dom.js";
+import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
+import { aggregationLayout, tooltipText } from "../../support/presentation/Presentation.js";
+import LegendRenderer from "../LegendRenderer.js";
 
 import Composition from "./Composition.js";
-import LegendRenderer from "./LegendRenderer.js";
 
 const PERCENTAGE_INSET = 16;
 const MINIMUM_SEGMENT_HEIGHT = 28;
@@ -44,7 +44,7 @@ function percentageStrip(width, layout, clipping) {
 /**
  * Renders the chart types that aggregate categories into parts of one whole.
  */
-export default class AggregationRenderer {
+class AggregationRenderer {
   #chart;
   #surface;
 
@@ -53,7 +53,7 @@ export default class AggregationRenderer {
    *
    * @param {object} rendering - Collaborators for one composition pass.
    * @param {object} rendering.chart - Frozen chart data and options.
-   * @param {import("./SvgSurface.js").default} rendering.surface - Owned SVG drawing surface.
+   * @param {import("../SvgSurface.js").default} rendering.surface - Owned SVG drawing surface.
    */
   constructor({ chart, surface }) {
     this.#chart = chart;
@@ -295,7 +295,7 @@ export default class AggregationRenderer {
 }
 
 /**
- * Renders one aggregation chart through its family coordinator.
+ * Renders one aggregation chart through its family renderer.
  *
  * @param {object} rendering - Frozen chart snapshot and owned SVG surface.
  * @returns {void} Aggregation content is appended to the chart SVG.

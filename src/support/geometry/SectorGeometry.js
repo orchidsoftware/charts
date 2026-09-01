@@ -1,4 +1,4 @@
-import { MIN_SECTOR_SWEEP } from "./Constants.js";
+import { MIN_SECTOR_SWEEP } from "../Constants.js";
 
 const DEGREES_PER_CIRCLE = 360;
 

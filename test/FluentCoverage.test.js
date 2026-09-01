@@ -15,14 +15,13 @@ import {
   TimesheetChart,
 } from "../src/index.js";
 import "../src/styles.css";
-import Composition from "../src/renderers/Composition.js";
-import { intensityLevel } from "../src/renderers/HeatmapRenderer.js";
-import { linePath } from "../src/support/CartesianGeometry.js";
+import Composition from "../src/renderers/composition/Composition.js";
 import { wrappedLabelElement } from "../src/support/Dom.js";
-import { formatterText } from "../src/support/Formatting.js";
+import { linePath } from "../src/support/geometry/CartesianGeometry.js";
+import { roundedSectorPath } from "../src/support/geometry/SectorGeometry.js";
 import { normalizePoint, validateChartData } from "../src/support/Normalize.js";
-import { datasetSummary } from "../src/support/Presentation.js";
-import { roundedSectorPath } from "../src/support/SectorGeometry.js";
+import { formatterText } from "../src/support/presentation/Formatting.js";
+import { datasetSummary, intensityLevel } from "../src/support/presentation/Presentation.js";
 
 function resetHost() {
   document.body.innerHTML = '<div id="chart" style="width: 640px"></div>';
@@ -151,6 +150,15 @@ describe("complete fluent authoring surface", () => {
       "R:Band",
       "M:Goal",
     ]);
+    expect(
+      [
+        ...chart.element.querySelectorAll(".charts2-annotation"),
+      ].every(
+        (label) => getComputedStyle(label).stroke === "none" && getComputedStyle(label).fontWeight === "500",
+      ),
+    ).toBe(true);
+    expect(chart.element.querySelectorAll(".charts2-annotation-background")).toHaveLength(0);
+    expect(chart.element.querySelectorAll(".charts2-annotation-sample")).toHaveLength(0);
     expectFailure(() => tooltipScope.formatValue(String), "Tooltip scope has expired");
     expectFailure(() => axisScope.position("left"), "Y-axis scope has expired");
     expectFailure(() => markerScope.width(1), "Marker scope has expired");

@@ -1,7 +1,12 @@
-import { DEFAULT_BAR_RADIUS } from "../support/Constants.js";
-import { measuredTextWidth } from "../support/Dom.js";
-import { scale } from "../support/Math.js";
-import { formatTimeTick, formatTimesheetDate, formatTimesheetDuration, timeTicks } from "../support/Time.js";
+import { DEFAULT_BAR_RADIUS } from "../../support/Constants.js";
+import { measuredTextWidth } from "../../support/Dom.js";
+import { scale } from "../../support/geometry/Math.js";
+import {
+  formatTimeTick,
+  formatTimesheetDate,
+  formatTimesheetDuration,
+  timeTicks,
+} from "../../support/presentation/Time.js";
 
 const FRAME_INSET = 16;
 const FRAME_TOP = 12;

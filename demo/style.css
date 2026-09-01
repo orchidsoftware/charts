@@ -896,6 +896,14 @@ article.wide {
   grid-column: 8 / 13;
 }
 
+.showcase-group-trends .gallery > article:nth-child(6) {
+  grid-column: 1 / 7;
+}
+
+.showcase-group-trends .gallery > article:nth-child(7) {
+  grid-column: 7 / 13;
+}
+
 .showcase-group-compare .gallery > article:nth-child(1) {
   grid-column: 1 / 8;
 }

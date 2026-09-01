@@ -1,4 +1,4 @@
-import { renderChart } from "../renderers/Render.js";
+import { renderChart } from "../renderers/ChartRendering.js";
 import { ChartOrientation, ChartType } from "../support/Constants.js";
 import { measureParentWidth, resolveParent, svg } from "../support/Dom.js";
 

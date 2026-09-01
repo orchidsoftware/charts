@@ -7,6 +7,8 @@ import "../demo/style.css";
 const showcaseIds = [
   "line",
   "line-gradient",
+  "line-region",
+  "line-marker",
   "bar-vertical",
   "bar-horizontal",
   "bar-horizontal-stacked",
@@ -84,8 +86,8 @@ describe("real-world demo", () => {
     await page.viewport(390, 900);
     const { qualitySpecs, showcaseSpecs } = await import("../demo/Main.js");
 
-    expect(showcaseSpecs).toHaveLength(15);
-    expect(qualitySpecs).toHaveLength(7);
+    expect(showcaseSpecs).toHaveLength(17);
+    expect(qualitySpecs).toHaveLength(11);
     expect(document.querySelectorAll(".selection-status")).toHaveLength(1);
     expect(document.querySelector(".selection-status").textContent).toBe("");
     expect(document.querySelector("#bundle-size-value").textContent).toMatch(/^\d+\.\d kB$/);
@@ -94,6 +96,33 @@ describe("real-world demo", () => {
     expect(document.querySelector("#percentage svg").getAttribute("height")).toBe("140");
     expect(document.querySelector("#radar svg").getAttribute("height")).toBe("320");
     expect(document.querySelector("#fractions svg").getAttribute("height")).toBe("280");
+    expect(document.querySelector("#line-region .charts2-region").getAttribute("fill")).toBe("#248a3d");
+    expect(document.querySelector("#line-marker .charts2-marker").getAttribute("stroke")).toBe("#ff3b30");
+    expect(document.querySelector("#line-marker .charts2-marker").getAttribute("stroke-dasharray")).not.toBe(
+      "",
+    );
+    expect(document.querySelectorAll(".charts2-annotation-background")).toHaveLength(0);
+    expect(getComputedStyle(document.querySelector("#line-marker .charts2-annotation")).fontWeight).toBe(
+      "500",
+    );
+    expect(getComputedStyle(document.querySelector("#line-region .charts2-annotation")).fontSize).toBe(
+      "12px",
+    );
+    const region = document.querySelector("#line-region .charts2-region").getBBox();
+    const regionLabel = document.querySelector("#line-region .charts2-region-label");
+    const regionLabelBounds = regionLabel.getBBox();
+    const marker = document.querySelector("#line-marker .charts2-marker");
+    const markerLabel = document.querySelector("#line-marker .charts2-marker-label");
+
+    expect(regionLabelBounds.y).toBeGreaterThan(region.y);
+    expect(regionLabelBounds.y + regionLabelBounds.height).toBeLessThan(region.y + region.height);
+    expect(Number(markerLabel.getAttribute("y"))).toBeLessThan(Number(marker.getAttribute("y1")));
+    expect(markerLabel.getAttribute("text-anchor")).toBe("start");
+    expect(getComputedStyle(regionLabel).fillOpacity).toBe("1");
+    expect(getComputedStyle(regionLabel).opacity).toBe("0.58");
+    expect(getComputedStyle(regionLabel).stroke).toBe("none");
+    expect(getComputedStyle(markerLabel).fontVariantNumeric).toContain("tabular-nums");
+    expect(document.querySelectorAll(".charts2-annotation-sample")).toHaveLength(0);
 
     const localizedLabels = [
       ...document.querySelectorAll("#absurd-labels .charts2-multiline-label"),
@@ -169,7 +198,7 @@ describe("real-world demo", () => {
             { id: article.querySelector("div").id, visibleRight, articleRight },
           ];
     });
-    expect(cards).toHaveLength(26);
+    expect(cards).toHaveLength(28);
     expect(overflow).toEqual([]);
     const timesheetSvg = document.querySelector("#timesheet svg");
     const timesheetBounds = timesheetSvg.getBoundingClientRect();

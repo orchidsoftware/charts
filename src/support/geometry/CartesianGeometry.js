@@ -1,4 +1,4 @@
-import { ChartOrientation } from "./Constants.js";
+import { ChartOrientation } from "../Constants.js";
 
 const CUBIC_CONTROL_DIVISOR = 3;
 

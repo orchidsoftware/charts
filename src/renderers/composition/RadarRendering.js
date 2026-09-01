@@ -1,9 +1,8 @@
-import { labelElement, markMetadata, svg, titled } from "../support/Dom.js";
-import { formatLabel, formatValue } from "../support/Formatting.js";
-import { polarPoint } from "../support/Math.js";
-import { datasetSummary, legendLayout } from "../support/Presentation.js";
-
-import LegendRenderer from "./LegendRenderer.js";
+import { labelElement, markMetadata, svg, titled } from "../../support/Dom.js";
+import { polarPoint } from "../../support/geometry/Math.js";
+import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
+import { datasetSummary, legendLayout } from "../../support/presentation/Presentation.js";
+import LegendRenderer from "../LegendRenderer.js";
 
 const LEGEND_TOP = 20;
 const LEGEND_ROW_HEIGHT = 20;
@@ -44,7 +43,7 @@ function radarAnchor(directionX) {
 /**
  * Renders comparable datasets as concentric radial axes and closed polygons.
  */
-export default class RadarRenderer {
+class RadarRenderer {
   #chart;
   #surface;
 
@@ -53,7 +52,7 @@ export default class RadarRenderer {
    *
    * @param {object} rendering - Collaborators for one radar pass.
    * @param {object} rendering.chart - Frozen radar data and options.
-   * @param {import("./SvgSurface.js").default} rendering.surface - Owned SVG drawing surface.
+   * @param {import("../SvgSurface.js").default} rendering.surface - Owned SVG drawing surface.
    */
   constructor({ chart, surface }) {
     this.#chart = chart;

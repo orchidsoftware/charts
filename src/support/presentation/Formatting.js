@@ -1,4 +1,4 @@
-import { formatNumber } from "./Dom.js";
+import { formatNumber } from "../Dom.js";
 
 /**
  * Creates one frozen formatter context with a frozen point when present.

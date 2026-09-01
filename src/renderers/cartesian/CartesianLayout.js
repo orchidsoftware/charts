@@ -5,14 +5,14 @@ import {
   MAX_INDIVIDUAL_LINE_POINTS,
   MAX_X_INSPECTOR_POINTS,
   YAxisPosition,
-} from "../support/Constants.js";
-import { extent, niceValueScale, scale } from "../support/Math.js";
+} from "../../support/Constants.js";
+import { extent, niceValueScale, scale } from "../../support/geometry/Math.js";
 import {
   formatCategoryLabel,
   horizontalCategoryPadding,
   legendLayout,
   verticalValuePadding,
-} from "../support/Presentation.js";
+} from "../../support/presentation/Presentation.js";
 
 const BAR_SLOT_RATIO = 0.64;
 const PENULTIMATE_INDEX = -2;

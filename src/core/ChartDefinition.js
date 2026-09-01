@@ -1,17 +1,24 @@
-import { renderAggregationChart } from "../renderers/AggregationRenderer.js";
 import {
   renderBarChart,
   renderLineChart,
   renderMixedChart,
   renderPointChart,
-} from "../renderers/CartesianRenderer.js";
-import { renderHeatmapChart } from "../renderers/HeatmapRenderer.js";
-import { renderPolarAreaChart } from "../renderers/PolarAreaRenderer.js";
-import { renderRadarChart } from "../renderers/RadarRenderer.js";
-import { renderTimesheetChart } from "../renderers/TimesheetRenderer.js";
+} from "../renderers/cartesian/CartesianRendering.js";
+import { renderAggregationChart } from "../renderers/composition/AggregationRendering.js";
+import { renderPolarAreaChart } from "../renderers/composition/PolarAreaRendering.js";
+import { renderRadarChart } from "../renderers/composition/RadarRendering.js";
+import { renderHeatmapChart } from "../renderers/temporal/HeatmapRendering.js";
+import { renderTimesheetChart } from "../renderers/temporal/TimesheetRendering.js";
 
-import { LineChartBuilder } from "./Builder.js";
-import { BarChartBuilder, MixedChartBuilder, ScatterChartBuilder } from "./CartesianBuilders.js";
+import { LineChartBuilder } from "./builders/Builder.js";
+import { BarChartBuilder, MixedChartBuilder, ScatterChartBuilder } from "./builders/CartesianBuilders.js";
+import {
+  PercentageChartBuilder,
+  PolarAreaChartBuilder,
+  RadarChartBuilder,
+  SectorChartBuilder,
+} from "./builders/CompositionBuilders.js";
+import { HeatmapChartBuilder, TimesheetChartBuilder } from "./builders/TemporalBuilders.js";
 import Chart from "./Chart.js";
 import {
   createCompositionModel,
@@ -19,13 +26,6 @@ import {
   createSeriesModel,
   createTimesheetModel,
 } from "./ChartData.js";
-import {
-  PercentageChartBuilder,
-  PolarAreaChartBuilder,
-  RadarChartBuilder,
-  SectorChartBuilder,
-} from "./CompositionBuilders.js";
-import { HeatmapChartBuilder, TimesheetChartBuilder } from "./TemporalBuilders.js";
 
 /**
  * Creates one immutable chart definition and binds its private implementation.

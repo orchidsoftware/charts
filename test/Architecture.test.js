@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { chartDefinition } from "../src/core/ChartDefinition.js";
 import * as publicApi from "../src/index.js";
-import { renderChart } from "../src/renderers/Render.js";
+import { renderChart } from "../src/renderers/ChartRendering.js";
 import {
   ChartOrientation,
   ChartType,
@@ -58,13 +58,9 @@ describe("architecture fitness functions", () => {
   });
 
   it("keeps only cohesive source areas instead of one-file directories", () => {
+    const paths = Object.keys(sources).map((path) => path.replace("../src/", ""));
     const areas = [
-      ...new Set(
-        Object.keys(sources)
-          .map((path) => path.replace("../src/", ""))
-          .filter((path) => path.includes("/"))
-          .map((path) => path.split("/", 1)[0]),
-      ),
+      ...new Set(paths.filter((path) => path.includes("/")).map((path) => path.split("/", 1)[0])),
     ].toSorted((left, right) => left.localeCompare(right));
 
     expect(areas).toEqual([
@@ -72,6 +68,27 @@ describe("architecture fitness functions", () => {
       "renderers",
       "support",
     ]);
+
+    const groups = [
+      ...new Set(
+        paths
+          .filter((path) => path.split("/").length > 2)
+          .map((path) => path.split("/").slice(0, 2).join("/")),
+      ),
+    ].toSorted((left, right) => left.localeCompare(right));
+
+    expect(groups).toEqual([
+      "core/builders",
+      "renderers/cartesian",
+      "renderers/composition",
+      "renderers/temporal",
+      "support/geometry",
+      "support/presentation",
+    ]);
+
+    for (const group of groups) {
+      expect(paths.filter((path) => path.startsWith(`${group}/`)).length, group).toBeGreaterThanOrEqual(3);
+    }
   });
 
   it("keeps closed vocabularies and shared value collections immutable", () => {
@@ -93,12 +110,12 @@ describe("architecture fitness functions", () => {
 
   it("keeps pure policies independent from core and renderers", () => {
     const policyModules = new Set([
-      "support/CartesianGeometry.js",
-      "support/Math.js",
+      "support/geometry/CartesianGeometry.js",
+      "support/geometry/Math.js",
       "support/Normalize.js",
-      "support/Presentation.js",
-      "support/Scale.js",
-      "support/SectorGeometry.js",
+      "support/presentation/Presentation.js",
+      "support/geometry/Scale.js",
+      "support/geometry/SectorGeometry.js",
     ]);
     const pureModules = Object.keys(sources)
       .map((path) => path.replace("../src/", ""))
@@ -108,6 +125,40 @@ describe("architecture fitness functions", () => {
       expect(imports(path), path).not.toContain(expect.stringContaining("/core/"));
       expect(imports(path), path).not.toContain(expect.stringContaining("/renderers/"));
       expect(source(path), path).not.toMatch(/\b(document|window|Element|SVGElement)\b/);
+    }
+
+    const supportModules = Object.keys(sources)
+      .map((path) => path.replace("../src/", ""))
+      .filter((path) => path.startsWith("support/"));
+
+    for (const path of supportModules) {
+      expect(imports(path), path).not.toContain(expect.stringContaining("/core/"));
+      expect(imports(path), path).not.toContain(expect.stringContaining("/renderers/"));
+    }
+  });
+
+  it("keeps nested areas pointing toward shared policies instead of sibling features", () => {
+    const paths = Object.keys(sources).map((path) => path.replace("../src/", ""));
+    const builderModules = paths.filter((path) => path.startsWith("core/builders/"));
+
+    for (const path of builderModules) {
+      expect(imports(path), path).not.toContain(expect.stringMatching(/^\.\.\//));
+    }
+
+    const families = [
+      "cartesian",
+      "composition",
+      "temporal",
+    ];
+    for (const family of families) {
+      const familyModules = paths.filter((path) => path.startsWith(`renderers/${family}/`));
+      const siblingFamilies = families.filter((name) => name !== family);
+
+      for (const path of familyModules) {
+        for (const sibling of siblingFamilies) {
+          expect(imports(path), path).not.toContain(expect.stringContaining(`../${sibling}/`));
+        }
+      }
     }
   });
 
@@ -133,27 +184,43 @@ describe("architecture fitness functions", () => {
     expect(source("core/InteractionController.js")).toMatch(
       /class InteractionController[\s\S]*#selectedIndex;/,
     );
-    expect(source("renderers/CartesianLayout.js")).toMatch(
+    expect(source("renderers/cartesian/CartesianLayout.js")).toMatch(
       /class CartesianLayout[\s\S]*#chart;[\s\S]*#pointX;/,
     );
-    expect(source("renderers/CartesianInspectorRenderer.js")).toMatch(
+    expect(source("renderers/cartesian/CartesianInspectorRenderer.js")).toMatch(
       /class CartesianInspectorRenderer[\s\S]*#layout;/,
     );
-    expect(source("renderers/Composition.js")).toMatch(/class Composition[\s\S]*#chart;/);
+    expect(source("renderers/composition/Composition.js")).toMatch(/class Composition[\s\S]*#chart;/);
     expect(source("renderers/SvgSurface.js")).toMatch(/class SvgSurface[\s\S]*#root;/);
-    expect(source("renderers/TimesheetLayout.js")).toMatch(/class TimesheetLayout[\s\S]*#x;/);
+    expect(source("renderers/temporal/TimesheetLayout.js")).toMatch(/class TimesheetLayout[\s\S]*#x;/);
 
-    const concreteRenderers = Object.keys(sources)
+    const rendererModules = Object.keys(sources)
       .map((path) => path.replace("../src/", ""))
-      .filter((path) =>
-        /^renderers\/(Aggregation|Cartesian|Heatmap|Legend|PolarArea|Radar|Timesheet)Renderer\.js$/.test(
-          path,
-        ),
-      );
-    expect(concreteRenderers).toHaveLength(7);
-    for (const path of concreteRenderers) {
-      expect(source(path), path).toMatch(/export default class \w+Renderer/);
+      .filter((path) => path.startsWith("renderers/"));
+    const classModules = rendererModules.filter((path) => !path.endsWith("Rendering.js"));
+    for (const path of classModules) {
+      const className = path.split("/").at(-1).replace(".js", "");
+      expect(source(path), path).toContain(`export default class ${className}`);
+      expect(source(path), path).not.toMatch(/export\s*\{|export\s+(?:const|function|let|var)\b/);
     }
+
+    const renderingModules = rendererModules.filter((path) => path.endsWith("Rendering.js"));
+    for (const path of renderingModules) {
+      expect(source(path), path).not.toContain("export default");
+      expect(source(path), path).toMatch(/export\s*\{/);
+    }
+
+    const rendererImports = imports("core/ChartDefinition.js").filter((path) =>
+      path.startsWith("../renderers/"),
+    );
+    expect(rendererImports).toEqual([
+      "../renderers/cartesian/CartesianRendering.js",
+      "../renderers/composition/AggregationRendering.js",
+      "../renderers/composition/PolarAreaRendering.js",
+      "../renderers/composition/RadarRendering.js",
+      "../renderers/temporal/HeatmapRendering.js",
+      "../renderers/temporal/TimesheetRendering.js",
+    ]);
     expect(source("core/Chart.js")).not.toMatch(
       /\.call\(this\)|this\.(options|datasets|tooltip|parent|svg)\b/,
     );
@@ -172,9 +239,9 @@ describe("architecture fitness functions", () => {
     expect(source("core/Options.js")).toContain("function normalizeChartOptions");
     expect(source("core/ChartData.js")).not.toMatch(/#radarSelection|#heatmapSelection|#seriesSelection/);
     expect(source("core/ChartData.js")).toContain("createSeriesSelection");
-    expect(source("renderers/RadarRenderer.js")).not.toContain("polar-area");
-    expect(source("renderers/PolarAreaRenderer.js")).not.toContain("charts2-radar");
-    expect(source("renderers/RadialRenderer.js")).toBeUndefined();
+    expect(source("renderers/composition/RadarRendering.js")).not.toContain("polar-area");
+    expect(source("renderers/composition/PolarAreaRendering.js")).not.toContain("charts2-radar");
+    expect(source("renderers/composition/RadialRenderer.js")).toBeUndefined();
   });
 
   it("avoids classes that only wrap functions or data", () => {
@@ -182,8 +249,12 @@ describe("architecture fitness functions", () => {
     expect(source("renderers/RendererContext.js")).toBeUndefined();
     expect(source("core/NextChartId.js")).toBeUndefined();
     expect(source("renderers/ChartRenderer.js")).toBeUndefined();
-    expect(source("renderers/Render.js")).toContain("Object.freeze(chartState)");
-    expect(source("renderers/Render.js")).toContain("new SvgSurface(element)");
+    expect(source("renderers/ChartRendering.js")).toContain("Object.freeze(chartState)");
+    expect(source("renderers/ChartRendering.js")).toContain("new SvgSurface(element)");
+    expect(source("renderers/Render.js")).toBeUndefined();
+    expect(source("renderers/cartesian/CartesianSeriesRenderer.js")).toBeUndefined();
+    expect(source("renderers/RenderChart.js")).toBeUndefined();
+    expect(source("renderers/RenderCartesianSeries.js")).toBeUndefined();
   });
 
   it("keeps application vocabulary free from Java-style getter and setter method names", () => {

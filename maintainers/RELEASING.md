@@ -1,27 +1,24 @@
 # Releasing Charts2
 
-The repository is prepared to build version 1.0.0, but no GitHub repository or
-npm package has been created yet. The current package name is a release target,
-not proof that the `@charts2` npm scope is available or owned.
+The GitHub repository and its CI workflows exist, and the source is prepared to
+build version 1.0.0. The repository still has no version tag. Treat the package
+name as a release target until ownership and publication of `@charts2/core` are
+verified directly with npm.
 
 ## First-publication decisions
 
 Before publishing, choose and verify these external identities:
 
-1. Create the GitHub repository and add release comparison links to
-   `CHANGELOG.md`.
-2. Confirm ownership of `@charts2/core`, or choose another npm name before any
+1. Confirm ownership of `@charts2/core`, or choose another npm name before any
    consumers depend on it.
-3. Add `repository`, `homepage`, and `bugs` metadata to `package.json` only when
-   their final URLs exist.
-4. Enable branch protection, private vulnerability reporting, Dependabot, and
+2. Enable branch protection, private vulnerability reporting, Dependabot, and
    GitHub Actions in the repository settings.
-5. Add npm trusted publishing or an automation token only after the package
+3. Add npm trusted publishing or an automation token only after the package
    identity is final. Do not store a token in `.npmrc` or the repository.
 
 ## Release gate
 
-Run the same commands used by CI from a clean checkout:
+Run the complete release gate from a clean checkout:
 
 ```bash
 npm ci
@@ -44,6 +41,11 @@ JavaScript, tests, demo code, credentials, coverage, or local artifacts.
 `npm run pack:check` uses `npm pack --ignore-scripts` so archive inspection does
 not recurse through `prepack → build → size → pack`.
 
+The CI and release-candidate workflows must install all three Playwright
+browsers before `npm run check`; the no-build contract launches Chromium,
+Firefox, and WebKit. A Chromium-only workflow setup is not equivalent to this
+release gate.
+
 ## Version workflow
 
 1. Move completed entries from `Unreleased` into a dated release in
@@ -51,7 +53,7 @@ not recurse through `prepack → build → size → pack`.
 2. Set the exact same version in `package.json` and `package-lock.json`.
 3. Run the release gate and review all visual diffs.
 4. Commit the release as one focused change.
-5. After GitHub exists, tag the commit as `vX.Y.Z` and create release notes from
+5. Tag the commit as `vX.Y.Z` and create release notes from
    the matching changelog entry.
 6. Publish the already-reviewed archive. For the first release, verify the
    package name and access level interactively rather than automating an

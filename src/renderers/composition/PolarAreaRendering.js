@@ -3,13 +3,12 @@ import {
   POLAR_LABEL_EDGE_INSET,
   POLAR_LABEL_GAP,
   POLAR_LABEL_MIN_WIDTH,
-} from "../support/Constants.js";
-import { labelElement, markMetadata, svg, titled } from "../support/Dom.js";
-import { formatLabel } from "../support/Formatting.js";
-import { paddedSector, polarPoint, roundedSectorPath } from "../support/Math.js";
-import { tooltipText } from "../support/Presentation.js";
-
-import LegendRenderer from "./LegendRenderer.js";
+} from "../../support/Constants.js";
+import { labelElement, markMetadata, svg, titled } from "../../support/Dom.js";
+import { paddedSector, polarPoint, roundedSectorPath } from "../../support/geometry/Math.js";
+import { formatLabel } from "../../support/presentation/Formatting.js";
+import { tooltipText } from "../../support/presentation/Presentation.js";
+import LegendRenderer from "../LegendRenderer.js";
 
 const MINIMUM_POLAR_RADIUS = 8;
 const POLAR_RADIUS_RATIO = 0.42;
@@ -87,7 +86,7 @@ function polarAreaLayout(chart) {
 /**
  * Renders equal-angle polar sectors whose radii encode normalized values.
  */
-export default class PolarAreaRenderer {
+class PolarAreaRenderer {
   #chart;
   #surface;
 
@@ -96,7 +95,7 @@ export default class PolarAreaRenderer {
    *
    * @param {object} rendering - Collaborators for one polar-area pass.
    * @param {object} rendering.chart - Frozen polar-area data and options.
-   * @param {import("./SvgSurface.js").default} rendering.surface - Owned SVG drawing surface.
+   * @param {import("../SvgSurface.js").default} rendering.surface - Owned SVG drawing surface.
    */
   constructor({ chart, surface }) {
     this.#chart = chart;

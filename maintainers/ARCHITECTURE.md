@@ -5,6 +5,12 @@ identity, state, lifecycle, or polymorphic behavior exists, and pure functions
 for stateless normalization, layout, formatting, and geometry. Directories are
 boundaries, not buckets.
 
+Directories name cohesive reasons to change, while filenames name module roles.
+`*Renderer.js` is an exported stateful renderer, `*Rendering.js` is a functional
+rendering boundary, and `*Layout.js` owns calculated layout behavior. Generic
+`helpers`, `utils`, `concerns`, `classes`, and `functions` buckets are
+intentionally absent.
+
 The package boundary is equally explicit: `src/index.js` and `src/index.d.ts`
 define the public contract, Vite produces a module-preserving ESM build, and the
 `files` allowlist in `package.json` decides what leaves the repository. Tests,
@@ -25,41 +31,55 @@ src
 ├─ index.d.ts                       # Type-specific fluent public contract
 ├─ styles.css                       # Public visual and interaction states
 ├─ core
-│  ├─ ChartDefinition.js            # Immutable make(parent) entry
-│  ├─ Builder.js                    # Detached fluent authoring and scene compilation
-│  ├─ BuilderScopes.js              # One callback-scope lifecycle and domain builders
 │  ├─ Chart.js                      # Mounted façade; private DOM lifecycle
-│  ├─ Options.js                    # Validation and renderer-ready defaults
+│  ├─ ChartDefinition.js            # Immutable make(parent) entry
 │  ├─ ChartData.js                  # Family-normalized model snapshots
 │  ├─ ChartSelection.js             # Public selection payload policy
 │  ├─ ChartTooltip.js               # Safe content and viewport placement
 │  ├─ InteractionController.js      # Pointer, focus, keyboard, selection state
+│  ├─ NormalizeAnnotations.js       # Cartesian annotation normalization
+│  ├─ Options.js                    # Validation and renderer-ready defaults
+│  └─ builders
+│     ├─ Builder.js                 # Detached fluent authoring and scene compilation
+│     ├─ BuilderArguments.js        # Callback argument policies
+│     ├─ BuilderScopes.js           # One callback-scope lifecycle and domain builders
+│     ├─ BuilderState.js            # Immutable builder-state transitions
+│     ├─ BuilderValidation.js       # Builder-boundary validation
+│     ├─ CartesianBuilders.js       # Cartesian authoring DSL
+│     ├─ CompositionBuilders.js     # Composition authoring DSL
+│     └─ TemporalBuilders.js        # Temporal authoring DSL
 ├─ renderers
-│  ├─ Render.js                     # Shared surface boundary
+│  ├─ ChartRendering.js             # Frozen snapshot and surface boundary
+│  ├─ LegendRenderer.js             # Shared series and item legends
 │  ├─ SvgSurface.js                 # Narrow owned SVG mutation boundary
-│  ├─ CartesianRenderer.js          # Cartesian rendering coordinator
-│  ├─ CartesianLayout.js            # Scales, bars, points, and hit bands
-│  ├─ CartesianAxesRenderer.js      # Grid, axes, labels, and markers
-│  ├─ CartesianSeriesRenderer.js    # Line, area, point, scatter, and bar layers
-│  ├─ CartesianInspectorRenderer.js # Category hit targets and tooltip rows
-│  ├─ AggregationRenderer.js        # Pie, donut, percentage DOM presentation
-│  ├─ Composition.js                # Part-to-whole policy and sector geometry
-│  ├─ RadarRenderer.js              # Comparable radial datasets
-│  ├─ PolarAreaRenderer.js          # Radius-encoded polar sectors
-│  ├─ HeatmapRenderer.js            # Calendar heatmap
-│  ├─ TimesheetRenderer.js          # Time-range DOM presentation
-│  ├─ TimesheetLayout.js            # Temporal scale, rows, bars, and ticks
-│  └─ LegendRenderer.js             # Shared series and item legends
+│  ├─ cartesian
+│  │  ├─ CartesianRendering.js      # Family strategies and private coordinator
+│  │  ├─ CartesianLayout.js         # Scales, bars, points, and hit bands
+│  │  ├─ CartesianAxesRenderer.js   # Grid, axes, labels, and markers
+│  │  ├─ CartesianSeriesRendering.js # Line, point, scatter, and bar functions
+│  │  └─ CartesianInspectorRenderer.js # Category interaction targets
+│  ├─ composition
+│  │  ├─ AggregationRendering.js    # Pie, donut, percentage presentation
+│  │  ├─ Composition.js             # Part-to-whole policy and sector geometry
+│  │  ├─ PolarAreaRendering.js     # Radius-encoded polar sectors
+│  │  └─ RadarRendering.js         # Comparable radial datasets
+│  └─ temporal
+│     ├─ HeatmapRendering.js        # Calendar heatmap
+│     ├─ TimesheetLayout.js         # Temporal scale, rows, bars, and ticks
+│     └─ TimesheetRendering.js      # Time-range presentation
 └─ support
-   ├─ Normalize.js                  # Pure validation and normalization rules
-   ├─ Math.js                       # Stable public facade for mathematical helpers
-   ├─ Scale.js                      # Numeric extents, interpolation, and nice ticks
-   ├─ CartesianGeometry.js          # Line and rounded-bar path geometry
-   ├─ SectorGeometry.js             # Polar points, sectors, rings, and padding
-   ├─ Presentation.js               # Label, legend, and layout calculations
    ├─ Constants.js                  # Frozen enums and immutable design values
    ├─ Dom.js                        # Small SVG, text, and host primitives
-   └─ Time.js                       # Time ticks and display formatting
+   ├─ Normalize.js                  # Pure validation and normalization rules
+   ├─ geometry
+   │  ├─ Math.js                    # Explicit geometry re-exports
+   │  ├─ Scale.js                   # Numeric scales and extents
+   │  ├─ CartesianGeometry.js       # Lines and rounded bars
+   │  └─ SectorGeometry.js          # Arcs and rounded sectors
+   └─ presentation
+      ├─ Formatting.js              # Formatter boundary policies
+      ├─ Presentation.js            # Labels, legends, and layout calculations
+      └─ Time.js                    # Time ticks and display formatting
 ```
 
 ## Class relationships
@@ -156,7 +176,8 @@ classDiagram
     +renderForeground() void
   }
 
-  class CartesianSeriesRenderer {
+  class CartesianSeriesRendering {
+    <<module>>
     -#chart object
     -#layout CartesianLayout
     -#surface SvgSurface
@@ -179,10 +200,10 @@ classDiagram
   ConcreteRenderer --> SvgSurface : appends owned SVG
   CartesianRenderer *-- CartesianLayout : creates
   CartesianRenderer *-- CartesianAxesRenderer : composes
-  CartesianRenderer *-- CartesianSeriesRenderer : composes
+  CartesianRenderer --> CartesianSeriesRendering : calls strategies
   CartesianRenderer *-- CartesianInspectorRenderer : composes
   CartesianAxesRenderer --> CartesianLayout : asks geometry
-  CartesianSeriesRenderer --> CartesianLayout : asks geometry
+  CartesianSeriesRendering --> CartesianLayout : asks geometry
   CartesianInspectorRenderer --> CartesianLayout : asks hit bands
 ```
 
@@ -192,19 +213,21 @@ there is no shared stateful algorithm worth forcing into inheritance. They share
 one frozen plain-object chart state plus a narrow `SvgSurface`; a getter-only
 DTO class added no behavior.
 
-`CartesianRenderer` remains the stateful Cartesian coordinator. Its definition
-supplies family-specific layout and series functions; no global registry or
-runtime lookup exists. Axes and inspector collaborators remain cohesive
-implementation classes rather than public extension points.
+`CartesianRenderer` is private to `CartesianRendering`, which exports the bound
+family strategies. Its definition supplies family-specific layout and series
+functions; no global registry or runtime lookup exists. Axes and inspector
+collaborators remain cohesive exported classes, while
+`CartesianSeriesRendering` owns stateless data-mark strategies. None are public
+package extension points.
 `CartesianLayout`, `TimesheetLayout`, and `Composition` are behavioral objects:
 they answer domain questions and keep calculated geometry out of DOM code.
 
 ## Dependency direction
 
 ```text
-index → ChartDefinition → Builder → detached scene → bound mount
-          ↘ implementation → Chart → ChartData → support
-                                  ↘ Render → frozen chart state + SvgSurface → bound renderer
+index → ChartDefinition → core/builders → detached scene → bound mount
+          ↘ implementation → Chart → ChartData → support
+                                  ↘ ChartRendering → frozen state + SvgSurface → family rendering
                                            ↘ InteractionController
 
 concrete renderers → support
@@ -213,7 +236,7 @@ concrete renderers → support
 - `ChartDefinition` is the composition root. It binds immutable type identity,
   one model factory, one renderer function, and `make(parent)`.
   Builders own authoring state and compile it without reading or mutating DOM.
-- Pure support calculations (`Normalize`, `Math`, and `Presentation`) never
+- Pure support calculations (`Normalize`, `geometry`, and `presentation`) never
   import `core`, a renderer, or browser globals.
 - `ChartData` owns normalization state and knows nothing about tooltips, SVG
   layout, or listeners. Public payload construction belongs to the

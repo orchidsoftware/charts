@@ -1,5 +1,5 @@
-import { ChartType, DEFAULT_SECTOR_CORNER_RADIUS } from "../support/Constants.js";
-import { paddedSector, roundedSectorPath } from "../support/Math.js";
+import { ChartType, DEFAULT_SECTOR_CORNER_RADIUS } from "../../support/Constants.js";
+import { paddedSector, roundedSectorPath } from "../../support/geometry/Math.js";
 
 const DEGREES_PER_HALF_CIRCLE = 180;
 const DONUT_STROKE_RADIUS_RATIO = 0.72;

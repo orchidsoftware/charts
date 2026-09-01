@@ -145,8 +145,11 @@
 .charts2-x-hit.is-active {
   fill: var(--charts-focus-ring);
   fill-opacity: 0.08;
+
+  /*
   stroke: var(--charts-focus-ring);
   stroke-opacity: 0.4;
+   */
 }
 
 .charts2-previewable-mark:hover,

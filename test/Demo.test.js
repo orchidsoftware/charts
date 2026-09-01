@@ -93,6 +93,8 @@ describe("real-world demo", () => {
     expect(document.querySelector("#bundle-size-value").textContent).toMatch(/^\d+\.\d kB$/);
     expect(document.querySelector("#bundle-size-gzip").textContent).toMatch(/^\(\d+\.\d kB gzip\)$/);
     expect(document.querySelector("#line svg").getAttribute("height")).toBe("320");
+    expect(document.querySelectorAll("#line .charts2-grid-vertical")).toHaveLength(0);
+    expect(document.querySelectorAll("#line .charts2-grid-horizontal").length).toBeGreaterThan(0);
     expect(document.querySelector("#percentage svg").getAttribute("height")).toBe("140");
     expect(document.querySelector("#radar svg").getAttribute("height")).toBe("320");
     expect(document.querySelector("#fractions svg").getAttribute("height")).toBe("280");
@@ -237,7 +239,7 @@ describe("real-world demo", () => {
       Math.max(...signedValueLabels.map((label) => label.getBoundingClientRect().right)),
     ).toBeLessThanOrEqual(signedMixed.getBoundingClientRect().right);
     const signedLegend = signedMixed.querySelector(".charts2-legend-group").getBoundingClientRect();
-    const signedPlotTop = signedMixed.querySelector(".charts2-grid-vertical").getBoundingClientRect().top;
+    const signedPlotTop = signedMixed.querySelector(".charts2-grid-horizontal").getBoundingClientRect().top;
     expect(signedLegend.bottom).toBeLessThanOrEqual(signedPlotTop - 6);
 
     const polarSvg = document.querySelector("#polar svg");

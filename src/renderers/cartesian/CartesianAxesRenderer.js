@@ -2,7 +2,6 @@ import {
   ChartType,
   HORIZONTAL_LABEL_EDGE_INSET,
   HORIZONTAL_LABEL_GAP,
-  MAJOR_GRID_DIVISIONS,
   VALUE_LABEL_GAP,
 } from "../../support/Constants.js";
 import { labelElement, measuredTextWidth, wrappedLabelElement } from "../../support/Dom.js";
@@ -476,24 +475,12 @@ export default class CartesianAxesRenderer {
   }
 
   /**
-   * Draws major grid lines for both plot dimensions.
+   * Draws guides only for the visible value-axis ticks.
    *
    * @returns {void} Major grid lines are appended to the chart SVG.
    */
   #renderGrid() {
     const { bottom, left, right, top } = this.#layout.frame;
-
-    for (let index = 0; index <= MAJOR_GRID_DIVISIONS; index += 1) {
-      const ratio = index / MAJOR_GRID_DIVISIONS;
-      const x = left + ratio * (right - left);
-      const y = top + ratio * (bottom - top);
-
-      const attributes = this.#layout.isHorizontal
-        ? { x1: left, y1: y, x2: right, y2: y, class: "charts2-grid charts2-grid-horizontal" }
-        : { x1: x, y1: top, x2: x, y2: bottom, class: "charts2-grid charts2-grid-vertical" };
-
-      this.#surface.append("line", { ...attributes, "aria-hidden": "true" });
-    }
 
     const orderedTicks = this.#layout.isHorizontal
       ? this.#layout.values.ticks
@@ -506,7 +493,11 @@ export default class CartesianAxesRenderer {
         ? { x1: position, y1: top, x2: position, y2: bottom, class: "charts2-grid charts2-grid-vertical" }
         : { x1: left, y1: position, x2: right, y2: position, class: "charts2-grid charts2-grid-horizontal" };
 
-      this.#surface.append("line", { ...attributes, "aria-hidden": "true" });
+      this.#surface.append("line", {
+        ...attributes,
+        "data-tick": value,
+        "aria-hidden": "true",
+      });
     }
   }
 

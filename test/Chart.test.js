@@ -94,7 +94,16 @@ describe("Chart", () => {
     expect(chart.element.querySelectorAll("linearGradient stop")).toHaveLength(2);
     expect(chart.element.querySelector(".charts2-area").getAttribute("fill")).toContain("charts2-gradient-");
     expect(chart.element.querySelectorAll(".charts2-grid-horizontal")).toHaveLength(5);
-    expect(chart.element.querySelectorAll(".charts2-grid-vertical")).toHaveLength(5);
+    expect(chart.element.querySelectorAll(".charts2-grid-vertical")).toHaveLength(0);
+    expect(
+      [
+        ...chart.element.querySelectorAll(".charts2-grid"),
+      ].map((line) => line.dataset.tick),
+    ).toEqual(
+      [
+        ...chart.element.querySelectorAll(".charts2-value-label"),
+      ].map((label) => label.textContent),
+    );
     expect(chart.element.querySelectorAll(".charts2-point title")).toHaveLength(3);
     expect(chart.element.querySelector(".charts2-point title").textContent).toBe("Mon: 1");
     expect(chart.element.querySelector(".charts2-point").getAttribute("fill")).toBe(
@@ -476,7 +485,7 @@ describe("Chart", () => {
     expect(axisX).toBeLessThan(45);
     expect(labels.every((label) => Number(label.getAttribute("x")) === axisX - 4)).toBe(true);
     expect(chart.element.classList.contains("charts2-horizontal-bar")).toBe(true);
-    expect(chart.element.querySelectorAll(".charts2-grid-horizontal")).toHaveLength(5);
+    expect(chart.element.querySelectorAll(".charts2-grid-horizontal")).toHaveLength(0);
     expect(chart.element.querySelectorAll(".charts2-grid-vertical")).toHaveLength(6);
     chart.element
       .querySelector(".charts2-x-hit")
@@ -550,7 +559,7 @@ describe("Chart", () => {
     expect(
       Math.max(...valueLabels.map((label) => label.getBBox().x + label.getBBox().width)),
     ).toBeLessThanOrEqual(220);
-    expect(Number(line.element.querySelector(".charts2-grid-vertical").getAttribute("x1"))).toBe(28);
+    expect(Number(line.element.querySelector(".charts2-grid-horizontal").getAttribute("x1"))).toBe(28);
     const lastHit = [
       ...line.element.querySelectorAll(".charts2-x-hit"),
     ].at(-1);
@@ -740,6 +749,7 @@ describe("Chart", () => {
     expect(bubbles[0].getAttribute("r")).toBe("9");
     expect(bubbles[1].getAttribute("r")).toBe("5");
     expect(bubbles[0].getAttribute("opacity")).toBe("0.65");
+    expect(chart.element.querySelectorAll(".charts2-grid-vertical")).toHaveLength(0);
   });
 
   it("reserves legend space and renders a stable structured radar tooltip", () => {

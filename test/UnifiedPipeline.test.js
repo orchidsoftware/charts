@@ -641,7 +641,7 @@ describe("unified public pipeline", () => {
     );
     const narrowLegend = narrowMixed.element.querySelector(".charts2-legend-group").getBBox();
     const narrowPlotTop = Number(
-      narrowMixed.element.querySelector(".charts2-grid-vertical").getAttribute("y1"),
+      narrowMixed.element.querySelector(".charts2-grid-horizontal").getAttribute("y1"),
     );
     expect(narrowLegendRows.size).toBeGreaterThan(1);
     expect(narrowLegend.y + narrowLegend.height).toBeLessThanOrEqual(narrowPlotTop - 6);

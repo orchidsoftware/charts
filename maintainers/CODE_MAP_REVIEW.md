@@ -66,28 +66,28 @@ flowchart LR
   definition -->|"Heatmap / Timesheet"| temporal
 
   subgraph authoring["core: fluent authoring"]
-    builder["Builder.js — 363 LOC / 9.8 KiB"]
-    cartesian["CartesianBuilders.js — 158 LOC / 5.4 KiB"]
-    composition["CompositionBuilders.js — 133 LOC / 3.6 KiB"]
-    temporal["TemporalBuilders.js — 204 LOC / 5.6 KiB"]
-    argumentsFile["BuilderArguments.js — 149 LOC / 4.8 KiB"]
-    scopes["BuilderScopes.js — 573 LOC / 13.9 KiB"]
-    state["BuilderState.js — 335 LOC / 10.1 KiB"]
-    validation["BuilderValidation.js — 306 LOC / 8.1 KiB"]
+    builder["Builder.js — 163 LOC / 3.9 KiB"]
+    cartesian["CartesianBuilders.js — 119 LOC / 2.7 KiB"]
+    composition["CompositionBuilders.js — 65 LOC / 1.6 KiB"]
+    temporal["TemporalBuilders.js — 112 LOC / 2.9 KiB"]
+    argumentsFile["BuilderArguments.js — 108 LOC / 2.7 KiB"]
+    scopes["BuilderScopes.js — 354 LOC / 6.7 KiB"]
+    state["BuilderState.js — 205 LOC / 3.9 KiB"]
+    validation["BuilderValidation.js — 282 LOC / 5.9 KiB"]
   end
 
   builder -->|"dataset / marker / region grammar"| argumentsFile
   builder -->|"axis / tooltip scope"| scopes
-  builder -->|"write / compile / consume"| state
+  builder -->|"option / compile / consume"| state
   cartesian -->|"inherits CartesianChartBuilder"| builder
   cartesian -->|"configuredDataset"| argumentsFile
   cartesian -->|"dataset scope classes"| scopes
-  cartesian -->|"append / write"| state
+  cartesian -->|"dataset / option"| state
   cartesian -->|"validateBoolean"| validation
   composition -->|"inherits SeriesChartBuilder"| builder
   composition -->|"configuredDataset"| argumentsFile
   composition -->|"DatasetBuilder"| scopes
-  composition -->|"append / write"| state
+  composition -->|"dataset / option"| state
   temporal -->|"inherits CommonChartBuilder"| builder
   temporal -->|"append / write"| state
   temporal -->|"tooltip scopes"| scopes
@@ -198,7 +198,7 @@ flowchart LR
 
 Входящая связность подтверждает роль фасадов: `Constants.js` имеет 21
 потребителя, `Dom.js` — 15, `Formatting.js` — 9, `Math.js` — 8,
-`BuilderState.js` — 8. Циклов между файлами нет; направление
+`BuilderState.js` — 6. Циклов между файлами нет; направление
 `core/renderers -> support` соблюдается.
 
 ## Карта классов
@@ -373,9 +373,10 @@ boundary tests. Пересмотреть:
 ### 3. Единый lifecycle временных fluent scopes выполнен
 
 Dataset, tooltip, axis и annotation callback builders находятся в
-`BuilderScopes.js` и используют один WeakMap и один `runScope`. Доменные writers
-сохраняют прежние validators и fallback-сообщения. `BuilderAnnotations.js` и
-`TemporalScopes.js` удалены; public API и момент ошибок не изменились.
+`BuilderScopes.js` и используют один `ScopeState`, один WeakMap и один
+`runScope`. Каждый публичный метод явно вызывает свой маленький validator, а
+общий writer отвечает только за lifecycle и defensive copy. Fallback-сообщения,
+public API и момент ошибок не изменились.
 
 ### 4. Сохранить fluent API, даже если он занимает много исходника
 

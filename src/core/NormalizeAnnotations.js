@@ -1,4 +1,12 @@
 import { validateObjectKeys } from "../support/Normalize.js";
+import {
+  isBoolean,
+  isChoice,
+  isNonEmptyText,
+  isNumberAtLeast,
+  isOpacity,
+  isRecord,
+} from "../support/Validation.js";
 
 const MARKER_KEYS = [
   "label",
@@ -91,7 +99,7 @@ function normalizedRegion(region) {
  * @returns {void} Valid labels pass unchanged.
  */
 function validateLabel(value, concept) {
-  if (typeof value !== "string" || value.trim() === "") {
+  if (!isNonEmptyText(value)) {
     throw new TypeError(`${concept} label must be a non-empty string`);
   }
 }
@@ -103,7 +111,7 @@ function validateLabel(value, concept) {
  * @returns {object} Complete marker record.
  */
 function normalizeMarker(marker) {
-  if (!marker || typeof marker !== "object" || Array.isArray(marker)) {
+  if (!isRecord(marker)) {
     throw new TypeError("marker must be an object or positional marker arguments");
   }
 
@@ -114,7 +122,7 @@ function normalizeMarker(marker) {
   }
 
   validateAnnotationPresentation(marker, "marker");
-  if (marker.width !== undefined && (!Number.isFinite(marker.width) || marker.width < 0)) {
+  if (marker.width !== undefined && !isNumberAtLeast(marker.width, 0)) {
     throw new TypeError("marker width must be a non-negative finite number");
   }
 
@@ -142,7 +150,7 @@ function isValidDash(dash) {
     return false;
   }
 
-  return dash.every((value) => Number.isFinite(value) && value >= 0) && dash.some((value) => value > 0);
+  return dash.every((value) => isNumberAtLeast(value, 0)) && dash.some((value) => value > 0);
 }
 
 /**
@@ -152,7 +160,7 @@ function isValidDash(dash) {
  * @returns {object} Complete region record.
  */
 function normalizeRegion(region) {
-  if (!region || typeof region !== "object" || Array.isArray(region)) {
+  if (!isRecord(region)) {
     throw new TypeError("region must be an object or positional region arguments");
   }
 
@@ -181,8 +189,7 @@ function normalizeRegion(region) {
 function validateAnnotationPresentation(annotation, concept) {
   const hasOpacity = annotation.opacity !== undefined;
 
-  const isValidOpacity =
-    Number.isFinite(annotation.opacity) && annotation.opacity >= 0 && annotation.opacity <= 1;
+  const isValidOpacity = isOpacity(annotation.opacity);
 
   if (hasOpacity && !isValidOpacity) {
     throw new TypeError(`${concept} opacity must be from 0 through 1`);
@@ -190,16 +197,16 @@ function validateAnnotationPresentation(annotation, concept) {
 
   if (
     annotation.labelPosition !== undefined &&
-    ![
+    !isChoice(annotation.labelPosition, [
       "start",
       "center",
       "end",
-    ].includes(annotation.labelPosition)
+    ])
   ) {
     throw new TypeError(`${concept} labelPosition must be start, center, or end`);
   }
 
-  if (annotation.includeInDomain !== undefined && typeof annotation.includeInDomain !== "boolean") {
+  if (annotation.includeInDomain !== undefined && !isBoolean(annotation.includeInDomain)) {
     throw new TypeError(`${concept} includeInDomain must be a boolean`);
   }
 

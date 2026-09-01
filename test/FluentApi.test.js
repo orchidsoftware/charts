@@ -541,6 +541,7 @@ describe("named fluent chart definitions", () => {
   it("rejects independently invalid fluent arguments immediately", () => {
     const line = LineChart.make("#missing");
 
+    expect(() => line.title.call({}, "Revenue")).toThrow("already been rendered");
     expect(() => line.width(0)).toThrow("width");
     expect(() => line.colors([])).toThrow("colors");
     expect(() =>

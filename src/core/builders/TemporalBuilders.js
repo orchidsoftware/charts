@@ -1,11 +1,7 @@
 import { CommonChartBuilder } from "./Builder.js";
 import { HeatmapTooltipBuilder, TimesheetTooltipBuilder, runScope } from "./BuilderScopes.js";
-import {
-  appendBuilderData,
-  writeBuilderData,
-  writeBuilderOption,
-  writeExplicitOption,
-} from "./BuilderState.js";
+import { builderState } from "./BuilderState.js";
+import { validateHeatmapPoints, validateTask } from "./BuilderValidation.js";
 
 const MAXIMUM_POSITIONAL_TASK_ARGUMENTS = 3;
 
@@ -21,9 +17,10 @@ class RangedChartBuilder extends CommonChartBuilder {
    * @returns {this} Current builder.
    */
   range(start, end) {
-    writeBuilderData(this, "start", start);
+    const state = builderState(this);
+    state.data("start", start);
 
-    return writeBuilderData(this, "end", end);
+    return state.data("end", end);
   }
 
   /**
@@ -33,7 +30,7 @@ class RangedChartBuilder extends CommonChartBuilder {
    * @returns {this} Current builder.
    */
   radius(value) {
-    return writeBuilderOption(this, "radius", value);
+    return builderState(this).option("radius", value);
   }
 }
 
@@ -48,7 +45,9 @@ class HeatmapChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   points(values) {
-    return writeBuilderData(this, "points", values);
+    validateHeatmapPoints(values);
+
+    return builderState(this).data("points", values);
   }
 
   /**
@@ -58,7 +57,7 @@ class HeatmapChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   countLabel(value) {
-    return writeBuilderOption(this, "countLabel", value);
+    return builderState(this).option("countLabel", value);
   }
 
   /**
@@ -69,21 +68,20 @@ class HeatmapChartBuilder extends RangedChartBuilder {
    */
   tooltip(value) {
     if (typeof value !== "function") {
-      writeExplicitOption(this, "tooltip", value);
-
-      return this;
+      return builderState(this).explicitOption("tooltip", value);
     }
 
     const tooltip = {};
     runScope(new HeatmapTooltipBuilder(tooltip), value);
-    writeExplicitOption(this, "tooltip", true);
+    const state = builderState(this);
+    state.explicitOption("tooltip", true);
 
     if (tooltip.formatDate !== undefined) {
-      writeBuilderOption(this, "tooltipFormatDate", tooltip.formatDate);
+      state.option("tooltipFormatDate", tooltip.formatDate);
     }
 
     if (tooltip.formatValue !== undefined) {
-      writeBuilderOption(this, "tooltipFormatValue", tooltip.formatValue);
+      state.option("tooltipFormatValue", tooltip.formatValue);
     }
 
     return this;
@@ -108,8 +106,9 @@ class TimesheetChartBuilder extends RangedChartBuilder {
     }
 
     const task = typeof input === "string" ? { label: input, start, end } : input;
+    validateTask(task);
 
-    return appendBuilderData(this, "tasks", task);
+    return builderState(this).append("tasks", task);
   }
 
   /**
@@ -119,7 +118,7 @@ class TimesheetChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   axes(visible) {
-    return writeBuilderOption(this, "axes", visible);
+    return builderState(this).option("axes", visible);
   }
 
   /**
@@ -129,7 +128,7 @@ class TimesheetChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   grid(visible) {
-    return writeBuilderOption(this, "grid", visible);
+    return builderState(this).option("grid", visible);
   }
 
   /**
@@ -139,7 +138,7 @@ class TimesheetChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   valueLabels(visible) {
-    return writeBuilderOption(this, "valueLabels", visible);
+    return builderState(this).option("valueLabels", visible);
   }
 
   /**
@@ -149,7 +148,7 @@ class TimesheetChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   formatDate(formatter) {
-    return writeBuilderOption(this, "formatDate", formatter);
+    return builderState(this).option("formatDate", formatter);
   }
 
   /**
@@ -159,7 +158,7 @@ class TimesheetChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   formatDuration(formatter) {
-    return writeBuilderOption(this, "formatDuration", formatter);
+    return builderState(this).option("formatDuration", formatter);
   }
 
   /**
@@ -169,7 +168,7 @@ class TimesheetChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   formatTick(formatter) {
-    return writeBuilderOption(this, "formatTick", formatter);
+    return builderState(this).option("formatTick", formatter);
   }
 
   /**
@@ -180,21 +179,20 @@ class TimesheetChartBuilder extends RangedChartBuilder {
    */
   tooltip(value) {
     if (typeof value !== "function") {
-      writeExplicitOption(this, "tooltip", value);
-
-      return this;
+      return builderState(this).explicitOption("tooltip", value);
     }
 
     const tooltip = {};
     runScope(new TimesheetTooltipBuilder(tooltip), value);
-    writeExplicitOption(this, "tooltip", true);
+    const state = builderState(this);
+    state.explicitOption("tooltip", true);
 
     if (tooltip.formatDate !== undefined) {
-      writeBuilderOption(this, "tooltipFormatDate", tooltip.formatDate);
+      state.option("tooltipFormatDate", tooltip.formatDate);
     }
 
     if (tooltip.formatDuration !== undefined) {
-      writeBuilderOption(this, "tooltipFormatDuration", tooltip.formatDuration);
+      state.option("tooltipFormatDuration", tooltip.formatDuration);
     }
 
     return this;

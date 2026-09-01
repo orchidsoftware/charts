@@ -9,6 +9,7 @@ import {
   Y_AXIS_POSITIONS,
 } from "../support/Constants.js";
 import { measureParentWidth } from "../support/Dom.js";
+import { isChoice, isNonEmptyText, isNumberAtLeast, isRecord, unknownKey } from "../support/Validation.js";
 
 const DEFAULT_CHART_HEIGHT = 320;
 const DEFAULT_STROKE_WIDTH = 2;
@@ -77,7 +78,7 @@ const ALLOWED_OPTIONS = Object.freeze([
  * @throws {TypeError} When a supplied radius is negative or non-finite.
  */
 function validateRadius(value, name) {
-  if (value !== undefined && (!Number.isFinite(value) || value < 0)) {
+  if (value !== undefined && !isNumberAtLeast(value, 0)) {
     throw new TypeError(`${name} must be a non-negative finite number`);
   }
 }
@@ -90,11 +91,11 @@ function validateRadius(value, name) {
  * @throws {TypeError} When orientation or axis placement is unsupported.
  */
 function validateChoices(options) {
-  if (options.orientation && !CHART_ORIENTATIONS.includes(options.orientation)) {
+  if (options.orientation && !isChoice(options.orientation, CHART_ORIENTATIONS)) {
     throw new TypeError("Bar orientation must be vertical or horizontal");
   }
 
-  if (options.yAxisPosition && !Y_AXIS_POSITIONS.includes(options.yAxisPosition)) {
+  if (options.yAxisPosition && !isChoice(options.yAxisPosition, Y_AXIS_POSITIONS)) {
     throw new TypeError("Y-axis position must be left or right");
   }
 }
@@ -139,11 +140,11 @@ function isInvalidPadAngle(value) {
     return false;
   }
 
-  if (!Number.isFinite(value)) {
+  if (!isNumberAtLeast(value, 0)) {
     return true;
   }
 
-  return value < 0 || value >= FULL_CIRCLE_DEGREES;
+  return value >= FULL_CIRCLE_DEGREES;
 }
 
 /**
@@ -154,11 +155,11 @@ function isInvalidPadAngle(value) {
  * @throws {TypeError} When a name, type, choice, angle, or radius is invalid.
  */
 function validateChartOptions(options) {
-  if (!options || typeof options !== "object") {
+  if (!isRecord(options)) {
     throw new TypeError("Chart options must be an object");
   }
 
-  const unknownOption = Object.keys(options).find((name) => !ALLOWED_OPTIONS.includes(name));
+  const unknownOption = unknownKey(options, ALLOWED_OPTIONS);
 
   if (unknownOption) {
     throw new TypeError(`Unsupported chart option: ${unknownOption}`);
@@ -270,7 +271,7 @@ function normalizeChartOptions(host, options) {
     [
       normalized.width,
       normalized.height,
-    ].some((value) => !(Number.isFinite(value) && value > 0))
+    ].some((value) => !isNumberAtLeast(value, Number.EPSILON))
   ) {
     throw new TypeError("Chart width and height must be positive finite numbers");
   }
@@ -314,7 +315,7 @@ function appendRecordColors(colors, records, properties) {
   }
 
   for (const record of records) {
-    if (!record || typeof record !== "object" || Array.isArray(record)) {
+    if (!isRecord(record)) {
       continue;
     }
 
@@ -336,7 +337,7 @@ function appendRecordColors(colors, records, properties) {
  * @returns {unknown[]} Explicit color values awaiting browser validation.
  */
 function collectColors(input) {
-  if (!input || typeof input !== "object" || Array.isArray(input)) {
+  if (!isRecord(input)) {
     return [];
   }
 
@@ -369,7 +370,7 @@ function collectColors(input) {
  * @returns {void} Supported colors pass unchanged.
  */
 function validateCssColor(host, value) {
-  if (typeof value !== "string" || value.trim() === "") {
+  if (!isNonEmptyText(value)) {
     throw new TypeError("Color must be a non-empty supported CSS color");
   }
 

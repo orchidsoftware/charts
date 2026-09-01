@@ -1,3 +1,13 @@
+import {
+  isBoolean,
+  isChoice,
+  isNonEmptyText,
+  isNumberAtLeast,
+  isOpacity,
+  isRecord,
+  unknownKey,
+} from "../../support/Validation.js";
+
 const STRING_OPTIONS = new Set([
   "title",
   "description",
@@ -55,7 +65,7 @@ const FULL_CIRCLE_DEGREES = 360;
  * @returns {void} Valid text passes unchanged.
  */
 function validateText(value, name) {
-  if (typeof value !== "string" || value.trim() === "") {
+  if (!isNonEmptyText(value)) {
     throw new TypeError(`${name} must be a non-empty string`);
   }
 }
@@ -69,7 +79,7 @@ function validateText(value, name) {
  * @returns {void} Valid numbers pass unchanged.
  */
 function validateNumber(value, name, minimum) {
-  if (!Number.isFinite(value) || value < minimum) {
+  if (!isNumberAtLeast(value, minimum)) {
     throw new TypeError(`${name} must be a finite number of at least ${minimum}`);
   }
 }
@@ -82,8 +92,21 @@ function validateNumber(value, name, minimum) {
  * @returns {void} Boolean values pass unchanged.
  */
 function validateBoolean(value, name) {
-  if (typeof value !== "boolean") {
+  if (!isBoolean(value)) {
     throw new TypeError(`${name} must be a boolean`);
+  }
+}
+
+/**
+ * Requires a synchronous formatter or callback function.
+ *
+ * @param {unknown} value - Candidate callback.
+ * @param {string} name - Public concept named in failures.
+ * @returns {void} Functions pass unchanged.
+ */
+function validateFunction(value, name) {
+  if (typeof value !== "function") {
+    throw new TypeError(`${name} must be a function`);
   }
 }
 
@@ -111,8 +134,8 @@ function validateBuilderOption(name, value) {
     validateBoolean(value, name);
   }
 
-  if (FUNCTION_OPTIONS.has(name) && typeof value !== "function") {
-    throw new TypeError(`${name} must be a function`);
+  if (FUNCTION_OPTIONS.has(name)) {
+    validateFunction(value, name);
   }
 
   validateSpecialOption(name, value);
@@ -130,7 +153,7 @@ function validateSpecialOption(name, value) {
     validateColors(value);
   }
 
-  if (name === "maxSlices" && (!Number.isSafeInteger(value) || value <= 0)) {
+  if (name === "maxSlices" && (!Number.isSafeInteger(value) || !isNumberAtLeast(value, 1))) {
     throw new TypeError("maxSlices must be a positive integer");
   }
 
@@ -184,17 +207,14 @@ function validateGradient(value) {
     return;
   }
 
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
+  if (!isRecord(value)) {
     throw new TypeError("gradient must be a boolean or GradientOptions object");
   }
 
-  const unknown = Object.keys(value).find(
-    (key) =>
-      ![
-        "fromOpacity",
-        "toOpacity",
-      ].includes(key),
-  );
+  const unknown = unknownKey(value, [
+    "fromOpacity",
+    "toOpacity",
+  ]);
 
   if (unknown) {
     throw new TypeError(`Unsupported gradient option: ${unknown}`);
@@ -202,7 +222,7 @@ function validateGradient(value) {
 
   for (const endpoint of Object.values(value)) {
     validateNumber(endpoint, "gradient opacity", 0);
-    if (endpoint > 1) {
+    if (!isOpacity(endpoint)) {
       throw new TypeError("gradient opacity must be from 0 through 1");
     }
   }
@@ -225,76 +245,49 @@ function validateLabels(labels) {
 }
 
 /**
- * Validates callback-scope values shared by datasets and annotations.
+ * Validates a non-empty heatmap point record.
  *
- * @param {string} name - Scoped property name.
- * @param {unknown} value - Candidate scoped value.
- * @returns {void} Valid local configuration passes unchanged.
+ * @param {unknown} value - Candidate date-to-count record.
+ * @returns {void} Finite point collections pass unchanged.
  */
-// eslint-disable-next-line max-lines-per-function -- Array layout lines do not add behavior.
-function validateScopedValue(name, value) {
-  if (
-    [
-      "color",
-      "labelColor",
-    ].includes(name)
-  ) {
-    validateText(value, name);
+function validateHeatmapPoints(value) {
+  if (!isRecord(value) || Object.keys(value).length === 0) {
+    throw new TypeError("points must contain at least one entry");
   }
 
-  if (
-    [
-      "opacity",
-      "fromOpacity",
-      "toOpacity",
-    ].includes(name)
-  ) {
-    validateOpacity(value, name);
+  if (Object.values(value).some((point) => !Number.isFinite(point))) {
+    throw new TypeError("heatmap point values must be finite numbers");
+  }
+}
+
+/**
+ * Validates the structured form of a timesheet task.
+ *
+ * @param {unknown} value - Candidate task record.
+ * @returns {void} Supported task fields pass unchanged.
+ */
+function validateTask(value) {
+  if (!isRecord(value)) {
+    throw new TypeError("task must be an object or positional task arguments");
   }
 
-  if (
-    [
-      "radius",
-      "strokeWidth",
-      "dotSize",
-      "width",
-    ].includes(name)
-  ) {
-    validateNumber(value, name, 0);
+  const allowed = new Set([
+    "label",
+    "start",
+    "end",
+    "group",
+    "color",
+  ]);
+
+  const unknown = unknownKey(value, allowed);
+
+  if (unknown) {
+    throw new TypeError(`Unsupported task key: ${unknown}`);
   }
 
-  if (
-    [
-      "smooth",
-      "dots",
-      "line",
-      "area",
-      "includeInDomain",
-    ].includes(name)
-  ) {
-    validateBoolean(value, name);
-  }
-
-  if (
-    [
-      "formatValue",
-      "formatLabel",
-      "tooltipValue",
-      "axisValue",
-    ].includes(name) &&
-    typeof value !== "function"
-  ) {
-    throw new TypeError(`${name} must be a function`);
-  }
-
-  if (name === "gradient") {
-    validateGradient(value);
-  }
-
-  validateScopedChoice(name, value);
-
-  if (name === "dash") {
-    validateDash(value);
+  validateText(value.label, "task label");
+  if (value.group !== undefined) {
+    validateText(value.group, "task group");
   }
 }
 
@@ -307,47 +300,59 @@ function validateScopedValue(name, value) {
  */
 function validateOpacity(value, name) {
   validateNumber(value, name, 0);
-  if (value > 1) {
+  if (!isOpacity(value)) {
     throw new TypeError(`${name} must be from 0 through 1`);
   }
 }
 
 /**
- * Validates annotation properties drawn from closed vocabularies.
+ * Validates a value-axis position.
  *
- * @param {string} name - Scoped property name.
- * @param {unknown} value - Candidate choice.
- * @returns {void} Supported choices pass unchanged.
+ * @param {unknown} value - Candidate logical side.
+ * @returns {void} Supported positions pass unchanged.
  */
-function validateScopedChoice(name, value) {
+function validatePosition(value) {
   if (
-    name === "position" &&
-    ![
+    !isChoice(value, [
       "left",
       "right",
-    ].includes(value)
+    ])
   ) {
     throw new TypeError("position must be left or right");
   }
+}
 
+/**
+ * Validates a named annotation line pattern.
+ *
+ * @param {unknown} value - Candidate line style.
+ * @returns {void} Supported styles pass unchanged.
+ */
+function validateLineStyle(value) {
   if (
-    name === "lineStyle" &&
-    ![
+    !isChoice(value, [
       "solid",
       "dashed",
       "dotted",
-    ].includes(value)
+    ])
   ) {
     throw new TypeError("lineStyle must be solid, dashed, or dotted");
   }
+}
 
+/**
+ * Validates an annotation label position.
+ *
+ * @param {unknown} value - Candidate logical position.
+ * @returns {void} Supported positions pass unchanged.
+ */
+function validateLabelPosition(value) {
   if (
-    name === "labelPosition" &&
-    ![
+    !isChoice(value, [
       "start",
       "center",
       "end",
-    ].includes(value)
+    ])
   ) {
     throw new TypeError("labelPosition must be start, center, or end");
   }
@@ -372,8 +377,16 @@ function validateDash(value) {
 export {
   validateBoolean,
   validateBuilderOption,
+  validateDash,
+  validateFunction,
+  validateGradient,
+  validateHeatmapPoints,
+  validateLabelPosition,
   validateLabels,
+  validateLineStyle,
   validateNumber,
-  validateScopedValue,
+  validateOpacity,
+  validatePosition,
+  validateTask,
   validateText,
 };

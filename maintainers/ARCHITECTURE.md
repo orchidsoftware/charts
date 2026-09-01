@@ -42,9 +42,9 @@ src
 │  └─ builders
 │     ├─ Builder.js                 # Detached fluent authoring and scene compilation
 │     ├─ BuilderArguments.js        # Callback argument policies
-│     ├─ BuilderScopes.js           # One callback-scope lifecycle and domain builders
-│     ├─ BuilderState.js            # Immutable builder-state transitions
-│     ├─ BuilderValidation.js       # Builder-boundary validation
+│     ├─ BuilderScopes.js           # Explicit callback APIs over one scope lifecycle
+│     ├─ BuilderState.js            # Mutable authoring state and single-use lifecycle
+│     ├─ BuilderValidation.js       # Immediate fluent-boundary validation
 │     ├─ CartesianBuilders.js       # Cartesian authoring DSL
 │     ├─ CompositionBuilders.js     # Composition authoring DSL
 │     └─ TemporalBuilders.js        # Temporal authoring DSL
@@ -71,6 +71,7 @@ src
    ├─ Constants.js                  # Frozen enums and immutable design values
    ├─ Dom.js                        # Small SVG, text, and host primitives
    ├─ Normalize.js                  # Pure validation and normalization rules
+   ├─ Validation.js                 # Shared validation predicates
    ├─ geometry
    │  ├─ Math.js                    # Explicit geometry re-exports
    │  ├─ Scale.js                   # Numeric scales and extents

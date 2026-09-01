@@ -1,15 +1,6 @@
 import { lineDataset, markerInput, regionInput } from "./BuilderArguments.js";
 import { AxisBuilder, SeriesTooltipBuilder, runScope } from "./BuilderScopes.js";
-import {
-  appendBuilderAnnotation,
-  appendBuilderDataset,
-  compileBuilder,
-  consumeBuilder,
-  initializeBuilder,
-  writeBuilderLabels,
-  writeBuilderOption,
-  writeExplicitOption,
-} from "./BuilderState.js";
+import { builderState, initializeBuilder } from "./BuilderState.js";
 
 /**
  * Owns common chart authoring state without resolving DOM until `render()`.
@@ -33,7 +24,7 @@ class CommonChartBuilder {
    * @returns {this} Current builder.
    */
   title(value) {
-    return writeBuilderOption(this, "title", value);
+    return builderState(this).option("title", value);
   }
 
   /**
@@ -43,7 +34,7 @@ class CommonChartBuilder {
    * @returns {this} Current builder.
    */
   description(value) {
-    return writeBuilderOption(this, "description", value);
+    return builderState(this).option("description", value);
   }
 
   /**
@@ -53,7 +44,7 @@ class CommonChartBuilder {
    * @returns {this} Current builder.
    */
   ariaLabel(value) {
-    return writeBuilderOption(this, "ariaLabel", value);
+    return builderState(this).option("ariaLabel", value);
   }
 
   /**
@@ -63,7 +54,7 @@ class CommonChartBuilder {
    * @returns {this} Current builder.
    */
   width(value) {
-    return writeBuilderOption(this, "width", value);
+    return builderState(this).option("width", value);
   }
 
   /**
@@ -73,7 +64,7 @@ class CommonChartBuilder {
    * @returns {this} Current builder.
    */
   height(value) {
-    return writeBuilderOption(this, "height", value);
+    return builderState(this).option("height", value);
   }
 
   /**
@@ -83,7 +74,7 @@ class CommonChartBuilder {
    * @returns {this} Current builder.
    */
   colors(values) {
-    return writeBuilderOption(this, "colors", values);
+    return builderState(this).option("colors", values);
   }
 
   /**
@@ -94,21 +85,20 @@ class CommonChartBuilder {
    */
   tooltip(value) {
     if (typeof value !== "function") {
-      writeExplicitOption(this, "tooltip", value);
-
-      return this;
+      return builderState(this).explicitOption("tooltip", value);
     }
 
     const tooltip = {};
     runScope(new SeriesTooltipBuilder(tooltip), value);
-    writeExplicitOption(this, "tooltip", true);
+    const state = builderState(this);
+    state.explicitOption("tooltip", true);
 
     if (tooltip.formatLabel !== undefined) {
-      writeBuilderOption(this, "tooltipFormatLabel", tooltip.formatLabel);
+      state.option("tooltipFormatLabel", tooltip.formatLabel);
     }
 
     if (tooltip.tooltipValue !== undefined) {
-      writeBuilderOption(this, "tooltipFormatValue", tooltip.tooltipValue);
+      state.option("tooltipFormatValue", tooltip.tooltipValue);
     }
 
     return this;
@@ -121,7 +111,7 @@ class CommonChartBuilder {
    * @returns {this} Current builder.
    */
   onSelect(callback) {
-    return writeBuilderOption(this, "onSelect", callback);
+    return builderState(this).option("onSelect", callback);
   }
 
   /**
@@ -130,9 +120,10 @@ class CommonChartBuilder {
    * @returns {import("./Chart.js").default} Mounted chart lifecycle façade.
    */
   render() {
-    const { parent, options, mount } = compileBuilder(this);
+    const state = builderState(this);
+    const { parent, options, mount } = state.compile();
     const chart = mount(parent, options);
-    consumeBuilder(this);
+    state.consume();
 
     return chart;
   }
@@ -149,7 +140,7 @@ class SeriesChartBuilder extends CommonChartBuilder {
    * @returns {this} Current builder.
    */
   legend(visible) {
-    return writeExplicitOption(this, "legend", visible);
+    return builderState(this).explicitOption("legend", visible);
   }
 
   /**
@@ -159,7 +150,7 @@ class SeriesChartBuilder extends CommonChartBuilder {
    * @returns {this} Current builder.
    */
   labels(values) {
-    return writeBuilderLabels(this, values);
+    return builderState(this).labels(values);
   }
 
   /**
@@ -169,7 +160,7 @@ class SeriesChartBuilder extends CommonChartBuilder {
    * @returns {this} Current builder.
    */
   formatValue(formatter) {
-    return writeBuilderOption(this, "formatValue", formatter);
+    return builderState(this).option("formatValue", formatter);
   }
 
   /**
@@ -179,7 +170,7 @@ class SeriesChartBuilder extends CommonChartBuilder {
    * @returns {this} Current builder.
    */
   formatLabel(formatter) {
-    return writeBuilderOption(this, "formatLabel", formatter);
+    return builderState(this).option("formatLabel", formatter);
   }
 }
 
@@ -194,7 +185,7 @@ class CartesianChartBuilder extends SeriesChartBuilder {
    * @returns {this} Current builder.
    */
   axes(visible) {
-    return writeExplicitOption(this, "axes", visible);
+    return builderState(this).explicitOption("axes", visible);
   }
 
   /**
@@ -204,7 +195,7 @@ class CartesianChartBuilder extends SeriesChartBuilder {
    * @returns {this} Current builder.
    */
   grid(visible) {
-    return writeExplicitOption(this, "grid", visible);
+    return builderState(this).explicitOption("grid", visible);
   }
 
   /**
@@ -214,7 +205,7 @@ class CartesianChartBuilder extends SeriesChartBuilder {
    * @returns {this} Current builder.
    */
   valueLabels(visible) {
-    return writeExplicitOption(this, "valueLabels", visible);
+    return builderState(this).explicitOption("valueLabels", visible);
   }
 
   /**
@@ -224,7 +215,7 @@ class CartesianChartBuilder extends SeriesChartBuilder {
    * @returns {this} Current builder.
    */
   frameless(isEnabled = true) {
-    return writeBuilderOption(this, "frameless", isEnabled);
+    return builderState(this).option("frameless", isEnabled);
   }
 
   /**
@@ -236,13 +227,14 @@ class CartesianChartBuilder extends SeriesChartBuilder {
   yAxis(configure) {
     const axis = {};
     runScope(new AxisBuilder(axis), configure);
+    const state = builderState(this);
 
     if (axis.position !== undefined) {
-      writeBuilderOption(this, "yAxisPosition", axis.position);
+      state.option("yAxisPosition", axis.position);
     }
 
     if (axis.axisValue !== undefined) {
-      writeBuilderOption(this, "axisFormatValue", axis.axisValue);
+      state.option("axisFormatValue", axis.axisValue);
     }
 
     return this;
@@ -257,7 +249,7 @@ class CartesianChartBuilder extends SeriesChartBuilder {
    * @returns {this} Current builder.
    */
   marker(first, second, third) {
-    return appendBuilderAnnotation(this, "markers", markerInput(first, second, third));
+    return builderState(this).append("markers", markerInput(first, second, third));
   }
 
   /**
@@ -269,7 +261,7 @@ class CartesianChartBuilder extends SeriesChartBuilder {
    * @returns {this} Current builder.
    */
   region(first, second, third) {
-    return appendBuilderAnnotation(this, "regions", regionInput(first, second, third));
+    return builderState(this).append("regions", regionInput(first, second, third));
   }
 }
 
@@ -286,7 +278,7 @@ class LineChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   dataset(first, second, third) {
-    return appendBuilderDataset(this, lineDataset(first, second, third));
+    return builderState(this).dataset(lineDataset(first, second, third));
   }
 
   /**
@@ -296,7 +288,7 @@ class LineChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   smooth(isEnabled = true) {
-    return writeBuilderOption(this, "smooth", isEnabled);
+    return builderState(this).option("smooth", isEnabled);
   }
 
   /**
@@ -306,7 +298,7 @@ class LineChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   dots(visible) {
-    return writeExplicitOption(this, "dots", visible);
+    return builderState(this).explicitOption("dots", visible);
   }
 
   /**
@@ -316,7 +308,7 @@ class LineChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   dotSize(value) {
-    return writeBuilderOption(this, "dotSize", value);
+    return builderState(this).option("dotSize", value);
   }
 
   /**
@@ -326,7 +318,7 @@ class LineChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   line(visible) {
-    return writeBuilderOption(this, "line", visible);
+    return builderState(this).option("line", visible);
   }
 
   /**
@@ -336,7 +328,7 @@ class LineChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   area(isEnabled = true) {
-    return writeBuilderOption(this, "area", isEnabled);
+    return builderState(this).option("area", isEnabled);
   }
 
   /**
@@ -346,7 +338,7 @@ class LineChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   gradient(isEnabled = true) {
-    return writeBuilderOption(this, "gradient", isEnabled);
+    return builderState(this).option("gradient", isEnabled);
   }
 
   /**
@@ -356,7 +348,7 @@ class LineChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   strokeWidth(value) {
-    return writeBuilderOption(this, "strokeWidth", value);
+    return builderState(this).option("strokeWidth", value);
   }
 }
 

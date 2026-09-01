@@ -1,4 +1,4 @@
-# React and Vue
+# React, Vue, and Hotwire
 
 ## Introduction
 
@@ -98,6 +98,93 @@ onBeforeUnmount(() => chart?.destroy());
   <div ref="host" />
 </template>
 ```
+
+## Hotwire and Stimulus
+
+Let a Stimulus controller own the chart element. Values keep server-rendered
+data in the HTML, value callbacks update a controller preserved by a Turbo
+morph, and `disconnect()` handles frame or page replacement.
+
+Import the Charts2 stylesheet once from your JavaScript entry point:
+
+```js
+// app/javascript/application.js
+import "@charts2/core/style.css";
+```
+
+Put the chart data in Stimulus values. The `turbo:before-cache` action removes
+the generated SVG before Turbo takes its snapshot, so restoring the page never
+duplicates a cached chart:
+
+```html
+<div
+  class="analytics-chart"
+  data-controller="revenue-chart"
+  data-action="turbo:before-cache@document->revenue-chart#destroy"
+  data-revenue-chart-labels-value='["Jan", "Feb", "Mar", "Apr"]'
+  data-revenue-chart-values-value="[42, 48, 57, 63]"
+></div>
+```
+
+```js
+// app/javascript/controllers/revenue_chart_controller.js
+import { Controller } from "@hotwired/stimulus";
+import { LineChart } from "@charts2/core";
+
+export default class extends Controller {
+  static values = {
+    labels: Array,
+    values: Array,
+  };
+
+  chart = null;
+  updateQueued = false;
+
+  connect() {
+    this.chart = LineChart.make(this.element)
+      .labels(this.labelsValue)
+      .dataset("Revenue", this.valuesValue)
+      .gradient()
+      .render();
+  }
+
+  disconnect() {
+    this.destroy();
+  }
+
+  labelsValueChanged() {
+    this.queueUpdate();
+  }
+
+  valuesValueChanged() {
+    this.queueUpdate();
+  }
+
+  destroy() {
+    this.chart?.destroy();
+    this.chart = null;
+  }
+
+  queueUpdate() {
+    if (!this.chart || this.updateQueued) return;
+
+    this.updateQueued = true;
+
+    queueMicrotask(() => {
+      this.updateQueued = false;
+      this.chart?.update({
+        labels: this.labelsValue,
+        datasets: [{ name: "Revenue", values: this.valuesValue }],
+      });
+    });
+  }
+}
+```
+
+The microtask combines adjacent label and value mutations into one update.
+When Turbo replaces the controller element, Stimulus destroys the old chart
+and `connect()` renders the new one; no Turbo-specific global listener is
+needed.
 
 ## Resizing
 

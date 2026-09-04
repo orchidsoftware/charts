@@ -53,6 +53,7 @@ afterAll(async () => {
 
 describe("QA chart laboratory", () => {
   it("groups every fixture once and renders it through the public demo entry", () => {
+    const brand = document.querySelector(".brand");
     const groups = [
       ...document.querySelectorAll("[data-fixture-group]"),
     ];
@@ -61,6 +62,8 @@ describe("QA chart laboratory", () => {
     ];
     const fixtureNames = fixtures.map((fixture) => fixture.dataset.fixture);
 
+    expect(brand).toHaveAttribute("aria-label", "Charts2 by Orchid, product demo");
+    expect(brand.querySelectorAll(".brand-mark path")).toHaveLength(2);
     expect(
       Object.fromEntries(
         groups.map((group) => [
@@ -72,15 +75,16 @@ describe("QA chart laboratory", () => {
     expect(fixtures).toHaveLength(44);
     expect(new Set(fixtureNames).size).toBe(fixtures.length);
     expect(document.querySelectorAll(".lab-index a")).toHaveLength(groups.length);
-    expect(document.querySelectorAll(".example-code")).toHaveLength(fixtures.length);
+    expect(document.querySelectorAll(".example-code-copy")).toHaveLength(fixtures.length);
+    expect(document.querySelector("#example-code-toggle")).toBeNull();
+    expect(document.querySelector("details")).toBeNull();
 
     for (const fixture of fixtures) {
       const host = fixture.querySelector(`#${CSS.escape(fixture.dataset.fixture)}`);
+      const button = fixture.querySelector(":scope > header .example-code-copy");
       expect(host, fixture.dataset.fixture).not.toBeNull();
       expect(host.querySelector("svg"), fixture.dataset.fixture).not.toBeNull();
-      expect(fixture.querySelector(".example-code code").textContent).toContain(
-        `.make("#${fixture.dataset.fixture}")`,
-      );
+      expect(button).toHaveAttribute("aria-label", `Copy code for #${fixture.dataset.fixture}`);
     }
   });
 
@@ -152,18 +156,13 @@ describe("QA chart laboratory", () => {
     }
   });
 
-  it("reveals copyable examples only when the reader asks for them", () => {
-    const toggle = document.querySelector("#example-code-toggle");
-    const example = document.querySelector(".example-code");
-
-    expect(getComputedStyle(example).display).toBe("none");
-    toggle.click();
-    expect(toggle).toHaveAttribute("aria-pressed", "true");
-    expect(toggle).toHaveTextContent("Hide code");
-    expect(getComputedStyle(example).display).toBe("block");
-    toggle.click();
-    expect(toggle).toHaveAttribute("aria-pressed", "false");
-    expect(getComputedStyle(example).display).toBe("none");
+  it("keeps copy actions visible in every card header", () => {
+    for (const fixture of document.querySelectorAll("[data-fixture]")) {
+      const button = fixture.querySelector(":scope > header .example-code-copy");
+      expect(getComputedStyle(button).display).not.toBe("none");
+      expect(button).toHaveAttribute("title", "Copy code");
+      expect(button.querySelector("svg")).not.toBeNull();
+    }
   });
 
   it("keeps every boundary SVG flush with its zero-padding background host", () => {

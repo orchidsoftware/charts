@@ -49,7 +49,7 @@ beforeEach(() => {
   ]
     .map(
       (id) =>
-        `<article style="box-sizing:border-box;width:362px;padding:24px;border:1px solid transparent"><div id="${id}"></div></article>`,
+        `<article style="box-sizing:border-box;width:362px;padding:24px;border:1px solid transparent"><header><div>${id}</div></header><div id="${id}"></div></article>`,
     )
     .join("");
   document.body.innerHTML = `<span id="bundle-size-value"></span><span id="bundle-size-gzip"></span><button id="shuffle">Update showcase data</button><main style="width:362px">${cards}</main>`;
@@ -80,6 +80,7 @@ describe("real-world demo", () => {
 
   it("introduces every supported chart family before the gallery", () => {
     const demo = new DOMParser().parseFromString(demoMarkup, "text/html");
+    const brand = demo.querySelector(".brand");
     const overview = demo.querySelector("#supported-charts");
     const families = [
       ...overview.querySelectorAll(":scope > .support-families > .support-family"),
@@ -88,6 +89,9 @@ describe("real-world demo", () => {
       ...overview.querySelectorAll(".support-types a"),
     ];
 
+    expect(brand).toHaveAttribute("aria-label", "Charts2 by Orchid, home");
+    expect(brand.querySelector(".brand-mark").tagName).toBe("svg");
+    expect(brand.querySelectorAll(".brand-mark path")).toHaveLength(2);
     expect(demo.querySelector("nav a").getAttribute("href")).toBe("#supported-charts");
     expect(families.map((family) => family.querySelector("h3").textContent)).toEqual([
       "Cartesian",
@@ -223,15 +227,14 @@ describe("real-world demo", () => {
     });
     expect(cards).toHaveLength(28);
     expect(overflow).toEqual([]);
-    expect(document.querySelectorAll(".example-code")).toHaveLength(cards.length);
+    expect(document.querySelectorAll(".example-code-copy")).toHaveLength(cards.length);
     for (const card of cards) {
       const host = card.querySelector("div[id]");
-      const code = card.querySelector(".example-code code").textContent;
+      const button = card.querySelector(":scope > header .example-code-copy");
 
-      expect(code).toContain('from "@charts2/core"');
-      expect(code).toContain(`.make("#${host.id}")`);
-      expect(code).toContain(".render();");
-      expect(code).not.toContain("mountChart");
+      expect(button).toHaveAttribute("aria-label", `Copy code for #${host.id}`);
+      expect(button).toHaveAttribute("title", "Copy code");
+      expect(button.querySelector("svg")).not.toBeNull();
     }
     const timesheetSvg = document.querySelector("#timesheet svg");
     const timesheetBounds = timesheetSvg.getBoundingClientRect();

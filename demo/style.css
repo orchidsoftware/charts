@@ -92,21 +92,6 @@ article header strong,
   text-decoration: none;
 }
 
-.header-code-toggle {
-  padding: 0;
-  font: inherit;
-  font-size: 14px;
-  color: var(--charts2-demo-muted);
-  cursor: pointer;
-  background: none;
-  border: 0;
-}
-
-.header-code-toggle:hover,
-.header-code-toggle[aria-pressed="true"] {
-  color: var(--charts2-demo-ink);
-}
-
 .site-header a:hover {
   color: var(--charts2-demo-blue);
 }
@@ -122,13 +107,10 @@ article header strong,
 }
 
 .brand-mark {
-  width: 34px;
-  height: 26px;
-  background: linear-gradient(145deg, #8ccc85 0 44%, #56a875 45% 100%);
-  border: 2px solid rgb(45 55 64 / 14%);
-  border-radius: 55% 55% 38% 38% / 70% 70% 35% 35%;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 55%);
-  transform: rotate(-4deg);
+  width: 32px;
+  height: 32px;
+  color: var(--charts2-demo-ink);
+  fill: currentcolor;
 }
 
 .site-header .header-cta {
@@ -1244,8 +1226,7 @@ pre code {
 
   .brand-mark {
     width: 28px;
-    height: 21px;
-    border-radius: 55% 55% 38% 38% / 70% 70% 35% 35%;
+    height: 28px;
   }
 
   .hero {
@@ -1501,65 +1482,60 @@ pre code {
   }
 }
 
-/* Each chart carries the public code needed to reproduce it. */
-.example-code {
-  display: none;
-  margin-top: 18px;
-  text-align: left;
-  border-top: 1px solid var(--charts2-demo-border);
-}
-
-.example-code-visible .example-code {
-  display: block;
-}
-
-.example-code summary {
-  padding-top: 14px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--charts2-demo-muted);
-  cursor: pointer;
-  user-select: none;
-}
-
-.example-code[open] summary {
-  margin-bottom: 10px;
-}
-
-.example-code-toolbar {
-  position: relative;
-  z-index: 1;
+/* Every chart exposes its public rendering code directly from the card header. */
+.example-code-actions {
   display: flex;
-  justify-content: flex-end;
-  padding: 6px;
-  margin-bottom: -34px;
+  flex: 0 0 auto;
+  gap: 6px;
+  align-items: center;
+  margin-left: 12px;
 }
 
 .example-code-copy {
-  padding: 5px 9px;
-  font: inherit;
-  font-size: 12px;
-  color: #fff;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  color: var(--charts2-demo-muted);
   cursor: pointer;
-  background: rgb(255 255 255 / 8%);
-  border: 1px solid rgb(255 255 255 / 16%);
-  border-radius: 7px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  opacity: 0.55;
+  transition:
+    color 140ms ease,
+    background 140ms ease,
+    border-color 140ms ease,
+    opacity 140ms ease;
 }
 
-.example-code pre {
-  max-height: 360px;
-  padding: 16px;
-  margin: 0;
-  overflow: auto;
-  font:
-    12px/1.55 ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    monospace;
-  color: #f5f5f7;
-  white-space: pre;
-  background: #15171c;
-  border-radius: 10px;
+.example-code-copy svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.example-code-copy:hover {
+  color: var(--charts2-demo-ink);
+  background: color-mix(in srgb, var(--charts2-demo-surface) 72%, transparent);
+  border-color: color-mix(in srgb, var(--charts2-demo-border) 65%, transparent);
+  opacity: 1;
+}
+
+.example-code-copy.is-copied {
+  color: var(--charts2-demo-blue);
+  opacity: 1;
+}
+
+.example-code-copy:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--charts2-demo-blue) 28%, transparent);
+  outline-offset: 2px;
+  opacity: 1;
 }

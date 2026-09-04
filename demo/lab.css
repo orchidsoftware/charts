@@ -161,7 +161,7 @@
   letter-spacing: -0.2px;
 }
 
-.lab-fixture header code {
+.lab-fixture .example-code-actions > code {
   flex: 0 0 auto;
   padding: 4px 6px;
   font-size: 9px;
@@ -276,7 +276,6 @@
   }
 
   .lab-fixture header {
-    flex-direction: column;
     gap: 10px;
   }
 }

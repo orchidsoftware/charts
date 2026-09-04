@@ -81,23 +81,55 @@ export function exampleCode(selector, renderExample) {
   ].join("\n");
 }
 
-function copyButton(code) {
+function copyIcon(isCopied = false) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+
+  if (isCopied) {
+    const check = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    check.setAttribute("d", "m5 12.5 4.5 4.5L19 7");
+    svg.append(check);
+    return svg;
+  }
+
+  const back = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  back.setAttribute("d", "M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2");
+  const front = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+  front.setAttribute("x", "8");
+  front.setAttribute("y", "8");
+  front.setAttribute("width", "12");
+  front.setAttribute("height", "12");
+  front.setAttribute("rx", "2");
+  svg.append(back, front);
+  return svg;
+}
+
+function setCopyState(button, isCopied) {
+  button.replaceChildren(copyIcon(isCopied));
+  button.classList.toggle("is-copied", isCopied);
+  button.setAttribute("aria-label", isCopied ? "Code copied" : button.dataset.copyLabel);
+  button.setAttribute("title", isCopied ? "Copied" : "Copy code");
+}
+
+function copyButton(code, selector) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "example-code-copy";
-  button.textContent = "Copy";
+  button.dataset.copyLabel = `Copy code for ${selector}`;
+  setCopyState(button, false);
   button.addEventListener("click", async () => {
     await navigator.clipboard.writeText(code);
-    button.textContent = "Copied";
+    setCopyState(button, true);
     setTimeout(() => {
-      button.textContent = "Copy";
+      setCopyState(button, false);
     }, 1600);
   });
   return button;
 }
 
 /**
- * Adds the exact rendering source to every chart card present on the page.
+ * Adds a copy button for the exact rendering source to every chart card header.
  *
  * @param {Array<[string, () => object]>} examples - Selectors and fluent example functions.
  */
@@ -108,30 +140,19 @@ export function showExampleCode(examples) {
   ] of examples) {
     const host = document.querySelector(selector);
     const card = host?.closest("article");
-    if (!card || card.querySelector(":scope > .example-code")) {
+    const header = card?.querySelector(":scope > header");
+    if (!header || header.querySelector(":scope > .example-code-actions")) {
       continue;
     }
 
     const code = exampleCode(selector, renderExample);
-    const details = document.createElement("details");
-    details.className = "example-code";
-    const summary = document.createElement("summary");
-    summary.textContent = "Code";
-    const toolbar = document.createElement("div");
-    toolbar.className = "example-code-toolbar";
-    toolbar.append(copyButton(code));
-    const pre = document.createElement("pre");
-    const codeElement = document.createElement("code");
-    codeElement.textContent = code;
-    pre.append(codeElement);
-    details.append(summary, toolbar, pre);
-    card.append(details);
+    const actions = document.createElement("div");
+    actions.className = "example-code-actions";
+    const reference = header.querySelector(":scope > code");
+    if (reference) {
+      actions.append(reference);
+    }
+    actions.append(copyButton(code, selector));
+    header.append(actions);
   }
-
-  const toggle = document.querySelector("#example-code-toggle");
-  toggle?.addEventListener("click", () => {
-    const visible = document.body.classList.toggle("example-code-visible");
-    toggle.setAttribute("aria-pressed", String(visible));
-    toggle.textContent = visible ? "Hide code" : "Show code";
-  });
 }

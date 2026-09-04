@@ -23,8 +23,8 @@ This is the canonical Charts2 experience and MUST be the first API example in
 the README, package documentation, and demo source:
 
 ```js
-import { LineChart } from "@charts2/core";
-import "@charts2/core/style.css";
+import { LineChart } from "@orchid/charts";
+import "@orchid/charts/style.css";
 
 const chart = LineChart.make("#revenue")
   .labels(["Jan", "Feb", "Mar"])
@@ -205,7 +205,7 @@ import {
   PolarAreaChart,
   HeatmapChart,
   TimesheetChart,
-} from "@charts2/core";
+} from "@orchid/charts";
 ```
 
 Each definition MUST be frozen and expose only this creation method:
@@ -219,7 +219,7 @@ interface ChartDefinition<TBuilder> {
 Definitions MUST NOT be constructors. The package MUST NOT export
 `createChart`, a public `Chart` constructor, `Chart.make(type, ...)`, or public
 chart constructors. The stylesheet MUST remain importable from
-`@charts2/core/style.css`.
+`@orchid/charts/style.css`.
 
 ### 3.1 Public value types
 
@@ -899,7 +899,7 @@ horizontal marker and bottom/middle/top on a vertical marker.
 
 Included markers MUST affect automatic domains. Opted-out markers outside the
 domain MUST NOT render. Geometry MUST be plot-clipped. Markers MUST be
-non-interactive in `1.0.0`; accessible chart text MUST include label and value.
+non-interactive in `0.0.1`; accessible chart text MUST include label and value.
 
 ## 11. Regions
 
@@ -941,7 +941,7 @@ color `var(--charts-label-color, #3a3a3c)`, and domain inclusion enabled.
 
 Included endpoints MUST affect automatic domains. Opted-out non-overlapping
 regions MUST NOT render; partial overlaps MUST be clipped. Regions MUST be
-non-interactive in `1.0.0`.
+non-interactive in `0.0.1`.
 
 ## 12. Cartesian render order
 
@@ -1440,9 +1440,9 @@ README, `docs/api-reference.md`, positioning copy, demo source, tests, and gener
 package contents. The release MUST expose exactly the named definitions in
 section 3 and MUST NOT expose both the legacy factory and the fluent API.
 
-If `1.0.0` has already been publicly released with `createChart`, this contract
+If `0.0.1` has already been publicly released with `createChart`, this contract
 requires a breaking major version. If it has not been released, it MAY become
-the `1.0.0` contract. Package metadata alone is not evidence of publication;
+the `0.0.1` contract. Package metadata alone is not evidence of publication;
 the maintainer MUST make this decision from the registry and release history.
 
 Migration MUST proceed as one replacement, not as two permanent public APIs:
@@ -1457,7 +1457,7 @@ Migration MUST proceed as one replacement, not as two permanent public APIs:
 5. run the coherence and package-content gates against the packed artifact.
 
 If published users require a transition period, a legacy adapter MAY be
-released as a separate package. `@charts2/core` MUST NOT export both grammars.
+released as a separate package. `@orchid/charts` MUST NOT export both grammars.
 
 The implementation MUST prove detached, atomic render and update behavior.
 Adapting builders to the existing renderer pipeline is allowed, but a thin

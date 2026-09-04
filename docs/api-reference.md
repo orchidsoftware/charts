@@ -19,9 +19,9 @@ import {
   PolarAreaChart,
   HeatmapChart,
   TimesheetChart,
-} from "@charts2/core";
+} from "@orchid/charts";
 
-import "@charts2/core/style.css";
+import "@orchid/charts/style.css";
 ```
 
 Each definition exposes `make(parent)`, where `parent` is a CSS selector or an
@@ -104,7 +104,7 @@ Line, bar, scatter, bubble, and mixed charts provide:
 ### LineChart
 
 ```js
-import { LineChart } from "@charts2/core";
+import { LineChart } from "@orchid/charts";
 
 LineChart.make(parent).labels(labels).dataset(name, values).smooth().gradient().render();
 ```
@@ -120,7 +120,7 @@ See [Line charts](./line.md) for examples of every line method.
 ### BarChart
 
 ```js
-import { BarChart } from "@charts2/core";
+import { BarChart } from "@orchid/charts";
 
 BarChart.make(parent).labels(labels).dataset(name, values).horizontal().stacked().render();
 ```
@@ -133,7 +133,7 @@ See [Bar charts](./bar.md) for grouped, horizontal, and stacked examples.
 ### ScatterChart
 
 ```js
-import { ScatterChart } from "@charts2/core";
+import { ScatterChart } from "@orchid/charts";
 
 ScatterChart.make(parent)
   .dataset("Results", [{ x: 12, y: 38 }])
@@ -148,7 +148,7 @@ See [Scatter charts](./scatter.md) for point and dataset examples.
 ### BubbleChart
 
 ```js
-import { BubbleChart } from "@charts2/core";
+import { BubbleChart } from "@orchid/charts";
 
 BubbleChart.make(parent)
   .dataset("Accounts", [{ x: 12, y: 38, r: 8 }])
@@ -162,7 +162,7 @@ See [Bubble charts](./bubble.md) for radius and dataset guidance.
 ### MixedChart
 
 ```js
-import { MixedChart } from "@charts2/core";
+import { MixedChart } from "@orchid/charts";
 
 MixedChart.make(parent)
   .labels(labels)
@@ -199,7 +199,7 @@ Each type has its own guide: [Pie](./pie.md), [donut](./donut.md),
 ## HeatmapChart
 
 ```js
-import { HeatmapChart } from "@charts2/core";
+import { HeatmapChart } from "@orchid/charts";
 
 HeatmapChart.make(parent)
   .range(new Date("2026-01-01T00:00:00Z"), new Date("2026-12-31T00:00:00Z"))
@@ -224,7 +224,7 @@ See [Calendar heatmaps](./heatmap.md) for range, color scale, and tooltip exampl
 ## TimesheetChart
 
 ```js
-import { TimesheetChart } from "@charts2/core";
+import { TimesheetChart } from "@orchid/charts";
 
 TimesheetChart.make(parent)
   .range("2026-09-01", "2026-09-12")
@@ -265,7 +265,7 @@ See [Timesheet charts](./timesheet.md) for task, range, and formatting examples.
 Callbacks expose methods only for the item they configure:
 
 ```js
-import { LineChart } from "@charts2/core";
+import { LineChart } from "@orchid/charts";
 
 LineChart.make("#chart")
   .dataset("Actual", values, (dataset) => {
@@ -319,4 +319,4 @@ lifecycle and [Exporting SVG](./exporting.md) for serialization and download.
 Type declarations ship with the package. Each named definition returns a
 chart-specific builder, so autocomplete shows only methods that can affect that
 chart. Public input, update, point, and selection types can also be imported
-from `@charts2/core`.
+from `@orchid/charts`.

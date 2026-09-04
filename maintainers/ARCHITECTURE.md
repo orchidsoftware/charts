@@ -279,7 +279,7 @@ JavaScript has `public` and native `#private` class elements, but no native
 ## Public boundary
 
 ```js
-import { LineChart } from "@charts2/core";
+import { LineChart } from "@orchid/charts";
 
 const chart = LineChart.make("#revenue")
   .dataset([12, 18, 16])

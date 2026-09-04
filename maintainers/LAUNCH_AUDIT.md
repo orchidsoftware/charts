@@ -31,8 +31,8 @@ These items block the first external user and must be resolved before launch.
 
 ### 1. The documented npm package does not exist
 
-`npm view @charts2/core` returns `404 Not Found`, while the README begins with
-`npm install @charts2/core`. Publish the package before announcing the
+`npm view @orchid/charts` returns `404 Not Found`, while the README begins with
+`npm install @orchid/charts`. Publish the package before announcing the
 repository, then verify installation in a clean temporary project using the
 registry artifact rather than the worktree.
 
@@ -49,9 +49,9 @@ The latest CI and CodeQL runs did not start because the GitHub account is locked
 by a billing issue. Resolve the account state and obtain a green run on the
 default branch before adding a CI badge or announcing the release.
 
-### 4. Version 1.0.0 has no GitHub release or tag
+### 4. Version 0.0.1 has no GitHub release or tag
 
-`package.json` and `CHANGELOG.md` present version 1.0.0, but GitHub reports no
+`package.json` and `CHANGELOG.md` present version 0.0.1, but GitHub reports no
 release and the repository has no version tags. Complete the release checklist,
 create the signed or annotated tag, publish npm from that exact commit, and
 create a GitHub release with the same notes.

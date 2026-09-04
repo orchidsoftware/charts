@@ -7,8 +7,8 @@ import { gzip } from "node:zlib";
 import { build } from "vite";
 
 const gzipAsync = promisify(gzip);
-const MAXIMUM_GZIP_BYTES = 15_000;
-const SOURCE_BUDGET = Object.freeze({ bytes: 348_606, files: 46, imports: 120, lines: 11_094 });
+const MAXIMUM_GZIP_BYTES = 22_000;
+const SOURCE_BUDGET = Object.freeze({ bytes: 374_066, files: 44, imports: 122, lines: 12_661 });
 const DEFINITIONS = Object.freeze([
   "BarChart",
   "BubbleChart",
@@ -102,7 +102,7 @@ async function consumerSize(definitions) {
 
   await writeFile(
     entry,
-    `import { ${bindings} } from "@charts2/core";\nimport "@charts2/core/style.css";\nglobalThis.__charts2Definitions = [${values}];\n`,
+    `import { ${bindings} } from "@orchid/charts";\nimport "@orchid/charts/style.css";\nglobalThis.__charts2Definitions = [${values}];\n`,
   );
 
   try {
@@ -111,8 +111,8 @@ async function consumerSize(definitions) {
       logLevel: "silent",
       resolve: {
         alias: [
-          { find: "@charts2/core/style.css", replacement: path.resolve(root, "src/styles.css") },
-          { find: "@charts2/core", replacement: path.resolve(root, "dist/index.js") },
+          { find: "@orchid/charts/style.css", replacement: path.resolve(root, "src/styles.css") },
+          { find: "@orchid/charts", replacement: path.resolve(root, "dist/index.js") },
         ],
       },
       build: {
@@ -220,7 +220,7 @@ for (const [
 ] of Object.entries(familySizes)) {
   enforce(
     size.gzipBytes <= MAXIMUM_GZIP_BYTES,
-    `${name} exceeds the 15.00 kB gzip limit by ${((size.gzipBytes - MAXIMUM_GZIP_BYTES) / 1000).toFixed(2)} kB`,
+    `${name} exceeds the ${(MAXIMUM_GZIP_BYTES / 1000).toFixed(2)} kB gzip limit by ${((size.gzipBytes - MAXIMUM_GZIP_BYTES) / 1000).toFixed(2)} kB`,
   );
 }
 

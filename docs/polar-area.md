@@ -9,8 +9,8 @@ fixed whole—is the main comparison.
 ## Creating a polar area chart
 
 ```js
-import { PolarAreaChart } from "@charts2/core";
-import "@charts2/core/style.css";
+import { PolarAreaChart } from "@orchid/charts";
+import "@orchid/charts/style.css";
 
 const chart = PolarAreaChart.make("#sources")
   .labels(["Search", "Direct", "Partners", "Social"])
@@ -26,7 +26,7 @@ Values must be non-negative and at least one value must be positive.
 `padAngle()` adds space between segments, measured in degrees:
 
 ```js
-import { PolarAreaChart } from "@charts2/core";
+import { PolarAreaChart } from "@orchid/charts";
 
 PolarAreaChart.make("#sources").labels(sources).dataset(visits).padAngle(3).render();
 ```
@@ -36,7 +36,7 @@ PolarAreaChart.make("#sources").labels(sources).dataset(visits).padAngle(3).rend
 Use `cornerRadius()` to round segment corners in CSS pixels:
 
 ```js
-import { PolarAreaChart } from "@charts2/core";
+import { PolarAreaChart } from "@orchid/charts";
 
 PolarAreaChart.make("#sources").labels(sources).dataset(visits).padAngle(3).cornerRadius(4).render();
 ```

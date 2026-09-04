@@ -8,8 +8,8 @@ vertical or horizontal, and multiple datasets may be grouped or stacked.
 ## Creating a bar chart
 
 ```js
-import { BarChart } from "@charts2/core";
-import "@charts2/core/style.css";
+import { BarChart } from "@orchid/charts";
+import "@orchid/charts/style.css";
 
 const chart = BarChart.make("#regions")
   .labels(["Europe", "Americas", "Asia-Pacific"])
@@ -25,7 +25,7 @@ selected, or exported.
 Add another dataset to place related bars beside one another:
 
 ```js
-import { BarChart } from "@charts2/core";
+import { BarChart } from "@orchid/charts";
 
 BarChart.make("#orders")
   .labels(["Web", "Retail", "Partners"])
@@ -40,7 +40,7 @@ BarChart.make("#orders")
 Call `horizontal()` when category labels are long or ranking is the main task:
 
 ```js
-import { BarChart } from "@charts2/core";
+import { BarChart } from "@orchid/charts";
 
 BarChart.make("#delivery-time")
   .labels(["North America", "Europe", "Asia-Pacific"])
@@ -52,7 +52,7 @@ BarChart.make("#delivery-time")
 Passing `false` restores vertical bars, which is useful in conditional code:
 
 ```js
-import { BarChart } from "@charts2/core";
+import { BarChart } from "@orchid/charts";
 
 BarChart.make("#orders").dataset(values).horizontal(isCompact).render();
 ```
@@ -62,7 +62,7 @@ BarChart.make("#orders").dataset(values).horizontal(isCompact).render();
 Call `stacked()` when both the total and its parts are meaningful:
 
 ```js
-import { BarChart } from "@charts2/core";
+import { BarChart } from "@orchid/charts";
 
 BarChart.make("#orders")
   .labels(["Web", "Retail", "Partners"])
@@ -80,7 +80,7 @@ Without `stacked()`, multiple datasets remain grouped.
 The `radius()` method rounds bar corners in CSS pixels:
 
 ```js
-import { BarChart } from "@charts2/core";
+import { BarChart } from "@orchid/charts";
 
 BarChart.make("#revenue").labels(regions).dataset(values).radius(6).render();
 ```
@@ -91,7 +91,7 @@ Use a dataset callback when one set of bars needs a different color, opacity,
 value format, or radius:
 
 ```js
-import { BarChart } from "@charts2/core";
+import { BarChart } from "@orchid/charts";
 
 BarChart.make("#orders")
   .labels(["Web", "Retail", "Partners"])

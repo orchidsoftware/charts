@@ -88,7 +88,7 @@ async function startServer() {
  * @returns {string} Standalone HTML document.
  */
 function pageMarkup(origin) {
-  const importMap = JSON.stringify({ imports: { "@charts2/core": `${origin}/dist/index.js` } });
+  const importMap = JSON.stringify({ imports: { "@orchid/charts": `${origin}/dist/index.js` } });
 
   return `<!doctype html>
 <html lang="en">
@@ -101,7 +101,7 @@ function pageMarkup(origin) {
     <div id="chart" style="width:640px"></div>
     <script type="module">
       try {
-        const charts = await import("@charts2/core");
+        const charts = await import("@orchid/charts");
         const chart = charts.LineChart.make("#chart")
           .labels(["A", "B"])
           .dataset("Series", [1, 2])

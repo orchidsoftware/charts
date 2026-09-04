@@ -9,8 +9,8 @@ alongside a trend.
 ## Creating a mixed chart
 
 ```js
-import { MixedChart } from "@charts2/core";
-import "@charts2/core/style.css";
+import { MixedChart } from "@orchid/charts";
+import "@orchid/charts/style.css";
 
 const chart = MixedChart.make("#plan")
   .labels(["Jan", "Feb", "Mar", "Apr"])
@@ -27,7 +27,7 @@ dataset type.
 Use `line(name, values, colorOrCallback?)` to add a line:
 
 ```js
-import { MixedChart } from "@charts2/core";
+import { MixedChart } from "@orchid/charts";
 
 MixedChart.make("#plan")
   .labels(["Jan", "Feb", "Mar"])
@@ -46,7 +46,7 @@ The callback supports every line-dataset method: `color()`, `opacity()`,
 Use `bar(name, values, colorOrCallback?)` to add bars:
 
 ```js
-import { MixedChart } from "@charts2/core";
+import { MixedChart } from "@orchid/charts";
 
 MixedChart.make("#plan")
   .labels(["Jan", "Feb", "Mar"])
@@ -63,7 +63,7 @@ The callback supports `color()`, `opacity()`, `formatValue()`, and `radius()`.
 Use `scatter(name, values, colorOrCallback?)` to add individual observations:
 
 ```js
-import { MixedChart } from "@charts2/core";
+import { MixedChart } from "@orchid/charts";
 
 MixedChart.make("#plan")
   .scatter("Releases", [
@@ -81,7 +81,7 @@ Scatter values may be `{ x, y }` points or numbers. The callback supports
 Call `gradient()` on the chart to add a fading fill to every line dataset:
 
 ```js
-import { MixedChart } from "@charts2/core";
+import { MixedChart } from "@orchid/charts";
 
 MixedChart.make("#plan")
   .labels(["Jan", "Feb", "Mar"])
@@ -99,7 +99,7 @@ The named methods are the clearest way to add mixed data. When your data is
 already stored as objects, `dataset()` also accepts an explicit `chartType`:
 
 ```js
-import { MixedChart } from "@charts2/core";
+import { MixedChart } from "@orchid/charts";
 
 MixedChart.make("#plan")
   .dataset({ chartType: "bar", name: "Actual", values: [42, 48, 57] })

@@ -1,6 +1,6 @@
 export default {
-  aggregateGzipBytes: 30_496,
-  aggregateRawBytes: 102_982,
-  gzipBytes: 21_588,
-  rawBytes: 70_813,
+  aggregateGzipBytes: 30_766,
+  aggregateRawBytes: 103_605,
+  gzipBytes: 21_875,
+  rawBytes: 71_484,
 };

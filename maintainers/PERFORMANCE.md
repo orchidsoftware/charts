@@ -21,7 +21,7 @@ same limit.
 The budgets include input normalization, scale calculation, SVG path generation, and DOM replacement. They run as part of `npm run check`, so a regression blocks release.
 
 The size gate creates twelve temporary consumer applications. Each imports one
-named definition from `@charts2/core`, imports `@charts2/core/style.css`, uses
+named definition from `@orchid/charts`, imports `@orchid/charts/style.css`, uses
 the definition, runs production Vite/Terser tree-shaking, and gzip-compresses JS
 and CSS separately at level 9. Combination builds additionally verify that the
 shared runtime is not duplicated. The complete-package aggregate remains a

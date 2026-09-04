@@ -7,14 +7,14 @@ This page takes you from an empty element to a responsive product chart.
 Install the package with npm:
 
 ```bash
-npm install @charts2/core
+npm install @orchid/charts
 ```
 
 Charts2 ships as an ES module. Import the chart you need and its stylesheet:
 
 ```js
-import { LineChart } from "@charts2/core";
-import "@charts2/core/style.css";
+import { LineChart } from "@orchid/charts";
+import "@orchid/charts/style.css";
 ```
 
 ## Render your first chart
@@ -28,8 +28,8 @@ Add a host element to your page:
 Create a line chart inside it:
 
 ```js
-import { LineChart } from "@charts2/core";
-import "@charts2/core/style.css";
+import { LineChart } from "@orchid/charts";
+import "@orchid/charts/style.css";
 
 const revenue = LineChart.make("#revenue")
   .labels(["Jan", "Feb", "Mar", "Apr"])
@@ -56,7 +56,7 @@ make(parent) → add data → render()
 Methods before `render()` shape the whole chart:
 
 ```js
-import { LineChart } from "@charts2/core";
+import { LineChart } from "@orchid/charts";
 
 const revenue = LineChart.make("#revenue")
   .title("Monthly revenue")
@@ -74,7 +74,7 @@ const revenue = LineChart.make("#revenue")
 Call `dataset()` again. Names appear in the legend and tooltip.
 
 ```js
-import { LineChart } from "@charts2/core";
+import { LineChart } from "@orchid/charts";
 
 const revenue = LineChart.make("#revenue")
   .labels(["Jan", "Feb", "Mar", "Apr"])
@@ -94,18 +94,18 @@ For a plain HTML page, use an import map and load the stylesheet with a
 ```html
 <div id="chart"></div>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@charts2/core@1.0.0/src/styles.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@orchid/charts@0.0.1/src/styles.css" />
 
 <script type="importmap">
   {
     "imports": {
-      "@charts2/core": "https://cdn.jsdelivr.net/npm/@charts2/core@1.0.0/dist/index.js"
+      "@orchid/charts": "https://cdn.jsdelivr.net/npm/@orchid/charts@0.0.1/dist/index.js"
     }
   }
 </script>
 
 <script type="module">
-  import { BarChart } from "@charts2/core";
+  import { BarChart } from "@orchid/charts";
 
   BarChart.make("#chart").labels(["Starter", "Team", "Business"]).dataset("Accounts", [84, 46, 21]).render();
 </script>

@@ -8,8 +8,8 @@ position each point, while `r` controls its radius.
 ## Creating a bubble chart
 
 ```js
-import { BubbleChart } from "@charts2/core";
-import "@charts2/core/style.css";
+import { BubbleChart } from "@orchid/charts";
+import "@orchid/charts/style.css";
 
 const chart = BubbleChart.make("#accounts")
   .dataset("Accounts", [
@@ -28,7 +28,7 @@ selected, or exported.
 Name each dataset so the legend and tooltip can distinguish its bubbles:
 
 ```js
-import { BubbleChart } from "@charts2/core";
+import { BubbleChart } from "@orchid/charts";
 
 BubbleChart.make("#accounts")
   .dataset("Self-serve", [
@@ -52,7 +52,7 @@ Use `dots(false)` to hide bubble marks while retaining the scale and any
 annotations:
 
 ```js
-import { BubbleChart } from "@charts2/core";
+import { BubbleChart } from "@orchid/charts";
 
 BubbleChart.make("#accounts").dataset(bubbles).dots(false).render();
 ```
@@ -63,7 +63,7 @@ A bubble dataset callback supports `color()`, `opacity()`, and
 `formatValue()`:
 
 ```js
-import { BubbleChart } from "@charts2/core";
+import { BubbleChart } from "@orchid/charts";
 
 BubbleChart.make("#accounts")
   .dataset("Accounts", bubbles, (dataset) => {

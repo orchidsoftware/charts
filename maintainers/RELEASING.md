@@ -1,20 +1,18 @@
 # Releasing Charts2
 
 The GitHub repository and its CI workflows exist, and the source is prepared to
-build version 1.0.0. The repository still has no version tag. Treat the package
-name as a release target until ownership and publication of `@charts2/core` are
-verified directly with npm.
+build version 0.0.1. The `@orchid/charts` name is owned through the `orchid` npm
+organization. The repository still has no version tag or public package release.
 
 ## First-publication decisions
 
-Before publishing, choose and verify these external identities:
+Before publishing, verify these external release settings:
 
-1. Confirm ownership of `@charts2/core`, or choose another npm name before any
-   consumers depend on it.
-2. Enable branch protection, private vulnerability reporting, Dependabot, and
+1. Enable branch protection, private vulnerability reporting, Dependabot, and
    GitHub Actions in the repository settings.
-3. Add npm trusted publishing or an automation token only after the package
-   identity is final. Do not store a token in `.npmrc` or the repository.
+2. Publish the first public version interactively, then configure npm trusted
+   publishing for `orchidsoftware/charts` and `.github/workflows/publish.yml`.
+   Do not store an npm token in `.npmrc` or the repository.
 
 ## Release gate
 
@@ -29,7 +27,7 @@ npm run pack:check
 ```
 
 The gate includes a native no-build smoke test in Chromium, Firefox, and WebKit.
-It serves `dist` as static files, resolves `@charts2/core` through an import map,
+It serves `dist` as static files, resolves `@orchid/charts` through an import map,
 loads CSS through `<link>`, and exercises render, update, and destroy without a
 bundler transform.
 
@@ -60,6 +58,7 @@ release gate.
    irreversible publication.
 
 The manual **Release candidate** workflow performs the gate and uploads a `.tgz`
-artifact. It does not create a tag, GitHub Release, or npm publication. Registry
-publication automation should be added only after the first release establishes
-the final identities and recovery procedure.
+artifact. It does not create a tag, GitHub Release, or npm publication. Publishing
+a GitHub Release triggers `.github/workflows/publish.yml`; after the first package
+version exists, connect that workflow through npm trusted publishing before using
+it for subsequent versions.

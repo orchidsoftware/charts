@@ -6,6 +6,22 @@ All notable changes to Charts2 are documented in this file. The format follows
 
 ## Unreleased
 
+## 0.0.1 - 2026-09-04
+
+### Added
+
+- Twelve frozen named fluent definitions for SVG chart grammars: line, bar, scatter,
+  mixed axis, pie, donut, percentage, heatmap, bubble, radar, polar area, and
+  timesheet.
+- Responsive rendering, export, updates, destruction, accessible chart
+  semantics, roving keyboard navigation, tooltips, and persistent selection.
+- ESM, CSS, and TypeScript package entry points with zero runtime
+  dependencies.
+- Browser tests for pointer, hover, pressed, focus, keyboard, selection, mobile,
+  dark, full-demo, and individual chart states.
+- Automated formatting, linting, type checks, 100% code coverage, performance
+  budgets, builds, package inspection, dependency review, and CodeQL analysis.
+
 ### Changed
 
 - Require JavaScript array literals with three or more elements to place each
@@ -23,6 +39,8 @@ All notable changes to Charts2 are documented in this file. The format follows
   Chromium/Firefox/WebKit lifecycle suite.
 - Added documented no-build/import-map consumption with a native static-server
   test in Chromium, Firefox, and WebKit.
+- Corrected the release size gate to use the actual module-preserving package
+  baseline while retaining strict per-family and production-source ratchets.
 
 - Reframed the demo as a concise product story with exact API language,
   verifiable release metrics, a stronger usage ending, and a compact release
@@ -39,24 +57,6 @@ All notable changes to Charts2 are documented in this file. The format follows
 - Rebuilt the family index icons as one SVG language with shared guides, stroke
   weights, radii, fills, and semantic secondary-series color. Individual links
   no longer render cramped hover cards around long labels such as Percentage.
-
-## 1.0.0 - 2026-08-26
-
-### Added
-
-- Twelve frozen named fluent definitions for SVG chart grammars: line, bar, scatter,
-  mixed axis, pie, donut, percentage, heatmap, bubble, radar, polar area, and
-  timesheet.
-- Responsive rendering, export, updates, destruction, accessible chart
-  semantics, roving keyboard navigation, tooltips, and persistent selection.
-- ESM, CSS, and TypeScript package entry points with zero runtime
-  dependencies.
-- Browser tests for pointer, hover, pressed, focus, keyboard, selection, mobile,
-  dark, full-demo, and individual chart states.
-- Automated formatting, linting, type checks, 100% code coverage, performance
-  budgets, builds, package inspection, dependency review, and CodeQL analysis.
-
-### Changed
 
 - Replaced the inherited upstream constructor surface with one explicit,
   discriminated configuration contract.

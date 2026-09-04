@@ -10,8 +10,8 @@ patterns, quiet periods, and unusually active days easy to find.
 Point keys use the timezone-free `YYYY-MM-DD` form:
 
 ```js
-import { HeatmapChart } from "@charts2/core";
-import "@charts2/core/style.css";
+import { HeatmapChart } from "@orchid/charts";
+import "@orchid/charts/style.css";
 
 const chart = HeatmapChart.make("#activity")
   .points({
@@ -33,7 +33,7 @@ point. Use `range(start, end)` when the chart should also show inactive days
 outside that interval:
 
 ```js
-import { HeatmapChart } from "@charts2/core";
+import { HeatmapChart } from "@orchid/charts";
 
 HeatmapChart.make("#activity")
   .range(new Date("2026-01-01T00:00:00Z"), new Date("2026-12-31T00:00:00Z"))
@@ -46,7 +46,7 @@ HeatmapChart.make("#activity")
 `countLabel()` names the unit in the tooltip and accessible text:
 
 ```js
-import { HeatmapChart } from "@charts2/core";
+import { HeatmapChart } from "@orchid/charts";
 
 HeatmapChart.make("#activity").points(activity).countLabel("contributions").render();
 ```
@@ -57,7 +57,7 @@ For a heatmap, `colors()` defines a low-to-high intensity scale. Unlike a
 series palette, the supplied colors are used once rather than cycled:
 
 ```js
-import { HeatmapChart } from "@charts2/core";
+import { HeatmapChart } from "@orchid/charts";
 
 HeatmapChart.make("#activity")
   .points(activity)
@@ -70,7 +70,7 @@ HeatmapChart.make("#activity")
 Use `radius()` to round each day cell in CSS pixels:
 
 ```js
-import { HeatmapChart } from "@charts2/core";
+import { HeatmapChart } from "@orchid/charts";
 
 HeatmapChart.make("#activity").points(activity).radius(2).render();
 ```
@@ -80,7 +80,7 @@ HeatmapChart.make("#activity").points(activity).radius(2).render();
 The heatmap tooltip provides `formatDate()` and `formatValue()`:
 
 ```js
-import { HeatmapChart } from "@charts2/core";
+import { HeatmapChart } from "@orchid/charts";
 
 HeatmapChart.make("#activity")
   .points(activity)

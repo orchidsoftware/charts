@@ -11,8 +11,8 @@ and presentation.
 The `toSvg()` method returns the complete SVG markup as a string:
 
 ```js
-import { LineChart } from "@charts2/core";
-import "@charts2/core/style.css";
+import { LineChart } from "@orchid/charts";
+import "@orchid/charts/style.css";
 
 const chart = LineChart.make("#revenue")
   .labels(["Jan", "Feb", "Mar", "Apr"])
@@ -40,8 +40,8 @@ await fetch("/reports/revenue.svg", {
 The `download()` method starts a browser download:
 
 ```js
-import { BarChart } from "@charts2/core";
-import "@charts2/core/style.css";
+import { BarChart } from "@orchid/charts";
+import "@orchid/charts/style.css";
 
 const chart = BarChart.make("#orders")
   .labels(["Web", "Retail", "Partners"])
@@ -62,8 +62,8 @@ The filename must not be empty or contain `/` or `\\` path separators.
 Export reflects the latest successful update:
 
 ```js
-import { LineChart } from "@charts2/core";
-import "@charts2/core/style.css";
+import { LineChart } from "@orchid/charts";
+import "@orchid/charts/style.css";
 
 const chart = LineChart.make("#revenue")
   .labels(["Jan", "Feb", "Mar"])

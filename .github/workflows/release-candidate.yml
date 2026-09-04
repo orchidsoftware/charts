@@ -6,7 +6,7 @@ on:
       version:
         description: Version from package.json without the v prefix
         required: true
-        default: 1.0.0
+        default: 0.0.1
         type: string
 
 permissions:
@@ -36,8 +36,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium firefox webkit
 
       - name: Run the complete quality gate
         run: npm run check

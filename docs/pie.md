@@ -9,8 +9,8 @@ is not required.
 ## Creating a pie chart
 
 ```js
-import { PieChart } from "@charts2/core";
-import "@charts2/core/style.css";
+import { PieChart } from "@orchid/charts";
+import "@orchid/charts/style.css";
 
 const chart = PieChart.make("#plans")
   .labels(["Starter", "Team", "Business"])
@@ -28,7 +28,7 @@ can communicate clearly. Charts2 keeps the largest slices and combines the
 remainder:
 
 ```js
-import { PieChart } from "@charts2/core";
+import { PieChart } from "@orchid/charts";
 
 PieChart.make("#sources").labels(sources).dataset(visits).maxSlices(5).render();
 ```
@@ -38,7 +38,7 @@ PieChart.make("#sources").labels(sources).dataset(visits).maxSlices(5).render();
 `startAngle()` rotates the chart by the given number of degrees:
 
 ```js
-import { PieChart } from "@charts2/core";
+import { PieChart } from "@orchid/charts";
 
 PieChart.make("#plans").labels(plans).dataset(accounts).startAngle(-90).render();
 ```
@@ -49,7 +49,7 @@ Use `padAngle()` to place space between slices and `cornerRadius()` to soften
 their corners:
 
 ```js
-import { PieChart } from "@charts2/core";
+import { PieChart } from "@orchid/charts";
 
 PieChart.make("#plans").labels(plans).dataset(accounts).padAngle(2).cornerRadius(4).render();
 ```

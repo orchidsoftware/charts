@@ -6,15 +6,11 @@ Charts2 turns everyday product data into clear, responsive SVG charts. One
 small JavaScript API covers dashboards, reports, activity views, and release
 plans—without turning chart configuration into a project.
 
-![Charts2 rendering a revenue chart inside a product dashboard](https://raw.githubusercontent.com/tabuna/charts2/master/.github/assets/charts2-hero.png)
+![Charts2 rendering a revenue chart inside a product dashboard](https://raw.githubusercontent.com/orchidsoftware/charts/master/.github/assets/charts2-hero.png)
 
 ```bash
-npm install @charts2/core
+npm install @orchid/charts
 ```
-
-> [!NOTE]
-> Charts2 is preparing its first public release. The install command will work
-> after `@charts2/core` is published to npm; until then, use the repository demo.
 
 Add an element for the chart:
 
@@ -25,8 +21,8 @@ Add an element for the chart:
 Then choose a chart, add your data, and render it:
 
 ```js
-import { LineChart } from "@charts2/core";
-import "@charts2/core/style.css";
+import { LineChart } from "@orchid/charts";
+import "@orchid/charts/style.css";
 
 const revenue = LineChart.make("#revenue")
   .labels(["Jan", "Feb", "Mar", "Apr"])
@@ -56,7 +52,7 @@ keyboard navigation, and accessible SVG text.
 Chart-wide methods keep common changes close to the data:
 
 ```js
-import { BarChart } from "@charts2/core";
+import { BarChart } from "@orchid/charts";
 
 const orders = BarChart.make("#orders")
   .title("Orders by status")
@@ -78,7 +74,7 @@ Choose a chart → make(parent) → add data → shape it → render()
 
 ## Choose a chart
 
-![Line, stacked bar, donut, and timesheet charts rendered by Charts2](https://raw.githubusercontent.com/tabuna/charts2/master/.github/assets/charts2-gallery.png)
+![Line, stacked bar, donut, and timesheet charts rendered by Charts2](https://raw.githubusercontent.com/orchidsoftware/charts/master/.github/assets/charts2-gallery.png)
 
 | If you want to show…              | Start with…                                    |
 | --------------------------------- | ---------------------------------------------- |

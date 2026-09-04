@@ -28,7 +28,7 @@
         <nav aria-label="Primary navigation">
           <a href="#supported-charts">Chart types</a>
           <a href="./lab.html">Lab</a>
-          <a href="https://github.com/tabuna/charts2">GitHub</a>
+          <a href="https://github.com/orchidsoftware/charts">GitHub</a>
           <a class="header-cta" href="#install">Get started</a>
         </nav>
       </header>
@@ -518,12 +518,14 @@
             export, and cleanup.
           </p>
           <div class="snippet-actions">
-            <a class="primary-action" href="https://github.com/tabuna/charts2#readme">Read the quick start</a>
-            <a href="https://github.com/tabuna/charts2">View on GitHub ↗</a>
+            <a class="primary-action" href="https://github.com/orchidsoftware/charts#readme"
+              >Read the quick start</a
+            >
+            <a href="https://github.com/orchidsoftware/charts">View on GitHub ↗</a>
           </div>
         </div>
-        <pre><code>import { BarChart } from "@charts2/core";
-import "@charts2/core/style.css";
+        <pre><code>import { BarChart } from "@orchid/charts";
+import "@orchid/charts/style.css";
 
 const chart = BarChart.make("#revenue")
   .labels(["Europe", "Americas", "Asia-Pacific"])
@@ -539,7 +541,7 @@ chart.destroy();</code></pre>
 
     <!-- Release identity and page navigation -->
     <footer class="site-footer">
-      <span>Charts2 1.0.0 · Product-ready SVG charts</span>
+      <span>Charts2 0.0.1 · Product-ready SVG charts</span>
       <a href="#supported-charts">Back to chart index ↑</a>
     </footer>
     <script type="module" src="./Main.js"></script>

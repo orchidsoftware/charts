@@ -2,7 +2,7 @@
 
 This directory contains internal specifications, audits, decision records, and
 release evidence. These files explain how Charts2 is built and maintained; they
-are not part of the user documentation published with `@charts2/core`.
+are not part of the user documentation published with `@orchid/charts`.
 
 User-facing documentation lives in [`docs`](../docs/readme.md). Contributor
 instructions live in [`CONTRIBUTING.md`](../CONTRIBUTING.md).

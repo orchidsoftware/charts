@@ -44,7 +44,9 @@ function selectionReporter(selector) {
   };
 }
 
-/* Product examples: the code readers are expected to copy. */
+/*
+Product examples: the code readers are expected to copy.
+*/
 
 function lineExample() {
   const data = {
@@ -1032,7 +1034,9 @@ function percentageExample() {
   };
 }
 
-/* Laboratory examples: edge cases and renderer stress fixtures. */
+/*
+Laboratory examples: edge cases and renderer stress fixtures.
+*/
 
 function annotationCollisionExample() {
   const data = {
@@ -1909,7 +1913,9 @@ function flatValuesExample() {
   };
 }
 
-/* Laboratory background-boundary fixtures. */
+/*
+Laboratory background-boundary fixtures.
+*/
 
 function backgroundBarExample() {
   const data = {
@@ -2906,7 +2912,9 @@ function backgroundTimesheetExample() {
   };
 }
 
-/* Calendar and compact examples shared by the demo and laboratory. */
+/*
+Calendar and compact examples shared by the demo and laboratory.
+*/
 
 function heatmapExample() {
   const data = {

@@ -8,8 +8,8 @@ Scatter charts show whether two measurements move together. Each point has an
 ## Creating a scatter chart
 
 ```js
-import { ScatterChart } from "@charts2/core";
-import "@charts2/core/style.css";
+import { ScatterChart } from "@orchid/charts";
+import "@orchid/charts/style.css";
 
 const chart = ScatterChart.make("#results")
   .dataset("Teams", [
@@ -28,7 +28,7 @@ selected, or exported.
 The clearest scatter input uses `{ x, y }` objects:
 
 ```js
-import { ScatterChart } from "@charts2/core";
+import { ScatterChart } from "@orchid/charts";
 
 ScatterChart.make("#results")
   .dataset("Current", [
@@ -48,7 +48,7 @@ A plain number is also accepted. In that form, its array index becomes the
 `x` coordinate:
 
 ```js
-import { ScatterChart } from "@charts2/core";
+import { ScatterChart } from "@orchid/charts";
 
 ScatterChart.make("#results").dataset([18, 31, 46]).render();
 ```
@@ -59,7 +59,7 @@ Use `dots(false)` to hide scatter marks while keeping the chart's scale and
 annotations:
 
 ```js
-import { ScatterChart } from "@charts2/core";
+import { ScatterChart } from "@orchid/charts";
 
 ScatterChart.make("#results").dataset(points).dots(false).render();
 ```
@@ -70,7 +70,7 @@ A scatter dataset callback supports `color()`, `opacity()`, and
 `formatValue()`:
 
 ```js
-import { ScatterChart } from "@charts2/core";
+import { ScatterChart } from "@orchid/charts";
 
 ScatterChart.make("#results")
   .dataset("Teams", points, (dataset) => {

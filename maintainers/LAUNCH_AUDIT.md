@@ -2,6 +2,11 @@
 
 Audit date: 2026-08-29
 
+Historical status: release blockers 1, 2, and 4 were resolved on 2026-09-04 by
+publishing `@orchidsoftware/charts@0.0.1`, deploying the GitHub Pages demo, and
+creating the `v0.0.1` tag and GitHub Release. The remaining findings are kept
+as the original audit record.
+
 ## Verdict
 
 Charts2 has a strong product surface, but the repository is not ready for its

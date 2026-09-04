@@ -1,9 +1,8 @@
 # Releasing Charts2
 
-The GitHub repository and its CI workflows exist, and the source is prepared to
-build version 0.0.1. The `@orchidsoftware/charts` name is owned through the
-`orchidsoftware` npm organization. The repository still has no version tag or
-public package release.
+Version 0.0.1 is published as `@orchidsoftware/charts`, tagged as `v0.0.1`, and
+mirrored by the matching GitHub Release. The `orchidsoftware` npm organization
+owns the package.
 
 ## First-publication decisions
 

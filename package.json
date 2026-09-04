@@ -1,6 +1,6 @@
 {
   "name": "@orchidsoftware/charts",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Clear, responsive SVG charts for product interfaces with one small JavaScript API",
   "type": "module",
   "packageManager": "npm@11.16.0",

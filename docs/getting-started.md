@@ -94,12 +94,12 @@ For a plain HTML page, use an import map and load the stylesheet with a
 ```html
 <div id="chart"></div>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@orchidsoftware/charts@0.0.1/src/styles.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@orchidsoftware/charts@0.0.2/src/styles.css" />
 
 <script type="importmap">
   {
     "imports": {
-      "@orchidsoftware/charts": "https://cdn.jsdelivr.net/npm/@orchidsoftware/charts@0.0.1/dist/index.js"
+      "@orchidsoftware/charts": "https://cdn.jsdelivr.net/npm/@orchidsoftware/charts@0.0.2/dist/index.js"
     }
   }
 </script>

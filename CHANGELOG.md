@@ -6,6 +6,17 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ## Unreleased
 
+## 0.0.2 - 2026-09-04
+
+### Changed
+
+- Renamed the public product from Charts2 to Orchid Charts across the demo,
+  documentation, repository templates, and release presentation.
+- Refreshed the README hero and visual regression references with the Orchid
+  logo, permanent card-header copy actions, and Linux Chromium baselines.
+- Made CI diagnostics include hidden Vitest attachments and audit only the
+  dependency graph shipped to package consumers.
+
 ## 0.0.1 - 2026-09-04
 
 ### Added

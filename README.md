@@ -115,9 +115,10 @@ its view is removed.
 - [Customization](./docs/customization.md) — change color, layout, labels, and presentation.
 - [Updates and interaction](./docs/updates-and-interaction.md) — connect charts to live product state.
 - [Exporting SVG](./docs/exporting.md) — serialize or download the current chart.
-- [React and Vue](./docs/frameworks.md) — mount, update, and clean up charts in components.
+- [React, Vue, and Hotwire](./docs/frameworks.md) — mount, update, and clean up charts in components.
 - [API reference](./docs/api-reference.md) — scan the complete public vocabulary.
 
 Charts2 has zero runtime dependencies, includes TypeScript declarations, and
-targets current evergreen browsers. It is maintained by
-[@tabuna](https://github.com/tabuna) and released under the [MIT License](./LICENSE).
+targets current evergreen browsers. It is part of
+[Orchid Software](https://orchid.software), maintained by
+[@tabuna](https://github.com/tabuna), and released under the [MIT License](./LICENSE).

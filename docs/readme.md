@@ -1,7 +1,7 @@
 # Charts2 documentation
 
 Charts2 helps you turn product data into responsive SVG charts with a small,
-consistent JavaScript API.
+consistent JavaScript API. It is part of [Orchid Software](https://orchid.software).
 
 If this is your first chart, begin with [Getting started](./getting-started.md).
 You will install the package and render a useful line chart in a few minutes.
@@ -15,7 +15,7 @@ You will install the package and render a useful line chart in a few minutes.
 - [Updates and interaction](./updates-and-interaction.md) — update data, react
   to selections, inspect points, and clean up.
 - [Exporting SVG](./exporting.md) — serialize or download the current chart.
-- [React and Vue](./frameworks.md) — mount, update, and destroy charts with component lifecycles.
+- [React, Vue, and Hotwire](./frameworks.md) — mount, update, and destroy charts with component lifecycles.
 - [API reference](./api-reference.md) — look up chart definitions and public methods.
 
 ## Chart types

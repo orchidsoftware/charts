@@ -72,11 +72,15 @@ describe("QA chart laboratory", () => {
     expect(fixtures).toHaveLength(44);
     expect(new Set(fixtureNames).size).toBe(fixtures.length);
     expect(document.querySelectorAll(".lab-index a")).toHaveLength(groups.length);
+    expect(document.querySelectorAll(".example-code")).toHaveLength(fixtures.length);
 
     for (const fixture of fixtures) {
       const host = fixture.querySelector(`#${CSS.escape(fixture.dataset.fixture)}`);
       expect(host, fixture.dataset.fixture).not.toBeNull();
       expect(host.querySelector("svg"), fixture.dataset.fixture).not.toBeNull();
+      expect(fixture.querySelector(".example-code code").textContent).toContain(
+        `.make("#${fixture.dataset.fixture}")`,
+      );
     }
   });
 
@@ -146,6 +150,20 @@ describe("QA chart laboratory", () => {
         .element(page.elementLocator(fixture))
         .toMatchScreenshot(`lab-${fixture.dataset.fixture}.png`, screenshotOptions);
     }
+  });
+
+  it("reveals copyable examples only when the reader asks for them", () => {
+    const toggle = document.querySelector("#example-code-toggle");
+    const example = document.querySelector(".example-code");
+
+    expect(getComputedStyle(example).display).toBe("none");
+    toggle.click();
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(toggle).toHaveTextContent("Hide code");
+    expect(getComputedStyle(example).display).toBe("block");
+    toggle.click();
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    expect(getComputedStyle(example).display).toBe("none");
   });
 
   it("keeps every boundary SVG flush with its zero-padding background host", () => {

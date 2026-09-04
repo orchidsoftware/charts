@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { page } from "vitest/browser";
 
+import examplesSource from "../demo/Examples.js?raw";
 import demoMarkup from "../demo/index.html?raw";
+import mainSource from "../demo/Main.js?raw";
 import "../demo/style.css";
 
 const showcaseIds = [
@@ -58,6 +60,24 @@ afterEach(async () => {
 });
 
 describe("real-world demo", () => {
+  it("uses direct fluent builders as the only demo authoring grammar", () => {
+    expect(examplesSource.match(/\.make\(/g)).toHaveLength(44);
+    for (const legacyAdapter of [
+      "commonBuilder",
+      "seriesBuilder",
+      "datasetBuilder",
+      "typeBuilder",
+      "mountFluentChart",
+      "mountChart",
+      "showcaseSpecs",
+      "qualitySpecs",
+      "options.type",
+    ]) {
+      expect(mainSource).not.toContain(legacyAdapter);
+      expect(examplesSource).not.toContain(legacyAdapter);
+    }
+  });
+
   it("introduces every supported chart family before the gallery", () => {
     const demo = new DOMParser().parseFromString(demoMarkup, "text/html");
     const overview = demo.querySelector("#supported-charts");
@@ -84,10 +104,11 @@ describe("real-world demo", () => {
 
   it("varies showcase density while keeping the complete quality matrix immutable", async () => {
     await page.viewport(390, 900);
-    const { qualitySpecs, showcaseSpecs } = await import("../demo/Main.js");
+    const { qualityExamples, showcaseExamples } = await import("../demo/Examples.js");
+    await import("../demo/Main.js");
 
-    expect(showcaseSpecs).toHaveLength(17);
-    expect(qualitySpecs).toHaveLength(11);
+    expect(showcaseExamples).toHaveLength(17);
+    expect(qualityExamples).toHaveLength(11);
     expect(document.querySelectorAll(".selection-status")).toHaveLength(1);
     expect(document.querySelector(".selection-status").textContent).toBe("");
     expect(document.querySelector("#bundle-size-value").textContent).toMatch(/^\d+\.\d kB$/);
@@ -202,6 +223,16 @@ describe("real-world demo", () => {
     });
     expect(cards).toHaveLength(28);
     expect(overflow).toEqual([]);
+    expect(document.querySelectorAll(".example-code")).toHaveLength(cards.length);
+    for (const card of cards) {
+      const host = card.querySelector("div[id]");
+      const code = card.querySelector(".example-code code").textContent;
+
+      expect(code).toContain('from "@charts2/core"');
+      expect(code).toContain(`.make("#${host.id}")`);
+      expect(code).toContain(".render();");
+      expect(code).not.toContain("mountChart");
+    }
     const timesheetSvg = document.querySelector("#timesheet svg");
     const timesheetBounds = timesheetSvg.getBoundingClientRect();
     expect(timesheetSvg.querySelectorAll(".charts2-timesheet-bar")).toHaveLength(6);

@@ -140,7 +140,6 @@
   vector-effect: non-scaling-stroke;
 }
 
-.charts2-x-hit:hover,
 .charts2-x-hit.is-hovered,
 .charts2-x-hit.is-active {
   fill: var(--charts-focus-ring);
@@ -152,7 +151,6 @@
    */
 }
 
-.charts2-previewable-mark:hover,
 .charts2-interactive-mark.is-hovered,
 .charts2-visual-mark.is-hovered {
   filter: brightness(0.96) saturate(1.08);
@@ -175,13 +173,30 @@
   vector-effect: non-scaling-stroke;
 }
 
-.charts2-point-hit:hover,
 .charts2-point-hit.is-hovered,
 .charts2-point-hit.is-active {
   fill: var(--charts-focus-ring);
   fill-opacity: 0.08;
   stroke: currentcolor;
   stroke-opacity: 0.42;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .charts2-x-hit:hover {
+    fill: var(--charts-focus-ring);
+    fill-opacity: 0.08;
+  }
+
+  .charts2-previewable-mark:hover {
+    filter: brightness(0.96) saturate(1.08);
+  }
+
+  .charts2-point-hit:hover {
+    fill: var(--charts-focus-ring);
+    fill-opacity: 0.08;
+    stroke: currentcolor;
+    stroke-opacity: 0.42;
+  }
 }
 
 .charts2-point-halo {

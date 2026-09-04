@@ -716,6 +716,59 @@ describe("shared chart interaction contract", () => {
     chart.destroy();
   });
 
+  it("keeps a tooltip-only touch preview pinned after the pointer leaves", () => {
+    const chart = createChart("#chart", {
+      type: "pie",
+      data: {
+        labels: [
+          "Direct",
+          "Search",
+        ],
+        datasets: [
+          {
+            values: [
+              60,
+              40,
+            ],
+          },
+        ],
+      },
+    });
+    const [
+      first,
+      second,
+    ] = chart.element.querySelectorAll(".charts2-interactive-mark");
+
+    first.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "touch" }));
+    const emulatedMouseMove = new MouseEvent("mousemove", { bubbles: true });
+    Object.defineProperty(emulatedMouseMove, "sourceCapabilities", {
+      value: { firesTouchEvents: true },
+    });
+    first.dispatchEvent(emulatedMouseMove);
+    first.dispatchEvent(new PointerEvent("pointercancel", { pointerType: "touch" }));
+    expect(first).not.toHaveClass("is-hovered");
+    expect(tooltipFor(chart).hidden).toBe(true);
+
+    first.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "touch" }));
+    first.dispatchEvent(new PointerEvent("pointerleave", { pointerType: "touch" }));
+    first.dispatchEvent(new FocusEvent("blur"));
+    first.dispatchEvent(new PointerEvent("pointerup", { pointerType: "touch" }));
+    expect(first).toHaveClass("is-hovered");
+    expect(tooltipFor(chart).hidden).toBe(false);
+    expect(tooltipFor(chart).textContent).toContain("Direct");
+
+    second.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "touch" }));
+    second.dispatchEvent(new PointerEvent("pointerup", { pointerType: "touch" }));
+    expect(first).not.toHaveClass("is-hovered");
+    expect(second).toHaveClass("is-hovered");
+    expect(tooltipFor(chart).textContent).toContain("Search");
+
+    document.body.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "touch" }));
+    expect(second).not.toHaveClass("is-hovered");
+    expect(tooltipFor(chart).hidden).toBe(true);
+    chart.destroy();
+  });
+
   it("balances wrapped tooltip headings without changing their accessible text", () => {
     const heading = "A deliberately long localized category heading for the final measurement";
     const chart = createChart("#chart", {

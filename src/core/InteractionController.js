@@ -9,8 +9,10 @@ const BACKWARD_KEYS = new Set([
 ]);
 
 const ACTIVE_CLASS = "is-active";
+const HOVERED_CLASS = "is-hovered";
 const PRESSED_CLASS = "is-pressed";
 const PRESSED_ATTRIBUTE = "aria-pressed";
+const TOUCH_POINTER = "touch";
 
 /**
  * Resolves a valid initial selection without exposing partial conditions.
@@ -75,6 +77,8 @@ export default class InteractionController {
   #allowPointerPan;
   #previewable;
   #selectable;
+  #touchPendingItem = null;
+  #touchPreviewItem = null;
   #visualItems = new WeakMap();
 
   /**
@@ -119,13 +123,39 @@ export default class InteractionController {
    * @returns {void} Interaction state is returned to its idle form.
    */
   dismiss() {
+    this.#touchPendingItem = null;
     if (this.#selectedIndex >= 0) {
+      this.#clearTouchPreview();
       this.#updateSelection(-1);
 
       return;
     }
 
+    if (this.#clearTouchPreview()) {
+      this.#onHide();
+
+      return;
+    }
+
     this.#onHide();
+  }
+
+  /**
+   * Releases a touch-pinned preview without changing persistent selection.
+   *
+   * @returns {boolean} True when a touch preview was released.
+   */
+  #clearTouchPreview() {
+    if (!this.#touchPreviewItem) {
+      return false;
+    }
+
+    const item = this.#touchPreviewItem;
+    this.#touchPreviewItem = null;
+    this.#toggleVisualState(item, HOVERED_CLASS, false);
+    this.#toggleVisualState(item, PRESSED_CLASS, false);
+
+    return true;
   }
 
   /**
@@ -221,7 +251,7 @@ export default class InteractionController {
    * @returns {void} Preview styling and tooltip state are updated.
    */
   #showPreview(item, index) {
-    this.#toggleVisualState(item, "is-hovered", true);
+    this.#toggleVisualState(item, HOVERED_CLASS, true);
     this.#onShow(item, this.#labelFor(item, index), index);
   }
 
@@ -232,7 +262,7 @@ export default class InteractionController {
    * @returns {void} Pressed styling and tooltip state are restored.
    */
   #hidePreview(item) {
-    this.#toggleVisualState(item, "is-hovered", false);
+    this.#toggleVisualState(item, HOVERED_CLASS, false);
     this.#toggleVisualState(item, PRESSED_CLASS, false);
     if (this.#selectedIndex >= 0) {
       const selected = this.#items[this.#selectedIndex];
@@ -315,11 +345,109 @@ export default class InteractionController {
       return;
     }
 
-    item.addEventListener("pointerenter", () => this.#showPreview(item, index));
-    item.addEventListener("pointerleave", () => this.#hidePreview(item));
-    item.addEventListener("pointerdown", () => this.#showPreview(item, index));
-    item.addEventListener("focus", () => this.#showPreview(item, index));
-    item.addEventListener("blur", () => this.#hidePreview(item));
+    item.addEventListener("pointerenter", (event) => this.#previewPointerEnter(event, item, index));
+    item.addEventListener("pointerleave", (event) => this.#previewPointerLeave(event, item));
+    item.addEventListener("pointerdown", (event) => this.#previewPointerDown(event, item, index));
+    item.addEventListener("pointerup", (event) => this.#previewPointerUp(event, item, index));
+    item.addEventListener("pointercancel", (event) => this.#previewPointerCancel(event, item));
+    item.addEventListener("focus", () => {
+      if (item !== this.#touchPendingItem) {
+        this.#showPreview(item, index);
+      }
+    });
+    item.addEventListener("blur", () => {
+      if (item !== this.#touchPendingItem && item !== this.#touchPreviewItem) {
+        this.#hidePreview(item);
+      }
+    });
+  }
+
+  /**
+   * Shows a hover-capable pointer preview after releasing any touch preview.
+   *
+   * @param {PointerEvent} event - Pointer entry carrying the input modality.
+   * @param {Element} item - Entered interactive mark.
+   * @param {number} index - Mark position used to build its label.
+   * @returns {void} Hover-capable pointers replace the current preview.
+   */
+  #previewPointerEnter(event, item, index) {
+    if (event.pointerType === TOUCH_POINTER) {
+      return;
+    }
+
+    this.#touchPendingItem = null;
+    this.#clearTouchPreview();
+    this.#showPreview(item, index);
+  }
+
+  /**
+   * Hides a pointer preview unless touch has pinned it for inspection.
+   *
+   * @param {PointerEvent} event - Pointer exit carrying the input modality.
+   * @param {Element} item - Exited interactive mark.
+   * @returns {void} Transient previews end while touch previews persist.
+   */
+  #previewPointerLeave(event, item) {
+    if (
+      event.pointerType === TOUCH_POINTER &&
+      (item === this.#touchPendingItem || item === this.#touchPreviewItem)
+    ) {
+      return;
+    }
+
+    this.#hidePreview(item);
+  }
+
+  /**
+   * Shows a pointer preview and pins it when direct touch initiated it.
+   *
+   * @param {PointerEvent} event - Pointer press carrying the input modality.
+   * @param {Element} item - Pressed interactive mark.
+   * @param {number} index - Mark position used to build its label.
+   * @returns {void} Touch replaces the prior pinned preview without hiding the tooltip.
+   */
+  #previewPointerDown(event, item, index) {
+    if (event.pointerType === TOUCH_POINTER) {
+      this.#touchPendingItem = item;
+
+      return;
+    }
+
+    this.#showPreview(item, index);
+  }
+
+  /**
+   * Commits a touch preview only after the browser recognizes a completed tap.
+   *
+   * @param {PointerEvent} event - Pointer release carrying the input modality.
+   * @param {Element} item - Released interactive mark.
+   * @param {number} index - Mark position used to build its label.
+   * @returns {void} A completed touch replaces the prior pinned preview.
+   */
+  #previewPointerUp(event, item, index) {
+    if (event.pointerType !== TOUCH_POINTER || item !== this.#touchPendingItem) {
+      return;
+    }
+
+    this.#touchPendingItem = null;
+    this.#clearTouchPreview();
+    this.#touchPreviewItem = item;
+    this.#showPreview(item, index);
+  }
+
+  /**
+   * Releases a touch preview when scrolling or the browser cancels its gesture.
+   *
+   * @param {PointerEvent} event - Cancellation carrying the input modality.
+   * @param {Element} item - Cancelled interactive mark.
+   * @returns {void} Only the matching touch preview is released.
+   */
+  #previewPointerCancel(event, item) {
+    if (event.pointerType !== TOUCH_POINTER || item !== this.#touchPendingItem) {
+      return;
+    }
+
+    this.#touchPendingItem = null;
   }
 
   /**
@@ -334,13 +462,20 @@ export default class InteractionController {
       item.addEventListener("pointerdown", () => this.#toggleVisualState(item, PRESSED_CLASS, true));
       item.addEventListener("pointerup", () => this.#toggleVisualState(item, PRESSED_CLASS, false));
       item.addEventListener("pointercancel", () => this.#toggleVisualState(item, PRESSED_CLASS, false));
-      item.addEventListener("click", () => this.#updateSelection(index));
+      item.addEventListener("click", () => {
+        this.#clearTouchPreview();
+        this.#updateSelection(index);
+      });
 
       return;
     }
 
     if (!this.#allowPointerPan) {
-      item.addEventListener("pointerdown", (event) => event.preventDefault());
+      item.addEventListener("pointerdown", (event) => {
+        if (event.pointerType !== TOUCH_POINTER) {
+          event.preventDefault();
+        }
+      });
     }
   }
 

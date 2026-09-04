@@ -367,6 +367,10 @@ export default class Chart {
    * @returns {void} Tooltip state is updated when an eligible mark is present.
    */
   #handlePointerMove(event) {
+    if (event.sourceCapabilities?.firesTouchEvents) {
+      return;
+    }
+
     const mark = event.target.closest(MARK_SELECTOR);
 
     if (!mark || !this.#element.contains(mark)) {

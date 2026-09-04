@@ -118,4 +118,63 @@ describe("InteractionController", () => {
     expect(hit).not.toHaveClass("is-hovered");
     controller.dismiss();
   });
+
+  it("keeps a touch preview visible until dismissal or gesture cancellation", () => {
+    const namespace = "http://www.w3.org/2000/svg";
+    const marks = [
+      document.createElementNS(namespace, "rect"),
+      document.createElementNS(namespace, "rect"),
+    ];
+    const shown = [];
+    const hidden = [];
+    const controller = new InteractionController(
+      marks,
+      { previewable: true, selectable: false },
+      {
+        labelFor: (_mark, index) => `Mark ${index + 1}`,
+        onShow: (_mark, label) => {
+          shown.push(label);
+        },
+        onHide: () => {
+          hidden.push(true);
+        },
+        onActiveChange: () => {},
+        onFocusChange: () => {},
+      },
+    );
+
+    marks[0].dispatchEvent(new PointerEvent("pointerenter", { pointerType: "touch" }));
+    expect(shown).toHaveLength(0);
+    marks[0].dispatchEvent(new PointerEvent("pointerdown", { pointerType: "touch" }));
+    expect(shown).toHaveLength(0);
+    marks[0].dispatchEvent(new FocusEvent("focus"));
+    expect(shown).toHaveLength(0);
+    marks[0].dispatchEvent(new PointerEvent("pointerleave", { pointerType: "touch" }));
+    marks[0].dispatchEvent(new FocusEvent("blur"));
+    marks[0].dispatchEvent(new PointerEvent("pointerup", { pointerType: "touch" }));
+    marks[0].dispatchEvent(new PointerEvent("pointerleave", { pointerType: "touch" }));
+    expect(marks[0]).toHaveClass("is-hovered");
+    expect(shown).toEqual([
+      "Mark 1",
+    ]);
+    expect(hidden).toHaveLength(0);
+
+    marks[1].dispatchEvent(new PointerEvent("pointerdown", { pointerType: "touch" }));
+    marks[1].dispatchEvent(new PointerEvent("pointerup", { pointerType: "touch" }));
+    expect(marks[0]).not.toHaveClass("is-hovered");
+    expect(marks[1]).toHaveClass("is-hovered");
+    expect(shown.at(-1)).toBe("Mark 2");
+    expect(hidden).toHaveLength(0);
+
+    controller.dismiss();
+    expect(marks[1]).not.toHaveClass("is-hovered");
+    expect(hidden).toHaveLength(1);
+
+    marks[0].dispatchEvent(new PointerEvent("pointerdown", { pointerType: "touch" }));
+    marks[0].dispatchEvent(new PointerEvent("pointercancel", { pointerType: "touch" }));
+    expect(marks[0]).not.toHaveClass("is-hovered");
+    expect(hidden).toHaveLength(1);
+    controller.dismiss();
+    expect(hidden).toHaveLength(2);
+  });
 });

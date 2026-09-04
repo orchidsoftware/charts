@@ -70,6 +70,12 @@ article header strong,
     sans-serif;
 }
 
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
 /* Navigation and brand */
 
 .site-header {
@@ -1044,11 +1050,27 @@ article header strong {
 }
 
 .spark-grid article header {
+  gap: 4px;
+  justify-content: flex-start;
   color: var(--charts2-demo-muted);
 }
 
+.spark-grid article header > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .spark-grid article strong {
+  order: 3;
+  margin-left: auto;
   color: var(--charts2-demo-ink);
+}
+
+.spark-grid .example-code-actions {
+  order: 2;
+  margin-left: 0;
 }
 
 /* Usage snippet */

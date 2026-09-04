@@ -11,7 +11,7 @@ plans—without turning chart configuration into a project.
 ![Charts2 rendering a revenue chart inside a product dashboard](https://raw.githubusercontent.com/orchidsoftware/charts/master/.github/assets/charts2-hero.png)
 
 ```bash
-npm install @orchid/charts
+npm install @orchidsoftware/charts
 ```
 
 Add an element for the chart:
@@ -23,8 +23,8 @@ Add an element for the chart:
 Then choose a chart, add your data, and render it:
 
 ```js
-import { LineChart } from "@orchid/charts";
-import "@orchid/charts/style.css";
+import { LineChart } from "@orchidsoftware/charts";
+import "@orchidsoftware/charts/style.css";
 
 const revenue = LineChart.make("#revenue")
   .labels(["Jan", "Feb", "Mar", "Apr"])
@@ -54,7 +54,7 @@ keyboard navigation, and accessible SVG text.
 Chart-wide methods keep common changes close to the data:
 
 ```js
-import { BarChart } from "@orchid/charts";
+import { BarChart } from "@orchidsoftware/charts";
 
 const orders = BarChart.make("#orders")
   .title("Orders by status")

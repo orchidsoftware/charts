@@ -31,8 +31,8 @@ These items block the first external user and must be resolved before launch.
 
 ### 1. The documented npm package does not exist
 
-`npm view @orchid/charts` returns `404 Not Found`, while the README begins with
-`npm install @orchid/charts`. Publish the package before announcing the
+`npm view @orchidsoftware/charts` returns `404 Not Found`, while the README begins with
+`npm install @orchidsoftware/charts`. Publish the package before announcing the
 repository, then verify installation in a clean temporary project using the
 registry artifact rather than the worktree.
 

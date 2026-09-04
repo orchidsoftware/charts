@@ -1,8 +1,9 @@
 # Releasing Charts2
 
 The GitHub repository and its CI workflows exist, and the source is prepared to
-build version 0.0.1. The `@orchid/charts` name is owned through the `orchid` npm
-organization. The repository still has no version tag or public package release.
+build version 0.0.1. The `@orchidsoftware/charts` name is owned through the
+`orchidsoftware` npm organization. The repository still has no version tag or
+public package release.
 
 ## First-publication decisions
 
@@ -11,7 +12,7 @@ Before publishing, verify these external release settings:
 1. Enable branch protection, private vulnerability reporting, Dependabot, and
    GitHub Actions in the repository settings.
 2. Publish the first public version interactively, then configure npm trusted
-   publishing for `orchidsoftware/charts` and `.github/workflows/publish.yml`.
+   publishing for `@orchidsoftware/charts` and `.github/workflows/publish.yml`.
    Do not store an npm token in `.npmrc` or the repository.
 
 ## Release gate
@@ -27,7 +28,7 @@ npm run pack:check
 ```
 
 The gate includes a native no-build smoke test in Chromium, Firefox, and WebKit.
-It serves `dist` as static files, resolves `@orchid/charts` through an import map,
+It serves `dist` as static files, resolves `@orchidsoftware/charts` through an import map,
 loads CSS through `<link>`, and exercises render, update, and destroy without a
 bundler transform.
 

@@ -1,5 +1,5 @@
 {
-  "name": "@orchid/charts",
+  "name": "@orchidsoftware/charts",
   "version": "0.0.1",
   "description": "Clear, responsive SVG charts for product interfaces with one small JavaScript API",
   "type": "module",

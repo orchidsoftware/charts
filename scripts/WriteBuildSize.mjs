@@ -102,7 +102,7 @@ async function consumerSize(definitions) {
 
   await writeFile(
     entry,
-    `import { ${bindings} } from "@orchid/charts";\nimport "@orchid/charts/style.css";\nglobalThis.__charts2Definitions = [${values}];\n`,
+    `import { ${bindings} } from "@orchidsoftware/charts";\nimport "@orchidsoftware/charts/style.css";\nglobalThis.__charts2Definitions = [${values}];\n`,
   );
 
   try {
@@ -111,8 +111,8 @@ async function consumerSize(definitions) {
       logLevel: "silent",
       resolve: {
         alias: [
-          { find: "@orchid/charts/style.css", replacement: path.resolve(root, "src/styles.css") },
-          { find: "@orchid/charts", replacement: path.resolve(root, "dist/index.js") },
+          { find: "@orchidsoftware/charts/style.css", replacement: path.resolve(root, "src/styles.css") },
+          { find: "@orchidsoftware/charts", replacement: path.resolve(root, "dist/index.js") },
         ],
       },
       build: {

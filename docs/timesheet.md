@@ -9,8 +9,8 @@ and end dates matter.
 ## Creating a timesheet chart
 
 ```js
-import { TimesheetChart } from "@orchid/charts";
-import "@orchid/charts/style.css";
+import { TimesheetChart } from "@orchidsoftware/charts";
+import "@orchidsoftware/charts/style.css";
 
 const chart = TimesheetChart.make("#release-plan")
   .task("Design", "2026-09-01", "2026-09-03")
@@ -26,7 +26,7 @@ date-time strings with an explicit timezone.
 Pass an object when a task needs a group or color:
 
 ```js
-import { TimesheetChart } from "@orchid/charts";
+import { TimesheetChart } from "@orchidsoftware/charts";
 
 TimesheetChart.make("#release-plan")
   .task({
@@ -52,7 +52,7 @@ Without `range()`, Charts2 derives the timeline from the earliest start and
 latest end. Use `range()` when the view should include additional time:
 
 ```js
-import { TimesheetChart } from "@orchid/charts";
+import { TimesheetChart } from "@orchidsoftware/charts";
 
 TimesheetChart.make("#release-plan")
   .range("2026-09-01", "2026-09-12")
@@ -67,7 +67,7 @@ Use `axes(false)`, `grid(false)`, and `valueLabels(false)` to remove individual
 presentation layers:
 
 ```js
-import { TimesheetChart } from "@orchid/charts";
+import { TimesheetChart } from "@orchidsoftware/charts";
 
 TimesheetChart.make("#release-plan")
   .task("Design", "2026-09-01", "2026-09-03")
@@ -83,7 +83,7 @@ TimesheetChart.make("#release-plan")
 durations, and `formatTick()` formats the time axis:
 
 ```js
-import { TimesheetChart } from "@orchid/charts";
+import { TimesheetChart } from "@orchidsoftware/charts";
 
 TimesheetChart.make("#release-plan")
   .task("Design", "2026-09-01", "2026-09-03")
@@ -98,7 +98,7 @@ TimesheetChart.make("#release-plan")
 The `radius()` method rounds task bars in CSS pixels:
 
 ```js
-import { TimesheetChart } from "@orchid/charts";
+import { TimesheetChart } from "@orchidsoftware/charts";
 
 TimesheetChart.make("#release-plan").task("Design", "2026-09-01", "2026-09-03").radius(5).render();
 ```
@@ -108,7 +108,7 @@ TimesheetChart.make("#release-plan").task("Design", "2026-09-01", "2026-09-03").
 The timesheet tooltip provides its own date and duration formatters:
 
 ```js
-import { TimesheetChart } from "@orchid/charts";
+import { TimesheetChart } from "@orchidsoftware/charts";
 
 TimesheetChart.make("#release-plan")
   .task("Design", "2026-09-01", "2026-09-03")

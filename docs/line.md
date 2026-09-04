@@ -13,8 +13,8 @@ Import `LineChart`, choose a host element with `make()`, add the labels and
 values, and call `render()`:
 
 ```js
-import { LineChart } from "@orchid/charts";
-import "@orchid/charts/style.css";
+import { LineChart } from "@orchidsoftware/charts";
+import "@orchidsoftware/charts/style.css";
 
 const chart = LineChart.make("#revenue")
   .labels(["Jan", "Feb", "Mar", "Apr"])
@@ -32,7 +32,7 @@ Call `dataset()` once for each line. Named datasets appear in the legend and
 tooltip:
 
 ```js
-import { LineChart } from "@orchid/charts";
+import { LineChart } from "@orchidsoftware/charts";
 
 LineChart.make("#revenue")
   .labels(["Jan", "Feb", "Mar", "Apr"])
@@ -48,7 +48,7 @@ The `smooth()` method rounds the path between points. It applies to every line
 in the chart:
 
 ```js
-import { LineChart } from "@orchid/charts";
+import { LineChart } from "@orchidsoftware/charts";
 
 LineChart.make("#signups")
   .labels(["Jan", "Feb", "Mar", "Apr"])
@@ -60,7 +60,7 @@ LineChart.make("#signups")
 You may pass a boolean when the choice is conditional:
 
 ```js
-import { LineChart } from "@orchid/charts";
+import { LineChart } from "@orchidsoftware/charts";
 
 LineChart.make("#signups").dataset(values).smooth(shouldSmooth).render();
 ```
@@ -71,7 +71,7 @@ The `gradient()` method fills the area beneath every visible line with a
 fading version of its color:
 
 ```js
-import { LineChart } from "@orchid/charts";
+import { LineChart } from "@orchidsoftware/charts";
 
 LineChart.make("#revenue")
   .labels(["Jan", "Feb", "Mar", "Apr"])
@@ -83,7 +83,7 @@ LineChart.make("#revenue")
 To control the fade, pass the starting and ending opacity:
 
 ```js
-import { LineChart } from "@orchid/charts";
+import { LineChart } from "@orchidsoftware/charts";
 
 LineChart.make("#revenue")
   .dataset([42, 48, 57, 63])
@@ -95,7 +95,7 @@ Use `area()` for a solid area fill. Use `line(false)` when the filled shape
 should appear without its line:
 
 ```js
-import { LineChart } from "@orchid/charts";
+import { LineChart } from "@orchidsoftware/charts";
 
 LineChart.make("#usage").dataset([18, 24, 31, 39]).area().line(false).render();
 ```
@@ -106,7 +106,7 @@ Use `dots(false)` to hide points, `dotSize()` to resize them, and
 `strokeWidth()` to change the line width:
 
 ```js
-import { LineChart } from "@orchid/charts";
+import { LineChart } from "@orchidsoftware/charts";
 
 LineChart.make("#latency").dataset([180, 210, 195, 205]).dots(false).dotSize(5).strokeWidth(3).render();
 ```
@@ -118,7 +118,7 @@ unless you explicitly enable one of them. This is useful for a chart embedded
 inside a small metric card:
 
 ```js
-import { LineChart } from "@orchid/charts";
+import { LineChart } from "@orchidsoftware/charts";
 
 LineChart.make("#revenue-trend").dataset([42, 48, 57, 63]).height(90).gradient().frameless().render();
 ```
@@ -129,7 +129,7 @@ Chart-level methods are the usual choice. When one line needs different
 styling, configure only that dataset:
 
 ```js
-import { LineChart } from "@orchid/charts";
+import { LineChart } from "@orchidsoftware/charts";
 
 LineChart.make("#revenue")
   .dataset("Actual", [42, 48, 57], (line) => {

@@ -9,8 +9,8 @@ interface better than a solid circle.
 ## Creating a donut chart
 
 ```js
-import { DonutChart } from "@orchid/charts";
-import "@orchid/charts/style.css";
+import { DonutChart } from "@orchidsoftware/charts";
+import "@orchidsoftware/charts/style.css";
 
 const chart = DonutChart.make("#plans")
   .labels(["Starter", "Team", "Business"])
@@ -26,7 +26,7 @@ Donut values must be non-negative and at least one value must be positive.
 `maxSlices()` keeps the largest categories and combines the remainder:
 
 ```js
-import { DonutChart } from "@orchid/charts";
+import { DonutChart } from "@orchidsoftware/charts";
 
 DonutChart.make("#sources").labels(sources).dataset(visits).maxSlices(5).render();
 ```
@@ -36,7 +36,7 @@ DonutChart.make("#sources").labels(sources).dataset(visits).maxSlices(5).render(
 Use `startAngle()` to rotate the first slice to a deliberate position:
 
 ```js
-import { DonutChart } from "@orchid/charts";
+import { DonutChart } from "@orchidsoftware/charts";
 
 DonutChart.make("#plans").labels(plans).dataset(accounts).startAngle(-90).render();
 ```
@@ -46,7 +46,7 @@ DonutChart.make("#plans").labels(plans).dataset(accounts).startAngle(-90).render
 `padAngle()` adds spacing between slices. `cornerRadius()` rounds their corners:
 
 ```js
-import { DonutChart } from "@orchid/charts";
+import { DonutChart } from "@orchidsoftware/charts";
 
 DonutChart.make("#plans").labels(plans).dataset(accounts).padAngle(2).cornerRadius(4).render();
 ```

@@ -4,8 +4,8 @@
 when your interface needs to react to the chart.
 
 ```js
-import { LineChart } from "@orchid/charts";
-import "@orchid/charts/style.css";
+import { LineChart } from "@orchidsoftware/charts";
+import "@orchidsoftware/charts/style.css";
 
 const chart = LineChart.make("#revenue")
   .labels(["Jan", "Feb", "Mar"])
@@ -63,7 +63,7 @@ plan.update({
 Use `onSelect()` to connect a mark to the rest of your interface.
 
 ```js
-import { BarChart } from "@orchid/charts";
+import { BarChart } from "@orchidsoftware/charts";
 
 BarChart.make("#orders")
   .labels(["Web", "Retail", "Partners"])

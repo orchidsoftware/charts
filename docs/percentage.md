@@ -9,8 +9,8 @@ where a full pie or donut would use too much space.
 ## Creating a percentage chart
 
 ```js
-import { PercentageChart } from "@orchid/charts";
-import "@orchid/charts/style.css";
+import { PercentageChart } from "@orchidsoftware/charts";
+import "@orchidsoftware/charts/style.css";
 
 const chart = PercentageChart.make("#storage")
   .labels(["Used", "Available"])
@@ -28,7 +28,7 @@ sum to 100.
 Use `maxSlices()` to keep the largest categories and combine the remainder:
 
 ```js
-import { PercentageChart } from "@orchid/charts";
+import { PercentageChart } from "@orchidsoftware/charts";
 
 PercentageChart.make("#traffic").labels(sources).dataset(visits).maxSlices(5).render();
 ```
@@ -38,7 +38,7 @@ PercentageChart.make("#traffic").labels(sources).dataset(visits).maxSlices(5).re
 The `radius()` method rounds segment corners in CSS pixels:
 
 ```js
-import { PercentageChart } from "@orchid/charts";
+import { PercentageChart } from "@orchidsoftware/charts";
 
 PercentageChart.make("#storage").labels(["Used", "Available"]).dataset([68, 32]).radius(6).render();
 ```

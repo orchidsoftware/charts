@@ -23,8 +23,8 @@ This is the canonical Charts2 experience and MUST be the first API example in
 the README, package documentation, and demo source:
 
 ```js
-import { LineChart } from "@orchid/charts";
-import "@orchid/charts/style.css";
+import { LineChart } from "@orchidsoftware/charts";
+import "@orchidsoftware/charts/style.css";
 
 const chart = LineChart.make("#revenue")
   .labels(["Jan", "Feb", "Mar"])
@@ -205,7 +205,7 @@ import {
   PolarAreaChart,
   HeatmapChart,
   TimesheetChart,
-} from "@orchid/charts";
+} from "@orchidsoftware/charts";
 ```
 
 Each definition MUST be frozen and expose only this creation method:
@@ -219,7 +219,7 @@ interface ChartDefinition<TBuilder> {
 Definitions MUST NOT be constructors. The package MUST NOT export
 `createChart`, a public `Chart` constructor, `Chart.make(type, ...)`, or public
 chart constructors. The stylesheet MUST remain importable from
-`@orchid/charts/style.css`.
+`@orchidsoftware/charts/style.css`.
 
 ### 3.1 Public value types
 
@@ -1457,7 +1457,7 @@ Migration MUST proceed as one replacement, not as two permanent public APIs:
 5. run the coherence and package-content gates against the packed artifact.
 
 If published users require a transition period, a legacy adapter MAY be
-released as a separate package. `@orchid/charts` MUST NOT export both grammars.
+released as a separate package. `@orchidsoftware/charts` MUST NOT export both grammars.
 
 The implementation MUST prove detached, atomic render and update behavior.
 Adapting builders to the existing renderer pipeline is allowed, but a thin

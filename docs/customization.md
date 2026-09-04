@@ -9,7 +9,7 @@ Charts are responsive by default: they follow the width of their host element.
 Set a fixed drawing width only when the chart should not follow its container.
 
 ```js
-import { LineChart } from "@orchid/charts";
+import { LineChart } from "@orchidsoftware/charts";
 
 LineChart.make("#revenue").dataset([42, 48, 57]).height(280).render();
 ```
@@ -31,7 +31,7 @@ Pass colors in the order they should be used. The palette repeats when there
 are more series or categories than colors.
 
 ```js
-import { BarChart } from "@orchid/charts";
+import { BarChart } from "@orchidsoftware/charts";
 
 BarChart.make("#orders")
   .labels(["Web", "Retail", "Partners"])
@@ -47,7 +47,7 @@ palette as a low-to-high intensity scale.
 To change one dataset without changing the chart palette, pass a color directly:
 
 ```js
-import { LineChart } from "@orchid/charts";
+import { LineChart } from "@orchidsoftware/charts";
 
 LineChart.make("#revenue")
   .dataset("Actual", [42, 48, 57], "#2563eb")
@@ -81,7 +81,7 @@ colors in `colors()` so they remain explicit and readable.
 Common chart-wide methods describe the result directly:
 
 ```js
-import { LineChart } from "@orchid/charts";
+import { LineChart } from "@orchidsoftware/charts";
 
 const compactTrend = LineChart.make("#trend")
   .dataset([12, 18, 16, 25])
@@ -111,7 +111,7 @@ argument is useful for conditional code, such as `.stacked(isCompact)`.
 Use chart-level formatters when the same rule should apply everywhere:
 
 ```js
-import { BarChart } from "@orchid/charts";
+import { BarChart } from "@orchidsoftware/charts";
 
 BarChart.make("#revenue")
   .labels(["Starter", "Team", "Business"])
@@ -124,7 +124,7 @@ BarChart.make("#revenue")
 Customize only the tooltip when the axis should stay compact:
 
 ```js
-import { LineChart } from "@orchid/charts";
+import { LineChart } from "@orchidsoftware/charts";
 
 LineChart.make("#revenue")
   .dataset("Revenue", [12400, 28600, 53100])
@@ -142,7 +142,7 @@ reader.
 Markers show a target or threshold. Regions show a meaningful range.
 
 ```js
-import { LineChart } from "@orchid/charts";
+import { LineChart } from "@orchidsoftware/charts";
 
 LineChart.make("#response-time")
   .labels(["Mon", "Tue", "Wed", "Thu", "Fri"])
@@ -159,7 +159,7 @@ Line, bar, scatter, bubble, and mixed charts support markers and regions.
 Use a dataset callback only when one series needs different treatment:
 
 ```js
-import { LineChart } from "@orchid/charts";
+import { LineChart } from "@orchidsoftware/charts";
 
 LineChart.make("#revenue")
   .dataset("Actual", [42, 48, 57], (dataset) => {

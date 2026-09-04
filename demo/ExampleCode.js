@@ -70,8 +70,8 @@ export function exampleCode(selector, renderExample) {
   }
 
   return [
-    `import { ${chartName} } from "@orchid/charts";`,
-    'import "@orchid/charts/style.css";',
+    `import { ${chartName} } from "@orchidsoftware/charts";`,
+    'import "@orchidsoftware/charts/style.css";',
     ...helpers.flatMap((helper) => [
       "",
       helper,

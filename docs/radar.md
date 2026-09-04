@@ -8,8 +8,8 @@ scale. They work best with a small number of measures and datasets.
 ## Creating a radar chart
 
 ```js
-import { RadarChart } from "@orchid/charts";
-import "@orchid/charts/style.css";
+import { RadarChart } from "@orchidsoftware/charts";
+import "@orchidsoftware/charts/style.css";
 
 const chart = RadarChart.make("#quality")
   .labels(["Speed", "Reliability", "Ease", "Support", "Value"])
@@ -25,7 +25,7 @@ each label.
 Add another named dataset to compare profiles on the same scale:
 
 ```js
-import { RadarChart } from "@orchid/charts";
+import { RadarChart } from "@orchidsoftware/charts";
 
 RadarChart.make("#quality")
   .labels(["Speed", "Reliability", "Ease", "Support", "Value"])
@@ -40,7 +40,7 @@ RadarChart.make("#quality")
 Use `strokeWidth()` to change the outline of every profile:
 
 ```js
-import { RadarChart } from "@orchid/charts";
+import { RadarChart } from "@orchidsoftware/charts";
 
 RadarChart.make("#quality").labels(metrics).dataset(scores).strokeWidth(3).render();
 ```

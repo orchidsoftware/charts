@@ -13,8 +13,8 @@ changes can call `update()`, then destroy it from the effect cleanup:
 
 ```jsx
 import { useEffect, useRef } from "react";
-import { LineChart } from "@orchid/charts";
-import "@orchid/charts/style.css";
+import { LineChart } from "@orchidsoftware/charts";
+import "@orchidsoftware/charts/style.css";
 
 export function RevenueChart({ labels, values }) {
   const host = useRef(null);
@@ -62,8 +62,8 @@ the chart before the component unmounts:
 ```vue
 <script setup>
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { BarChart } from "@orchid/charts";
-import "@orchid/charts/style.css";
+import { BarChart } from "@orchidsoftware/charts";
+import "@orchidsoftware/charts/style.css";
 
 const props = defineProps({
   labels: { type: Array, required: true },
@@ -109,7 +109,7 @@ Import the Charts2 stylesheet once from your JavaScript entry point:
 
 ```js
 // app/javascript/application.js
-import "@orchid/charts/style.css";
+import "@orchidsoftware/charts/style.css";
 ```
 
 Put the chart data in Stimulus values. The `turbo:before-cache` action removes
@@ -129,7 +129,7 @@ duplicates a cached chart:
 ```js
 // app/javascript/controllers/revenue_chart_controller.js
 import { Controller } from "@hotwired/stimulus";
-import { LineChart } from "@orchid/charts";
+import { LineChart } from "@orchidsoftware/charts";
 
 export default class extends Controller {
   static values = {

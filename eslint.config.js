@@ -467,6 +467,7 @@ export default [
     ignores: [
       "coverage/**",
       "dist/**",
+      "pages-dist/**",
       "node_modules/**",
       "vendor/**",
       ".vitest-attachments/**",

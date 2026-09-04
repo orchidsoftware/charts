@@ -6,6 +6,8 @@ Charts2 turns everyday product data into clear, responsive SVG charts. One
 small JavaScript API covers dashboards, reports, activity views, and release
 plans—without turning chart configuration into a project.
 
+**[Explore the live demo →](https://charts.orchid.software)**
+
 ![Charts2 rendering a revenue chart inside a product dashboard](https://raw.githubusercontent.com/orchidsoftware/charts/master/.github/assets/charts2-hero.png)
 
 ```bash

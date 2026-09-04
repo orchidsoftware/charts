@@ -21,6 +21,8 @@ All notable changes to Charts2 are documented in this file. The format follows
   dark, full-demo, and individual chart states.
 - Automated formatting, linting, type checks, 100% code coverage, performance
   budgets, builds, package inspection, dependency review, and CodeQL analysis.
+- GitHub Pages deployment for the product demo and QA laboratory at
+  `charts.orchid.software`.
 
 ### Changed
 

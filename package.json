@@ -20,7 +20,7 @@
   "module": "./dist/index.js",
   "types": "./src/index.d.ts",
   "style": "./src/styles.css",
-  "homepage": "https://github.com/orchidsoftware/charts#readme",
+  "homepage": "https://charts.orchid.software",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/orchidsoftware/charts.git"
@@ -44,6 +44,7 @@
   "scripts": {
     "dev": "vite --open /demo/",
     "build": "vite build && node scripts/WriteBuildSize.mjs",
+    "build:demo": "vite build --config ViteDemoConfig.js",
     "preview": "vite preview",
     "format": "prettier --write \"**/*.{js,mjs,cjs,ts,css,html,md,json,yml,yaml}\" --ignore-unknown",
     "format:check": "prettier --check \"**/*.{js,mjs,cjs,ts,css,html,md,json,yml,yaml}\" --ignore-unknown",

@@ -1,6 +1,7 @@
 # Dependencies and generated builds
 /node_modules/
 /dist/
+/pages-dist/
 /coverage/
 /.vitest-attachments/
 *.tgz

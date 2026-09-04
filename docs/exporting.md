@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Every Charts2 chart is rendered as SVG. The runtime API can return that SVG as
+Every Orchid Charts chart is rendered as SVG. The runtime API can return that SVG as
 a string or download it as a file. Export always uses the chart's current data
 and presentation.
 
@@ -22,7 +22,7 @@ const chart = LineChart.make("#revenue")
 const source = chart.toSvg();
 ```
 
-Charts2 copies the computed presentation styles into the exported SVG. This
+Orchid Charts copies the computed presentation styles into the exported SVG. This
 makes the result self-contained when it is opened outside the current page.
 
 You may send the string to your own storage or download service:
@@ -51,7 +51,7 @@ const chart = BarChart.make("#orders")
 chart.download("orders-by-channel");
 ```
 
-Charts2 adds the `.svg` extension when it is not supplied. If the filename is
+Orchid Charts adds the `.svg` extension when it is not supplied. If the filename is
 omitted, the chart title is used; a chart without a title downloads as
 `Chart.svg`.
 

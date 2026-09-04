@@ -1,4 +1,4 @@
-# Charts2 fluent API specification
+# Orchid Charts fluent API specification
 
 Status: accepted target contract for the next public release  
 Implementation status: implemented and verified across runtime, declarations,
@@ -19,7 +19,7 @@ decisions and applies them consistently.
 
 ## 1. Product contract: the 95% path
 
-This is the canonical Charts2 experience and MUST be the first API example in
+This is the canonical Orchid Charts experience and MUST be the first API example in
 the README, package documentation, and demo source:
 
 ```js
@@ -134,7 +134,7 @@ empty call site, MUST NOT use documentation or source code, and MUST complete
 without a naming hint. A method name that fails this cold-use check blocks the
 release even when its behavior is otherwise conforming.
 
-Charts2 MUST NOT expose a plugin system, public registry, hook pipeline, custom
+Orchid Charts MUST NOT expose a plugin system, public registry, hook pipeline, custom
 renderer, custom layout, DOM/SVG callback, or generic `configure`, `options`,
 `use`, or `extend` escape hatch. A new public method is admissible only when it
 names a recurring product-chart task, belongs to one clear scope, and cannot be
@@ -546,7 +546,7 @@ separators. Temporary URLs and nodes MUST be released after the browser has
 accepted the download.
 
 `toSvg()` and `download()` MUST produce an SVG whose chart-owned visual
-appearance survives when the file is opened without the Charts2 stylesheet or
+appearance survives when the file is opened without the Orchid Charts stylesheet or
 its original parent. The export MUST materialize the computed values of
 chart-owned CSS properties and every CSS custom property used as a color.
 Export MUST NOT mutate the mounted SVG. External fonts and caller-owned

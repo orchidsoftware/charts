@@ -62,5 +62,6 @@ jobs:
         with:
           name: browser-diagnostics-node-${{ matrix.node-version }}
           path: .vitest-attachments/
+          include-hidden-files: true
           if-no-files-found: ignore
           retention-days: 7

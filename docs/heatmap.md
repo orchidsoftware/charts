@@ -28,7 +28,7 @@ day.
 
 ## Displaying a fixed range
 
-Without `range()`, Charts2 derives the calendar range from the first and last
+Without `range()`, Orchid Charts derives the calendar range from the first and last
 point. Use `range(start, end)` when the chart should also show inactive days
 outside that interval:
 

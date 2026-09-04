@@ -1,6 +1,6 @@
-# Charts2 documentation
+# Orchid Charts documentation
 
-Charts2 helps you turn product data into responsive SVG charts with a small,
+Orchid Charts helps you turn product data into responsive SVG charts with a small,
 consistent JavaScript API. It is part of [Orchid Software](https://orchid.software).
 
 If this is your first chart, begin with [Getting started](./getting-started.md).

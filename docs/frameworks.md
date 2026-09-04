@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Charts2 does not require a framework wrapper. A chart owns one host element and
+Orchid Charts does not require a framework wrapper. A chart owns one host element and
 returns a small lifecycle that maps directly to component mounting, updates,
 and cleanup.
 
@@ -105,7 +105,7 @@ Let a Stimulus controller own the chart element. Values keep server-rendered
 data in the HTML, value callbacks update a controller preserved by a Turbo
 morph, and `disconnect()` handles frame or page replacement.
 
-Import the Charts2 stylesheet once from your JavaScript entry point:
+Import the Orchid Charts stylesheet once from your JavaScript entry point:
 
 ```js
 // app/javascript/application.js
@@ -188,7 +188,7 @@ needed.
 
 ## Resizing
 
-Do not calculate the component width for Charts2. Unless `width()` is set, the
+Do not calculate the component width for Orchid Charts. Unless `width()` is set, the
 chart follows its host element and observes width changes automatically. Use
 ordinary CSS to size the host:
 

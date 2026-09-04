@@ -9,7 +9,7 @@ as the original audit record.
 
 ## Verdict
 
-Charts2 has a strong product surface, but the repository is not ready for its
+Orchid Charts has a strong product surface, but the repository is not ready for its
 first external user yet. Rendering quality and API discipline are ahead of
 distribution, installation, and public trust.
 

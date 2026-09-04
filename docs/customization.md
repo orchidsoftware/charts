@@ -1,6 +1,6 @@
 # Customization
 
-Charts2 starts with product-ready defaults. Add only the methods that change
+Orchid Charts starts with product-ready defaults. Add only the methods that change
 the result you need.
 
 ## Set the size
@@ -57,7 +57,7 @@ LineChart.make("#revenue")
 
 ## Match the surrounding interface
 
-Charts2 uses CSS variables for shared surface colors. Override them on a page,
+Orchid Charts uses CSS variables for shared surface colors. Override them on a page,
 card, or chart host:
 
 ```css

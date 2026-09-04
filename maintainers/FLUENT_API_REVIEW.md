@@ -8,7 +8,7 @@ gates pass
 ## 1. What these names and scores mean
 
 Taylor Otwell, DHH, Martin Fowler, Robert C. Martin, Kent Beck, and the other
-named people did not review Charts2, endorse it, or assign these scores. The
+named people did not review Orchid Charts, endorse it, or assign these scores. The
 rows below are explicit role simulations based on published design principles.
 They are internal acceptance lenses, not quotations or claims of approval.
 

@@ -1,6 +1,6 @@
 ## Summary
 
-Describe the behavior changed and why the change belongs in Charts2.
+Describe the behavior changed and why the change belongs in Orchid Charts.
 
 ## Verification
 

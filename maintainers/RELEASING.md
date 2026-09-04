@@ -1,4 +1,4 @@
-# Releasing Charts2
+# Releasing Orchid Charts
 
 Version 0.0.1 is published as `@orchidsoftware/charts`, tagged as `v0.0.1`, and
 mirrored by the matching GitHub Release. The `orchidsoftware` npm organization

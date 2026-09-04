@@ -2,7 +2,7 @@
 
 This page takes you from an empty element to a responsive product chart.
 
-## Install Charts2
+## Install Orchid Charts
 
 Install the package with npm:
 
@@ -10,7 +10,7 @@ Install the package with npm:
 npm install @orchidsoftware/charts
 ```
 
-Charts2 ships as an ES module. Import the chart you need and its stylesheet:
+Orchid Charts ships as an ES module. Import the chart you need and its stylesheet:
 
 ```js
 import { LineChart } from "@orchidsoftware/charts";
@@ -37,7 +37,7 @@ const revenue = LineChart.make("#revenue")
   .render();
 ```
 
-Charts2 uses the width of the host element and redraws when that width changes.
+Orchid Charts uses the width of the host element and redraws when that width changes.
 The default height, palette, axes, legend, labels, and tooltip are ready to use.
 
 ## Understand the chain
@@ -86,7 +86,7 @@ const revenue = LineChart.make("#revenue")
 
 Each dataset must contain one value for every label.
 
-## Use Charts2 without a build step
+## Use Orchid Charts without a build step
 
 For a plain HTML page, use an import map and load the stylesheet with a
 `<link>`. Pin an exact version in production.

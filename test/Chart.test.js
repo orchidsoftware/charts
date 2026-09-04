@@ -165,7 +165,9 @@ describe("Chart", () => {
     ]);
     expect(nodes.every((node) => node.querySelector("tspan") === null)).toBe(true);
     expect(boxes[0].x).toBeGreaterThanOrEqual(28);
-    expect(boxes.at(-1).x + boxes.at(-1).width).toBeLessThanOrEqual(872);
+    // Chromium's Linux font metrics can extend the visual bounding box by a
+    // fraction of a pixel even though the label is anchored at the plot edge.
+    expect(boxes.at(-1).x + boxes.at(-1).width).toBeLessThanOrEqual(872.5);
     const precedingBoxes = boxes.slice(0, -1);
     for (const [
       index,

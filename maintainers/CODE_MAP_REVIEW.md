@@ -323,7 +323,7 @@ aggregate build: 102 066 raw / 30 180 gzip bytes.
 
 ## Интерпретация DHH и Taylor Otwell
 
-Это не приписывание авторам мнения о Charts2, а применение их опубликованных
+Это не приписывание авторам мнения о Orchid Charts, а применение их опубликованных
 принципов.
 
 - DHH ставит programmer happiness, convention over configuration, отсутствие

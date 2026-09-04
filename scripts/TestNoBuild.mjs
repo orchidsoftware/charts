@@ -143,7 +143,7 @@ async function testBrowser(name, browserType, origin) {
     const result = await page.evaluate(() => globalThis.__charts2NoBuild);
 
     if (result.error) {
-      throw new Error(`${name} failed to import Charts2 through an import map:\n${result.error}`);
+      throw new Error(`${name} failed to import Orchid Charts through an import map:\n${result.error}`);
     }
 
     const expected = {

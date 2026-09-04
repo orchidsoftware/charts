@@ -1,6 +1,6 @@
 # Chart types
 
-Charts2 includes twelve chart types for common product questions. Choose the
+Orchid Charts includes twelve chart types for common product questions. Choose the
 question you need to answer, then open the corresponding guide.
 
 ## Change and comparison

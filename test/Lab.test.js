@@ -62,7 +62,7 @@ describe("QA chart laboratory", () => {
     ];
     const fixtureNames = fixtures.map((fixture) => fixture.dataset.fixture);
 
-    expect(brand).toHaveAttribute("aria-label", "Charts2 by Orchid, product demo");
+    expect(brand).toHaveAttribute("aria-label", "Orchid Charts by Orchid, product demo");
     expect(brand.querySelectorAll(".brand-mark path")).toHaveLength(2);
     expect(
       Object.fromEntries(

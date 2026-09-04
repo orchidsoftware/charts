@@ -48,7 +48,7 @@ TimesheetChart.make("#release-plan")
 
 ## Displaying a fixed range
 
-Without `range()`, Charts2 derives the timeline from the earliest start and
+Without `range()`, Orchid Charts derives the timeline from the earliest start and
 latest end. Use `range()` when the view should include additional time:
 
 ```js

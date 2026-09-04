@@ -24,7 +24,7 @@ Pie values must be non-negative and at least one value must be positive.
 ## Limiting slices
 
 Use `maxSlices()` when incoming data may contain more categories than the chart
-can communicate clearly. Charts2 keeps the largest slices and combines the
+can communicate clearly. Orchid Charts keeps the largest slices and combines the
 remainder:
 
 ```js

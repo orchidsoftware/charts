@@ -1,6 +1,6 @@
 # Architecture
 
-Charts2 is an integrated, dependency-free SVG library. It uses classes where
+Orchid Charts is an integrated, dependency-free SVG library. It uses classes where
 identity, state, lifecycle, or polymorphic behavior exists, and pure functions
 for stateless normalization, layout, formatting, and geometry. Directories are
 boundaries, not buckets.
@@ -259,7 +259,7 @@ concrete renderers → support
 The [ECMAScript 2026 class specification](https://tc39.es/ecma262/2026/multipage/ecmascript-language-functions-and-classes.html)
 defines native private identifiers for class fields, methods, and accessors.
 JavaScript has `public` and native `#private` class elements, but no native
-`protected` visibility. Charts2 therefore uses these rules:
+`protected` visibility. Orchid Charts therefore uses these rules:
 
 1. Package-public values are the twelve frozen chart definitions and the
    returned TypeScript `Chart` interface. There is no generic runtime factory.

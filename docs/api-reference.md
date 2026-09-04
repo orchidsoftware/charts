@@ -1,6 +1,6 @@
 # API reference
 
-This page is a compact map of the public Charts2 API. Begin with
+This page is a compact map of the public Orchid Charts API. Begin with
 [Getting started](./getting-started.md) if you have not rendered a chart yet.
 
 ## Imports
@@ -82,7 +82,7 @@ A numeric dataset input has this shape:
 }
 ```
 
-`labels()` is optional. When omitted, Charts2 generates positional labels.
+`labels()` is optional. When omitted, Orchid Charts generates positional labels.
 Named datasets are recommended when a legend or tooltip compares series.
 
 ## Cartesian methods

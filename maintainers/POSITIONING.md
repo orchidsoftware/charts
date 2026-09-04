@@ -1,6 +1,6 @@
-# Позиционирование Charts2
+# Позиционирование Orchid Charts
 
-Charts2 занимает нишу небольших продуктовых SVG-графиков, которую доказал
+Orchid Charts занимает нишу небольших продуктовых SVG-графиков, которую доказал
 Frappe Charts. Это не попытка победить ECharts или Highcharts количеством
 возможностей. Это выбор другой категории: готовые графики для интерфейсов, где
 визуализация является частью продукта, а не отдельным инженерным проектом.
@@ -15,7 +15,7 @@ Frappe Charts. Это не попытка победить ECharts или Highch
 **Работа пользователя:** быстро встроить понятный график, который уже выглядит
 и ведёт себя как законченная часть интерфейса.
 
-**Противопоставление:** Charts2 — не visualization framework. Библиотека не
+**Противопоставление:** Orchid Charts — не visualization framework. Библиотека не
 пытается покрыть карты, BI-конструкторы, WebGL и произвольные renderers. Она
 делает повседневные продуктовые графики цельными и предсказуемыми.
 
@@ -25,7 +25,7 @@ Frappe Charts. Это не попытка победить ECharts или Highch
 
 **Объяснение обещания:**
 
-> Charts2 turns everyday product data into clear, responsive SVG charts with
+> Orchid Charts turns everyday product data into clear, responsive SVG charts with
 > one small JavaScript API.
 
 ## Почему такая позиция
@@ -40,7 +40,7 @@ Frappe Charts. Это не попытка победить ECharts или Highch
    библиотеки были слишком сложными или визуально чужими, поэтому понадобились
    простые современные SVG-графики.
 
-Charts2 применяет эти принципы без копирования языка конкурента: сильная точка
+Orchid Charts применяет эти принципы без копирования языка конкурента: сильная точка
 зрения, один happy path, узнаваемые продуктовые примеры и технические свойства
 как доказательства, а не как заголовок.
 
@@ -98,7 +98,7 @@ comparisons, composition, activity, and planning.
 
 ### Расширенное описание
 
-> Charts2 is a small JavaScript charting library for dashboards, reports,
+> Orchid Charts is a small JavaScript charting library for dashboards, reports,
 > activity views, and release plans. Twelve responsive SVG chart types share one
 > consistent API for rendering, updates, interaction, export, and cleanup.
 
@@ -124,7 +124,7 @@ comparisons, composition, activity, and planning.
 
 ### 3. Забрать намерение перехода
 
-- Подготовить честную страницу `Charts2 vs Frappe Charts` с различиями по API,
+- Подготовить честную страницу `Orchid Charts vs Frappe Charts` с различиями по API,
   типам, updates, TypeScript и поддержке браузеров.
 - Добавить migration guide только после появления проверенного набора
   совместимых входных данных; не обещать drop-in replacement заранее.
@@ -177,7 +177,7 @@ guides. Карты, WebGL, plugin framework и BI-конструктор раз�
 
 - Не использовать `simple`, `modern`, `beautiful` без визуального
   доказательства рядом.
-- Не называть Charts2 drop-in replacement для другой библиотеки без тестируемой
+- Не называть Orchid Charts drop-in replacement для другой библиотеки без тестируемой
   совместимости.
 - Не обещать enterprise-scale или работу с миллионами интерактивных SVG marks.
 - Не превращать количество chart types в гонку с универсальными библиотеками.

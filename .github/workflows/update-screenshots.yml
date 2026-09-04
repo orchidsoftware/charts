@@ -1,0 +1,40 @@
+name: Update Linux Screenshots
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  screenshots:
+    name: Generate Chromium baselines
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out the source
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Generate Linux baselines
+        run: npx vitest run test/VisualRegression.test.js test/Lab.test.js --update
+
+      - name: Upload Linux baselines
+        uses: actions/upload-artifact@v7
+        with:
+          name: chromium-linux-screenshots
+          path: test/__screenshots__/**/*-chromium-linux.png
+          if-no-files-found: error
+          retention-days: 7

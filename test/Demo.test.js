@@ -89,7 +89,7 @@ describe("real-world demo", () => {
       ...overview.querySelectorAll(".support-types a"),
     ];
 
-    expect(brand).toHaveAttribute("aria-label", "Charts2 by Orchid, home");
+    expect(brand).toHaveAttribute("aria-label", "Orchid Charts by Orchid, home");
     expect(brand.querySelector(".brand-mark").tagName).toBe("svg");
     expect(brand.querySelectorAll(".brand-mark path")).toHaveLength(2);
     expect(demo.querySelector("nav a").getAttribute("href")).toBe("#supported-charts");

@@ -19,7 +19,7 @@ const chart = PercentageChart.make("#storage")
   .render();
 ```
 
-Values must be non-negative and at least one value must be positive. Charts2
+Values must be non-negative and at least one value must be positive. Orchid Charts
 calculates each category's share from the supplied values; they do not need to
 sum to 100.
 

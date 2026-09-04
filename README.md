@@ -1,14 +1,14 @@
-# Charts2
+# Orchid Charts
 
 **Charts that belong in your product.**
 
-Charts2 turns everyday product data into clear, responsive SVG charts. One
+Orchid Charts turns everyday product data into clear, responsive SVG charts. One
 small JavaScript API covers dashboards, reports, activity views, and release
 plans—without turning chart configuration into a project.
 
 **[Explore the live demo →](https://charts.orchid.software)**
 
-![Charts2 rendering a revenue chart inside a product dashboard](https://raw.githubusercontent.com/orchidsoftware/charts/master/.github/assets/charts2-hero.png)
+![Orchid Charts rendering a revenue chart inside a product dashboard](https://raw.githubusercontent.com/orchidsoftware/charts/master/.github/assets/orchid-charts-hero.png)
 
 ```bash
 npm install @orchidsoftware/charts
@@ -46,7 +46,7 @@ keyboard navigation, and accessible SVG text.
   and planning use named definitions instead of a generic configuration maze.
 - **Made for interfaces.** Responsive SVG, tooltips, keyboard navigation,
   reduced motion, and dark product surfaces work together.
-- **Small and typed.** Charts2 has zero runtime dependencies, tree-shakeable
+- **Small and typed.** Orchid Charts has zero runtime dependencies, tree-shakeable
   ESM, explicit CSS, source maps, and TypeScript declarations.
 
 ## Shape the result
@@ -76,7 +76,7 @@ Choose a chart → make(parent) → add data → shape it → render()
 
 ## Choose a chart
 
-![Line, stacked bar, donut, and timesheet charts rendered by Charts2](https://raw.githubusercontent.com/orchidsoftware/charts/master/.github/assets/charts2-gallery.png)
+![Line, stacked bar, donut, and timesheet charts rendered by Orchid Charts](https://raw.githubusercontent.com/orchidsoftware/charts/master/.github/assets/orchid-charts-gallery.png)
 
 | If you want to show…              | Start with…                                    |
 | --------------------------------- | ---------------------------------------------- |
@@ -108,7 +108,7 @@ its view is removed.
 
 ## Documentation
 
-- [Getting started](./docs/getting-started.md) — install Charts2 and render your first chart.
+- [Getting started](./docs/getting-started.md) — install Orchid Charts and render your first chart.
 - [Chart types](./docs/chart-types.md) — choose the chart that answers your question.
 - [Customization](./docs/customization.md) — change color, layout, labels, and presentation.
 - [Updates and interaction](./docs/updates-and-interaction.md) — connect charts to live product state.
@@ -116,7 +116,7 @@ its view is removed.
 - [React, Vue, and Hotwire](./docs/frameworks.md) — mount, update, and clean up charts in components.
 - [API reference](./docs/api-reference.md) — scan the complete public vocabulary.
 
-Charts2 has zero runtime dependencies, includes TypeScript declarations, and
+Orchid Charts has zero runtime dependencies, includes TypeScript declarations, and
 targets current evergreen browsers. It is part of
 [Orchid Software](https://orchid.software), maintained by
 [@tabuna](https://github.com/tabuna), and released under the [MIT License](./LICENSE).

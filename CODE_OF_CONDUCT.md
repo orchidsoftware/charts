@@ -1,6 +1,6 @@
 # Code of conduct
 
-Charts2 welcomes focused, respectful collaboration. Treat other contributors
+Orchid Charts welcomes focused, respectful collaboration. Treat other contributors
 as peers, discuss behavior and trade-offs instead of people, and assume honest
 intent while asking for evidence.
 

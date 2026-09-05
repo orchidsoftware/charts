@@ -1,7 +1,6 @@
 import {
   ChartOrientation,
   ChartType,
-  LEGEND_ROW_HEIGHT,
   MAX_INDIVIDUAL_LINE_POINTS,
   MAX_X_INSPECTOR_POINTS,
   YAxisPosition,
@@ -10,7 +9,7 @@ import { extent, niceValueScale, scale } from "../../support/geometry/Math.js";
 import {
   formatCategoryLabel,
   horizontalCategoryPadding,
-  legendLayout,
+  seriesContentLayout,
   verticalValuePadding,
 } from "../../support/presentation/Presentation.js";
 
@@ -227,8 +226,10 @@ export default class CartesianLayout {
    */
   #resolveState() {
     const { height, orientation, type, width } = this.#chart.options;
-    const presentation = this.#presentationState({ orientation, type, width });
+    const presentation = this.#presentationState({ orientation, type });
     const data = this.#dataState({ ...presentation, type, width });
+
+    const content = seriesContentLayout(this.#chart);
 
     const frame = {
       width,
@@ -236,7 +237,7 @@ export default class CartesianLayout {
       padding: presentation.padding,
       top: presentation.top,
       right: width - (presentation.isYAxisRight ? data.gutter : 0),
-      bottom: height - presentation.padding,
+      bottom: content.contentHeight - presentation.padding,
       left: presentation.isYAxisRight ? 0 : data.gutter,
     };
 
@@ -260,21 +261,16 @@ export default class CartesianLayout {
    * @param {object} source - Orientation, type, and viewport width.
    * @param {string} source.orientation - Direction used for bar category slots.
    * @param {string} source.type - Current Cartesian chart type.
-   * @param {number} source.width - Total chart width.
    * @returns {object} Frame padding, legend offset, axis direction, and labels.
    */
-  #presentationState({ orientation, type, width }) {
+  #presentationState({ orientation, type }) {
     const isFrameless =
       !this.#chart.options.axes && !this.#chart.options.grid && !this.#chart.options.valueLabels;
 
     const padding = isFrameless ? Math.max(this.#chart.options.strokeWidth, 1) : STANDARD_FRAME_PADDING;
     const isHorizontal = type === ChartType.BAR && orientation === ChartOrientation.HORIZONTAL;
 
-    const top = Math.max(
-      isFrameless ? padding : 0,
-      this.#labelTopClearance(isHorizontal),
-      this.#legendHeight(width),
-    );
+    const top = Math.max(isFrameless ? padding : 0, this.#labelTopClearance(isHorizontal));
 
     const labels = this.#chart.labels.map((label, index) =>
       formatCategoryLabel(this.#chart.options, label, index),
@@ -410,22 +406,6 @@ export default class CartesianLayout {
       first - (second - first) / 2,
       last + (last - previous) / 2,
     ];
-  }
-
-  /**
-   * Measures the space occupied by a visible legend and its wrapped rows.
-   *
-   * @param {number} width - Available chart width in pixels.
-   * @returns {number} Reserved legend height, or zero when no legend is rendered.
-   */
-  #legendHeight(width) {
-    if (!this.#chart.options.legend || this.#chart.datasets.length < 2) {
-      return 0;
-    }
-
-    const items = this.#chart.datasets.map((dataset) => ({ label: dataset.name, color: dataset.color }));
-
-    return STANDARD_FRAME_PADDING + (legendLayout(width, items).rows - 1) * LEGEND_ROW_HEIGHT;
   }
 
   /**

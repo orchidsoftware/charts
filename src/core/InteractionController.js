@@ -74,7 +74,6 @@ export default class InteractionController {
   #onHide;
   #onShow;
   #onFocusChange;
-  #allowPointerPan;
   #previewable;
   #selectable;
   #touchPendingItem = null;
@@ -97,7 +96,6 @@ export default class InteractionController {
     this.#onHide = callbacks.onHide;
     this.#onShow = callbacks.onShow;
     this.#onFocusChange = callbacks.onFocusChange;
-    this.#allowPointerPan = behavior.allowPointerPan ?? false;
     this.#previewable = behavior.previewable ?? true;
     this.#selectable = behavior.selectable ?? true;
     this.#selectedIndex = initialSelection(this.#items, behavior.activeIndex ?? -1, this.#selectable);
@@ -470,13 +468,11 @@ export default class InteractionController {
       return;
     }
 
-    if (!this.#allowPointerPan) {
-      item.addEventListener("pointerdown", (event) => {
-        if (event.pointerType !== TOUCH_POINTER) {
-          event.preventDefault();
-        }
-      });
-    }
+    item.addEventListener("pointerdown", (event) => {
+      if (event.pointerType !== TOUCH_POINTER) {
+        event.preventDefault();
+      }
+    });
   }
 
   /**

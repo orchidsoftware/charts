@@ -640,11 +640,9 @@ describe("unified public pipeline", () => {
       ].map((item) => item.getAttribute("y")),
     );
     const narrowLegend = narrowMixed.element.querySelector(".charts2-legend-group").getBBox();
-    const narrowPlotTop = Number(
-      narrowMixed.element.querySelector(".charts2-grid-horizontal").getAttribute("y1"),
-    );
+    const narrowPlotBottom = Number(narrowMixed.element.querySelector(".charts2-x-axis").getAttribute("y1"));
     expect(narrowLegendRows.size).toBeGreaterThan(1);
-    expect(narrowLegend.y + narrowLegend.height).toBeLessThanOrEqual(narrowPlotTop - 6);
+    expect(narrowPlotBottom).toBeLessThan(narrowLegend.y);
     expect(narrowMixed.element.querySelectorAll(".charts2-x-hit")).toHaveLength(4);
     narrowMixed.destroy();
 

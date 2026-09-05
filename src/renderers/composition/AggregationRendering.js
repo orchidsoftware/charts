@@ -1,8 +1,8 @@
 import { ChartType, DEFAULT_PERCENTAGE_RADIUS } from "../../support/Constants.js";
 import { svg } from "../../support/Dom.js";
 import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
-import { aggregationLayout, tooltipText } from "../../support/presentation/Presentation.js";
-import LegendRenderer from "../LegendRenderer.js";
+import { chartContentLayout, tooltipText } from "../../support/presentation/Presentation.js";
+import { renderLegend } from "../LegendRendering.js";
 
 import Composition from "./Composition.js";
 
@@ -29,7 +29,7 @@ function percentageStrip(width, layout, clipping) {
     x: 0,
     width: stripWidth,
     height,
-    y: layout.contentTop,
+    y: 0,
     radius: Math.min(clipping.radius, height / 2, stripWidth / 2),
     clipId: clipping.id,
   };
@@ -69,28 +69,22 @@ class AggregationRenderer {
       color: colors[index % colors.length],
     }));
 
-    const layout = aggregationLayout({
+    const layout = chartContentLayout({
       width,
       height,
       items: legendItems,
       legend: this.#chart.options.legend,
     });
 
+    renderLegend({ chart: this.#chart, surface: this.#surface }, layout);
+
     if (type === ChartType.PERCENTAGE) {
       this.#renderPercentage(composition, { colors, layout, width });
-
-      if (layout.legendBaseline !== null) {
-        this.#renderItemLegend(composition.parts, colors, layout.legendBaseline);
-      }
 
       return;
     }
 
     this.#renderSectors(composition, { colors, layout, width, type });
-
-    if (layout.legendBaseline !== null) {
-      this.#renderItemLegend(composition.parts, colors, layout.legendBaseline);
-    }
   }
 
   /**
@@ -196,7 +190,7 @@ class AggregationRenderer {
    */
   #renderSectors(composition, { colors, layout, width, type }) {
     const cx = width / 2;
-    const cy = layout.contentTop + layout.contentHeight / 2;
+    const cy = layout.contentHeight / 2;
 
     const radius = Math.max(
       MINIMUM_SECTOR_RADIUS,
@@ -267,24 +261,6 @@ class AggregationRenderer {
       point: this.#chart.datasets[0].points[index],
       suffix: ` (${Math.round(composition.shareOf(part) * FULL_PERCENTAGE)}%)`,
     });
-  }
-
-  /**
-   * Renders a wrapped legend for aggregation items rather than data series.
-   *
-   * @param {Array<{label: string, value: number}>} entries - Ordered aggregation values to describe.
-   * @param {string[]} colors - Item colors aligned with the supplied entries.
-   * @param {number} y - Baseline of the first legend row.
-   * @returns {void} Positioned legend groups are appended to the chart SVG.
-   */
-  #renderItemLegend(entries, colors, y) {
-    new LegendRenderer({ chart: this.#chart, surface: this.#surface }).renderItems(
-      entries.map((item, index) => ({
-        label: formatLabel(this.#chart.options, item.label, { target: VALUE_LABEL_TARGET, index }),
-        color: colors[index % colors.length],
-      })),
-      y,
-    );
   }
 }
 

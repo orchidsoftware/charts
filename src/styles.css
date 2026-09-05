@@ -196,20 +196,24 @@
   vector-effect: non-scaling-stroke;
 }
 
+.charts2-line-point-halo {
+  stroke-width: 3;
+}
+
 .charts2-point,
 .charts2-scatter {
   stroke-width: 3;
   vector-effect: non-scaling-stroke;
 }
 
+.charts2-point {
+  stroke-width: 2;
+}
+
 /* Series and family details */
 
 .charts2-legend-group {
   pointer-events: none;
-}
-
-.charts2-legend-swatch {
-  vector-effect: non-scaling-stroke;
 }
 
 .charts2-line.charts2-series-1 {

@@ -6,6 +6,15 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ## Unreleased
 
+### Changed
+
+- Unified categorical legends below the plot with compact color dots,
+  content-sized items, consistent spacing, and whole-item wrapping.
+- Consolidated series and composition legend placement into one shared content
+  layout, removing separate Cartesian and radar top-legend calculations.
+- Reduced default line point radius to 3 px, outline to 2 px, and separator
+  stroke to 3 px without changing inspection targets or the public API.
+
 ## 0.0.2 - 2026-09-04
 
 ### Changed

@@ -1,4 +1,4 @@
-import LegendRenderer from "../LegendRenderer.js";
+import { renderLegend } from "../LegendRendering.js";
 
 import CartesianAxesRenderer from "./CartesianAxesRenderer.js";
 import CartesianInspectorRenderer from "./CartesianInspectorRenderer.js";
@@ -49,19 +49,9 @@ class CartesianRenderer {
     if (layout.usesInspector && interactive) {
       new CartesianInspectorRenderer(rendering).render();
     }
-  }
-}
 
-/**
- * Renders one Cartesian chart and its optional series legend.
- *
- * @param {object} rendering - Frozen chart snapshot and owned SVG surface.
- * @param {(rendering: object) => void} renderSeries - Family-specific series drawing function.
- * @returns {void} Cartesian content is appended to the chart SVG.
- */
-function renderCartesianChart(rendering, renderSeries) {
-  new CartesianRenderer(rendering, renderSeries).render();
-  new LegendRenderer(rendering).render();
+    renderLegend(rendering);
+  }
 }
 
 /**
@@ -71,7 +61,7 @@ function renderCartesianChart(rendering, renderSeries) {
  * @returns {void} Line content is appended to the chart SVG.
  */
 function renderLineChart(rendering) {
-  renderCartesianChart(rendering, renderLineSeries);
+  new CartesianRenderer(rendering, renderLineSeries).render();
 }
 
 /**
@@ -81,7 +71,7 @@ function renderLineChart(rendering) {
  * @returns {void} Bar content is appended to the chart SVG.
  */
 function renderBarChart(rendering) {
-  renderCartesianChart(rendering, renderBarSeries);
+  new CartesianRenderer(rendering, renderBarSeries).render();
 }
 
 /**
@@ -91,7 +81,7 @@ function renderBarChart(rendering) {
  * @returns {void} Point content is appended to the chart SVG.
  */
 function renderPointChart(rendering) {
-  renderCartesianChart(rendering, renderPointSeries);
+  new CartesianRenderer(rendering, renderPointSeries).render();
 }
 
 /**
@@ -101,7 +91,7 @@ function renderPointChart(rendering) {
  * @returns {void} Mixed content is appended to the chart SVG.
  */
 function renderMixedChart(rendering) {
-  renderCartesianChart(rendering, renderMixedSeries);
+  new CartesianRenderer(rendering, renderMixedSeries).render();
 }
 
 export { renderBarChart, renderLineChart, renderMixedChart, renderPointChart };

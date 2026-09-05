@@ -274,8 +274,8 @@ describe("real-world demo", () => {
       Math.max(...signedValueLabels.map((label) => label.getBoundingClientRect().right)),
     ).toBeLessThanOrEqual(signedMixed.getBoundingClientRect().right);
     const signedLegend = signedMixed.querySelector(".charts2-legend-group").getBoundingClientRect();
-    const signedPlotTop = signedMixed.querySelector(".charts2-grid-horizontal").getBoundingClientRect().top;
-    expect(signedLegend.bottom).toBeLessThanOrEqual(signedPlotTop - 6);
+    const signedPlotBottom = signedMixed.querySelector(".charts2-x-axis").getBoundingClientRect().bottom;
+    expect(signedPlotBottom).toBeLessThan(signedLegend.top);
 
     const polarSvg = document.querySelector("#polar svg");
     const polarBounds = polarSvg.getBoundingClientRect();

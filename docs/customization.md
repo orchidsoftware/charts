@@ -148,6 +148,9 @@ LineChart.make("#revenue")
   .render();
 ```
 
+Categorical legends sit below the plot, with a color dot beside each label.
+Items fit their text and wrap together on narrow containers.
+
 Pass `false` to `tooltip()` or `legend()` when that layer does not help the
 reader.
 

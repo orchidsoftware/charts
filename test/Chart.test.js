@@ -36,6 +36,70 @@ describe("Chart", () => {
     document.body.innerHTML = '<div id="chart"><span>old</span></div>';
   });
 
+  it("groups compact color dots beside their labels without adding interaction targets", () => {
+    const chart = createChart("#chart", { type: "line", data });
+    const samples = [
+      ...chart.element.querySelectorAll(".charts2-legend-swatch"),
+    ];
+    const labels = [
+      ...chart.element.querySelectorAll(".charts2-legend"),
+    ];
+    expect(samples.map((sample) => sample.tagName)).toEqual([
+      "circle",
+      "circle",
+    ]);
+    for (const [
+      index,
+      sample,
+    ] of samples.entries()) {
+      expect(sample.getAttribute("fill")).toBe(
+        chart.element.querySelectorAll(".charts2-line")[index].getAttribute("stroke"),
+      );
+      expect(labels[index].getBBox().x - (sample.getBBox().x + sample.getBBox().width)).toBe(8);
+      expect(sample.getBBox().y).toBeLessThan(labels[index].getBBox().y + labels[index].getBBox().height);
+      expect(sample.getBBox().width).toBe(8);
+      expect(sample.getAttribute("aria-hidden")).toBe("true");
+      expect(sample.hasAttribute("tabindex")).toBe(false);
+    }
+    const legendTop = chart.element.querySelector(".charts2-legend-group").getBBox().y;
+    for (const label of chart.element.querySelectorAll(".charts2-label")) {
+      expect(label.getBBox().y + label.getBBox().height).toBeLessThan(legendTop);
+    }
+    chart.destroy();
+  });
+
+  it("uses the same color dots for every series in a mixed legend", () => {
+    const chart = createChart("#chart", {
+      type: "mixed",
+      data: {
+        datasets: [
+          "bar",
+          "line",
+          "scatter",
+          "line",
+        ].map((chartType, index) => ({
+          chartType,
+          name: `Series ${index}`,
+          values: [
+            1,
+            2,
+            3,
+          ],
+        })),
+      },
+    });
+    const samples = [
+      ...chart.element.querySelectorAll(".charts2-legend-swatch"),
+    ];
+    expect(samples.map((sample) => sample.tagName)).toEqual([
+      "circle",
+      "circle",
+      "circle",
+      "circle",
+    ]);
+    chart.destroy();
+  });
+
   it("renders and updates a line chart through the friendly factory", () => {
     const chart = createChart("#chart", { type: "line", data, width: 400, height: 200, ariaLabel: "Growth" });
     expect(chart.element.getAttribute("aria-label")).toBe("Growth");
@@ -93,10 +157,20 @@ describe("Chart", () => {
     chart.destroy();
   });
 
+  it("uses a readable fallback width before a zero-width host receives layout", () => {
+    document.querySelector("#chart").style.width = "0px";
+    const chart = createChart("#chart", { type: "line", data });
+    expect(widthOf(chart)).toBe(640);
+    const legend = chart.element.querySelector(".charts2-legend-group").getBBox();
+    expect(legend.x + legend.width).toBeLessThanOrEqual(widthOf(chart));
+    chart.destroy();
+  });
+
   it("reserves legend space only while a legend is visible", () => {
     const chart = createChart("#chart", { type: "line", data, width: 400 });
     const plotTop = () => Number(chart.element.querySelector(".charts2-grid-horizontal").getAttribute("y1"));
-    expect(plotTop()).toBe(28);
+    const originalBottom = Number(chart.element.querySelector(".charts2-x-axis").getAttribute("y1"));
+    expect(plotTop()).toBe(8);
     expect(chart.element.querySelector(".charts2-legend-group")).not.toBeNull();
 
     chart.update({
@@ -105,13 +179,16 @@ describe("Chart", () => {
       ],
     });
     expect(chart.element.querySelector(".charts2-legend-group")).toBeNull();
+    expect(Number(chart.element.querySelector(".charts2-x-axis").getAttribute("y1"))).toBeGreaterThan(
+      originalBottom,
+    );
     expect(plotTop()).toBe(8);
     for (const label of chart.element.querySelectorAll(".charts2-value-label")) {
       expect(label.getBBox().y).toBeGreaterThanOrEqual(0);
     }
 
     chart.update(data);
-    expect(plotTop()).toBe(28);
+    expect(plotTop()).toBe(8);
     chart.destroy();
 
     const hidden = createChart("#chart", { type: "line", data, legend: false });
@@ -164,12 +241,12 @@ describe("Chart", () => {
       "var(--charts-point-fill)",
     );
     expect(chart.element.querySelector(".charts2-point").getAttribute("stroke")).toBe("#007AFF");
-    expect(chart.element.querySelector(".charts2-point").getAttribute("r")).toBe("4.5");
-    expect(getComputedStyle(chart.element.querySelector(".charts2-point")).strokeWidth).toBe("3px");
+    expect(chart.element.querySelector(".charts2-point").getAttribute("r")).toBe("3");
+    expect(getComputedStyle(chart.element.querySelector(".charts2-point")).strokeWidth).toBe("2px");
     const halo = chart.element.querySelector(".charts2-point-halo");
     expect(halo.getAttribute("cx")).toBe(chart.element.querySelector(".charts2-point").getAttribute("cx"));
     expect(halo.getAttribute("cy")).toBe(chart.element.querySelector(".charts2-point").getAttribute("cy"));
-    expect(getComputedStyle(halo).strokeWidth).toBe("5px");
+    expect(getComputedStyle(halo).strokeWidth).toBe("3px");
     expect(halo.querySelector("title")).toBeNull();
     expect(
       [
@@ -868,7 +945,7 @@ describe("Chart", () => {
     expect(chart.element.textContent).toContain("A11y");
     const legendBox = chart.element.querySelector(".charts2-legend-group").getBBox();
     const frameBox = chart.element.querySelector(".charts2-radar-frame").getBBox();
-    expect(legendBox.y + legendBox.height).toBeLessThan(frameBox.y);
+    expect(frameBox.y + frameBox.height).toBeLessThan(legendBox.y);
     const legendLabels = [
       ...chart.element.querySelectorAll(".charts2-legend"),
     ];
@@ -892,7 +969,7 @@ describe("Chart", () => {
     ]);
     expect(new Set(legendLabels.map((label) => label.getAttribute("y")))).toEqual(
       new Set([
-        "16",
+        "317",
       ]),
     );
     expect(

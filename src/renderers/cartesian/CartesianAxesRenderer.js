@@ -586,7 +586,7 @@ export default class CartesianAxesRenderer {
    */
   // eslint-disable-next-line max-lines-per-function -- Array layout lines do not add behavior.
   #renderVerticalLabels() {
-    const { height, left, right } = this.#layout.frame;
+    const { bottom, padding, left, right } = this.#layout.frame;
     const shouldCenterCategories = this.#layout.type !== ChartType.LINE;
     const intervals = shouldCenterCategories ? this.#chart.labels.length : this.#chart.labels.length - 1;
     const step = (right - left) / Math.max(1, intervals);
@@ -619,7 +619,7 @@ export default class CartesianAxesRenderer {
         value,
         attributes: {
           x: placement.x,
-          y: height - CATEGORY_LABEL_BOTTOM_OFFSET,
+          y: bottom + padding - CATEGORY_LABEL_BOTTOM_OFFSET,
           class: "charts2-label",
           "text-anchor": placement.anchor,
         },

@@ -517,6 +517,14 @@ describe("complete fluent authoring surface", () => {
     resizeCallback();
     line.destroy();
     resizeCallback();
+    resetHost();
+    const heatmapResize = HeatmapChart.make("#chart").points({ "2026-01-01": 1 }).render();
+    const animationFrame = vi.spyOn(globalThis, "requestAnimationFrame");
+    resizeCallback();
+    resizeCallback();
+    expect(animationFrame).toHaveBeenCalledTimes(1);
+    heatmapResize.destroy();
+    animationFrame.mockRestore();
     vi.stubGlobal("ResizeObserver", null);
     resetHost();
     const fallback = LineChart.make("#chart")

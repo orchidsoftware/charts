@@ -577,7 +577,6 @@ export default class Chart {
 
     const interactionBehavior = {
       activeIndex: this.#activeMarkIndex,
-      allowPointerPan: false,
       previewable: this.#options.tooltip,
       selectable: typeof this.#options.onSelect === "function",
     };

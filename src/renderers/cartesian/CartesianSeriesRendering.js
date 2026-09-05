@@ -11,7 +11,7 @@ const CARTESIAN_LAYER = Object.freeze({
 });
 
 const SERIES_CLASS_COUNT = 4;
-const DEFAULT_LINE_MARKER_RADIUS = 4.5;
+const DEFAULT_LINE_MARKER_RADIUS = 3;
 const DEFAULT_POINT_RADIUS = 4;
 const BUBBLE_OPACITY = 0.65;
 const MINIMUM_POINT_HIT_RADIUS = 22;
@@ -231,7 +231,7 @@ function renderVisibleLinePoints(rendering, entry) {
       cx: coordinates.x,
       cy: coordinates.y,
       r: presentation.dotSize,
-      class: "charts2-point-halo",
+      class: "charts2-point-halo charts2-line-point-halo",
       "aria-hidden": "true",
     });
     surface.append(

@@ -209,7 +209,7 @@ describe("QA chart laboratory", () => {
       }
 
       if (swatch) {
-        expect(Number(swatch.getAttribute("cx")) - Number(swatch.getAttribute("r")), host.id).toBe(0);
+        expect(swatch.getBBox().x, host.id).toBe(0);
       }
     }
 

@@ -1,30 +1,13 @@
 import { labelElement, markMetadata, svg, titled } from "../../support/Dom.js";
 import { polarPoint } from "../../support/geometry/Math.js";
 import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
-import { datasetSummary, legendLayout } from "../../support/presentation/Presentation.js";
-import LegendRenderer from "../LegendRenderer.js";
+import { datasetSummary, seriesContentLayout } from "../../support/presentation/Presentation.js";
+import { renderLegend } from "../LegendRendering.js";
 
-const LEGEND_TOP = 20;
-const LEGEND_ROW_HEIGHT = 20;
 const RADAR_RADIUS_RATIO = 0.38;
 const LABEL_OFFSET = 12;
 const MINIMUM_LABEL_WIDTH = 54;
 const LABEL_WIDTH_RATIO = 0.16;
-
-/**
- * Resolves the vertical space consumed by an optional radar legend.
- *
- * @param {object} chart - Frozen radar data and options.
- * @param {Array<object>} items - Legend items for the datasets.
- * @returns {number} Top edge of the drawable radar region.
- */
-function radarContentTop(chart, items) {
-  if (!chart.options.legend || chart.datasets.length < 2) {
-    return 0;
-  }
-
-  return LEGEND_TOP + legendLayout(chart.options.width, items).rows * LEGEND_ROW_HEIGHT;
-}
 
 /**
  * Resolves the text anchor for one radar label direction.
@@ -65,16 +48,9 @@ class RadarRenderer {
    * @returns {void} Radar content is appended to the chart SVG.
    */
   render() {
-    const { height, width } = this.#chart.options;
-
-    const legendItems = this.#chart.datasets.map((dataset) => ({
-      label: dataset.name,
-      color: dataset.color,
-    }));
-
-    const contentTop = radarContentTop(this.#chart, legendItems);
-    const contentHeight = height - contentTop;
-    const center = { x: width / 2, y: contentTop + contentHeight / 2 };
+    const { width } = this.#chart.options;
+    const { contentHeight } = seriesContentLayout(this.#chart);
+    const center = { x: width / 2, y: contentHeight / 2 };
 
     const scale = {
       radius: Math.min(width, contentHeight) * RADAR_RADIUS_RATIO,
@@ -239,7 +215,7 @@ class RadarRenderer {
  */
 function renderRadarChart(rendering) {
   new RadarRenderer(rendering).render();
-  new LegendRenderer(rendering).render();
+  renderLegend(rendering);
 }
 
 export { renderRadarChart };

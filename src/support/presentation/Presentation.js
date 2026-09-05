@@ -2,27 +2,23 @@ import {
   HORIZONTAL_LABEL_EDGE_INSET,
   HORIZONTAL_LABEL_GAP,
   VALUE_LABEL_GAP,
-  SERIES_SWATCH_DIAMETER,
-  LEGEND_LABEL_GAP,
+  LEGEND_LABEL_OFFSET,
   LEGEND_ROW_HEIGHT,
-  AGGREGATION_LEGEND_BASELINE_INSET,
-  AGGREGATION_LEGEND_GAP,
+  LEGEND_BASELINE_INSET,
+  LEGEND_CONTENT_GAP,
 } from "../Constants.js";
 import { formatNumber, truncateText, measuredTextWidth, measuredLegendTextWidth } from "../Dom.js";
 import { extent } from "../geometry/Math.js";
 
 import { formatLabel, formatValue } from "./Formatting.js";
 
-const AGGREGATION_MINIMUM_CONTENT_HEIGHT = 8;
+const MINIMUM_CONTENT_HEIGHT = 8;
 const HORIZONTAL_LABEL_MAXIMUM_PADDING = 176;
 const HORIZONTAL_LABEL_MINIMUM_PADDING = 24;
 const HORIZONTAL_LABEL_WIDTH_RATIO = 0.42;
 const HORIZONTAL_MULTILINE_LABEL_WIDTH_RATIO = 0.55;
-const INITIAL_LEGEND_ROW_COUNT = 1;
 const LEGEND_ITEM_GAP = 16;
-const LEGEND_LEFT_INSET = 0;
 const LEGEND_MAXIMUM_LABEL_WIDTH = 160;
-const LEGEND_RIGHT_INSET = 0;
 const DATASET_SUMMARY_LIMIT = 12;
 
 /**
@@ -115,72 +111,59 @@ function verticalValuePadding(ticks, basePadding) {
 }
 
 /**
- * Packs legend items into deterministic rows using measured visible labels.
- *
- * @param {number} width - Available legend width in pixels.
- * @param {Array<{label: string}>} items - Ordered legend entries to position.
- * @returns {{labelOffset: number, positions: Array<object>, rows: number}} Shared label offset, item positions, and occupied row count.
- */
-function legendLayout(width, items) {
-  const left = LEGEND_LEFT_INSET;
-  const right = LEGEND_RIGHT_INSET;
-  const labelOffset = SERIES_SWATCH_DIAMETER + LEGEND_LABEL_GAP;
-  const itemGap = LEGEND_ITEM_GAP;
-  const maximumItemWidth = Math.max(1, width - left - right);
-  let x = LEGEND_LEFT_INSET;
-  let rows = INITIAL_LEGEND_ROW_COUNT;
-
-  const positions = items.map((item) => {
-    const labelMaxWidth = Math.max(1, Math.min(LEGEND_MAXIMUM_LABEL_WIDTH, maximumItemWidth - labelOffset));
-    const visibleLabel = truncateText(item.label, labelMaxWidth);
-    const itemWidth = Math.min(maximumItemWidth, labelOffset + measuredLegendTextWidth(visibleLabel));
-
-    if (x + itemWidth > width - LEGEND_RIGHT_INSET && x > LEGEND_LEFT_INSET) {
-      x = left;
-      rows += 1;
-    }
-
-    const position = { itemWidth, labelMaxWidth, x, yOffset: (rows - 1) * LEGEND_ROW_HEIGHT };
-    x += itemWidth + itemGap;
-
-    return position;
-  });
-
-  return {
-    labelOffset,
-    positions,
-    rows,
-  };
-}
-
-/**
- * Divides aggregation charts between visualization content and an optional legend.
+ * Divides charts between visualization content and an optional legend.
  *
  * @param {object} specification - Aggregation viewport and legend settings.
  * @param {number} specification.width - Available chart width in pixels.
  * @param {number} specification.height - Available chart height in pixels.
  * @param {Array<{label: string}>} specification.items - Legend entries used to calculate row count.
  * @param {boolean} specification.legend - Whether layout must reserve legend space.
- * @returns {{contentTop: number, contentBottom: number, contentHeight: number, legendBaseline: number | null}} Vertical content bounds and optional legend baseline.
+ * @returns {object} Content bounds and a measured bottom legend shared with the renderer.
  */
-function aggregationLayout({ width, height, items, legend }) {
-  const legendRows = legend ? legendLayout(width, items).rows : 0;
+function chartContentLayout({ width, height, items, legend }) {
+  const labelMaxWidth = Math.max(1, Math.min(LEGEND_MAXIMUM_LABEL_WIDTH, width - LEGEND_LABEL_OFFSET));
+  let x = 0;
+  let rows = 1;
 
-  const legendBaseline =
-    legendRows > 0 ? height - AGGREGATION_LEGEND_BASELINE_INSET - (legendRows - 1) * LEGEND_ROW_HEIGHT : null;
+  const entries = items.map((item) => {
+    const label = item.label ?? item.name;
+    const visibleLabel = truncateText(label, labelMaxWidth);
+    const itemWidth = LEGEND_LABEL_OFFSET + measuredLegendTextWidth(visibleLabel);
 
-  const contentTop = 0;
+    if (x + itemWidth > width && x > 0) {
+      x = 0;
+      rows += 1;
+    }
 
-  const requestedBottom = legendBaseline === null ? height : legendBaseline - AGGREGATION_LEGEND_GAP;
+    const position = { label, color: item.color, labelMaxWidth, x, yOffset: (rows - 1) * LEGEND_ROW_HEIGHT };
+    x += itemWidth + LEGEND_ITEM_GAP;
 
-  const contentBottom = Math.max(contentTop + AGGREGATION_MINIMUM_CONTENT_HEIGHT, requestedBottom);
+    return position;
+  });
+
+  const legendBaseline = legend ? height - LEGEND_BASELINE_INSET - (rows - 1) * LEGEND_ROW_HEIGHT : null;
+  const requestedBottom = legendBaseline === null ? height : legendBaseline - LEGEND_CONTENT_GAP;
 
   return {
-    contentTop,
-    contentBottom,
-    contentHeight: contentBottom - contentTop,
+    items: entries,
     legendBaseline,
+    contentHeight: Math.max(MINIMUM_CONTENT_HEIGHT, requestedBottom),
   };
+}
+
+/**
+ * Shares series legend visibility, entries, and bottom placement across families.
+ *
+ * @param {object} chart - Frozen chart snapshot.
+ * @returns {object} Content bounds and measured legend layout.
+ */
+function seriesContentLayout(chart) {
+  return chartContentLayout({
+    width: chart.options.width,
+    height: chart.options.height,
+    items: chart.datasets,
+    legend: chart.options.legend && chart.datasets.length > 1,
+  });
 }
 
 /**
@@ -258,8 +241,8 @@ export {
   formatCategoryLabel,
   horizontalCategoryPadding,
   verticalValuePadding,
-  legendLayout,
-  aggregationLayout,
+  chartContentLayout,
+  seriesContentLayout,
   datasetSummary,
   tooltipText,
 };

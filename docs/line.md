@@ -29,7 +29,7 @@ selection, or export the SVG.
 ## Multiple lines
 
 Call `dataset()` once for each line. Named datasets appear in the legend and
-tooltip:
+tooltip. The bottom legend groups a color dot beside each series name:
 
 ```js
 import { LineChart } from "@orchidsoftware/charts";
@@ -101,6 +101,9 @@ LineChart.make("#usage").dataset([18, 24, 31, 39]).area().line(false).render();
 ```
 
 ## Points and stroke
+
+Points use a 3 px radius and a light outline by default. Their visible size
+does not reduce the chart’s inspection targets.
 
 Use `dots(false)` to hide points, `dotSize()` to resize them, and
 `strokeWidth()` to change the line width:

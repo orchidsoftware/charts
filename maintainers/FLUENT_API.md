@@ -1254,7 +1254,7 @@ The following defaults are normative:
 | Tooltip                                          | Enabled                                                                     |
 | Line smoothing                                   | Enabled                                                                     |
 | Line, dots                                       | Visible                                                                     |
-| Dot size                                         | `4.5` CSS pixels                                                            |
+| Dot size                                         | `3` CSS pixels                                                              |
 | Line/radar stroke width                          | `2` CSS pixels                                                              |
 | Area, gradient, stacking, horizontal orientation | Disabled                                                                    |
 | Bar/timesheet radius                             | `3` CSS pixels                                                              |
@@ -1267,6 +1267,10 @@ Keyboard navigation, visible focus, reduced-motion, and ARIA behavior are
 REQUIRED for every chart. Persistent selection is REQUIRED after `onSelect()`
 is registered. `onSelect()` MUST NOT fire during initial render or
 programmatic update.
+
+Categorical legends MUST appear below the plot, use a color dot beside each
+label, and wrap complete items using the shared content layout. Hiding the legend
+MUST return its reserved space to the plot.
 
 An explicit `legend(true|false)` MUST override the automatic legend convention.
 `legend(true)` on the single unnamed dataset MUST display its generated

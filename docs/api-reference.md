@@ -43,7 +43,8 @@ the chart.
 | `onSelect(callback)` | Receives a selection or `undefined` when it clears.        |
 | `render()`           | Mounts the chart and returns its runtime API.              |
 
-Charts with a legend also provide `legend(false)`.
+Charts with a legend also provide `legend(false)`. Categorical legends share one
+bottom placement with color dots beside their labels and whole-item wrapping.
 
 ## Series data
 

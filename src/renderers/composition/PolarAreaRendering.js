@@ -7,8 +7,8 @@ import {
 import { labelElement, markMetadata, svg, titled } from "../../support/Dom.js";
 import { paddedSector, polarPoint, roundedSectorPath } from "../../support/geometry/Math.js";
 import { formatLabel } from "../../support/presentation/Formatting.js";
-import { tooltipText } from "../../support/presentation/Presentation.js";
-import LegendRenderer from "../LegendRenderer.js";
+import { tooltipText, seriesContentLayout } from "../../support/presentation/Presentation.js";
+import { renderLegend } from "../LegendRendering.js";
 
 const MINIMUM_POLAR_RADIUS = 8;
 const POLAR_RADIUS_RATIO = 0.42;
@@ -61,7 +61,7 @@ function polarLabelWidth({ labelX, anchor, width }) {
  */
 function polarAreaLayout(chart) {
   const width = chart.options.width;
-  const height = chart.options.height;
+  const height = seriesContentLayout(chart).contentHeight;
   const values = chart.datasets[0].points;
 
   const radiusLimits = {
@@ -225,7 +225,7 @@ class PolarAreaRenderer {
  */
 function renderPolarAreaChart(rendering) {
   new PolarAreaRenderer(rendering).render();
-  new LegendRenderer(rendering).render();
+  renderLegend(rendering);
 }
 
 export { renderPolarAreaChart };

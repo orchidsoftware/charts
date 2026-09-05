@@ -50,7 +50,7 @@ src
 │     └─ TemporalBuilders.js        # Temporal authoring DSL
 ├─ renderers
 │  ├─ ChartRendering.js             # Frozen snapshot and surface boundary
-│  ├─ LegendRenderer.js             # Shared series and item legends
+│  ├─ LegendRendering.js             # Shared series and item legends
 │  ├─ SvgSurface.js                 # Narrow owned SVG mutation boundary
 │  ├─ cartesian
 │  │  ├─ CartesianRendering.js      # Family strategies and private coordinator

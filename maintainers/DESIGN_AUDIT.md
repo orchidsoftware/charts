@@ -185,3 +185,42 @@ intentionally unavailable.
 
 The architectural flow and non-negotiable ownership rules are in
 [ARCHITECTURE.md](./ARCHITECTURE.md).
+
+## Legend and line-marker refinement — 2026-09-05
+
+Following Apple HIG’s data-first hierarchy, categorical legends sit below the
+plot with a compact symbol beside each label, an 8 px symbol-to-label gap, a 16 px
+item gap, and 20 px row pitch. Items follow measured text widths without fixed
+columns. Narrow containers wrap complete items and truncate labels with full text
+in SVG titles. Continuous heatmap scales keep their quantitative encoding.
+
+All categorical legends use 8 px color dots, including mixed charts. The legend
+explains the mapping from color to series, with one compact visual vocabulary.
+This is an explicit product choice: Microsoft's chart-shaped samples convey
+additional encoding, but the library prioritizes consistent color keys. Long
+strips above labels are not the default. Line patterns remain in the plot.
+Cartesian, radar, and
+composition renderers share `chartContentLayout`; `seriesContentLayout` supplies
+common series visibility and labels. The legend renderer consumes these measured
+positions instead of recalculating them.
+
+Default line points use a 3 px radius, 2 px outline, and 3 px separator stroke.
+Explicit dot sizes, scatter marks, inspection regions, keyboard navigation, and
+selection behavior remain unchanged. This refines the existing defaults without
+adding public methods or assigning business importance to a dataset’s position.
+
+### Placement review
+
+These are applications of published principles, not personal endorsements.
+
+| Lens                                            | Decision for Orchid Charts                                                                                                                                                                         |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Apple HIG, Charts                               | Use one predictable bottom legend; reserve its full wrapped height and keep axis labels in the plot's own content area. HIG does not mandate bottom placement.                                     |
+| Microsoft, Office data visualization guidelines | Chart-shaped samples are a documented alternative to our chosen uniform color key. Bottom placement is an intentional library-wide choice rather than Microsoft's default top-left recommendation. |
+| Artemy Lebedev, §136 Theory of proximity        | Keep each symbol close to its label and separate neighboring items by a consistent gap.                                                                                                            |
+| Datawrapper, line chart guidance                | Retain a compact shared key on narrow screens rather than forcing direct labels into crowded series endpoints.                                                                                     |
+
+Sources: [Apple](https://developer.apple.com/design/human-interface-guidelines/charts),
+[Microsoft](https://learn.microsoft.com/en-us/office/dev/add-ins/design/data-visualization-guidelines),
+[Lebedev](https://www.artlebedev.ru/kovodstvo/sections/136/),
+[Datawrapper](https://academy.datawrapper.de/article/129-what-to-consider-when-creating-line-charts).

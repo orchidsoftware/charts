@@ -1029,6 +1029,13 @@ radius(value: number): this;
 Scatter and bubble MUST expose `dots`. Bubble radius MUST be finite and
 non-negative.
 
+Bubble automatic coordinate domains MUST account for the complete circles when
+their diameters fit the available plot. The supplied `r` MUST remain a CSS-pixel
+radius on render, update, and resize. Geometric clearance MUST NOT become a new
+public padding option or decorative SVG inset. Oversized circles retain their
+radius and may overflow; their coordinates MUST remain finite at ordinary finite
+input magnitudes. Area-to-value conversion belongs to the caller's domain data.
+
 ```ts
 dots(visible: boolean): this;
 ```

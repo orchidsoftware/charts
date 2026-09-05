@@ -99,19 +99,15 @@ function formatValue(options, value, details) {
   const tooltipFormatter = details.target === "tooltip" ? options.tooltipFormatValue : undefined;
   const axisFormatter = details.target === "axis" ? options.axisFormatValue : undefined;
 
-  const formatter = [
-    datasetFormatter,
-    tooltipFormatter,
-    axisFormatter,
-    options.formatValue,
-  ].find((candidate) => typeof candidate === "function");
+  const surfaceFormatter = tooltipFormatter ?? axisFormatter;
+  const formatter = datasetFormatter ?? surfaceFormatter ?? options.formatValue;
 
   if (!formatter) {
     return formatNumber(value);
   }
 
-  const contextDetails = { ...details };
-  Reflect.deleteProperty(contextDetails, "dataset");
+  // eslint-disable-next-line sonarjs/no-unused-vars -- Rest projection deliberately excludes dataset metadata.
+  const { dataset: _dataset, ...contextDetails } = details;
 
   return formatterText(formatter(value, formatContext(options, details.target, contextDetails)), "Value");
 }

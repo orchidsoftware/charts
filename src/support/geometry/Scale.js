@@ -66,30 +66,16 @@ function niceStep(span, integerValues) {
 }
 
 /**
- * Expands values onto rounded bounds and enumerates their major ticks.
+ * Rounds a non-degenerate domain and enumerates its major ticks.
  *
- * @param {number[]} values - Non-empty finite values displayed on an axis.
+ * @param {number[]} values - Finite non-degenerate bounds produced by extent.
+ * @param {boolean} integerValues - Whether source values require whole-number ticks.
  * @returns {{domain: [number, number], ticks: number[]}} Rounded domain and inclusive tick sequence.
  */
-function niceValueScale(values) {
+function niceValueScale(values, integerValues) {
   const minimum = Math.min(...values);
   const maximum = Math.max(...values);
 
-  if (minimum === maximum) {
-    return {
-      domain: [
-        minimum - 1,
-        maximum + 1,
-      ],
-      ticks: [
-        minimum - 1,
-        minimum,
-        maximum + 1,
-      ],
-    };
-  }
-
-  const integerValues = values.every((value) => Number.isSafeInteger(value));
   const step = niceStep(maximum - minimum, integerValues);
   const niceMinimum = Math.floor(minimum / step) * step;
   const niceMaximum = Math.ceil(maximum / step) * step;

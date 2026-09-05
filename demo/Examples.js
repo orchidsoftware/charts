@@ -575,27 +575,27 @@ function bubbleExample() {
           {
             x: 1,
             y: 78,
-            r: 23,
+            r: Math.sqrt(529),
           },
           {
             x: 2,
             y: 64,
-            r: 18,
+            r: Math.sqrt(324),
           },
           {
             x: 3,
             y: 57,
-            r: 14,
+            r: Math.sqrt(196),
           },
           {
             x: 4,
             y: 41,
-            r: 10,
+            r: Math.sqrt(100),
           },
           {
             x: 5,
             y: 36,
-            r: 7,
+            r: Math.sqrt(49),
           },
         ],
       },
@@ -605,7 +605,14 @@ function bubbleExample() {
     .labels(data.labels)
     .dataset(data.datasets[0])
     .height(300)
-    .ariaLabel("Weekly reach and installed size across an app portfolio")
+    .ariaLabel("Weekly users and installed size across an app portfolio")
+    .description("Y shows weekly users in thousands; circle area represents installed size in MB.")
+    .yAxis((axis) => axis.formatValue((value) => `${formatDemoValue(value)}k`))
+    .tooltip((tooltip) =>
+      tooltip.formatValue(
+        (value, context) => `${formatDemoValue(value)}k · ${formatDemoValue(context.point.r ** 2)} MB`,
+      ),
+    )
     .render();
 
   return {

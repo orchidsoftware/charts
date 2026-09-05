@@ -157,6 +157,7 @@ BubbleChart.make(parent)
 ```
 
 Every bubble is `{ x, y, r }`. Bubble charts also provide `dots(visible)`.
+Automatic coordinate domains account for circle bounds while preserving `r` in CSS pixels.
 
 See [Bubble charts](./bubble.md) for radius and dataset guidance.
 

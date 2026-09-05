@@ -224,3 +224,37 @@ Sources: [Apple](https://developer.apple.com/design/human-interface-guidelines/c
 [Microsoft](https://learn.microsoft.com/en-us/office/dev/add-ins/design/data-visualization-guidelines),
 [Lebedev](https://www.artlebedev.ru/kovodstvo/sections/136/),
 [Datawrapper](https://academy.datawrapper.de/article/129-what-to-consider-when-creating-line-charts).
+
+## Bubble bounds decision — 2026-09-06
+
+The App portfolio example exposed a library geometry issue: coordinate domains
+included point centers but not complete circles. Following POSITIONING.md,
+the correction belongs in automatic defaults and keeps the existing API.
+
+This matrix applies the documented lenses; it does not claim personal endorsements.
+Apple HIG leads the external design review, subject to Orchid Charts' product contracts.
+
+| Lens                    | Decision                                                                      |
+| ----------------------- | ----------------------------------------------------------------------------- |
+| Apple HIG               | Keep complete data marks within their plot and away from surrounding content. |
+| Microsoft Fluent        | Recompute consistent geometry for the actual container size.                  |
+| Artemy Lebedev          | Correct the cause of the collision without adding decorative layers.          |
+| DHH / Rails             | Make fitting automatic rather than introducing a padding option.              |
+| Laravel / Taylor Otwell | Preserve the short happy path and polished defaults.                          |
+| Basecamp / Getting Real | Solve circle bounds without expanding into a new visualization framework.     |
+
+The Cartesian layout expands Bubble coordinate domains using pixel radii and
+available plot dimensions. It recomputes value-label space before fitting X;
+axes, grid, annotations, tooltips, and inspection use the same resulting scales.
+Readable ticks are retained, including integer ticks for integer input scales.
+This is geometric clearance, not decorative container padding.
+
+The explicit radius remains unchanged. Circles too large for the plot may
+overflow; the layout keeps finite coordinates at ordinary input magnitudes.
+Area-to-value mapping and units belong to the example's domain data. The card
+title, height, color, and shared visual language remain unchanged.
+
+Shared scale binding, signed bar projection, and inspector-band calculations
+are consolidated to keep the existing package budgets. Formatter precedence
+uses the already validated callbacks directly, avoiding a temporary search array.
+Bubble bounds tests also run in the Chromium, Firefox, and WebKit compatibility gate.

@@ -97,6 +97,10 @@ const demoCards = [
 
 const responsiveCards = [
   [
+    "bubble",
+    "#bubble",
+  ],
+  [
     "line",
     "#line",
   ],

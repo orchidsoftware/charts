@@ -37,6 +37,7 @@ const revenue = LineChart.make("#revenue")
 
 The result is responsive and already includes axes, labels, a tooltip,
 keyboard navigation, and accessible SVG text.
+Bubble charts also account for their circle sizes when fitting the coordinate domains.
 
 ## Product-ready by default
 

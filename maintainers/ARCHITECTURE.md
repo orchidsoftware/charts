@@ -74,7 +74,7 @@ src
    ├─ Validation.js                 # Shared validation predicates
    ├─ geometry
    │  ├─ Math.js                    # Explicit geometry re-exports
-   │  ├─ Scale.js                   # Numeric scales and extents
+   │  ├─ Scale.js                   # Numeric scales and requested domains
    │  ├─ CartesianGeometry.js       # Lines and rounded bars
    │  └─ SectorGeometry.js          # Arcs and rounded sectors
    └─ presentation

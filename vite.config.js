@@ -34,6 +34,7 @@ export default defineConfig({
     include: isCompatibility
       ? [
           "test/Compatibility.test.js",
+          "test/BubbleBounds.test.js",
         ]
       : [
           "test/**/*.test.js",

@@ -120,7 +120,7 @@ describe("real-world demo", () => {
     expect(document.querySelector("#line svg").getAttribute("height")).toBe("320");
     expect(document.querySelectorAll("#line .charts2-grid-vertical")).toHaveLength(0);
     expect(document.querySelectorAll("#line .charts2-grid-horizontal").length).toBeGreaterThan(0);
-    expect(document.querySelector("#percentage svg").getAttribute("height")).toBe("140");
+    expect(document.querySelector("#percentage svg").getAttribute("height")).toBe("80");
     expect(document.querySelector("#radar svg").getAttribute("height")).toBe("320");
     expect(document.querySelector("#fractions svg").getAttribute("height")).toBe("280");
     expect(document.querySelector("#line-region .charts2-region").getAttribute("fill")).toBe("#248a3d");
@@ -326,7 +326,7 @@ describe("real-world demo", () => {
         "bubble",
         "Music",
         "Weekly users",
-        "64, size 18",
+        "64k · 324 MB, size 18",
       ],
     ];
 

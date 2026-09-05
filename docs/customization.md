@@ -12,6 +12,7 @@ Set a fixed drawing width only when the chart should not follow its container.
 Cartesian plots, timesheets, percentage strips, and legends have no decorative
 horizontal padding inside the SVG. Axis labels still reserve the space they need;
 point spacing and vertical frameless stroke clearance remain part of the chart geometry.
+Bubble domains also reserve the space needed by the supplied circle radii.
 Add any surrounding space with CSS padding on the chart container.
 Legend space is reserved only when a legend is rendered; charts without a legend
 keep only the clearance needed by visible axis labels or frameless strokes.

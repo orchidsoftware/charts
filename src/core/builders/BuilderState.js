@@ -99,11 +99,11 @@ function familyData(source, type) {
   }
 
   const data = { ...source };
-  Reflect.deleteProperty(data, "markers");
-  Reflect.deleteProperty(data, "regions");
+  delete data.markers;
+  delete data.regions;
 
   if (TEMPORAL_TYPES.has(type)) {
-    Reflect.deleteProperty(data, "datasets");
+    delete data.datasets;
   }
 
   return data;

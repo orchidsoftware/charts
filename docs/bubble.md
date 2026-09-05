@@ -46,6 +46,18 @@ BubbleChart.make("#accounts")
 The radius must be finite and non-negative. Keep the range of radii modest so
 large bubbles do not hide smaller ones.
 
+The chart automatically expands its coordinate domains to fit complete circles,
+including after resizing or updating data. The supplied `r` stays a radius in
+CSS pixels; it is never rescaled to fit the container. A circle larger than the
+available plot cannot fit and may extend outside it. Use a larger container or
+smaller source radii in that case.
+
+If area represents a measurement, convert that measurement before passing the
+data: `r = scaleFactor * Math.sqrt(value)`. Explain the measurement and its units
+in your product; the library cannot infer them from a radius. For example,
+`{ x: 1, y: 78, r: Math.sqrt(529) }` can represent 78 thousand weekly users and
+an installed size of 529 MB when the product supplies those labels.
+
 ## Point visibility
 
 Use `dots(false)` to hide bubble marks while retaining the scale and any

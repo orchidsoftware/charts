@@ -431,7 +431,7 @@ code {
 }
 
 .preview-chart-card {
-  padding: 14px 14px 8px;
+  padding: 16px;
   background: var(--charts2-demo-elevated);
   border: 1px solid var(--charts2-demo-border);
   border-radius: 12px;
@@ -441,7 +441,6 @@ code {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding: 0 3px;
   font-size: 10px;
 }
 
@@ -454,7 +453,7 @@ code {
 }
 
 #hero-revenue {
-  margin: -2px -4px 0;
+  margin: 16px 0 12px;
 }
 
 .preview-footer {
@@ -1039,6 +1038,12 @@ article header strong {
   grid-template-columns: repeat(3, 1fr);
   grid-column: 5 / 13;
   gap: 18px;
+  align-items: start;
+}
+
+.spark-grid article {
+  padding: 0;
+  overflow: hidden;
 }
 
 .spark-grid article:nth-child(2) {
@@ -1050,27 +1055,42 @@ article header strong {
 }
 
 .spark-grid article header {
-  gap: 4px;
-  justify-content: flex-start;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 32px;
+  gap: 8px;
+  align-items: center;
+  padding: 18px 18px 0;
   color: var(--charts2-demo-muted);
 }
 
 .spark-grid article header > span {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 .spark-grid article strong {
-  order: 3;
-  margin-left: auto;
+  grid-row: 2;
+  grid-column: 1 / -1;
+  font-size: 28px;
+  line-height: 1.1;
   color: var(--charts2-demo-ink);
 }
 
+.spark-grid article strong small {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--charts2-demo-muted);
+}
+
 .spark-grid .example-code-actions {
-  order: 2;
+  grid-row: 1;
+  grid-column: 2;
   margin-left: 0;
+}
+
+#spark-bar {
+  padding: 10px;
 }
 
 /* Usage snippet */

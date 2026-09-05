@@ -267,7 +267,8 @@ export default class CartesianLayout {
     const isFrameless =
       !this.#chart.options.axes && !this.#chart.options.grid && !this.#chart.options.valueLabels;
 
-    const padding = isFrameless ? Math.max(this.#chart.options.strokeWidth, 1) : STANDARD_FRAME_PADDING;
+    const framelessPadding = type === ChartType.BAR ? 0 : Math.max(this.#chart.options.strokeWidth, 1);
+    const padding = isFrameless ? framelessPadding : STANDARD_FRAME_PADDING;
     const isHorizontal = type === ChartType.BAR && orientation === ChartOrientation.HORIZONTAL;
 
     const top = Math.max(isFrameless ? padding : 0, this.#labelTopClearance(isHorizontal));

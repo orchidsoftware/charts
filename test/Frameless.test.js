@@ -81,6 +81,36 @@ describe("explicit frameless charts", () => {
     const bounds = chart.element.querySelector(".charts2-area").getBBox();
     expect(bounds.x).toBe(0);
     expect(bounds.width).toBe(100);
+    const lineBounds = chart.element.querySelector(".charts2-line").getBBox();
+    expect(lineBounds.y).toBe(2);
+    expect(lineBounds.height).toBe(36);
+  });
+
+  it.each([
+    [
+      10,
+      20,
+    ],
+    [
+      -10,
+      -20,
+    ],
+    [
+      -10,
+      20,
+    ],
+  ])("uses the full SVG height for frameless bars (%s, %s)", (first, second) => {
+    const chart = frameless("bar", [
+      first,
+      second,
+    ]);
+    const bounds = [
+      ...chart.element.querySelectorAll(".charts2-bar"),
+    ].map((bar) => bar.getBBox());
+
+    expect(Math.min(...bounds.map((box) => box.y))).toBe(0);
+    expect(Math.max(...bounds.map((box) => box.y + box.height))).toBe(90);
+    chart.destroy();
   });
 
   it("renders dense frameless bars with a safe minimum width", () => {

@@ -41,7 +41,7 @@ describe("explicit frameless charts", () => {
       { ariaLabel: "Data trend" },
     );
     expect(chart.element.getAttribute("aria-label")).toBe("Data trend");
-    expect(chart.element.querySelector(".charts2-line").getAttribute("d")).toContain("M2,");
+    expect(chart.element.querySelector(".charts2-line").getAttribute("d")).toContain("M0,");
     expect(
       chart.update({
         datasets: [
@@ -78,6 +78,9 @@ describe("explicit frameless charts", () => {
     expect(chart.element.querySelectorAll("path")).toHaveLength(2);
     expect(chart.element.querySelector("linearGradient")).toBeNull();
     expect(chart.element.querySelector(".charts2-area").getAttribute("fill")).toBe("red");
+    const bounds = chart.element.querySelector(".charts2-area").getBBox();
+    expect(bounds.x).toBe(0);
+    expect(bounds.width).toBe(100);
   });
 
   it("renders dense frameless bars with a safe minimum width", () => {

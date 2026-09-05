@@ -8,8 +8,8 @@ import {
   timeTicks,
 } from "../../support/presentation/Time.js";
 
-const FRAME_INSET = 16;
-const FRAME_TOP = 12;
+const FRAME_INSET = 0;
+const FRAME_TOP = 0;
 const AXIS_HEIGHT = 28;
 const MINIMUM_LABEL_WIDTH = 52;
 const MAXIMUM_LABEL_WIDTH = 160;
@@ -52,9 +52,11 @@ function measuredTaskLabelWidth(tasks) {
  * @returns {object} Bottom edge and row height.
  */
 function timesheetVerticalFrame(chart, height) {
+  const axisHeight = chart.options.valueLabels ? AXIS_HEIGHT : 0;
+
   return {
-    bottom: height - AXIS_HEIGHT,
-    rowHeight: (height - AXIS_HEIGHT - FRAME_TOP) / chart.timesheet.tasks.length,
+    bottom: height - axisHeight,
+    rowHeight: (height - axisHeight - FRAME_TOP) / chart.timesheet.tasks.length,
   };
 }
 

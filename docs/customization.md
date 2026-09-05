@@ -5,8 +5,20 @@ the result you need.
 
 ## Set the size
 
-Charts are responsive by default: they follow the width of their host element.
+Charts are responsive by default: they follow the content width of their host element,
+excluding CSS padding and borders. CSS transforms do not change the drawing coordinates.
 Set a fixed drawing width only when the chart should not follow its container.
+
+Cartesian plots, timesheets, percentage strips, and legends have no decorative
+horizontal padding inside the SVG. Axis labels still reserve the space they need;
+point spacing and vertical frameless stroke clearance remain part of the chart geometry.
+Add any surrounding space with CSS padding on the chart container.
+Legend space is reserved only when a legend is rendered; charts without a legend
+keep only the clearance needed by visible axis labels or frameless strokes.
+Percentage strips fill the available drawing area from its top edge. Without a
+legend they fill the entire SVG; with a legend, only its rows and the gap separating
+it from the strip are reserved. Pie and donut circles fit the available area without
+an extra inset, while keeping their circular proportions.
 
 ```js
 import { LineChart } from "@orchidsoftware/charts";

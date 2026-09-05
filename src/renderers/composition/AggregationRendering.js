@@ -1,4 +1,4 @@
-import { AGGREGATION_INSET, ChartType, DEFAULT_PERCENTAGE_RADIUS } from "../../support/Constants.js";
+import { ChartType, DEFAULT_PERCENTAGE_RADIUS } from "../../support/Constants.js";
 import { svg } from "../../support/Dom.js";
 import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
 import { aggregationLayout, tooltipText } from "../../support/presentation/Presentation.js";
@@ -6,12 +6,9 @@ import LegendRenderer from "../LegendRenderer.js";
 
 import Composition from "./Composition.js";
 
-const PERCENTAGE_INSET = 16;
-const MINIMUM_SEGMENT_HEIGHT = 28;
-const SEGMENT_HEIGHT_RATIO = 0.72;
 const FULL_PERCENTAGE = 100;
 const MINIMUM_SECTOR_RADIUS = 8;
-const SECTOR_RADIUS_RATIO = 0.44;
+const SECTOR_RADIUS_RATIO = 0.5;
 const DONUT_LABEL_OFFSET = 5;
 const VALUE_LABEL_TARGET = "value-label";
 
@@ -24,18 +21,15 @@ const VALUE_LABEL_TARGET = "value-label";
  * @returns {object} Complete percentage strip geometry.
  */
 function percentageStrip(width, layout, clipping) {
-  const stripWidth = width - PERCENTAGE_INSET * 2;
+  const stripWidth = width;
 
-  const height = Math.min(
-    layout.contentHeight,
-    Math.max(MINIMUM_SEGMENT_HEIGHT, layout.contentHeight * SEGMENT_HEIGHT_RATIO),
-  );
+  const height = layout.contentHeight;
 
   return {
-    x: PERCENTAGE_INSET,
+    x: 0,
     width: stripWidth,
     height,
-    y: layout.contentTop + (layout.contentHeight - height) / 2,
+    y: layout.contentTop,
     radius: Math.min(clipping.radius, height / 2, stripWidth / 2),
     clipId: clipping.id,
   };
@@ -206,7 +200,7 @@ class AggregationRenderer {
 
     const radius = Math.max(
       MINIMUM_SECTOR_RADIUS,
-      Math.min(width - AGGREGATION_INSET * 2, layout.contentHeight) * SECTOR_RADIUS_RATIO,
+      Math.min(width, layout.contentHeight) * SECTOR_RADIUS_RATIO,
     );
 
     const sectors = composition.sectors({ x: cx, y: cy }, radius, { type, colors });

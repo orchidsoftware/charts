@@ -197,6 +197,29 @@ describe("QA chart laboratory", () => {
     }
   });
 
+  it("uses the SVG width for plots and legends without decorative side padding", () => {
+    for (const host of document.querySelectorAll(".lab-boundary")) {
+      const svg = host.querySelector("svg");
+      const width = svg.viewBox.baseVal.width;
+      const grid = svg.querySelector(".charts2-grid-horizontal");
+      const swatch = svg.querySelector(".charts2-legend-swatch");
+
+      if (grid) {
+        expect(Number(grid.getAttribute("x2")), host.id).toBe(width);
+      }
+
+      if (swatch) {
+        expect(Number(swatch.getAttribute("cx")) - Number(swatch.getAttribute("r")), host.id).toBe(0);
+      }
+    }
+
+    const percentage = document.querySelector("#background-percentage svg");
+    const strip = percentage.querySelector("clipPath rect");
+    expect(Number(strip.getAttribute("x"))).toBe(0);
+    expect(Number(strip.getAttribute("y"))).toBe(0);
+    expect(Number(strip.getAttribute("width"))).toBe(percentage.viewBox.baseVal.width);
+  });
+
   it("keeps every fixture inside its card at the QA mobile viewport", async () => {
     await page.viewport(390, 900);
     await settle();

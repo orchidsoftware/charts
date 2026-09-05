@@ -41,7 +41,10 @@ describe("Chart", () => {
     expect(chart.element.getAttribute("aria-label")).toBe("Growth");
     expect(chart.element.getAttribute("height")).toBe("200");
     expect(chart.element.querySelectorAll(".charts2-line")).toHaveLength(2);
-    expect(chart.element.querySelector(".charts2-line").getAttribute("d")).toContain("M28,");
+    const firstGrid = chart.element.querySelector(".charts2-grid-horizontal");
+    expect(chart.element.querySelector(".charts2-line").getAttribute("d")).toContain(
+      `M${firstGrid.getAttribute("x1")},`,
+    );
     expect(
       chart.update({
         datasets: [
@@ -64,9 +67,60 @@ describe("Chart", () => {
         },
       ],
     });
-    expect(chart.element.querySelector(".charts2-line").getAttribute("d")).toContain("M200,28");
+    const grid = chart.element.querySelector(".charts2-grid-horizontal");
+    const center = (Number(grid.getAttribute("x1")) + Number(grid.getAttribute("x2"))) / 2;
+    expect(chart.element.querySelector(".charts2-line").getAttribute("d")).toContain(
+      `M${center},${grid.getAttribute("y1")}`,
+    );
     chart.destroy();
     expect(document.querySelector("svg")).toBeNull();
+  });
+
+  it.each([
+    "content-box",
+    "border-box",
+  ])("measures %s content width independently of padding, borders, and transforms", async (boxSizing) => {
+    const host = document.querySelector("#chart");
+    host.style.cssText = `box-sizing:${boxSizing};width:300.5px;padding:12px 20px;border:3px solid;transform:scale(1.5)`;
+    const chart = createChart(host, { type: "line", data });
+    const decorationWidth = boxSizing === "border-box" ? 46 : 0;
+    expect(widthOf(chart)).toBe(300.5 - decorationWidth);
+    expect(chart.element.getScreenCTM().a).toBeCloseTo(1.5, 3);
+
+    host.style.width = "420.5px";
+    await expect.poll(() => widthOf(chart)).toBe(420.5 - decorationWidth);
+    expect(chart.element.getScreenCTM().a).toBeCloseTo(1.5, 3);
+    chart.destroy();
+  });
+
+  it("reserves legend space only while a legend is visible", () => {
+    const chart = createChart("#chart", { type: "line", data, width: 400 });
+    const plotTop = () => Number(chart.element.querySelector(".charts2-grid-horizontal").getAttribute("y1"));
+    expect(plotTop()).toBe(28);
+    expect(chart.element.querySelector(".charts2-legend-group")).not.toBeNull();
+
+    chart.update({
+      datasets: [
+        data.datasets[0],
+      ],
+    });
+    expect(chart.element.querySelector(".charts2-legend-group")).toBeNull();
+    expect(plotTop()).toBe(8);
+    for (const label of chart.element.querySelectorAll(".charts2-value-label")) {
+      expect(label.getBBox().y).toBeGreaterThanOrEqual(0);
+    }
+
+    chart.update(data);
+    expect(plotTop()).toBe(28);
+    chart.destroy();
+
+    const hidden = createChart("#chart", { type: "line", data, legend: false });
+    expect(hidden.element.querySelector(".charts2-legend-group")).toBeNull();
+    expect(Number(hidden.element.querySelector(".charts2-grid-horizontal").getAttribute("y1"))).toBe(8);
+    hidden.destroy();
+
+    const bare = createChart("#chart", { type: "line", data, legend: false, valueLabels: false });
+    expect(Number(bare.element.querySelector(".charts2-grid-horizontal").getAttribute("y1"))).toBe(0);
   });
 
   it("renders a labelled gradient line with native hover titles", () => {
@@ -164,10 +218,10 @@ describe("Chart", () => {
       "end",
     ]);
     expect(nodes.every((node) => node.querySelector("tspan") === null)).toBe(true);
-    expect(boxes[0].x).toBeGreaterThanOrEqual(28);
+    expect(boxes[0].x).toBeGreaterThanOrEqual(0);
     // Chromium's Linux font metrics can extend the visual bounding box by a
     // fraction of a pixel even though the label is anchored at the plot edge.
-    expect(boxes.at(-1).x + boxes.at(-1).width).toBeLessThanOrEqual(872.5);
+    expect(boxes.at(-1).x + boxes.at(-1).width).toBeLessThanOrEqual(900.5);
     const precedingBoxes = boxes.slice(0, -1);
     for (const [
       index,
@@ -201,8 +255,9 @@ describe("Chart", () => {
     const narrowBoxes = narrowNodes.map((node) => node.getBBox());
     expect(narrowNodes.every((node) => node.firstChild.textContent.endsWith("…"))).toBe(true);
     expect(narrowNodes.every((node) => node.querySelector("tspan") === null)).toBe(true);
-    expect(narrowBoxes[0].x).toBeGreaterThanOrEqual(28);
-    expect(narrowBoxes[1].x + narrowBoxes[1].width).toBeLessThanOrEqual(212);
+    expect(narrowBoxes[0].x).toBeGreaterThanOrEqual(0);
+    expect(narrowBoxes[1].x + narrowBoxes[1].width).toBeLessThanOrEqual(widthOf(narrow) + 0.5);
+    expect(narrowBoxes[0].x + narrowBoxes[0].width).toBeLessThanOrEqual(narrowBoxes[1].x);
   });
 
   it("uses whole-number nice ticks for integer data and preserves meaningful fractions", () => {
@@ -561,7 +616,7 @@ describe("Chart", () => {
     expect(
       Math.max(...valueLabels.map((label) => label.getBBox().x + label.getBBox().width)),
     ).toBeLessThanOrEqual(220);
-    expect(Number(line.element.querySelector(".charts2-grid-horizontal").getAttribute("x1"))).toBe(28);
+    expect(Number(line.element.querySelector(".charts2-grid-horizontal").getAttribute("x1"))).toBe(0);
     const lastHit = [
       ...line.element.querySelectorAll(".charts2-x-hit"),
     ].at(-1);
@@ -598,7 +653,7 @@ describe("Chart", () => {
     expect(categoryLabels.every((label) => Number(label.getAttribute("x")) === axisX + 4)).toBe(true);
     expect(
       Math.max(...categoryLabels.map((label) => label.getBBox().x + label.getBBox().width)),
-    ).toBeLessThanOrEqual(236);
+    ).toBeLessThanOrEqual(240);
   });
 
   it("uses an explicit label formatter without changing source data or interaction labels", () => {

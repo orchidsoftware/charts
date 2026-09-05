@@ -1019,18 +1019,19 @@ describe("unified public pipeline", () => {
     const legendLabels = [
       ...percentage.element.querySelectorAll(".charts2-legend"),
     ];
-    expect(Number(segment.getAttribute("height"))).toBeCloseTo(162.72);
-    expect(Number(segment.getAttribute("y"))).toBeCloseTo(47.64);
-    expect(Number(segment.getAttribute("y")) + Number(segment.getAttribute("height"))).toBeLessThan(
+    expect(Number(segment.getAttribute("height"))).toBe(257);
+    expect(Number(segment.getAttribute("y"))).toBe(0);
+    expect(Number(segment.getAttribute("y")) + Number(segment.getAttribute("height"))).toBe(
       Number(legendLabels[0].getAttribute("y")) - 20,
     );
-    expect(Number(legendLabels.at(-1).getAttribute("y"))).toBe(262);
+    expect(Number(legendLabels.at(-1).getAttribute("y"))).toBe(277);
     percentage.destroy();
 
     const hiddenLegend = createChart("#chart", { type: "percentage", height: 280, legend: false, data });
     expect(
       Number(hiddenLegend.element.querySelector(".charts2-percentage-segment").getAttribute("height")),
-    ).toBeCloseTo(178.56);
+    ).toBe(280);
+    expect(hiddenLegend.element.querySelector(".charts2-percentage-segment")).toHaveAttribute("y", "0");
     expect(hiddenLegend.element.querySelector(".charts2-legend-group")).toBeNull();
     hiddenLegend.destroy();
 
@@ -1058,14 +1059,14 @@ describe("unified public pipeline", () => {
     ].map((label) => Number(label.getAttribute("y")));
     const wrappedSegment = wrapped.element.querySelector(".charts2-percentage-segment");
     expect(wrappedLegendY).toEqual([
-      202,
-      222,
-      242,
-      262,
+      217,
+      237,
+      257,
+      277,
     ]);
-    expect(
-      Number(wrappedSegment.getAttribute("y")) + Number(wrappedSegment.getAttribute("height")),
-    ).toBeLessThan(wrappedLegendY[0] - 20);
+    expect(Number(wrappedSegment.getAttribute("y")) + Number(wrappedSegment.getAttribute("height"))).toBe(
+      wrappedLegendY[0] - 20,
+    );
     wrapped.destroy();
 
     for (const type of [
@@ -1079,8 +1080,8 @@ describe("unified public pipeline", () => {
       const top = Math.min(...slices.map((bounds) => bounds.y));
       const bottom = Math.max(...slices.map((bounds) => bounds.y + bounds.height));
       expect(bottom - top).toBeGreaterThan(190);
-      expect(top).toBeGreaterThanOrEqual(16);
-      expect(bottom).toBeLessThan(242);
+      expect(top).toBeGreaterThanOrEqual(0);
+      expect(bottom).toBeCloseTo(257, 3);
       radial.destroy();
     }
   });
@@ -2184,6 +2185,6 @@ describe("unified public pipeline", () => {
     expect(bare.element.querySelector(".charts2-grid")).toBeNull();
     expect(bare.element.querySelector(".charts2-axis")).toBeNull();
     expect(bare.element.querySelector("text")).toBeNull();
-    expect(bare.element.querySelector(".charts2-timesheet-hit").getAttribute("x")).toBe("16");
+    expect(bare.element.querySelector(".charts2-timesheet-hit").getAttribute("x")).toBe("0");
   });
 });

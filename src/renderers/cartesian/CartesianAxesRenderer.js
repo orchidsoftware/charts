@@ -444,6 +444,20 @@ export default class CartesianAxesRenderer {
   }
 
   /**
+   * Keeps endpoint labels inside the horizontal value axis.
+   *
+   * @param {number} position - Scaled tick position.
+   * @returns {string} SVG text anchor for the tick.
+   */
+  #valueLabelAnchor(position) {
+    if (position === this.#layout.frame.left) {
+      return "start";
+    }
+
+    return position === this.#layout.frame.right ? "end" : "middle";
+  }
+
+  /**
    * Places formatted numeric labels along the active value axis.
    *
    * @returns {void} Tick labels are appended to the chart SVG.
@@ -461,7 +475,7 @@ export default class CartesianAxesRenderer {
             x: position,
             y: bottom + this.#layout.frame.padding - VALUE_LABEL_BASELINE_OFFSET,
             class: "charts2-label charts2-value-label",
-            "text-anchor": "middle",
+            "text-anchor": this.#valueLabelAnchor(position),
           }
         : {
             x: this.#layout.isYAxisRight ? right + VALUE_LABEL_GAP : left - VALUE_LABEL_GAP,
@@ -609,7 +623,7 @@ export default class CartesianAxesRenderer {
           class: "charts2-label",
           "text-anchor": placement.anchor,
         },
-        measurement: { maxWidth: placement.width, fontSize: 9 },
+        measurement: { maxWidth: placement.width },
         originalValue: this.#chart.labels[index],
       });
 

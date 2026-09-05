@@ -17,6 +17,7 @@ import {
 const BAR_SLOT_RATIO = 0.64;
 const PENULTIMATE_INDEX = -2;
 const STANDARD_FRAME_PADDING = 28;
+const VALUE_LABEL_TOP_CLEARANCE = 8;
 const SLOT_MIDPOINT = 0.5;
 
 /**
@@ -234,9 +235,9 @@ export default class CartesianLayout {
       height,
       padding: presentation.padding,
       top: presentation.top,
-      right: width - (presentation.isYAxisRight ? data.gutter : presentation.padding),
+      right: width - (presentation.isYAxisRight ? data.gutter : 0),
       bottom: height - presentation.padding,
-      left: presentation.isYAxisRight ? presentation.padding : data.gutter,
+      left: presentation.isYAxisRight ? 0 : data.gutter,
     };
 
     const supportsInspector = this.#supportsInspector(type);
@@ -267,8 +268,13 @@ export default class CartesianLayout {
       !this.#chart.options.axes && !this.#chart.options.grid && !this.#chart.options.valueLabels;
 
     const padding = isFrameless ? Math.max(this.#chart.options.strokeWidth, 1) : STANDARD_FRAME_PADDING;
-    const top = padding + Math.max(0, this.#legendRows(width) - 1) * LEGEND_ROW_HEIGHT;
     const isHorizontal = type === ChartType.BAR && orientation === ChartOrientation.HORIZONTAL;
+
+    const top = Math.max(
+      isFrameless ? padding : 0,
+      this.#labelTopClearance(isHorizontal),
+      this.#legendHeight(width),
+    );
 
     const labels = this.#chart.labels.map((label, index) =>
       formatCategoryLabel(this.#chart.options, label, index),
@@ -276,7 +282,7 @@ export default class CartesianLayout {
 
     const isYAxisRight = this.#chart.options.yAxisPosition === YAxisPosition.RIGHT;
 
-    return {
+    const presentation = {
       isFrameless,
       padding,
       top,
@@ -284,6 +290,20 @@ export default class CartesianLayout {
       labels,
       isYAxisRight,
     };
+
+    return presentation;
+  }
+
+  /**
+   * Keeps the uppermost vertical tick label inside the SVG.
+   *
+   * @param {boolean} isHorizontal - Whether numeric ticks run below the plot.
+   * @returns {number} Minimum clearance for visible vertical tick labels.
+   */
+  #labelTopClearance(isHorizontal) {
+    const hasVerticalValueLabels = this.#chart.options.valueLabels && !isHorizontal;
+
+    return hasVerticalValueLabels ? VALUE_LABEL_TOP_CLEARANCE : 0;
   }
 
   /**
@@ -393,19 +413,19 @@ export default class CartesianLayout {
   }
 
   /**
-   * Counts wrapped legend rows that shift the plotting area.
+   * Measures the space occupied by a visible legend and its wrapped rows.
    *
    * @param {number} width - Available chart width in pixels.
-   * @returns {number} Number of visible legend rows.
+   * @returns {number} Reserved legend height, or zero when no legend is rendered.
    */
-  #legendRows(width) {
+  #legendHeight(width) {
     if (!this.#chart.options.legend || this.#chart.datasets.length < 2) {
       return 0;
     }
 
     const items = this.#chart.datasets.map((dataset) => ({ label: dataset.name, color: dataset.color }));
 
-    return legendLayout(width, items).rows;
+    return STANDARD_FRAME_PADDING + (legendLayout(width, items).rows - 1) * LEGEND_ROW_HEIGHT;
   }
 
   /**
@@ -482,13 +502,15 @@ export default class CartesianLayout {
    * @returns {number} Horizontal label gutter in pixels.
    */
   #valueGutter(labels, values, presentation) {
+    if (!this.#chart.options.valueLabels) {
+      return 0;
+    }
+
     if (presentation.isHorizontal && this.#chart.labels.length > 0) {
       return horizontalCategoryPadding(labels, presentation.width);
     }
 
-    return presentation.isFrameless
-      ? presentation.padding
-      : verticalValuePadding(values.ticks, presentation.padding);
+    return verticalValuePadding(values.ticks, 0);
   }
 
   /**

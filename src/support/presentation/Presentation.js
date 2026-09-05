@@ -5,7 +5,6 @@ import {
   SERIES_SWATCH_DIAMETER,
   LEGEND_LABEL_GAP,
   LEGEND_ROW_HEIGHT,
-  AGGREGATION_INSET,
   AGGREGATION_LEGEND_BASELINE_INSET,
   AGGREGATION_LEGEND_GAP,
 } from "../Constants.js";
@@ -21,10 +20,9 @@ const HORIZONTAL_LABEL_WIDTH_RATIO = 0.42;
 const HORIZONTAL_MULTILINE_LABEL_WIDTH_RATIO = 0.55;
 const INITIAL_LEGEND_ROW_COUNT = 1;
 const LEGEND_ITEM_GAP = 16;
-const LEGEND_LEFT_INSET = 12;
+const LEGEND_LEFT_INSET = 0;
 const LEGEND_MAXIMUM_LABEL_WIDTH = 160;
-const LEGEND_RIGHT_INSET = 8;
-const VALUE_LABEL_TRAILING_INSET = 4;
+const LEGEND_RIGHT_INSET = 0;
 const DATASET_SUMMARY_LIMIT = 12;
 
 /**
@@ -113,7 +111,7 @@ function horizontalCategoryPadding(labels, width) {
 function verticalValuePadding(ticks, basePadding) {
   const maximumLabelWidth = Math.max(0, ...ticks.map((value) => measuredTextWidth(formatNumber(value))));
 
-  return Math.max(basePadding, Math.ceil(maximumLabelWidth + VALUE_LABEL_GAP + VALUE_LABEL_TRAILING_INSET));
+  return Math.max(basePadding, Math.ceil(maximumLabelWidth + VALUE_LABEL_GAP));
 }
 
 /**
@@ -171,10 +169,9 @@ function aggregationLayout({ width, height, items, legend }) {
   const legendBaseline =
     legendRows > 0 ? height - AGGREGATION_LEGEND_BASELINE_INSET - (legendRows - 1) * LEGEND_ROW_HEIGHT : null;
 
-  const contentTop = AGGREGATION_INSET;
+  const contentTop = 0;
 
-  const requestedBottom =
-    legendBaseline === null ? height - AGGREGATION_INSET : legendBaseline - AGGREGATION_LEGEND_GAP;
+  const requestedBottom = legendBaseline === null ? height : legendBaseline - AGGREGATION_LEGEND_GAP;
 
   const contentBottom = Math.max(contentTop + AGGREGATION_MINIMUM_CONTENT_HEIGHT, requestedBottom);
 

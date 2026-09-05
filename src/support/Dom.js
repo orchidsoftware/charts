@@ -345,14 +345,30 @@ function resolveParent(parent) {
 }
 
 /**
- * Measures an element and supplies a deterministic width in non-layout environments.
+ * Measures the untransformed content box that contains the full-width SVG.
  *
- * @param {Element} parent - Chart host whose bounding box determines layout width.
+ * @param {Element} parent - Chart host whose content box determines layout width.
  * @param {number} [fallback=640] - Width used for hidden elements and DOM test environments.
  * @returns {number} Positive finite layout width in CSS pixels.
  */
 function measureParentWidth(parent, fallback = 640) {
-  const width = parent.getBoundingClientRect().width;
+  if (parent.getClientRects().length === 0) {
+    return fallback;
+  }
+
+  const style = getComputedStyle(parent);
+  let width = Number(style.width.replace("px", ""));
+
+  if (style.boxSizing === "border-box") {
+    const decorationWidth = [
+      "padding-left",
+      "padding-right",
+      "border-left-width",
+      "border-right-width",
+    ].reduce((sum, property) => sum + Number(style.getPropertyValue(property).replace("px", "")), 0);
+
+    width -= decorationWidth;
+  }
 
   if (Number.isFinite(width) && width > 0) {
     return width;

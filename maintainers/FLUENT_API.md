@@ -887,7 +887,7 @@ Marker values MUST be finite. Defaults are:
 
 `solid`, `dashed`, and `dotted` MUST resolve to `[]`, `[4, 3]`, and `[1, 3]`
 respectively. The default marker label color MUST be
-`var(--charts-label-color, #3a3a3c)`.
+`var(--charts-secondary-label-color, #6e6e73)`.
 
 Custom `dash()` MUST override `lineStyle()` regardless of order. Dash values
 MUST be finite and non-negative, and at least one MUST be positive.
@@ -937,11 +937,17 @@ interface RegionBuilder {
 A range MUST contain exactly two finite numbers and MUST normalize to ascending
 order. Its band MUST use the same orientation rule as a marker. Defaults are
 `var(--charts-focus-ring, #007aff)`, opacity `0.08`, label position `end`, label
-color `var(--charts-label-color, #3a3a3c)`, and domain inclusion enabled.
+color `var(--charts-secondary-label-color, #6e6e73)`, and domain inclusion enabled.
 
 Included endpoints MUST affect automatic domains. Opted-out non-overlapping
 regions MUST NOT render; partial overlaps MUST be clipped. Regions MUST be
 non-interactive in `0.0.1`.
+
+Annotation labels use full opacity and secondary theme text to remain readable
+without competing with data. A thin surface-colored stroke is painted behind
+the glyphs, without a surrounding badge or shadow. Its CSS override is
+`--charts-annotation-halo`, falling back to `--charts-mark-separator`.
+Explicit `labelColor` continues to override the default text color.
 
 ## 12. Cartesian render order
 

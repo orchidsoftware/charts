@@ -146,8 +146,8 @@ describe("real-world demo", () => {
     expect(Number(markerLabel.getAttribute("y"))).toBeLessThan(Number(marker.getAttribute("y1")));
     expect(markerLabel.getAttribute("text-anchor")).toBe("start");
     expect(getComputedStyle(regionLabel).fillOpacity).toBe("1");
-    expect(getComputedStyle(regionLabel).opacity).toBe("0.58");
-    expect(getComputedStyle(regionLabel).stroke).toBe("none");
+    expect(getComputedStyle(regionLabel).opacity).toBe("1");
+    expect(getComputedStyle(regionLabel).paintOrder).toBe("stroke");
     expect(getComputedStyle(markerLabel).fontVariantNumeric).toContain("tabular-nums");
     expect(document.querySelectorAll(".charts2-annotation-sample")).toHaveLength(0);
 

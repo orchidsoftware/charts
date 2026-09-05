@@ -154,7 +154,8 @@ describe("complete fluent authoring surface", () => {
       [
         ...chart.element.querySelectorAll(".charts2-annotation"),
       ].every(
-        (label) => getComputedStyle(label).stroke === "none" && getComputedStyle(label).fontWeight === "500",
+        (label) =>
+          getComputedStyle(label).paintOrder === "stroke" && getComputedStyle(label).fontWeight === "500",
       ),
     ).toBe(true);
     expect(chart.element.querySelectorAll(".charts2-annotation-background")).toHaveLength(0);

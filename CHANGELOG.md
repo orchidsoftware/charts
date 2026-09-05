@@ -8,6 +8,9 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ### Changed
 
+- Made auxiliary marker and region labels opaque with thin theme-aware outlines
+  for readability over data, retaining secondary text colors and the existing API.
+
 - Unified categorical legends below the plot with compact color dots,
   content-sized items, consistent spacing, and whole-item wrapping.
 - Consolidated series and composition legend placement into one shared content

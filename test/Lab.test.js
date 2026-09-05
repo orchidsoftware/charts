@@ -119,7 +119,9 @@ describe("QA chart laboratory", () => {
       const style = getComputedStyle(label);
 
       expect(style.fillOpacity).toBe("1");
-      expect(style.stroke).toBe("none");
+      expect(style.opacity).toBe("1");
+      expect(style.stroke).toBe(getComputedStyle(fixture).backgroundColor);
+      expect(style.paintOrder).toBe("stroke");
       expect(style.fontWeight).toBe("500");
     }
     expect(fixture.querySelectorAll(".charts2-annotation-sample")).toHaveLength(0);
@@ -160,13 +162,16 @@ describe("QA chart laboratory", () => {
     ]);
   });
 
-  it("keeps every annotation stress fixture visually stable", async () => {
-    for (const fixture of document.querySelectorAll('[data-fixture-group="annotation"] [data-fixture]')) {
-      // eslint-disable-next-line no-await-in-loop -- Element screenshots share one browser page.
-      await expect
-        .element(page.elementLocator(fixture))
-        .toMatchScreenshot(`lab-${fixture.dataset.fixture}.png`, screenshotOptions);
-    }
+  it.each([
+    "annotation-collision",
+    "annotation-bars-vertical",
+    "annotation-bars-horizontal",
+    "annotation-regions-experimental",
+  ])("keeps %s visually stable", async (name) => {
+    const fixture = document.querySelector(`[data-fixture="${CSS.escape(name)}"]`);
+    await expect
+      .element(page.elementLocator(fixture))
+      .toMatchScreenshot(`lab-${name}.png`, screenshotOptions);
   });
 
   it("keeps copy actions visible in every card header", () => {

@@ -170,6 +170,12 @@ LineChart.make("#response-time")
 ```
 
 Line, bar, scatter, bubble, and mixed charts support markers and regions.
+Their labels use the secondary text color at full opacity, with a thin outline
+that separates letters from data. Region opacity affects the band, not its label.
+The outline follows `--charts-mark-separator`, so existing surface themes apply.
+Override `--charts-annotation-halo` on the host when annotation outlines need a
+different surface color. Use the existing `labelColor()` scope method to override
+one annotation's text color.
 
 ## Customize one dataset
 

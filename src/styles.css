@@ -4,17 +4,6 @@
   position: relative;
 }
 
-.charts2-scrollable-heatmap {
-  max-width: 100%;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  -webkit-overflow-scrolling: touch;
-}
-
-.charts2-scrollable-heatmap .charts2-heatmap-chart {
-  max-width: none;
-}
-
 :root {
   --charts-label-color: #3a3a3c;
   --charts-secondary-label-color: #6e6e73;

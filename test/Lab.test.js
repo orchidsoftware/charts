@@ -12,7 +12,7 @@ const expectedGroups = {
   mixed: 2,
   xy: 2,
   radial: 5,
-  time: 2,
+  time: 3,
   background: 12,
 };
 const screenshotOptions = {
@@ -72,7 +72,7 @@ describe("QA chart laboratory", () => {
         ]),
       ),
     ).toEqual(expectedGroups);
-    expect(fixtures).toHaveLength(44);
+    expect(fixtures).toHaveLength(45);
     expect(new Set(fixtureNames).size).toBe(fixtures.length);
     expect(document.querySelectorAll(".lab-index a")).toHaveLength(groups.length);
     expect(document.querySelectorAll(".example-code-copy")).toHaveLength(fixtures.length);
@@ -86,6 +86,19 @@ describe("QA chart laboratory", () => {
       expect(host.querySelector("svg"), fixture.dataset.fixture).not.toBeNull();
       expect(button).toHaveAttribute("aria-label", `Copy code for #${fixture.dataset.fixture}`);
     }
+  });
+
+  it("renders a square-cell heatmap for the three-month fixture", () => {
+    const fixture = document.querySelector('[data-fixture="heatmap-quarter"]');
+    const cells = [
+      ...fixture.querySelectorAll(".charts2-heat-cell"),
+    ];
+
+    expect(cells).toHaveLength(91);
+    const cellSize = Number(cells[0].getAttribute("width"));
+    expect(cells[0]).toHaveAttribute("x", "0");
+    expect(Number(cells[0].getAttribute("y"))).toBeCloseTo(2 * (cellSize + 3));
+    expect(cells.every((cell) => cell.getAttribute("width") === cell.getAttribute("height"))).toBe(true);
   });
 
   it("keeps annotation labels readable when points and bars deliberately cross them", () => {

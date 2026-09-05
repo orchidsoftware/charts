@@ -64,6 +64,8 @@ TimesheetChart.make("#timesheet").task("Build", "2026-01-01", "2026-01-02");
 
 // @ts-expect-error Heatmaps do not expose legends.
 HeatmapChart.make("#heatmap").legend(true);
+// @ts-expect-error Heatmaps derive their height from the adaptive calendar layout.
+HeatmapChart.make("#heatmap").height(240);
 // @ts-expect-error Radar does not expose Cartesian markers.
 RadarChart.make("#radar").marker("Target", 2);
 // @ts-expect-error Percentage does not expose sector start angles.

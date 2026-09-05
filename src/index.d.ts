@@ -287,6 +287,16 @@ export interface CommonChartBuilder<TTooltipBuilder, TSelection extends ChartSel
   tooltip(configure: (tooltip: TTooltipBuilder) => void): this;
   onSelect(callback: (selection: TSelection | undefined) => void): this;
 }
+export interface IntrinsicHeightChartBuilder<TTooltipBuilder, TSelection extends ChartSelection> {
+  title(value: string): this;
+  description(value: string): this;
+  ariaLabel(value: string): this;
+  width(value: number): this;
+  colors(values: readonly string[]): this;
+  tooltip(visible: boolean): this;
+  tooltip(configure: (tooltip: TTooltipBuilder) => void): this;
+  onSelect(callback: (selection: TSelection | undefined) => void): this;
+}
 export interface LegendChartBuilder {
   legend(visible: boolean): this;
 }
@@ -443,7 +453,10 @@ export interface RadarChartBuilder
   strokeWidth(value: number): this;
   render(): Chart<SeriesData<DatasetInput<number>>, SeriesPointSnapshot>;
 }
-export interface HeatmapChartBuilder extends CommonChartBuilder<HeatmapTooltipBuilder, HeatmapSelection> {
+export interface HeatmapChartBuilder extends IntrinsicHeightChartBuilder<
+  HeatmapTooltipBuilder,
+  HeatmapSelection
+> {
   range(start: Date, end: Date): this;
   points(values: Readonly<Record<string | number, number>>): this;
   countLabel(value: string): this;

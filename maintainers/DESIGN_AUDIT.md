@@ -52,8 +52,8 @@ fixtures in addition to every chart family.
   `Jan · Mar · May · Jul · Sep · Dec` sequence. Long horizontal categories
   balance across at most two lines before ellipsizing, keeping more width for
   the plot without collisions; tooltips remain fully inside the viewport.
-- A year heatmap retains a readable minimum cell size and scrolls inside its
-  host instead of clipping or widening the page.
+- A year heatmap retains a readable minimum square cell size and scrolls inside
+  its host instead of clipping or widening the page.
 - Heatmap intensity legends sit 12 px below the final cell row and render the
   complete configured palette. Seven, ten, or larger palettes compress their
   swatches to the available width without changing the first/lowest color.
@@ -137,6 +137,25 @@ The resulting contract is explicit:
    respect `showGrid`; the baseline respects `showAxes`.
 6. Hover, pointer-down, click, focus, and keyboard selection reuse the interval
    midpoint as one tooltip anchor, preventing state-change jumps.
+
+## Heatmap layout decision
+
+This matrix records the design lenses used for the responsive calendar decision;
+it does not claim endorsement by the named people or organizations.
+
+| Lens                                                                                                                                               | Relevant principle                                                                   | Applied decision                                                                                                                                                                           |
+| -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [Apple HIG — Charts](https://developer.apple.com/design/human-interface-guidelines/charts)                                                         | Size the chart for its content and preserve a clear reading of the data.             | The plot owns the available width, keeps square days, and derives height from its responsive calendar bands.                                                                               |
+| [Nielsen Norman Group — Horizontal scrolling](https://www.nngroup.com/articles/horizontal-scrolling/)                                              | Hidden horizontal content is easy to miss and costly to navigate.                    | The default calendar never requires horizontal scrolling; its continuous week sequence wraps into horizontal bands.                                                                        |
+| [GitHub contribution calendar](https://docs.github.com/en/account-and-profile/how-tos/contribution-settings/viewing-contributions-on-your-profile) | A familiar calendar heatmap maps activity to real dates and weekdays.                | Cells are placed by the actual UTC calendar weekday rather than by input-array index.                                                                                                      |
+| [D3 calendar](https://observablehq.com/@d3/calendar/2)                                                                                             | Calendar geometry should be derived from fixed relationships between days and weeks. | Every visible day is a square; week columns preserve seven consistent weekday rows across band wraps.                                                                                      |
+| [Cal-Heatmap](https://cal-heatmap.com/docs/options/subDomain)                                                                                      | Calendar domains and subdomains should be explicit rather than incidental.           | Missing days in the requested interval become zero-valued cells rather than collapsing the continuous domain.                                                                              |
+| Artemy Lebedev, [§168](https://www.artlebedev.ru/kovodstvo/sections/168/)                                                                          | Interactive targets need a practical minimum size.                                   | The layout prefers 16 px days while space allows, then wraps full week columns into another band; exceptionally narrow containers shrink further to honor the explicit no-scroll contract. |
+
+The resulting contract is: one adaptive horizontal field without month labels
+or section gaps, no internal outer padding, no horizontal scroll, continuous
+dates, square cells, and intrinsic height. `HeatmapChartBuilder.height()` is
+intentionally unavailable.
 
 ## Current release plan
 

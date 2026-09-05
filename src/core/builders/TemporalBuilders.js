@@ -39,6 +39,16 @@ class RangedChartBuilder extends CommonChartBuilder {
  */
 class HeatmapChartBuilder extends RangedChartBuilder {
   /**
+   * Rejects fixed height because calendar rows own the intrinsic heatmap height.
+   *
+   * @returns {never} Heatmaps always derive their height from width and date range.
+   * @throws {TypeError} Heatmap height is not caller-configurable.
+   */
+  height() {
+    throw new TypeError("Heatmap height is derived from its adaptive calendar layout");
+  }
+
+  /**
    * Replaces keyed daily activity values.
    *
    * @param {Readonly<Record<string | number, number>>} values - Calendar keys and finite counts.

@@ -4,6 +4,13 @@
 
 Calendar heatmaps show activity day by day. Color intensity makes recurring
 patterns, quiet periods, and unusually active days easy to find.
+Each day remains a square at every responsive size; long ranges continue in
+additional horizontal calendar bands instead of scrolling.
+The heatmap consumes the available width and derives its height from the date
+range, number of bands, and current container width. It adds no month headings
+or decorative section gaps, so the data remains one continuous field.
+The SVG adds no outer inset, so apply any desired padding to the chart's host
+element.
 
 ## Creating a calendar heatmap
 
@@ -24,7 +31,8 @@ const chart = HeatmapChart.make("#activity")
 ```
 
 Point values must be finite numbers. Zero is valid and represents an inactive
-day.
+day. Missing dates between the first and last point are rendered as zero, so
+sparse input never collapses the calendar.
 
 ## Displaying a fixed range
 
@@ -90,6 +98,7 @@ HeatmapChart.make("#activity")
   .render();
 ```
 
-Calendar heatmaps also support the shared `title()`, `description()`,
-`ariaLabel()`, `width()`, `height()`, `colors()`, `tooltip()`, and `onSelect()`
-methods. See [Customization](./customization.md) for details.
+Calendar heatmaps also support `title()`, `description()`, `ariaLabel()`,
+`width()`, `colors()`, `tooltip()`, and `onSelect()`. They deliberately don't
+support `height()`: a fixed height would either distort square days or recreate
+unused space. See [Customization](./customization.md) for details.

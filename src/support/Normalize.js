@@ -12,6 +12,7 @@ import {
 const DEFAULT_POINT_RADIUS = 5;
 const ISO_DATE_LENGTH = 10;
 const MILLISECONDS_PER_SECOND = 1000;
+const MILLISECONDS_PER_DAY = 86_400_000;
 const UNIX_SECONDS_THRESHOLD = 100_000;
 const YEAR_LENGTH = 4;
 const YEAR_MONTH_LENGTH = 7;
@@ -481,30 +482,75 @@ function normalizeHeatmapData(data = {}) {
     throw new TypeError("Heatmap points must contain at least one entry");
   }
 
-  const entries = Object.entries(source).map(
-    ([
-      key,
-      value,
-    ]) => {
-      requireFiniteNumber(value, "Heatmap value");
-      const date = heatmapDate(key);
+  const entries = normalizedHeatmapEntries(source);
+  const range = heatmapRange(data, entries);
 
-      if (Number.isNaN(date.valueOf())) {
-        throw new TypeError(`Invalid heatmap date: ${key}`);
-      }
+  return continuousHeatmapDays(entries, range);
+}
 
-      return {
-        date,
-        key: date.toISOString().slice(0, ISO_DATE_LENGTH),
+/**
+ * Converts raw heatmap entries into validated UTC day records.
+ *
+ * @param {Record<string, number>} source - Caller-supplied keyed values.
+ * @returns {Array<object>} Chronologically sorted day records.
+ */
+function normalizedHeatmapEntries(source) {
+  return Object.entries(source)
+    .map(
+      ([
+        key,
         value,
-      };
-    },
+      ]) => {
+        requireFiniteNumber(value, "Heatmap value");
+        const date = heatmapDate(key);
+
+        if (Number.isNaN(date.valueOf())) {
+          throw new TypeError(`Invalid heatmap date: ${key}`);
+        }
+
+        return {
+          date,
+          key: date.toISOString().slice(0, ISO_DATE_LENGTH),
+          value,
+        };
+      },
+    )
+    .toSorted((left, right) => left.date - right.date);
+}
+
+/**
+ * Fills every missing UTC day in a validated heatmap range with zero.
+ *
+ * @param {Array<object>} entries - Sorted explicit values.
+ * @param {{start: Date, end: Date}} range - Inclusive calendar bounds.
+ * @returns {Array<object>} Continuous daily records.
+ */
+function continuousHeatmapDays(entries, range) {
+  const values = new Map(
+    entries.map((entry) => [
+      entry.key,
+      entry.value,
+    ]),
   );
 
-  const sorted = entries.toSorted((left, right) => left.date - right.date);
-  validateHeatmapRange(data, sorted);
+  const days = [];
 
-  return sorted;
+  for (
+    let timestamp = range.start.valueOf();
+    timestamp <= range.end.valueOf();
+    timestamp += MILLISECONDS_PER_DAY
+  ) {
+    const date = new Date(timestamp);
+    const key = date.toISOString().slice(0, ISO_DATE_LENGTH);
+
+    days.push({
+      date,
+      key,
+      value: values.get(key) ?? 0,
+    });
+  }
+
+  return days;
 }
 
 /**
@@ -514,9 +560,12 @@ function normalizeHeatmapData(data = {}) {
  * @param {Array<object>} entries - Sorted normalized point entries.
  * @returns {void} Ascending containing ranges pass unchanged.
  */
-function validateHeatmapRange(data, entries) {
+function heatmapRange(data, entries) {
   if (data.start === undefined && data.end === undefined) {
-    return;
+    return {
+      start: entries[0].date,
+      end: entries.at(-1).date,
+    };
   }
 
   if (data.start === undefined || data.end === undefined) {
@@ -533,6 +582,11 @@ function validateHeatmapRange(data, entries) {
   if (entries[0].date < start || entries.at(-1).date > end) {
     throw new TypeError("Heatmap range must contain every point");
   }
+
+  return {
+    start,
+    end,
+  };
 }
 
 /**

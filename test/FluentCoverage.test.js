@@ -365,10 +365,16 @@ describe("complete fluent authoring surface", () => {
         tooltip.formatDate(() => "date").formatValue((value) => `${value} commits`);
       })
       .render();
-    expect(heatmap.element.querySelector(".charts2-mark")).not.toBeNull();
+    expect(heatmap.element.querySelectorAll(".charts2-mark")).toHaveLength(3);
+    expect(heatmap.point(1)).toMatchObject({ key: "2026-01-02", value: 0 });
     expectFailure(() => heatmapScope.formatDate(String), "Heatmap tooltip scope has expired");
     expectFailure(() => heatmapScope.formatDate.call({}, String), "Tooltip scope has expired");
     heatmap.destroy();
+
+    expectFailure(
+      () => HeatmapChart.make("#chart").height(240),
+      "Heatmap height is derived from its adaptive calendar layout",
+    );
 
     resetHost();
     let timesheetScope;

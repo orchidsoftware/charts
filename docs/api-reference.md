@@ -28,20 +28,20 @@ Each definition exposes `make(parent)`, where `parent` is a CSS selector or an
 `Element`. Configuration methods return the same builder, and `render()` mounts
 the chart.
 
-## Methods shared by every chart
+## Common chart methods
 
-| Method               | Result                                              |
-| -------------------- | --------------------------------------------------- |
-| `title(text)`        | Shows a visible title.                              |
-| `description(text)`  | Adds a longer accessible SVG description.           |
-| `ariaLabel(text)`    | Sets the chart's accessible name.                   |
-| `width(pixels)`      | Uses an explicit width instead of the host width.   |
-| `height(pixels)`     | Sets the chart height.                              |
-| `colors(palette)`    | Sets the ordered chart palette.                     |
-| `tooltip(false)`     | Hides the tooltip.                                  |
-| `tooltip(callback)`  | Formats tooltip content.                            |
-| `onSelect(callback)` | Receives a selection or `undefined` when it clears. |
-| `render()`           | Mounts the chart and returns its runtime API.       |
+| Method               | Result                                                     |
+| -------------------- | ---------------------------------------------------------- |
+| `title(text)`        | Shows a visible title.                                     |
+| `description(text)`  | Adds a longer accessible SVG description.                  |
+| `ariaLabel(text)`    | Sets the chart's accessible name.                          |
+| `width(pixels)`      | Uses an explicit width instead of the host width.          |
+| `height(pixels)`     | Sets the chart height, except on intrinsic-height Heatmap. |
+| `colors(palette)`    | Sets the ordered chart palette.                            |
+| `tooltip(false)`     | Hides the tooltip.                                         |
+| `tooltip(callback)`  | Formats tooltip content.                                   |
+| `onSelect(callback)` | Receives a selection or `undefined` when it clears.        |
+| `render()`           | Mounts the chart and returns its runtime API.              |
 
 Charts with a legend also provide `legend(false)`.
 

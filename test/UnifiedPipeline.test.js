@@ -1114,6 +1114,10 @@ describe("unified public pipeline", () => {
     const swatches = [
       ...heatmap.element.querySelectorAll(".charts2-heat-legend-swatch"),
     ];
+    expect(cells.every((cell) => cell.getAttribute("width") === cell.getAttribute("height"))).toBe(true);
+    const cellSize = Number(cells[0].getAttribute("width"));
+    expect(cells[0]).toHaveAttribute("x", "0");
+    expect(Number(cells[0].getAttribute("y"))).toBeCloseTo(3 * (cellSize + 3));
     expect(cells.map((cell) => cell.getAttribute("fill"))).toEqual([
       palette[0],
       palette.at(-1),
@@ -1126,10 +1130,10 @@ describe("unified public pipeline", () => {
     expect(
       heatmap.element.querySelector(".charts2-heat-legend-more").getBBox().x +
         heatmap.element.querySelector(".charts2-heat-legend-more").getBBox().width,
-    ).toBeLessThanOrEqual(widthOf(heatmap) - 24);
-    expect(Number(swatches[0].getAttribute("y")) + Number(swatches[0].getAttribute("height"))).toBe(
-      heightOf(heatmap) - 24,
-    );
+    ).toBeLessThanOrEqual(widthOf(heatmap));
+    expect(
+      Number(swatches[0].getAttribute("y")) + Number(swatches[0].getAttribute("height")),
+    ).toBeLessThanOrEqual(heightOf(heatmap));
     expect(heatmap.point(1).key).toBe("2026-01-02");
     document.querySelector("#chart").style.width = "180px";
     dispatchEvent(new Event("resize"));
@@ -1138,11 +1142,14 @@ describe("unified public pipeline", () => {
     const resizedCells = [
       ...heatmap.element.querySelectorAll(".charts2-heat-cell"),
     ];
+    expect(resizedCells.every((cell) => cell.getAttribute("width") === cell.getAttribute("height"))).toBe(
+      true,
+    );
     expect(
       Math.max(
         ...resizedCells.map((cell) => Number(cell.getAttribute("x")) + Number(cell.getAttribute("width"))),
       ),
-    ).toBeLessThanOrEqual(widthOf(heatmap) - 14.4);
+    ).toBeLessThanOrEqual(widthOf(heatmap));
     expect(() => heatmap.update({ points: {} })).toThrow("at least one entry");
     expect(heatmap.element.querySelector(".charts2-heat-cell")).not.toBeNull();
     expect(heatmap.element.querySelectorAll(".charts2-heat-legend-swatch")).toHaveLength(10);
@@ -1164,7 +1171,6 @@ describe("unified public pipeline", () => {
     const narrow = createChart("#chart", {
       type: "heatmap",
       width: 100,
-      height: 280,
       colors: palette,
       onSelect: onWeekSelect,
       data: { points: year },
@@ -1178,10 +1184,11 @@ describe("unified public pipeline", () => {
     const weekHits = [
       ...narrow.element.querySelectorAll(".charts2-heat-week-hit"),
     ];
-    expect(narrow.element.parentElement).toHaveClass("charts2-scrollable-heatmap");
-    expect(Number(narrow.element.style.width.replace("px", ""))).toBeGreaterThan(100);
-    expect(Math.min(...narrowCells.map((cell) => Number(cell.getAttribute("width"))))).toBeGreaterThanOrEqual(
-      16,
+    expect(narrow.element.parentElement).not.toHaveClass("charts2-scrollable-heatmap");
+    expect(narrow.element.style.width).toBe("100%");
+    expect(widthOf(narrow)).toBe(100);
+    expect(narrowCells.every((cell) => cell.getAttribute("width") === cell.getAttribute("height"))).toBe(
+      true,
     );
     expect(narrowCells.every((cell) => cell.classList.contains("charts2-mark"))).toBe(true);
     expect(weekHits).toHaveLength(0);
@@ -1189,7 +1196,7 @@ describe("unified public pipeline", () => {
       Number(narrowSwatches[1].getAttribute("x")) -
         Number(narrowSwatches[0].getAttribute("x")) -
         Number(narrowSwatches[0].getAttribute("width")),
-    ).toBeCloseTo(2);
+    ).toBeCloseTo(0);
     narrowCells[0].dispatchEvent(new Event("pointerdown", { bubbles: true }));
     expect(tooltipFor(narrow).hidden).toBe(false);
     narrowCells[0].dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -1218,20 +1225,18 @@ describe("unified public pipeline", () => {
         Number(compactSwatches[0].getAttribute("width")),
     ).toBeCloseTo(0);
     compactLegend.destroy();
-    const tall = createChart("#chart", { type: "heatmap", height: 280, data: { points: year } });
+    const tall = createChart("#chart", { type: "heatmap", data: { points: year } });
     const tallCells = [
       ...tall.element.querySelectorAll(".charts2-heat-cell"),
     ];
     const tallGridBottom = Math.max(
       ...tallCells.map((cell) => Number(cell.getAttribute("y")) + Number(cell.getAttribute("height"))),
     );
-    expect(Number(tallCells[0].getAttribute("height"))).toBeGreaterThan(18);
+    expect(tallCells.every((cell) => cell.getAttribute("width") === cell.getAttribute("height"))).toBe(true);
     expect(
       Number(tall.element.querySelector(".charts2-heat-legend-swatch").getAttribute("y")) - tallGridBottom,
     ).toBe(12);
-    expect(Number(tall.element.querySelector(".charts2-heat-legend-swatch").getAttribute("y")) + 11).toBe(
-      256,
-    );
+    expect(heightOf(tall)).toBeGreaterThan(280);
     tall.destroy();
     expect(() =>
       createChart("#chart", {

@@ -17,10 +17,12 @@ LineChart.make("#revenue").dataset([42, 48, 57]).height(280).render();
 - `height(pixels)` sets the chart height.
 - `width(pixels)` sets an explicit width.
 
-For a wide calendar heatmap on a small screen, let its host scroll:
+Heatmaps are the exception: their day cells stay square, calendar bands wrap at
+the available width, and the SVG derives its own height. Put optional outer
+space on the parent instead of inside the chart:
 
 ```html
-<div class="charts2-scrollable-heatmap">
+<div style="padding: 10px">
   <div id="activity"></div>
 </div>
 ```

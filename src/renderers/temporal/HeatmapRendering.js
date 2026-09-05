@@ -1,19 +1,13 @@
-import { HEATMAP_COLORS, HEATMAP_COMPACT_WIDTH, HEATMAP_MIN_CELL_WIDTH } from "../../support/Constants.js";
+import { HEATMAP_COLORS, HEATMAP_MIN_CELL_WIDTH } from "../../support/Constants.js";
 import { formatNumber, markMetadata, measuredTextWidth, svg, titled } from "../../support/Dom.js";
 import { extent } from "../../support/geometry/Math.js";
 import { formatContext, formatterText } from "../../support/presentation/Formatting.js";
 import { intensityLevel } from "../../support/presentation/Presentation.js";
 
-const GRID_PADDING = 24;
-const MINIMUM_HORIZONTAL_PADDING = 4;
-const HORIZONTAL_PADDING_RATIO = 0.08;
-const GRID_TOP = 24;
 const PREFERRED_CELL_GAP = 3;
 const LEGEND_HEIGHT = 11;
-const LEGEND_GAP = 12;
 const DAYS_PER_WEEK = 7;
-const INSPECTOR_WEEK_THRESHOLD = 20;
-const MINIMUM_COLUMN_CALCULATION_WIDTH = 4;
+const MONDAY_FIRST_OFFSET = 6;
 const LEGEND_TOP_GAP = 12;
 const LEGEND_BASELINE_OFFSET = 10;
 const LEGEND_LABEL_GAP = 8;
@@ -23,40 +17,96 @@ const MINIMUM_SWATCH_WIDTH = 5;
 const MINIMUM_SWATCH_GAP = 2;
 
 /**
- * Calculates responsive horizontal padding for the heatmap grid.
+ * Converts the native Sunday-first weekday to a Monday-first calendar row.
  *
- * @param {number} width - Requested chart width.
- * @returns {number} Bounded horizontal padding.
+ * @param {Date} date - UTC calendar date.
+ * @returns {number} Zero-based Monday-first weekday.
  */
-function heatmapHorizontalPadding(width) {
-  return Math.min(GRID_PADDING, Math.max(MINIMUM_HORIZONTAL_PADDING, width * HORIZONTAL_PADDING_RATIO));
+function mondayFirstWeekday(date) {
+  return (date.getUTCDay() + MONDAY_FIRST_OFFSET) % DAYS_PER_WEEK;
 }
 
 /**
- * Resolves viewport and overflow dimensions for one heatmap.
+ * Locates a continuous day inside its absolute week column.
  *
- * @param {number} width - Requested chart width.
- * @param {number} height - Requested chart height.
- * @param {object} chart - Frozen chart snapshot.
- * @returns {object} Complete heatmap dimensions.
+ * @param {number} startWeekday - Monday-first weekday of the first date.
+ * @param {number} index - Zero-based day offset.
+ * @returns {number} Zero-based week index.
  */
-function heatmapDimensions(width, height, chart) {
-  const horizontalPadding = heatmapHorizontalPadding(width);
-  const weeks = Math.max(1, Math.ceil(chart.heatmap.length / DAYS_PER_WEEK));
-  const rows = Math.min(DAYS_PER_WEEK, Math.max(1, chart.heatmap.length));
-  const hasWeekInspector = weeks > INSPECTOR_WEEK_THRESHOLD && width < HEATMAP_COMPACT_WIDTH;
+function weekIndex(startWeekday, index) {
+  return Math.floor((startWeekday + index) / DAYS_PER_WEEK);
+}
 
-  const minimumScrollableWidth =
-    horizontalPadding * 2 + weeks * HEATMAP_MIN_CELL_WIDTH + (weeks - 1) * PREFERRED_CELL_GAP;
+/**
+ * Balances all weeks across the fewest readable horizontal bands.
+ *
+ * @param {number} width - Available SVG width.
+ * @param {number} weeks - Total calendar week count.
+ * @returns {{bands: number, columns: number}} Band and column counts.
+ */
+function bandArrangement(width, weeks) {
+  const maximumColumns = Math.max(
+    1,
+    Math.floor((width + PREFERRED_CELL_GAP) / (HEATMAP_MIN_CELL_WIDTH + PREFERRED_CELL_GAP)),
+  );
+
+  const bands = Math.max(1, Math.ceil(weeks / maximumColumns));
 
   return Object.freeze({
-    horizontalPadding,
-    weeks,
-    rows,
-    hasWeekInspector,
-    layoutWidth: hasWeekInspector ? Math.max(width, minimumScrollableWidth) : width,
-    gridTop: GRID_TOP,
-    gridBottom: height - GRID_PADDING - LEGEND_HEIGHT - LEGEND_GAP,
+    bands,
+    columns: Math.ceil(weeks / bands),
+  });
+}
+
+/**
+ * Omits unused weekday rows after the final visible day.
+ *
+ * @param {Array<object>} heatmap - Continuous normalized daily records.
+ * @param {number} startWeekday - Monday-first weekday of the first date.
+ * @param {{bands: number, columns: number}} arrangement - Responsive band geometry.
+ * @returns {number} Number of occupied or structurally required rows.
+ */
+function visibleRowCount(heatmap, startWeekday, arrangement) {
+  const lastBandStartWeek = (arrangement.bands - 1) * arrangement.columns;
+
+  const lastBandWeekdays = heatmap.flatMap((item, index) =>
+    weekIndex(startWeekday, index) < lastBandStartWeek
+      ? []
+      : [
+          mondayFirstWeekday(item.date),
+        ],
+  );
+
+  return (arrangement.bands - 1) * DAYS_PER_WEEK + Math.max(...lastBandWeekdays) + 1;
+}
+
+/**
+ * Resolves square-cell geometry for a continuous responsive calendar field.
+ *
+ * @param {number} width - Available SVG width.
+ * @param {Array<object>} heatmap - Continuous normalized daily records.
+ * @returns {object} Immutable geometry shared by rendering and the legend.
+ */
+function heatmapGeometry(width, heatmap) {
+  const startWeekday = mondayFirstWeekday(heatmap[0].date);
+  const weeks = Math.ceil((startWeekday + heatmap.length) / DAYS_PER_WEEK);
+  const arrangement = bandArrangement(width, weeks);
+
+  const cellSize = Math.max(
+    Number.EPSILON,
+    (width - (arrangement.columns - 1) * PREFERRED_CELL_GAP) / arrangement.columns,
+  );
+
+  const rows = visibleRowCount(heatmap, startWeekday, arrangement);
+  const gridBottom = rows * cellSize + (rows - 1) * PREFERRED_CELL_GAP;
+
+  return Object.freeze({
+    height: gridBottom + LEGEND_TOP_GAP + LEGEND_HEIGHT,
+    layoutWidth: width,
+    cellSize,
+    columns: arrangement.columns,
+    startWeekday,
+    gridBottom,
   });
 }
 
@@ -80,7 +130,7 @@ class HeatmapRenderer {
   }
 
   /**
-   * Renders daily values as an accessible, horizontally scrollable calendar grid.
+   * Renders daily values as an accessible adaptive calendar grid.
    *
    * @returns {void} Heatmap cells, inspectors, and legend are appended to the chart SVG.
    */
@@ -91,92 +141,35 @@ class HeatmapRenderer {
   }
 
   /**
-   * Derives grid dimensions, overflow behavior, and color scaling once per render.
+   * Derives adaptive calendar bands and color scaling once per render.
    *
    * @returns {object} Complete immutable layout snapshot shared by heatmap drawing methods.
    */
   #layout() {
-    const { height, width } = this.#chart.options;
-    const dimensions = this.#dimensions(width, height);
-
-    this.#configureSurface(dimensions, height);
-
-    const cells = this.#cellGeometry(dimensions);
+    const geometry = heatmapGeometry(this.#chart.options.width, this.#chart.heatmap);
     const palette = this.#palette();
 
-    return {
-      height,
-      ...dimensions,
-      ...cells,
+    const layout = Object.freeze({
+      ...geometry,
       ...palette,
-    };
-  }
-
-  /**
-   * Resolves viewport, grid, and overflow dimensions.
-   *
-   * @param {number} width - Requested chart width.
-   * @param {number} height - Requested chart height.
-   * @returns {object} Stable heatmap dimensions.
-   */
-  #dimensions(width, height) {
-    return heatmapDimensions(width, height, this.#chart);
-  }
-
-  /**
-   * Applies horizontal overflow policy to the host and SVG surface.
-   *
-   * @param {object} dimensions - Resolved viewport dimensions.
-   * @param {number} height - Requested chart height.
-   * @returns {void} Host class and SVG sizing are updated.
-   */
-  #configureSurface(dimensions, height) {
-    this.#surface.attribute("data-scrollable", dimensions.hasWeekInspector ? "true" : "false");
-    this.#surface.attribute("viewBox", `0 0 ${dimensions.layoutWidth} ${height}`);
-    this.#surface.styles({
-      width: dimensions.hasWeekInspector ? `${dimensions.layoutWidth}px` : "100%",
-      maxWidth: dimensions.hasWeekInspector ? "none" : "100%",
     });
+
+    this.#configureSurface(layout.layoutWidth, layout.height);
+
+    return layout;
   }
 
   /**
-   * Resolves gaps and cell sizes inside the drawable grid.
+   * Makes the SVG responsive horizontally and intrinsic vertically.
    *
-   * @param {object} dimensions - Resolved viewport dimensions.
-   * @returns {object} Row, column, and cell geometry.
+   * @param {number} width - Current measured width.
+   * @param {number} height - Content-derived height.
+   * @returns {void} Surface dimensions are updated.
    */
-  #cellGeometry(dimensions) {
-    const availableGridWidth = Math.max(1, dimensions.layoutWidth - dimensions.horizontalPadding * 2);
-    const availableGridHeight = Math.max(dimensions.rows, dimensions.gridBottom - dimensions.gridTop);
-
-    const rowGap = Math.min(
-      PREFERRED_CELL_GAP,
-      Math.max(0, (availableGridHeight - dimensions.rows) / Math.max(1, dimensions.rows - 1)),
-    );
-
-    const columnGap = Math.min(
-      PREFERRED_CELL_GAP,
-      Math.max(
-        0,
-        (availableGridWidth - dimensions.weeks * MINIMUM_COLUMN_CALCULATION_WIDTH) /
-          Math.max(1, dimensions.weeks - 1),
-      ),
-    );
-
-    const cellWidth = Math.max(
-      Number.EPSILON,
-      (availableGridWidth - (dimensions.weeks - 1) * columnGap) / dimensions.weeks,
-    );
-
-    const cellHeight = Math.max(1, (availableGridHeight - (dimensions.rows - 1) * rowGap) / dimensions.rows);
-
-    return {
-      availableGridHeight,
-      rowGap,
-      columnGap,
-      cellWidth,
-      cellHeight,
-    };
+  #configureSurface(width, height) {
+    this.#surface.attribute("viewBox", `0 0 ${width} ${height}`);
+    this.#surface.attribute("height", height);
+    this.#surface.styles({ width: "100%", maxWidth: "100%", height: `${height}px` });
   }
 
   /**
@@ -224,15 +217,18 @@ class HeatmapRenderer {
       item,
     ] of this.#chart.heatmap.entries()) {
       const level = layout.colorLevel(item.value);
-      const column = Math.floor(index / DAYS_PER_WEEK);
-      const row = index % DAYS_PER_WEEK;
+      const absoluteWeek = Math.floor((layout.startWeekday + index) / DAYS_PER_WEEK);
+      const band = Math.floor(absoluteWeek / layout.columns);
+      const column = absoluteWeek % layout.columns;
+      const weekday = mondayFirstWeekday(item.date);
+      const row = band * DAYS_PER_WEEK + weekday;
 
       const cell = svg("rect", {
-        x: layout.horizontalPadding + column * (layout.cellWidth + layout.columnGap),
-        y: layout.gridTop + row * (layout.cellHeight + layout.rowGap),
-        width: layout.cellWidth,
-        height: layout.cellHeight,
-        rx: Math.min(this.#chart.options.radius ?? 2, layout.cellWidth / 2, layout.cellHeight / 2),
+        x: column * (layout.cellSize + PREFERRED_CELL_GAP),
+        y: row * (layout.cellSize + PREFERRED_CELL_GAP),
+        width: layout.cellSize,
+        height: layout.cellSize,
+        rx: Math.min(this.#chart.options.radius ?? 2, layout.cellSize / 2),
         fill: layout.colors[level],
         class: "charts2-heat-cell charts2-mark",
       });
@@ -261,7 +257,7 @@ class HeatmapRenderer {
     });
 
     const less = svg("text", {
-      x: layout.horizontalPadding,
+      x: 0,
       y: geometry.baseline,
       class: "charts2-legend charts2-heat-legend-less",
     });
@@ -291,7 +287,7 @@ class HeatmapRenderer {
   #legendGeometry(layout) {
     const vertical = { top: layout.gridBottom + LEGEND_TOP_GAP };
     const labelWidths = { less: measuredTextWidth("Less"), more: measuredTextWidth("More") };
-    const scaleX = layout.horizontalPadding + labelWidths.less + LEGEND_LABEL_GAP;
+    const scaleX = labelWidths.less + LEGEND_LABEL_GAP;
     const scaleWidth = this.#legendScaleWidth(layout, scaleX, labelWidths.more);
 
     const minimumGappedWidth =
@@ -322,7 +318,7 @@ class HeatmapRenderer {
   #legendScaleWidth(layout, scaleX, moreWidth) {
     const maximumScaleWidth = Math.max(
       layout.colors.length,
-      layout.layoutWidth - layout.horizontalPadding - scaleX - moreWidth - LEGEND_LABEL_GAP,
+      layout.layoutWidth - scaleX - moreWidth - LEGEND_LABEL_GAP,
     );
 
     const desiredScaleWidth =

@@ -1148,6 +1148,10 @@ maximum. For `K` colors and normalized value `v`, bucket index is
 `min(K - 1, floor(((v - min) / (max - min)) * K))`. When every value is equal,
 zero MUST use the first color and a non-zero value MUST use the last color.
 This mapping uses the complete supplied ordinal scale and never cycles.
+Every visible day mark MUST remain square at every responsive size. Additional
+height MUST NOT stretch day marks; the intensity legend follows the actual
+bottom edge of the calendar grid. Heatmap SVG content MUST NOT add outer
+padding; callers own spacing around the chart through its host element.
 
 `range(Date, Date)` MUST interpret each `Date` by its UTC calendar day when
 comparing it with timezone-free heatmap keys. Callers needing a local calendar
@@ -1416,23 +1420,23 @@ legacy factory remains test-only and is neither exported nor shipped.
 
 The implementation migration MUST use this single vocabulary:
 
-| Current repository form                      | Target fluent form                                            |
-| -------------------------------------------- | ------------------------------------------------------------- |
-| `createChart(parent, { type: "line", ... })` | `LineChart.make(parent)...render()`                           |
-| `type: "axis-mixed"` and dataset `chartType` | `MixedChart.make()` with `.line()`, `.bar()`, or `.scatter()` |
-| `data.labels`                                | `.labels()`                                                   |
-| `data.datasets`                              | ordered `.dataset()` calls                                    |
-| heatmap `dataPoints`                         | `.points()` and `HeatmapData.points`                          |
-| `yMarkers` / `yRegions`                      | `.marker()` / `.region()` and `markers` / `regions`           |
-| `height`, `width`, `colors`                  | `.height()`, `.width()`, `.colors()`                          |
-| `gradient: true`                             | `.gradient()`                                                 |
-| `orientation: "horizontal"`                  | `.horizontal()`                                               |
-| `barOptions.stacked` / `radius`              | `.stacked()` / `.radius()`                                    |
-| `showAxes`, `showGrid`, `showLabels`         | `.axes()`, `.grid()`, `.valueLabels()`                        |
-| six hidden-layer options in spark examples   | `.frameless()`                                                |
-| `axisOptions.yAxisPosition`                  | `.yAxis((axis) => axis.position(...))`                        |
-| `tooltipOptions`                             | scoped `.tooltip()` formatting                                |
-| `timesheetOptions`                           | direct timesheet formatter and radius methods                 |
+| Current repository form                      | Target fluent form                                             |
+| -------------------------------------------- | -------------------------------------------------------------- |
+| `createChart(parent, { type: "line", ... })` | `LineChart.make(parent)...render()`                            |
+| `type: "axis-mixed"` and dataset `chartType` | `MixedChart.make()` with `.line()`, `.bar()`, or `.scatter()`  |
+| `data.labels`                                | `.labels()`                                                    |
+| `data.datasets`                              | ordered `.dataset()` calls                                     |
+| heatmap `dataPoints`                         | `.points()` and `HeatmapData.points`                           |
+| `yMarkers` / `yRegions`                      | `.marker()` / `.region()` and `markers` / `regions`            |
+| `height`, `width`, `colors`                  | `.height()`, `.width()`, `.colors()`; Heatmap omits `height()` |
+| `gradient: true`                             | `.gradient()`                                                  |
+| `orientation: "horizontal"`                  | `.horizontal()`                                                |
+| `barOptions.stacked` / `radius`              | `.stacked()` / `.radius()`                                     |
+| `showAxes`, `showGrid`, `showLabels`         | `.axes()`, `.grid()`, `.valueLabels()`                         |
+| six hidden-layer options in spark examples   | `.frameless()`                                                 |
+| `axisOptions.yAxisPosition`                  | `.yAxis((axis) => axis.position(...))`                         |
+| `tooltipOptions`                             | scoped `.tooltip()` formatting                                 |
+| `timesheetOptions`                           | direct timesheet formatter and radius methods                  |
 
 A release claiming conformance MUST make the following files and surfaces tell
 the same story: package exports, JavaScript runtime, TypeScript declarations,

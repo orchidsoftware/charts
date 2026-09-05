@@ -61,7 +61,7 @@ afterEach(async () => {
 
 describe("real-world demo", () => {
   it("uses direct fluent builders as the only demo authoring grammar", () => {
-    expect(examplesSource.match(/\.make\(/g)).toHaveLength(44);
+    expect(examplesSource.match(/\.make\(/g)).toHaveLength(45);
     for (const legacyAdapter of [
       "commonBuilder",
       "seriesBuilder",
@@ -215,8 +215,7 @@ describe("real-world demo", () => {
         article.getBoundingClientRect().left,
         ...visible.map((element) => {
           const bounds = element.getBoundingClientRect();
-          const scroller = element.closest(".charts2-scrollable-heatmap");
-          return scroller ? Math.min(bounds.right, scroller.getBoundingClientRect().right) : bounds.right;
+          return bounds.right;
         }),
       );
       return visibleRight <= articleRight + 0.5
@@ -251,13 +250,15 @@ describe("real-world demo", () => {
     const heatmapCells = [
       ...heatmapHost.querySelectorAll(".charts2-heat-cell"),
     ];
-    expect(heatmapHost).toHaveClass("charts2-scrollable-heatmap");
-    expect(heatmapHost.scrollWidth).toBeGreaterThan(heatmapHost.clientWidth);
+    expect(heatmapHost).not.toHaveClass("charts2-scrollable-heatmap");
+    expect(heatmapHost.scrollWidth).toBe(heatmapHost.clientWidth);
     expect(
-      Math.min(...heatmapCells.map((cell) => cell.getBoundingClientRect().width)),
-    ).toBeGreaterThanOrEqual(16);
+      heatmapCells.every((cell) => {
+        const bounds = cell.getBoundingClientRect();
+        return Math.abs(bounds.width - bounds.height) < 0.01;
+      }),
+    ).toBe(true);
     expect(heatmapHost.querySelectorAll(".charts2-heat-cell.charts2-mark")).toHaveLength(heatmapCells.length);
-    heatmapHost.scrollLeft = heatmapHost.scrollWidth - heatmapHost.clientWidth;
     heatmapCells.at(-1).focus();
     const heatmapHostBounds = heatmapHost.getBoundingClientRect();
     const heatmapTooltipBounds = heatmapHost.querySelector(".charts2-tooltip").getBoundingClientRect();

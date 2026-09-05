@@ -2446,7 +2446,6 @@ function backgroundHeatmapExample() {
     .points(data.points)
     .countLabel("contributions")
     .radius(2)
-    .height(320)
     .colors([
       "#f2f2f7",
       "#d8ecff",
@@ -3293,7 +3292,6 @@ function heatmapExample() {
     .points(data.points)
     .countLabel("contributions")
     .radius(2)
-    .height(320)
     .colors([
       "#f2f2f7",
       "#d8ecff",
@@ -3304,6 +3302,40 @@ function heatmapExample() {
       "#084b83",
     ])
     .ariaLabel("Daily contributions throughout 2026")
+    .render();
+
+  return {
+    chart,
+    source: data,
+  };
+}
+
+function quarterHeatmapExample() {
+  const points = Object.fromEntries(
+    Array.from({ length: 91 }, (_, index) => {
+      const date = new Date(Date.UTC(2026, 3, index + 1));
+      const weekday = date.getUTCDay();
+      const baseline = Math.round(5 + 4 * Math.sin(index / 6));
+      const isWeekend = weekday === 0 || weekday === 6;
+      const value = isWeekend ? Math.max(0, baseline - 4) : baseline + (index % 5);
+
+      return [
+        date.toISOString().slice(0, 10),
+        value,
+      ];
+    }),
+  );
+  const data = {
+    start: "2026-04-01T00:00:00.000Z",
+    end: "2026-06-30T00:00:00.000Z",
+    points,
+  };
+  const chart = HeatmapChart.make("#heatmap-quarter")
+    .range(data.start, data.end)
+    .points(data.points)
+    .countLabel("events")
+    .radius(2)
+    .ariaLabel("Daily activity from April through June 2026")
     .render();
 
   return {
@@ -3619,5 +3651,9 @@ export const heatmapExamples = [
   [
     "#heatmap",
     heatmapExample,
+  ],
+  [
+    "#heatmap-quarter",
+    quarterHeatmapExample,
   ],
 ];

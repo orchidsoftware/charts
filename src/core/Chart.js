@@ -7,7 +7,6 @@ import InteractionController from "./InteractionController.js";
 import { normalizeChartOptions, validateChartColors } from "./Options.js";
 
 const MARK_SELECTOR = ".charts2-mark";
-const SCROLLABLE_HEATMAP_CLASS = "charts2-scrollable-heatmap";
 const SVG_EXTENSION = ".svg";
 const chartIdSequence = { latest: 0 };
 
@@ -68,6 +67,7 @@ export default class Chart {
   #boundDocumentPointerDown;
   #boundResize = null;
   #resizeObserver = null;
+  #resizeFrame = null;
   #destroyed = false;
 
   /**
@@ -148,10 +148,7 @@ export default class Chart {
    * @returns {void} Host-owned nodes and presentation classes commit together.
    */
   #commitHostPresentation(element) {
-    const renderedElement = element;
     this.#host.classList.add("charts2-host");
-    this.#host.classList.toggle(SCROLLABLE_HEATMAP_CLASS, element.dataset.scrollable === "true");
-    delete renderedElement.dataset.scrollable;
     this.#host.replaceChildren(element, this.#tooltip.element);
   }
 
@@ -315,10 +312,13 @@ export default class Chart {
     }
 
     this.#resizeObserver?.disconnect();
+    if (this.#resizeFrame !== null) {
+      cancelAnimationFrame(this.#resizeFrame);
+    }
 
     this.#element.remove();
     this.#tooltip.destroy();
-    this.#host.classList.remove("charts2-host", SCROLLABLE_HEATMAP_CLASS);
+    this.#host.classList.remove("charts2-host");
   }
 
   /**
@@ -348,6 +348,22 @@ export default class Chart {
   }
 
   /**
+   * Defers ResizeObserver work until the browser has completed its layout delivery.
+   *
+   * @returns {void} At most one responsive redraw is queued per frame.
+   */
+  #scheduleResize() {
+    if (this.#resizeFrame !== null) {
+      return;
+    }
+
+    this.#resizeFrame = requestAnimationFrame(() => {
+      this.#resizeFrame = null;
+      this.#resize();
+    });
+  }
+
+  /**
    * Observes parent content-box changes with a browser-compatible fallback.
    *
    * @returns {void} Exactly one responsive resize source is registered.
@@ -355,7 +371,8 @@ export default class Chart {
   #bindResponsiveWidth() {
     window.addEventListener("resize", this.#boundResize);
     if (typeof ResizeObserver === "function") {
-      this.#resizeObserver = new ResizeObserver(this.#boundResize);
+      const resize = this.#type === ChartType.HEATMAP ? () => this.#scheduleResize() : this.#boundResize;
+      this.#resizeObserver = new ResizeObserver(resize);
       this.#resizeObserver.observe(this.#host, { box: "content-box" });
     }
   }
@@ -519,8 +536,6 @@ export default class Chart {
       this.#element.setAttribute(attribute.name, attribute.value);
     }
 
-    this.#host.classList.toggle(SCROLLABLE_HEATMAP_CLASS, staged.dataset.scrollable === "true");
-    delete this.#element.dataset.scrollable;
     this.#element.replaceChildren(...staged.childNodes);
   }
 
@@ -562,7 +577,7 @@ export default class Chart {
 
     const interactionBehavior = {
       activeIndex: this.#activeMarkIndex,
-      allowPointerPan: this.#host.classList.contains(SCROLLABLE_HEATMAP_CLASS),
+      allowPointerPan: false,
       previewable: this.#options.tooltip,
       selectable: typeof this.#options.onSelect === "function",
     };

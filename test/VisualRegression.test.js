@@ -697,7 +697,7 @@ beforeAll(async () => {
   ] of stateFixtures) {
     charts.push(
       createChart(stateCard(name).querySelector("[data-chart]"), {
-        height: 300,
+        height: name === "heatmap" ? undefined : 300,
         ariaLabel: `${name} interaction fixture`,
         onSelect: () => {},
         ...options,
@@ -797,6 +797,9 @@ describe.sequential("visual regression baselines", () => {
     selector,
   ] of demoSections) {
     it(`keeps the desktop ${name} section stable`, async () => {
+      if (name === "composition-and-activity") {
+        await page.viewport(1280, 1200);
+      }
       await matchScreenshot(document.querySelector(selector), `demo-section-light-${name}`);
     });
   }

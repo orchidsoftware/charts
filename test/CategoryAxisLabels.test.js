@@ -29,10 +29,7 @@ function expectReadable(chart, expected) {
   const intervals = indexes.slice(1).map((index, offset) => index - indexes[offset]);
   expect(Math.max(...intervals) - Math.min(...intervals)).toBeLessThanOrEqual(1);
 
-  for (const [
-    index,
-    label,
-  ] of labels.entries()) {
+  for (const [index, label] of labels.entries()) {
     const box = label.getBBox();
     expect(expected).toContain(label.textContent);
     expect(label.querySelector("title")).toBeNull();
@@ -48,10 +45,10 @@ function expectReadable(chart, expected) {
 }
 
 it.each([
-  LineChart,
-  BarChart,
-  MixedChart,
-])("keeps dense dates complete and resamples on resize (%s)", async (ChartType) => {
+  { name: "line", ChartType: LineChart },
+  { name: "bar", ChartType: BarChart },
+  { name: "mixed", ChartType: MixedChart },
+])("keeps dense dates complete and resamples on resize ($name)", async ({ ChartType }) => {
   const labels = Array.from(
     { length: 90 },
     (_, index) =>
@@ -80,62 +77,24 @@ it.each([
 
 it("uses formatted widths and preserves all short labels when they fit", () => {
   const chart = LineChart.make("#chart")
-    .labels([
-      "A",
-      "B",
-      "C",
-      "D",
-      "E",
-      "F",
-    ])
+    .labels(["A", "B", "C", "D", "E", "F"])
     .dataset({
-      values: [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-      ],
+      values: [1, 2, 3, 4, 5, 6],
     })
     .render();
   expect(axisLabels(chart)).toHaveLength(6);
   chart.destroy();
 
   const formatted = LineChart.make("#chart")
-    .labels([
-      "A",
-      "B",
-      "C",
-      "D",
-      "E",
-      "F",
-    ])
-    .formatLabel((label) => [
-      `Пункт ${label}`,
-      "сент.",
-    ])
+    .labels(["A", "B", "C", "D", "E", "F"])
+    .formatLabel((label) => [`Пункт ${label}`, "сент."])
     .dataset({
-      values: [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-      ],
+      values: [1, 2, 3, 4, 5, 6],
     })
     .render();
   expectReadable(
     formatted,
-    [
-      "A",
-      "B",
-      "C",
-      "D",
-      "E",
-      "F",
-    ].map((label) => `Пункт ${label} сент.`),
+    ["A", "B", "C", "D", "E", "F"].map((label) => `Пункт ${label} сент.`),
   );
   formatted.destroy();
 });
@@ -146,17 +105,12 @@ it("handles empty, single, and individually oversized labels", () => {
   expect(
     categoryAxisLabels({
       ...geometry,
-      labels: [
-        "A",
-      ],
+      labels: ["A"],
     }),
   ).toHaveLength(1);
   const selected = categoryAxisLabels({
     ...geometry,
-    labels: [
-      "Очень длинное название категории",
-      "B",
-    ],
+    labels: ["Очень длинное название категории", "B"],
   });
   expect(selected).toHaveLength(1);
   expect(selected[0].width).toBe(100);

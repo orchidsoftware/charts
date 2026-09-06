@@ -8,40 +8,14 @@ it("preserves auxiliary label themes and explicit colors in standalone SVG", () 
   host.style.width = "360px";
   document.body.append(host);
   const chart = BarChart.make(host)
-    .dataset(
-      "Actual",
-      [
-        64,
-        72,
-        68,
-      ],
-    )
+    .dataset("Actual", [64, 72, 68])
     .marker("Average", 68)
-    .region(
-      "Expected",
-      [
-        42,
-        58,
-      ],
-      (region) => region.opacity(0.18),
-    )
+    .region("Expected", [42, 58], (region) => region.opacity(0.18))
     .render();
 
-  for (const [
-    surface,
-    secondary,
-    expectedText,
-  ] of [
-    [
-      "#ffffff",
-      "#6e6e73",
-      "rgb(110, 110, 115)",
-    ],
-    [
-      "#1c1c1e",
-      "#aeaeb2",
-      "rgb(174, 174, 178)",
-    ],
+  for (const [surface, secondary, expectedText] of [
+    ["#ffffff", "#6e6e73", "rgb(110, 110, 115)"],
+    ["#1c1c1e", "#aeaeb2", "rgb(174, 174, 178)"],
   ]) {
     host.style.setProperty("--orchid-charts-mark-separator", surface);
     host.style.setProperty("--orchid-charts-secondary-label-color", secondary);
@@ -66,16 +40,10 @@ it("preserves auxiliary label themes and explicit colors in standalone SVG", () 
     datasets: [
       {
         name: "Actual",
-        values: [
-          64,
-          72,
-          68,
-        ],
+        values: [64, 72, 68],
       },
     ],
-    markers: [
-      { label: "Average", value: 68, labelColor: "var(--reference-text)" },
-    ],
+    markers: [{ label: "Average", value: 68, labelColor: "var(--reference-text)" }],
   });
   const appearance = getComputedStyle(host.querySelector(".orchid-charts-marker-label"));
   expect(appearance.fill).toBe("rgb(255, 204, 0)");

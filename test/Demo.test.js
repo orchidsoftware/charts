@@ -34,19 +34,10 @@ const stressIds = [
   "dense-line",
   "flat-values",
 ];
-const auxiliaryIds = [
-  "heatmap",
-  "spark-line",
-  "spark-area",
-  "spark-bar",
-];
+const auxiliaryIds = ["heatmap", "spark-line", "spark-area", "spark-bar"];
 
 beforeEach(() => {
-  const cards = [
-    ...showcaseIds,
-    ...stressIds,
-    ...auxiliaryIds,
-  ]
+  const cards = [...showcaseIds, ...stressIds, ...auxiliaryIds]
     .map(
       (id) =>
         `<article style="box-sizing:border-box;width:362px;padding:24px;border:1px solid transparent"><header><div>${id}</div></header><div id="${id}"></div></article>`,
@@ -82,12 +73,8 @@ describe("real-world demo", () => {
     const demo = new DOMParser().parseFromString(demoMarkup, "text/html");
     const brand = demo.querySelector(".brand");
     const overview = demo.querySelector("#supported-charts");
-    const families = [
-      ...overview.querySelectorAll(":scope > .support-families > .support-family"),
-    ];
-    const links = [
-      ...overview.querySelectorAll(".support-types a"),
-    ];
+    const families = [...overview.querySelectorAll(":scope > .support-families > .support-family")];
+    const links = [...overview.querySelectorAll(".support-types a")];
 
     expect(brand).toHaveAttribute("aria-label", "Orchid Charts by Orchid, home");
     expect(brand.querySelector(".brand-mark").tagName).toBe("svg");
@@ -106,23 +93,54 @@ describe("real-world demo", () => {
     );
   });
 
-  it("varies showcase density while keeping the complete quality matrix immutable", async () => {
+  it("mounts the public demo, labels its copy actions, and updates only showcase data", async () => {
     await page.viewport(390, 900);
     const { qualityExamples, showcaseExamples } = await import("../demo/Examples.js");
     await import("../demo/Main.js");
-
     expect(showcaseExamples).toHaveLength(17);
     expect(qualityExamples).toHaveLength(11);
     expect(document.querySelectorAll(".selection-status")).toHaveLength(1);
     expect(document.querySelector(".selection-status-summary").textContent).toBe("Dec");
     expect(document.querySelector("#bundle-size-value").textContent).toMatch(/^\d+\.\d kB$/);
     expect(document.querySelector("#bundle-size-gzip").textContent).toMatch(/^\(\d+\.\d kB gzip\)$/);
+    const cards = [...document.querySelectorAll("article")];
+    expect(cards).toHaveLength(28);
+    expect(overflowingCards(cards)).toEqual([]);
+    expect(document.querySelectorAll(".example-code-copy")).toHaveLength(cards.length);
+    for (const card of cards) {
+      const host = card.querySelector("div[id]");
+      const button = card.querySelector(":scope > header .example-code-copy");
+
+      expect(button).toHaveAttribute("aria-label", `Copy code for #${host.id}`);
+      expect(button).toHaveAttribute("title", "Copy code");
+      expect(button.querySelector("svg")).not.toBeNull();
+    }
+    const stressBefore = stressIds.map((id) => document.querySelector(`#${id} svg`).getHTML());
+    const showcaseBefore = document.querySelector("#line .orchid-charts-line").getAttribute("d");
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    document.querySelector("#shuffle").click();
+
+    expect(document.querySelector("#line .orchid-charts-line").getAttribute("d")).not.toBe(showcaseBefore);
+    expect(stressIds.map((id) => document.querySelector(`#${id} svg`).getHTML())).toEqual(stressBefore);
+    expect([...document.querySelectorAll(".selection-status dd")].map((value) => value.textContent)).toEqual([
+      "83.52k",
+      "61.92k",
+      "42.48k",
+    ]);
+  });
+
+  it("uses distinct heights and grid density for the showcase", async () => {
+    await renderExamples("line", "percentage", "radar", "fractions");
     expect(document.querySelector("#line svg").getAttribute("height")).toBe("320");
     expect(document.querySelectorAll("#line .orchid-charts-grid-vertical")).toHaveLength(0);
     expect(document.querySelectorAll("#line .orchid-charts-grid-horizontal").length).toBeGreaterThan(0);
     expect(document.querySelector("#percentage svg").getAttribute("height")).toBe("80");
     expect(document.querySelector("#radar svg").getAttribute("height")).toBe("320");
     expect(document.querySelector("#fractions svg").getAttribute("height")).toBe("280");
+  });
+
+  it("places annotation labels on their regions and markers", async () => {
+    await renderExamples("line-region", "line-marker");
     expect(document.querySelector("#line-region .orchid-charts-region").getAttribute("fill")).toBe("#248a3d");
     expect(document.querySelector("#line-marker .orchid-charts-marker").getAttribute("stroke")).toBe(
       "#ff3b30",
@@ -152,91 +170,29 @@ describe("real-world demo", () => {
     expect(getComputedStyle(regionLabel).paintOrder).toBe("stroke");
     expect(getComputedStyle(markerLabel).fontVariantNumeric).toContain("tabular-nums");
     expect(document.querySelectorAll(".orchid-charts-annotation-sample")).toHaveLength(0);
+  });
 
-    const localizedLabels = [
-      ...document.querySelectorAll("#absurd-labels .orchid-charts-multiline-label"),
-    ];
+  it("preserves localized labels without truncating their meaning", async () => {
+    await renderExamples("absurd-labels", "large-values");
+    const localizedLabels = [...document.querySelectorAll("#absurd-labels .orchid-charts-multiline-label")];
     expect(
-      localizedLabels.map((label) =>
-        [
-          ...label.querySelectorAll("tspan"),
-        ].map((line) => line.textContent),
-      ),
+      localizedLabels.map((label) => [...label.querySelectorAll("tspan")].map((line) => line.textContent)),
     ).toEqual([
-      [
-        "Manual verification",
-        "after inconclusive",
-        "compliance review",
-      ],
-      [
-        "Партнёрские интеграции",
-        "проверка доступности",
-        "и локализации",
-      ],
-      [
-        "顧客向け分析",
-        "プラットフォーム",
-        "段階的な移行",
-      ],
-      [
-        "طلبات المؤسسات",
-        "مراجعة يدوية إضافية",
-        "قبل الموافقة النهائية",
-      ],
+      ["Manual verification", "after inconclusive", "compliance review"],
+      ["Партнёрские интеграции", "проверка доступности", "и локализации"],
+      ["顧客向け分析", "プラットフォーム", "段階的な移行"],
+      ["طلبات المؤسسات", "مراجعة يدوية إضافية", "قبل الموافقة النهائية"],
     ]);
     expect(localizedLabels.every((label) => !label.textContent.includes("…"))).toBe(true);
     expect(
-      [
-        ...document.querySelectorAll("#large-values .orchid-charts-multiline-label"),
-      ].map((label) => label.querySelectorAll("tspan").length),
-    ).toEqual([
-      2,
-      2,
-      2,
-    ]);
+      [...document.querySelectorAll("#large-values .orchid-charts-multiline-label")].map(
+        (label) => label.querySelectorAll("tspan").length,
+      ),
+    ).toEqual([2, 2, 2]);
+  });
 
-    const cards = [
-      ...document.querySelectorAll("article"),
-    ];
-    const overflow = cards.flatMap((article) => {
-      const articleRight = article.getBoundingClientRect().right;
-      const visible = [
-        ...article.querySelectorAll(
-          "svg path, svg line, svg rect, svg circle, svg polygon, svg polyline, svg text",
-        ),
-      ].filter((element) => {
-        const style = getComputedStyle(element);
-        return (
-          style.display !== "none" &&
-          style.visibility !== "hidden" &&
-          Number(style.opacity) !== 0 &&
-          element.getAttribute("fill") !== "transparent"
-        );
-      });
-      const visibleRight = Math.max(
-        article.getBoundingClientRect().left,
-        ...visible.map((element) => {
-          const bounds = element.getBoundingClientRect();
-          return bounds.right;
-        }),
-      );
-      return visibleRight <= articleRight + 0.5
-        ? []
-        : [
-            { id: article.querySelector("div").id, visibleRight, articleRight },
-          ];
-    });
-    expect(cards).toHaveLength(28);
-    expect(overflow).toEqual([]);
-    expect(document.querySelectorAll(".example-code-copy")).toHaveLength(cards.length);
-    for (const card of cards) {
-      const host = card.querySelector("div[id]");
-      const button = card.querySelector(":scope > header .example-code-copy");
-
-      expect(button).toHaveAttribute("aria-label", `Copy code for #${host.id}`);
-      expect(button).toHaveAttribute("title", "Copy code");
-      expect(button.querySelector("svg")).not.toBeNull();
-    }
+  it("fits timesheet labels inside the mobile chart", async () => {
+    await renderExamples("timesheet");
     const timesheetSvg = document.querySelector("#timesheet svg");
     const timesheetBounds = timesheetSvg.getBoundingClientRect();
     expect(timesheetSvg.querySelectorAll(".orchid-charts-timesheet-bar")).toHaveLength(6);
@@ -249,11 +205,13 @@ describe("real-world demo", () => {
         ].map((label) => label.getBoundingClientRect().right),
       ),
     ).toBeLessThanOrEqual(timesheetBounds.right);
+  });
+
+  it("fits square heatmap cells and focused tooltips inside the mobile host", async () => {
+    await renderExamples("heatmap");
     expect(document.querySelector("#heatmap svg").style.minWidth).toBe("");
     const heatmapHost = document.querySelector("#heatmap");
-    const heatmapCells = [
-      ...heatmapHost.querySelectorAll(".orchid-charts-heat-cell"),
-    ];
+    const heatmapCells = [...heatmapHost.querySelectorAll(".orchid-charts-heat-cell")];
     expect(heatmapHost).not.toHaveClass("orchid-charts-scrollable-heatmap");
     expect(heatmapHost.scrollWidth).toBe(heatmapHost.clientWidth);
     expect(
@@ -270,11 +228,12 @@ describe("real-world demo", () => {
     const heatmapTooltipBounds = heatmapHost.querySelector(".orchid-charts-tooltip").getBoundingClientRect();
     expect(heatmapTooltipBounds.left).toBeGreaterThanOrEqual(heatmapHostBounds.left + 4);
     expect(heatmapTooltipBounds.right).toBeLessThanOrEqual(heatmapHostBounds.right - 4);
+  });
 
+  it("keeps signed mixed labels and legends outside the plot", async () => {
+    await renderExamples("mixed-signed");
     const signedMixed = document.querySelector("#mixed-signed svg");
-    const signedValueLabels = [
-      ...signedMixed.querySelectorAll(".orchid-charts-value-label"),
-    ];
+    const signedValueLabels = [...signedMixed.querySelectorAll(".orchid-charts-value-label")];
     expect(signedValueLabels.every((label) => label.getAttribute("text-anchor") === "start")).toBe(true);
     expect(
       Math.max(...signedValueLabels.map((label) => label.getBoundingClientRect().right)),
@@ -284,7 +243,10 @@ describe("real-world demo", () => {
       .querySelector(".orchid-charts-x-axis")
       .getBoundingClientRect().bottom;
     expect(signedPlotBottom).toBeLessThan(signedLegend.top);
+  });
 
+  it("reserves horizontal padding for polar labels", async () => {
+    await renderExamples("polar");
     const polarSvg = document.querySelector("#polar svg");
     const polarBounds = polarSvg.getBoundingClientRect();
     for (const label of polarSvg.querySelectorAll(".orchid-charts-polar-label")) {
@@ -292,12 +254,11 @@ describe("real-world demo", () => {
       expect(bounds.left).toBeGreaterThanOrEqual(polarBounds.left + 12);
       expect(bounds.right).toBeLessThanOrEqual(polarBounds.right - 12);
     }
+  });
 
-    for (const id of [
-      "spark-line",
-      "spark-area",
-      "spark-bar",
-    ]) {
+  it("keeps decorative sparklines free of interaction targets", async () => {
+    await renderExamples("spark-line", "spark-area", "spark-bar");
+    for (const id of ["spark-line", "spark-area", "spark-bar"]) {
       const svg = document.querySelector(`#${id} svg`);
       expect(svg).not.toHaveClass("orchid-charts-compact-chart");
       expect(svg.querySelector(".orchid-charts-axis")).toBeNull();
@@ -309,10 +270,11 @@ describe("real-world demo", () => {
       expect(svg.querySelector("title")).toBeNull();
       expect(document.querySelector(`#${id} .orchid-charts-tooltip`).hidden).toBe(true);
     }
+  });
 
-    const storageSegments = [
-      ...document.querySelectorAll("#percentage .orchid-charts-percentage-segment"),
-    ];
+  it("labels storage segments with their values and percentages", async () => {
+    await renderExamples("percentage");
+    const storageSegments = [...document.querySelectorAll("#percentage .orchid-charts-percentage-segment")];
     expect(storageSegments).toHaveLength(6);
     expect(storageSegments.map((segment) => segment.dataset.tooltip)).toEqual([
       "Photos: 72 GB (28%)",
@@ -322,28 +284,16 @@ describe("real-world demo", () => {
       "System Data: 23 GB (9%)",
       "Free: 64 GB (25%)",
     ]);
+  });
 
+  it("shows the demo formatters for scatter and bubble inspection", async () => {
+    await renderExamples("scatter", "bubble");
     const xyCases = [
-      [
-        "scatter",
-        "$799",
-        "Phone",
-        "20 h",
-      ],
-      [
-        "bubble",
-        "Music",
-        "Weekly users",
-        "64k · 324 MB, size 18",
-      ],
+      ["scatter", "$799", "Phone", "20 h"],
+      ["bubble", "Music", "Weekly users", "64k · 324 MB, size 18"],
     ];
 
-    for (const [
-      id,
-      heading,
-      name,
-      value,
-    ] of xyCases) {
+    for (const [id, heading, name, value] of xyCases) {
       const host = document.querySelector(`#${id}`);
       const hit = host.querySelectorAll(".orchid-charts-x-hit")[1];
 
@@ -354,25 +304,47 @@ describe("real-world demo", () => {
       expect(host.querySelector(".orchid-charts-point-hit")).toBeNull();
       hit.dispatchEvent(new PointerEvent("pointerleave", { bubbles: true }));
     }
-
-    const stressBefore = stressIds.map((id) => document.querySelector(`#${id} svg`).getHTML());
-    const showcaseBefore = document.querySelector("#line .orchid-charts-line").getAttribute("d");
-    vi.spyOn(Math, "random").mockReturnValue(0);
-    document.querySelector("#shuffle").click();
-
-    expect(document.querySelector("#line .orchid-charts-line").getAttribute("d")).not.toBe(showcaseBefore);
-    expect(stressIds.map((id) => document.querySelector(`#${id} svg`).getHTML())).toEqual(stressBefore);
-    expect(
-      [
-        ...document.querySelectorAll(".selection-status dd"),
-      ].map((value) => value.textContent),
-    ).toEqual([
-      "83.52k",
-      "61.92k",
-      "42.48k",
-    ]);
   });
 });
+
+function overflowingCards(cards) {
+  return cards.flatMap((article) => {
+    const articleRight = article.getBoundingClientRect().right;
+    const visible = [
+      ...article.querySelectorAll(
+        "svg path, svg line, svg rect, svg circle, svg polygon, svg polyline, svg text",
+      ),
+    ].filter((element) => {
+      const style = getComputedStyle(element);
+      return (
+        style.display !== "none" &&
+        style.visibility !== "hidden" &&
+        Number(style.opacity) !== 0 &&
+        element.getAttribute("fill") !== "transparent"
+      );
+    });
+    const visibleRight = Math.max(
+      article.getBoundingClientRect().left,
+      ...visible.map((element) => {
+        const bounds = element.getBoundingClientRect();
+        return bounds.right;
+      }),
+    );
+    return visibleRight <= articleRight + 0.5
+      ? []
+      : [{ id: article.querySelector("div").id, visibleRight, articleRight }];
+  });
+}
+
+async function renderExamples(...ids) {
+  await page.viewport(390, 900);
+  const { showcaseExamples, qualityExamples, heatmapExamples, sparkExamples } =
+    await import("../demo/Examples.js");
+  const examples = new Map([...showcaseExamples, ...qualityExamples, ...heatmapExamples, ...sparkExamples]);
+  for (const id of ids) {
+    examples.get(`#${id}`)();
+  }
+}
 
 function measureLayout(element) {
   const bounds = element.getBoundingClientRect();
@@ -383,21 +355,13 @@ function measureLayout(element) {
 }
 
 describe("demo loading layout", () => {
-  it.each([
-    1440,
-    1024,
-    768,
-    390,
-    320,
-  ])("reserves the rendered layout at %ipx", async (width) => {
+  it.each([1440, 1024, 768, 390, 320])("reserves the rendered layout at %ipx", async (width) => {
     await page.viewport(width, 900);
     const demo = new DOMParser().parseFromString(demoMarkup, "text/html");
     document.body.innerHTML = demo.body.getHTML();
     await document.fonts.ready;
 
-    const elements = [
-      ...document.querySelectorAll(".demo-chart, #heatmap, article, #install"),
-    ];
+    const elements = [...document.querySelectorAll(".demo-chart, #heatmap, article, #install")];
     const before = elements.map((element) => measureLayout(element));
     for (const link of document.querySelectorAll(".header-cta, .primary-action")) {
       expect(link.getAttribute("href")).toBe("/docs/getting-started.html");
@@ -405,25 +369,15 @@ describe("demo loading layout", () => {
 
     const { showcaseExamples, heatmapExamples, sparkExamples } = await import("../demo/Examples.js");
     const { showExampleCode } = await import("../demo/ExampleCode.js");
-    const examples = [
-      ...showcaseExamples,
-      ...heatmapExamples,
-      ...sparkExamples,
-    ];
-    for (const [
-      selector,
-      renderExample,
-    ] of examples) {
+    const examples = [...showcaseExamples, ...heatmapExamples, ...sparkExamples];
+    for (const [selector, renderExample] of examples) {
       if (document.querySelector(selector)) {
         renderExample();
       }
     }
     showExampleCode(examples);
     expect(document.querySelectorAll(".demo-chart > svg, #heatmap > svg")).toHaveLength(21);
-    for (const [
-      index,
-      element,
-    ] of elements.entries()) {
+    for (const [index, element] of elements.entries()) {
       const after = measureLayout(element);
       expect(after.height, `${element.id || element.tagName} height`).toBeCloseTo(before[index].height, 1);
       expect(after.y, `${element.id || element.tagName} position`).toBeCloseTo(before[index].y, 1);
@@ -431,49 +385,30 @@ describe("demo loading layout", () => {
 
     const status = document.querySelector(".selection-status");
     const initialHeight = status.getBoundingClientRect().height;
-    const selectedValues = () =>
-      [
-        ...status.querySelectorAll("dd"),
-      ].map((value) => value.textContent);
+    const selectedValues = () => [...status.querySelectorAll("dd")].map((value) => value.textContent);
     const point = document.querySelector("#line .orchid-charts-x-hit");
     expect(status).toHaveAttribute("role", "status");
     expect(status).toHaveAttribute("aria-atomic", "true");
     expect(status.textContent).toContain("Latest month");
-    expect(selectedValues()).toEqual([
-      "116k",
-      "86k",
-      "59k",
-    ]);
+    expect(selectedValues()).toEqual(["116k", "86k", "59k"]);
     point.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(status.textContent).toContain("Selected month");
     expect(status.querySelector(".selection-status-summary").textContent).toBe("Jan");
-    expect(selectedValues()).toEqual([
-      "48k",
-      "36k",
-      "22k",
-    ]);
+    expect(selectedValues()).toEqual(["48k", "36k", "22k"]);
     expect(status.getBoundingClientRect().height).toBe(initialHeight);
 
     point.focus();
     point.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     expect(status.textContent).toContain("Latest month");
     expect(status.querySelector(".selection-status-summary").textContent).toBe("Dec");
-    expect(selectedValues()).toEqual([
-      "116k",
-      "86k",
-      "59k",
-    ]);
+    expect(selectedValues()).toEqual(["116k", "86k", "59k"]);
     expect(document.activeElement).toBe(point);
     expect(status.getBoundingClientRect().height).toBe(initialHeight);
 
     point.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
     document.activeElement.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
     expect(status.querySelector(".selection-status-summary").textContent).toBe("Feb");
-    expect(selectedValues()).toEqual([
-      "57k",
-      "40k",
-      "27k",
-    ]);
+    expect(selectedValues()).toEqual(["57k", "40k", "27k"]);
     expect(status.getBoundingClientRect().height).toBe(initialHeight);
   });
 });

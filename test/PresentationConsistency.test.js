@@ -32,17 +32,8 @@ function select(chart, index) {
 
 describe("heatmap presentation consistency", () => {
   it.each([
-    [
-      "default",
-      undefined,
-    ],
-    [
-      "custom",
-      [
-        "#eeeeee",
-        "#ff0000",
-      ],
-    ],
+    ["default", undefined],
+    ["custom", ["#eeeeee", "#ff0000"]],
   ])("uses the same %s palette for rendering and selection before and after update", (_name, colors) => {
     const callback = vi.fn();
     const builder = HeatmapChart.make(host())
@@ -52,17 +43,11 @@ describe("heatmap presentation consistency", () => {
       builder.colors(colors);
     }
     const chart = builder.render();
-    for (const data of [
-      null,
-      { points: { "2026-09-01": 0, "2026-09-02": 20 } },
-    ]) {
+    for (const data of [null, { points: { "2026-09-01": 0, "2026-09-02": 20 } }]) {
       if (data) {
         chart.update(data);
       }
-      for (const index of [
-        0,
-        1,
-      ]) {
+      for (const index of [0, 1]) {
         const mark = select(chart, index);
         expect(callback.mock.lastCall[0].color).toBe(mark.getAttribute("fill"));
         expect(callback.mock.lastCall[0].value).toBe(chart.point(index).value);
@@ -72,50 +57,23 @@ describe("heatmap presentation consistency", () => {
 });
 
 const seriesData = {
-  labels: [
-    "A",
-    "B",
-  ],
+  labels: ["A", "B"],
   datasets: [
     {
       name: "Series",
-      values: [
-        10,
-        10,
-      ],
+      values: [10, 10],
     },
   ],
 };
 
 it.each([
-  [
-    "line",
-    LineChart,
-  ],
-  [
-    "bar",
-    BarChart,
-  ],
-  [
-    "pie",
-    PieChart,
-  ],
-  [
-    "donut",
-    DonutChart,
-  ],
-  [
-    "percentage",
-    PercentageChart,
-  ],
-  [
-    "polar",
-    PolarAreaChart,
-  ],
-  [
-    "radar",
-    RadarChart,
-  ],
+  ["line", LineChart],
+  ["bar", BarChart],
+  ["pie", PieChart],
+  ["donut", DonutChart],
+  ["percentage", PercentageChart],
+  ["polar", PolarAreaChart],
+  ["radar", RadarChart],
 ])("preserves formatter punctuation in %s tooltip rows before and after update", (_name, definition) => {
   const parent = host();
   const chart = definition
@@ -124,10 +82,7 @@ it.each([
     .dataset(seriesData.datasets[0])
     .tooltip((tooltip) => tooltip.formatValue((value) => `Value: ${value}`))
     .render();
-  for (const update of [
-    false,
-    true,
-  ]) {
+  for (const update of [false, true]) {
     if (update) {
       chart.update(seriesData);
     }
@@ -164,10 +119,7 @@ it.each([
     {
       name: "Series",
       chartType: "line",
-      values: [
-        10,
-        10,
-      ],
+      values: [10, 10],
     },
   ],
 ])("preserves formatter punctuation in independent %s points", (_name, definition, dataset) => {
@@ -207,14 +159,8 @@ it("preserves punctuation in a timesheet duration", () => {
 });
 
 it.each([
-  [
-    0,
-    "#E5E5EA",
-  ],
-  [
-    10,
-    "#1B6B47",
-  ],
+  [0, "#E5E5EA"],
+  [10, "#1B6B47"],
 ])("uses an endpoint color for a uniform heatmap of %s", (value, expected) => {
   const callback = vi.fn();
   const chart = HeatmapChart.make(host()).points({ "2026-09-01": value }).onSelect(callback).render();
@@ -248,21 +194,12 @@ it("keeps selection and visual feedback independent from diagnostic DOM attribut
 
 it("stops detached mark reactions after update and destroy", () => {
   const callback = vi.fn();
-  const chart = LineChart.make(host())
-    .dataset([
-      1,
-      2,
-    ])
-    .onSelect(callback)
-    .render();
+  const chart = LineChart.make(host()).dataset([1, 2]).onSelect(callback).render();
   const oldMark = chart.element.querySelector(".orchid-charts-mark");
   chart.update({
     datasets: [
       {
-        values: [
-          3,
-          4,
-        ],
+        values: [3, 4],
       },
     ],
   });
@@ -278,41 +215,21 @@ it("stops detached mark reactions after update and destroy", () => {
 });
 
 it("reads the current keyboard point without requiring selection", () => {
-  const chart = LineChart.make(host())
-    .dataset([
-      1,
-      2,
-    ])
-    .render();
+  const chart = LineChart.make(host()).dataset([1, 2]).render();
   const marks = chart.element.querySelectorAll(".orchid-charts-mark");
   marks[1].focus();
-  expect(chart.point().values).toEqual([
-    2,
-  ]);
+  expect(chart.point().values).toEqual([2]);
 });
 
 it("reads the first point when interaction is disabled", () => {
-  const chart = LineChart.make(host())
-    .dataset([
-      1,
-      2,
-    ])
-    .tooltip(false)
-    .render();
-  expect(chart.point().values).toEqual([
-    1,
-  ]);
+  const chart = LineChart.make(host()).dataset([1, 2]).tooltip(false).render();
+  expect(chart.point().values).toEqual([1]);
 });
 
 it("mounts a hidden host at a usable fallback width", () => {
   const parent = host();
   parent.style.display = "none";
-  const chart = LineChart.make(parent)
-    .dataset([
-      1,
-      2,
-    ])
-    .render();
+  const chart = LineChart.make(parent).dataset([1, 2]).render();
   expect(chart.element.viewBox.baseVal.width).toBe(640);
   parent.style.display = "block";
   dispatchEvent(new Event("resize"));
@@ -324,35 +241,19 @@ it("rejects malformed dataset values through the public render boundary", () => 
 });
 
 it("keeps point() on the selected datum while keyboard focus previews another", () => {
-  const chart = LineChart.make(host())
-    .dataset([
-      10,
-      20,
-    ])
-    .onSelect(vi.fn())
-    .render();
+  const chart = LineChart.make(host()).dataset([10, 20]).onSelect(vi.fn()).render();
   const marks = chart.element.querySelectorAll(".orchid-charts-mark");
   marks[1].dispatchEvent(new MouseEvent("click", { bubbles: true }));
   marks[0].focus();
-  expect(chart.point().values).toEqual([
-    20,
-  ]);
+  expect(chart.point().values).toEqual([20]);
   marks[1].dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
   expect(chart.element.querySelector('[aria-pressed="true"]')).toBeNull();
-  expect(chart.point().values).toEqual([
-    10,
-  ]);
+  expect(chart.point().values).toEqual([10]);
 });
 
 it("keeps selected tooltips visible when the pointer leaves the chart", () => {
   const parent = host();
-  const chart = LineChart.make(parent)
-    .dataset([
-      10,
-      20,
-    ])
-    .onSelect(vi.fn())
-    .render();
+  const chart = LineChart.make(parent).dataset([10, 20]).onSelect(vi.fn()).render();
   const mark = chart.element.querySelector(".orchid-charts-mark");
   mark.focus();
   mark.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));

@@ -4,6 +4,7 @@ Current internal references for Orchid Charts:
 
 - [Architecture](./ARCHITECTURE.md): ownership and dependency boundaries.
 - [Naming policy](./NAMING.md): source, CSS, and tooling vocabulary.
+- [Testing](./TESTING.md): feedback loops, readable scenarios, and CI gates.
 - [Performance](./PERFORMANCE.md): runtime and bundle budgets.
 - [Visual testing](./VISUAL_MATRIX.md): browser baselines and review workflow.
 - [Release process](./RELEASING.md): verification and npm publication.

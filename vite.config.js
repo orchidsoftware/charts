@@ -1,7 +1,7 @@
-import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vite";
 
 import { documentationPlugin } from "./scripts/Documentation.mjs";
+import { testProjects } from "./scripts/TestProjects.mjs";
 
 const isCompatibility = process.env.ORCHID_CHARTS_COMPATIBILITY === "1";
 
@@ -36,44 +36,8 @@ export default defineConfig({
     },
   },
   test: {
-    setupFiles: [
-      "./test/support/Cleanup.js",
-    ],
-    include: isCompatibility
-      ? [
-          "test/Compatibility.test.js",
-          "test/BubbleBounds.test.js",
-          "test/RadarInspection.test.js",
-        ]
-      : [
-          "test/**/*.test.js",
-        ],
-    browser: {
-      enabled: true,
-      headless: true,
-      provider: playwright(),
-      commands: {
-        emulateAppearance: ({ page }, colorScheme) => page.emulateMedia({ colorScheme }),
-      },
-      instances: isCompatibility
-        ? [
-            { browser: "chromium" },
-            { browser: "firefox" },
-            { browser: "webkit" },
-          ]
-        : [
-            { browser: "chromium" },
-          ],
-      expect: {
-        toMatchScreenshot: {
-          comparatorName: "pixelmatch",
-          comparatorOptions: {
-            allowedMismatchedPixelRatio: 0.0005,
-            threshold: 0.1,
-          },
-        },
-      },
-    },
+    maxWorkers: 2,
+    projects: testProjects(isCompatibility),
     coverage: {
       provider: "v8",
       include: [

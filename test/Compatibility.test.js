@@ -17,95 +17,52 @@ import {
 } from "../src/index.js";
 import "../src/styles.css";
 
-const labels = [
-  "A",
-  "B",
-];
+const labels = ["A", "B"];
 const series = {
   name: "Series",
-  values: [
-    1,
-    2,
-  ],
+  values: [1, 2],
 };
 const updated = {
   labels,
   datasets: [
     {
       name: "Series",
-      values: [
-        3,
-        4,
-      ],
+      values: [3, 4],
     },
   ],
 };
 const numericCases = [
-  [
-    "line",
-    LineChart,
-  ],
-  [
-    "bar",
-    BarChart,
-  ],
-  [
-    "pie",
-    PieChart,
-  ],
-  [
-    "donut",
-    DonutChart,
-  ],
-  [
-    "percentage",
-    PercentageChart,
-  ],
-  [
-    "polar-area",
-    PolarAreaChart,
-  ],
-].map(
-  ([
-    name,
-    definition,
-  ]) => [
-    name,
-    () => ({
-      builder: definition.make("#chart").labels(labels).dataset(series),
-      data: updated,
-      point: {
-        values: [
-          3,
-        ],
-      },
-      selection: { value: 4 },
-    }),
-  ],
-);
+  ["line", LineChart],
+  ["bar", BarChart],
+  ["pie", PieChart],
+  ["donut", DonutChart],
+  ["percentage", PercentageChart],
+  ["polar-area", PolarAreaChart],
+].map(([name, definition]) => [
+  name,
+  () => ({
+    builder: definition.make("#chart").labels(labels).dataset(series),
+    data: updated,
+    point: {
+      values: [3],
+    },
+    selection: { value: 4 },
+  }),
+]);
 
 const cases = [
   ...numericCases,
   [
     "mixed",
     () => ({
-      builder: MixedChart.make("#chart").labels(labels).line(
-        "Series",
-        [
-          1,
-          2,
-        ],
-      ),
+      builder: MixedChart.make("#chart").labels(labels).line("Series", [1, 2]),
       data: {
         labels,
         datasets: [
           {
             name: "Series",
             chartType: "line",
-            values: [
-              3,
-              4,
-            ],
+            values: [3, 4],
           },
         ],
       },
@@ -171,10 +128,7 @@ const cases = [
         .dataset(series)
         .dataset({
           name: "Other",
-          values: [
-            2,
-            3,
-          ],
+          values: [2, 3],
         }),
       data: {
         labels,
@@ -182,25 +136,16 @@ const cases = [
           ...updated.datasets,
           {
             name: "Other",
-            values: [
-              5,
-              6,
-            ],
+            values: [5, 6],
           },
         ],
       },
       point: {
-        values: [
-          3,
-          5,
-        ],
+        values: [3, 5],
       },
       selection: {
         label: labels[1],
-        values: [
-          4,
-          6,
-        ],
+        values: [4, 6],
       },
     }),
   ],

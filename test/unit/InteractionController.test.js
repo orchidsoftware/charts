@@ -14,11 +14,7 @@ beforeEach(() => {
 describe("InteractionController", () => {
   it("covers the complete pointer and keyboard state machine", async () => {
     const namespace = "http://www.w3.org/2000/svg";
-    const marks = [
-      0,
-      1,
-      2,
-    ].map(() => document.createElementNS(namespace, "rect"));
+    const marks = [0, 1, 2].map(() => document.createElementNS(namespace, "rect"));
     const shown = [];
     const hidden = [];
     const active = [];
@@ -76,6 +72,9 @@ describe("InteractionController", () => {
 
     setup(99);
     expect(marks[0].getAttribute("tabindex")).toBe("0");
+  });
+
+  it("dismisses an empty collection without callbacks", () => {
     const emptyCallbacks = {
       labelFor: () => "",
       onShow: () => {},
@@ -83,7 +82,7 @@ describe("InteractionController", () => {
       onActiveChange: () => {},
     };
     const emptyController = new InteractionController([], {}, emptyCallbacks);
-    emptyController.dismiss();
+    expect(() => emptyController.dismiss()).not.toThrow();
   });
 
   it("falls back safely when an isolated point hit has no visual peer", () => {
@@ -103,13 +102,7 @@ describe("InteractionController", () => {
       onActiveChange: () => {},
       onFocusChange: () => {},
     };
-    const controller = new InteractionController(
-      [
-        hit,
-      ],
-      { previewable: true, selectable: false },
-      callbacks,
-    );
+    const controller = new InteractionController([hit], { previewable: true, selectable: false }, callbacks);
 
     hit.dispatchEvent(new PointerEvent("pointerenter"));
     hit.dispatchEvent(new PointerEvent("pointerenter"));
@@ -121,10 +114,7 @@ describe("InteractionController", () => {
 
   it("keeps a touch preview visible until dismissal or gesture cancellation", () => {
     const namespace = "http://www.w3.org/2000/svg";
-    const marks = [
-      document.createElementNS(namespace, "rect"),
-      document.createElementNS(namespace, "rect"),
-    ];
+    const marks = [document.createElementNS(namespace, "rect"), document.createElementNS(namespace, "rect")];
     const shown = [];
     const hidden = [];
     const controller = new InteractionController(
@@ -154,9 +144,7 @@ describe("InteractionController", () => {
     marks[0].dispatchEvent(new PointerEvent("pointerup", { pointerType: "touch" }));
     marks[0].dispatchEvent(new PointerEvent("pointerleave", { pointerType: "touch" }));
     expect(marks[0]).toHaveClass("is-hovered");
-    expect(shown).toEqual([
-      "Mark 1",
-    ]);
+    expect(shown).toEqual(["Mark 1"]);
     expect(hidden).toHaveLength(0);
 
     marks[1].dispatchEvent(new PointerEvent("pointerdown", { pointerType: "touch" }));

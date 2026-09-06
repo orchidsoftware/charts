@@ -86,9 +86,7 @@ describe("Automatic dense inspection", () => {
     expect(chart.point().index).toBe(45);
     chart.update({
       labels,
-      datasets: [
-        { name: "Values", values },
-      ],
+      datasets: [{ name: "Values", values }],
     });
     mark = hit(chart);
     expect(mark.dataset.pointIndex).toBe("45");
@@ -97,17 +95,13 @@ describe("Automatic dense inspection", () => {
     expect(chart.point().index).toBe(0);
     chart.update({
       labels: labels.slice(0, 3),
-      datasets: [
-        { name: "Values", values: values.slice(0, 3) },
-      ],
+      datasets: [{ name: "Values", values: values.slice(0, 3) }],
     });
     expect(hit(chart)).toBeNull();
     expect(chart.point().index).toBe(0);
     chart.update({
       labels,
-      datasets: [
-        { name: "Values", values },
-      ],
+      datasets: [{ name: "Values", values }],
     });
     mark = hit(chart);
     expect(mark.dataset.pointIndex).toBe("0");

@@ -5,10 +5,7 @@ import test from "node:test";
 import { documentationAssets } from "../scripts/Documentation.mjs";
 
 function verifyLinks(assets, filename, html) {
-  for (const [
-    ,
-    href,
-  ] of html.matchAll(/href="([^"]+)"/g)) {
+  for (const [, href] of html.matchAll(/href="([^"]+)"/g)) {
     const target = new URL(href, `https://docs.test/${filename}`);
     if (target.hostname !== "docs.test" || !target.pathname.startsWith("/docs/")) {
       continue;
@@ -27,31 +24,19 @@ test("publishes guides with working local links and shared navigation", async ()
   // eslint-disable-next-line security/detect-non-literal-fs-filename
   const filenames = await readdir(new URL("../docs/", import.meta.url));
   const documents = filenames.filter((filename) => filename.endsWith(".md"));
-  const pages = [
-    ...assets,
-  ].filter(
-    ([
-      filename,
-    ]) => filename.endsWith(".html") && filename !== "docs/chart-types.html",
+  const pages = [...assets].filter(
+    ([filename]) => filename.endsWith(".html") && filename !== "docs/chart-types.html",
   );
   assert.equal(pages.length, documents.length - 1);
   assert.equal(assets.get("docs/index.html"), assets.get("docs/getting-started.html"));
   assert.match(assets.get("docs/chart-types.html"), /content="0;url=\.\.\/#supported-charts"/);
-  for (const [
-    filename,
-    html,
-  ] of pages) {
+  for (const [filename, html] of pages) {
     assert.match(html, /class="site-header"/);
     assert.match(html, /class="site-footer"/);
     assert.match(html, /class="brand-mark"/);
     assert.match(html, /aria-current="page"/);
     assert.doesNotMatch(html, /<script\b/);
-    assert.equal(
-      [
-        ...html.matchAll(/<footer\b/g),
-      ].length,
-      1,
-    );
+    assert.equal([...html.matchAll(/<footer\b/g)].length, 1);
     assert.match(html, /href="#top">Back to Top ↑<\/a>/);
     verifyLinks(assets, filename, html);
   }

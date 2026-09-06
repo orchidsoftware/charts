@@ -10,20 +10,16 @@ import {
 import { formatValue, formatLabel, seriesContext } from "../src/support/presentation/Formatting.js";
 import { formatNumber } from "../src/support/presentation/NumberFormatting.js";
 
-test("normalizes and reads every data family without a browser", () => {
+test("reads series points without a browser", () => {
   assert.equal(typeof document, "undefined");
   const line = createSeriesModel(
     "line",
     {
-      labels: [
-        "A",
-      ],
+      labels: ["A"],
       datasets: [
         {
           name: "Series",
-          values: [
-            2,
-          ],
+          values: [2],
         },
       ],
     },
@@ -32,37 +28,39 @@ test("normalizes and reads every data family without a browser", () => {
   assert.deepEqual(line.pointAt(0), {
     index: 0,
     label: "A",
-    values: [
-      2,
-    ],
+    values: [2],
   });
+});
+
+test("reads composition points without a browser", () => {
+  assert.equal(typeof document, "undefined");
   const pie = createCompositionModel(
     "pie",
     {
-      labels: [
-        "Zero",
-        "Visible",
-      ],
+      labels: ["Zero", "Visible"],
       datasets: [
         {
-          values: [
-            0,
-            2,
-          ],
+          values: [0, 2],
         },
       ],
     },
     {},
   );
   assert.equal(pie.pointFor({ kind: "point", datasetIndex: 0, pointIndex: 1 }).label, "Visible");
+});
+
+test("reads heatmap cells without a browser", () => {
+  assert.equal(typeof document, "undefined");
   const heatmap = createHeatmapModel("heatmap", { points: { "2026-09-01": 3 } }, {});
   assert.equal(heatmap.pointAt(0).value, 3);
+});
+
+test("reads timesheet tasks without a browser", () => {
+  assert.equal(typeof document, "undefined");
   const timesheet = createTimesheetModel(
     "timesheet",
     {
-      tasks: [
-        { label: "Build", start: "2026-09-01", end: "2026-09-02" },
-      ],
+      tasks: [{ label: "Build", start: "2026-09-01", end: "2026-09-02" }],
     },
     {},
   );
@@ -73,15 +71,11 @@ test("formats numbers and defensive contexts without importing browser mechanism
   const model = createSeriesModel(
     "line",
     {
-      labels: [
-        "A",
-      ],
+      labels: ["A"],
       datasets: [
         {
           name: "Series",
-          values: [
-            2,
-          ],
+          values: [2],
         },
       ],
     },

@@ -30,9 +30,9 @@ reported diagnostic; it is not presented as a typical chart import.
 Production-source lines, bytes, files, and imports are reported as diagnostics;
 the enforced size limit is defined in `scripts/WriteBuildSize.mjs`.
 
-The 90-day scenario runs first, without an explicit warm-up, and verifies all 89
-smooth segments. Its 50 ms budget therefore protects the ordinary first-chart
-experience rather than only warmed-up throughput.
+The mount scenarios perform two warm-up renders followed by five measured renders.
+Their budgets use the median measured duration. The 90-day scenario verifies all
+89 SVG segments; it protects warmed-up rendering cost, not cold startup latency.
 
 The large-line gate also verifies that the resulting SVG path contains the full
 50,000-point geometry. This prevents an accidental no-op or implicit

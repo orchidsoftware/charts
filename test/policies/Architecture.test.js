@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { chartDefinition } from "../src/core/ChartDefinition.js";
-import * as publicApi from "../src/index.js";
-import { renderChart } from "../src/renderers/ChartRendering.js";
+import { chartDefinition } from "../../src/core/ChartDefinition.js";
+import * as publicApi from "../../src/index.js";
+import { renderChart } from "../../src/renderers/ChartRendering.js";
 import {
   ChartOrientation,
   ChartType,
@@ -10,22 +10,20 @@ import {
   TIME_TICK_STEPS,
   TYPES,
   YAxisPosition,
-} from "../src/support/Constants.js";
+} from "../../src/support/Constants.js";
 
-const sources = import.meta.glob("../src/**/*.js", {
+const sources = import.meta.glob("../../src/**/*.js", {
   eager: true,
   import: "default",
   query: "?raw",
 });
 
 function source(path) {
-  return sources[`../src/${path}`];
+  return sources[`../../src/${path}`];
 }
 
 function imports(path) {
-  return [
-    ...source(path).matchAll(/from\s+["']([^"']+)["']/g),
-  ].map((match) => match[1]);
+  return [...source(path).matchAll(/from\s+["']([^"']+)["']/g)].map((match) => match[1]);
 }
 
 describe("architecture fitness functions", () => {
@@ -46,14 +44,9 @@ describe("architecture fitness functions", () => {
     ].toSorted((left, right) => left.localeCompare(right));
 
     expect(Object.keys(publicApi)).toEqual(names);
-    for (const [
-      name,
-      definition,
-    ] of Object.entries(publicApi)) {
+    for (const [name, definition] of Object.entries(publicApi)) {
       expect(Object.isFrozen(definition), name).toBe(true);
-      expect(Object.keys(definition), name).toEqual([
-        "make",
-      ]);
+      expect(Object.keys(definition), name).toEqual(["make"]);
     }
   });
 
@@ -76,7 +69,7 @@ describe("architecture fitness functions", () => {
 
   it("keeps pure policies independent from core and renderers", () => {
     const pureModules = Object.keys(sources)
-      .map((path) => path.replace("../src/", ""))
+      .map((path) => path.replace("../../src/", ""))
       .filter((path) => path.startsWith("support/data/") || path.startsWith("support/geometry/"));
 
     for (const path of pureModules) {
@@ -86,7 +79,7 @@ describe("architecture fitness functions", () => {
     }
 
     const supportModules = Object.keys(sources)
-      .map((path) => path.replace("../src/", ""))
+      .map((path) => path.replace("../../src/", ""))
       .filter((path) => path.startsWith("support/"));
 
     for (const path of supportModules) {
@@ -124,7 +117,7 @@ describe("architecture fitness functions", () => {
   });
 
   it("keeps nested areas pointing toward shared policies instead of sibling features", () => {
-    const paths = Object.keys(sources).map((path) => path.replace("../src/", ""));
+    const paths = Object.keys(sources).map((path) => path.replace("../../src/", ""));
     const builderModules = paths.filter((path) => path.startsWith("core/builders/"));
 
     for (const path of builderModules) {
@@ -132,11 +125,7 @@ describe("architecture fitness functions", () => {
       expect(imports(path), path).not.toContain("../Chart.js");
     }
 
-    const families = [
-      "cartesian",
-      "composition",
-      "temporal",
-    ];
+    const families = ["cartesian", "composition", "temporal"];
     for (const family of families) {
       const familyModules = paths.filter((path) => path.startsWith(`renderers/${family}/`));
       const siblingFamilies = families.filter((name) => name !== family);
@@ -151,7 +140,7 @@ describe("architecture fitness functions", () => {
 
   it("keeps renderers from owning hosts, tooltips, or browser listeners", () => {
     const rendererModules = Object.keys(sources)
-      .map((path) => path.replace("../src/", ""))
+      .map((path) => path.replace("../../src/", ""))
       .filter((path) => path.startsWith("renderers/"));
 
     for (const path of rendererModules) {
@@ -175,13 +164,10 @@ describe("architecture fitness functions", () => {
     const graph = new Map(
       Object.keys(sources).map((path) => {
         const key = new URL(path, "https://source.test/test/").pathname;
-        const dependencies = imports(path.replace("../src/", ""))
+        const dependencies = imports(path.replace("../../src/", ""))
           .filter((specifier) => specifier.startsWith("."))
           .map((specifier) => new URL(specifier, `https://source.test${key}`).pathname);
-        return [
-          key,
-          dependencies,
-        ];
+        return [key, dependencies];
       }),
     );
     const complete = new Set();
@@ -192,10 +178,7 @@ describe("architecture fitness functions", () => {
         return;
       }
       for (const dependency of graph.get(path)) {
-        visit(dependency, [
-          ...ancestors,
-          path,
-        ]);
+        visit(dependency, [...ancestors, path]);
       }
       complete.add(path);
     }

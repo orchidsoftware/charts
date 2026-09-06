@@ -2,19 +2,17 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { page } from "vitest/browser";
 
 import demoMarkup from "../demo/index.html?raw";
+
 import {
-  BarChart,
-  BubbleChart,
-  DonutChart,
-  HeatmapChart,
-  LineChart,
-  MixedChart,
-  PercentageChart,
-  PieChart,
-  RadarChart,
-  ScatterChart,
-  TimesheetChart,
-} from "../src/index.js";
+  demoCards,
+  responsiveCards,
+  sharedMixedCards,
+  demoXYCards,
+  demoCompositionCards,
+  demoSections,
+  stateFixtures,
+  stateVariants,
+} from "./support/VisualFixtures.js";
 import "../demo/style.css";
 import "../src/styles.css";
 
@@ -27,511 +25,6 @@ const screenshotOptions = {
   timeout: 10_000,
 };
 
-const demoCards = [
-  [
-    "line",
-    "#line",
-  ],
-  [
-    "line-gradient",
-    "#line-gradient",
-  ],
-  [
-    "bar-vertical",
-    "#bar-vertical",
-  ],
-  [
-    "bar-horizontal",
-    "#bar-horizontal",
-  ],
-  [
-    "bar-horizontal-stacked",
-    "#bar-horizontal-stacked",
-  ],
-  [
-    "scatter",
-    "#scatter",
-  ],
-  [
-    "bubble",
-    "#bubble",
-  ],
-  [
-    "radar",
-    "#radar",
-  ],
-  [
-    "polar",
-    "#polar",
-  ],
-  [
-    "mixed",
-    "#mixed",
-  ],
-  [
-    "axis-mixed-signed",
-    "#mixed-signed",
-  ],
-  [
-    "pie",
-    "#pie",
-  ],
-  [
-    "donut",
-    "#donut",
-  ],
-  [
-    "percentage",
-    "#percentage",
-  ],
-  [
-    "timesheet",
-    "#timesheet",
-  ],
-  [
-    "heatmap",
-    "#heatmap",
-  ],
-  [
-    "spark-line",
-    "#spark-line",
-  ],
-  [
-    "spark-area",
-    "#spark-area",
-  ],
-  [
-    "spark-bar",
-    "#spark-bar",
-  ],
-];
-
-const responsiveCards = [
-  [
-    "bubble",
-    "#bubble",
-  ],
-  [
-    "line",
-    "#line",
-  ],
-  [
-    "bar-horizontal",
-    "#bar-horizontal",
-  ],
-  [
-    "radar",
-    "#radar",
-  ],
-  [
-    "percentage",
-    "#percentage",
-  ],
-  [
-    "timesheet",
-    "#timesheet",
-  ],
-  [
-    "heatmap",
-    "#heatmap",
-  ],
-];
-
-const sharedMixedCards = [
-  [
-    "mixed-shared-hover",
-    "#mixed",
-  ],
-  [
-    "mixed-dual-axis-shared-hover",
-    "#mixed-signed",
-  ],
-];
-
-const demoXYCards = [
-  [
-    "scatter-real-hover",
-    "#scatter",
-    "$799",
-    2,
-  ],
-  [
-    "bubble-real-hover",
-    "#bubble",
-    "Music",
-    1,
-  ],
-];
-
-const demoCompositionCards = [
-  [
-    "pie-real-hover",
-    "#pie",
-  ],
-  [
-    "donut-real-hover",
-    "#donut",
-  ],
-  [
-    "percentage-real-hover",
-    "#percentage",
-  ],
-];
-
-const demoSections = [
-  [
-    "supported-families",
-    "#supported-charts",
-  ],
-  [
-    "trends-and-targets",
-    "#gallery",
-  ],
-  [
-    "compare-and-diagnose",
-    "section[aria-labelledby='comparison-title']",
-  ],
-  [
-    "composition-and-activity",
-    "section[aria-labelledby='composition-title']",
-  ],
-];
-
-const stateFixtures = [
-  [
-    "line",
-    (host) =>
-      LineChart.make(host)
-        .height(300)
-        .ariaLabel("line interaction fixture")
-        .onSelect(() => {})
-        .labels([
-          "Jan",
-          "Feb",
-          "Mar",
-          "Apr",
-          "May",
-          "Jun",
-        ])
-        .dataset({
-          name: "Actual",
-          values: [
-            18,
-            31,
-            27,
-            44,
-            39,
-            56,
-          ],
-        })
-        .dataset({
-          name: "Plan",
-          values: [
-            20,
-            25,
-            31,
-            37,
-            44,
-            50,
-          ],
-        })
-        .render(),
-  ],
-  [
-    "horizontal-bar",
-    (host) =>
-      BarChart.make(host)
-        .height(300)
-        .ariaLabel("horizontal-bar interaction fixture")
-        .onSelect(() => {})
-        .horizontal()
-        .labels([
-          "Europe",
-          "Americas",
-          "Asia-Pacific",
-          "Africa",
-        ])
-        .dataset({
-          name: "Standard",
-          values: [
-            36,
-            42,
-            54,
-            61,
-          ],
-        })
-        .dataset({
-          name: "Express",
-          values: [
-            16,
-            18,
-            24,
-            28,
-          ],
-        })
-        .render(),
-  ],
-  [
-    "pie",
-    (host) =>
-      PieChart.make(host)
-        .height(300)
-        .ariaLabel("pie interaction fixture")
-        .onSelect(() => {})
-        .labels([
-          "Search",
-          "Direct",
-          "Referrals",
-        ])
-        .dataset({
-          values: [
-            48,
-            34,
-            18,
-          ],
-        })
-        .render(),
-  ],
-  [
-    "donut",
-    (host) =>
-      DonutChart.make(host)
-        .height(300)
-        .ariaLabel("donut interaction fixture")
-        .onSelect(() => {})
-        .labels([
-          "Individual",
-          "Family",
-          "Student",
-        ])
-        .dataset({
-          values: [
-            61,
-            27,
-            12,
-          ],
-        })
-        .render(),
-  ],
-  [
-    "percentage",
-    (host) =>
-      PercentageChart.make(host)
-        .height(300)
-        .ariaLabel("percentage interaction fixture")
-        .onSelect(() => {})
-        .labels([
-          "Photos",
-          "Apps",
-          "Free",
-        ])
-        .dataset({
-          values: [
-            72,
-            58,
-            64,
-          ],
-        })
-        .render(),
-  ],
-  [
-    "scatter",
-    (host) =>
-      ScatterChart.make(host)
-        .height(300)
-        .ariaLabel("scatter interaction fixture")
-        .onSelect(() => {})
-        .dataset({
-          name: "Phone",
-          values: [
-            { x: 1, y: 18 },
-            { x: 2, y: 24 },
-          ],
-        })
-        .dataset({
-          name: "Tablet",
-          values: [
-            { x: 1, y: 24 },
-            { x: 2, y: 31 },
-          ],
-        })
-        .render(),
-  ],
-  [
-    "bubble",
-    (host) =>
-      BubbleChart.make(host)
-        .height(300)
-        .ariaLabel("bubble interaction fixture")
-        .onSelect(() => {})
-        .dataset({
-          name: "Apps",
-          values: [
-            { x: 1, y: 78, r: 18 },
-            { x: 2, y: 52, r: 10 },
-          ],
-        })
-        .render(),
-  ],
-  [
-    "mixed",
-    (host) =>
-      MixedChart.make(host)
-        .height(300)
-        .ariaLabel("mixed interaction fixture")
-        .onSelect(() => {})
-        .labels([
-          "W1",
-          "W2",
-          "W3",
-        ])
-        .dataset({
-          name: "Actual",
-          chartType: "bar",
-          values: [
-            28,
-            37,
-            34,
-          ],
-        })
-        .dataset({
-          name: "Plan",
-          chartType: "line",
-          values: [
-            32,
-            35,
-            39,
-          ],
-        })
-        .render(),
-  ],
-  [
-    "mixed-dual-axis",
-    (host) =>
-      MixedChart.make(host)
-        .height(300)
-        .ariaLabel("mixed-dual-axis interaction fixture")
-        .onSelect(() => {})
-        .yAxis((axis) => axis.position("right"))
-        .labels([
-          "Mon",
-          "Tue",
-          "Wed",
-        ])
-        .dataset({
-          name: "Change",
-          chartType: "bar",
-          values: [
-            -18,
-            9,
-            -6,
-          ],
-        })
-        .dataset({
-          name: "Trend",
-          chartType: "line",
-          values: [
-            -8,
-            -4,
-            -2,
-          ],
-        })
-        .render(),
-  ],
-  [
-    "radar",
-    (host) =>
-      RadarChart.make(host)
-        .height(300)
-        .ariaLabel("radar interaction fixture")
-        .onSelect(() => {})
-        .labels([
-          "Speed",
-          "Battery",
-          "Camera",
-          "Display",
-          "Value",
-        ])
-        .dataset({
-          name: "Current",
-          values: [
-            92,
-            84,
-            89,
-            91,
-            72,
-          ],
-        })
-        .dataset({
-          name: "Previous",
-          values: [
-            74,
-            77,
-            71,
-            78,
-            81,
-          ],
-        })
-        .render(),
-  ],
-  [
-    "timesheet",
-    (host) =>
-      TimesheetChart.make(host)
-        .height(300)
-        .ariaLabel("timesheet interaction fixture")
-        .onSelect(() => {})
-        .range("2026-09-01T00:00:00Z", "2026-09-10T00:00:00Z")
-        .task({
-          label: "Design",
-          start: "2026-09-01T00:00:00Z",
-          end: "2026-09-03T00:00:00Z",
-          group: "Product",
-        })
-        .task({
-          label: "Implementation",
-          start: "2026-09-03T00:00:00Z",
-          end: "2026-09-07T00:00:00Z",
-          group: "Engineering",
-        })
-        .task({
-          label: "Release",
-          start: "2026-09-07T00:00:00Z",
-          end: "2026-09-10T00:00:00Z",
-          group: "Distribution",
-        })
-        .render(),
-  ],
-  [
-    "heatmap",
-    (host) =>
-      HeatmapChart.make(host)
-        .ariaLabel("heatmap interaction fixture")
-        .onSelect(() => {})
-        .countLabel("events")
-        .range(new Date("2026-01-01T00:00:00Z"), new Date("2026-03-31T00:00:00Z"))
-        .points(
-          Object.fromEntries(
-            Array.from({ length: 90 }, (_, index) => {
-              const date = new Date(Date.UTC(2026, 0, index + 1)).toISOString().slice(0, 10);
-              return [
-                date,
-                (index * 7 + (index % 5)) % 13,
-              ];
-            }),
-          ),
-        )
-        .render(),
-  ],
-];
-
-const stateVariants = [
-  "hover",
-  "pressed",
-  "pointer-active",
-  "keyboard-focus",
-  "keyboard-active",
-];
 const charts = [];
 
 const sharedActiveAppearance = new Set([
@@ -547,6 +40,14 @@ const sharedActiveAppearance = new Set([
   "scatter",
   "timesheet",
 ]);
+
+const interactionStates = stateFixtures.flatMap(([name]) =>
+  stateVariants.map((variant) => ({ name, variant })),
+);
+const hasEquivalentAppearance = ({ name, variant }) =>
+  variant === "keyboard-active" && sharedActiveAppearance.has(name);
+const screenshotStates = interactionStates.filter((state) => !hasEquivalentAppearance(state));
+const equivalentStates = interactionStates.filter((state) => hasEquivalentAppearance(state));
 
 function setTheme(theme) {
   const isDark = theme === "dark";
@@ -585,10 +86,7 @@ function setTheme(theme) {
   document.documentElement.style.colorScheme = theme;
   document.documentElement.style.color = isDark ? "#f2f2f7" : "#192734";
   document.documentElement.style.background = tokens["--orchid-charts-demo-background"];
-  for (const [
-    name,
-    value,
-  ] of Object.entries(tokens)) {
+  for (const [name, value] of Object.entries(tokens)) {
     document.documentElement.style.setProperty(name, value);
   }
 }
@@ -637,21 +135,13 @@ async function matchScreenshot(element, name) {
 function activeAppearance(name) {
   const card = stateCard(name);
   const tooltip = card.querySelector(".orchid-charts-tooltip");
-  const elements = [
-    ...card.querySelectorAll("svg *"),
-    tooltip,
-  ];
+  const elements = [...card.querySelectorAll("svg *"), tooltip];
   return elements.map((element) => {
     const style = getComputedStyle(element);
     const bounds = element.getBoundingClientRect();
     return {
       text: element.textContent,
-      bounds: [
-        bounds.x,
-        bounds.y,
-        bounds.width,
-        bounds.height,
-      ],
+      bounds: [bounds.x, bounds.y, bounds.width, bounds.height],
       paint: [
         style.fill,
         style.stroke,
@@ -661,19 +151,14 @@ function activeAppearance(name) {
         style.transform,
         style.outline,
       ],
-      visibility: [
-        style.display,
-        style.visibility,
-      ],
+      visibility: [style.display, style.visibility],
     };
   });
 }
 
 function applyState(name, variant) {
   const card = stateCard(name);
-  const marks = [
-    ...card.querySelectorAll(".orchid-charts-interactive-mark"),
-  ];
+  const marks = [...card.querySelectorAll(".orchid-charts-interactive-mark")];
   const mark = marks[Math.min(1, marks.length - 1)];
 
   switch (variant) {
@@ -744,19 +229,14 @@ beforeAll(async () => {
   lab.className = "visual-state-lab";
   const fixtureMarkup = stateFixtures
     .map(
-      ([
-        name,
-      ]) =>
+      ([name]) =>
         `<article data-visual-state="${name}"><header><div><span class="tag">INTERACTION</span><h2>${name}</h2></div><strong>states</strong></header><div data-chart></div></article>`,
     )
     .join("");
   lab.innerHTML = `<h2>Interaction state laboratory</h2><div class="visual-state-grid">${fixtureMarkup}</div>`;
   document.body.append(lab);
 
-  for (const [
-    name,
-    build,
-  ] of stateFixtures) {
+  for (const [name, build] of stateFixtures) {
     charts.push(build(stateCard(name).querySelector("[data-chart]")));
   }
   await settle();
@@ -776,24 +256,14 @@ afterAll(async () => {
   await page.viewport(1280, 720);
 });
 
-describe.sequential("visual regression baselines", () => {
+// Existing pixel references capture an ordered viewport/scroll tour.
+// Keep that framing stable; independent state equivalence is tested separately.
+describe.sequential("visual regression baselines", { shuffle: false }, () => {
   it.each([
-    [
-      "light",
-      1280,
-    ],
-    [
-      "dark",
-      1280,
-    ],
-    [
-      "light",
-      390,
-    ],
-    [
-      "dark",
-      390,
-    ],
+    ["light", 1280],
+    ["dark", 1280],
+    ["light", 390],
+    ["dark", 390],
   ])("keeps the radar comparison readable in %s at %ipx", async (theme, width) => {
     await page.viewport(width, 900);
     setTheme(theme);
@@ -819,19 +289,13 @@ describe.sequential("visual regression baselines", () => {
     await matchScreenshot(document.body, "demo-body-mobile-light");
   });
 
-  for (const [
-    name,
-    selector,
-  ] of demoCards) {
+  for (const [name, selector] of demoCards) {
     it(`keeps the desktop ${name} card stable`, async () => {
       await matchScreenshot(demoCard(selector), `demo-desktop-light-${name}`);
     });
   }
 
-  for (const [
-    name,
-    selector,
-  ] of sharedMixedCards) {
+  for (const [name, selector] of sharedMixedCards) {
     it(`keeps the ${name} popover stable`, async () => {
       const card = demoCard(selector);
       const mark = card.querySelectorAll(".orchid-charts-x-hit")[1];
@@ -843,12 +307,7 @@ describe.sequential("visual regression baselines", () => {
     });
   }
 
-  for (const [
-    name,
-    selector,
-    heading,
-    rowCount,
-  ] of demoXYCards) {
+  for (const [name, selector, heading, rowCount] of demoXYCards) {
     it(`keeps the ${name} popover stable`, async () => {
       const card = demoCard(selector);
       const mark = card.querySelectorAll(".orchid-charts-x-hit")[1];
@@ -860,10 +319,7 @@ describe.sequential("visual regression baselines", () => {
     });
   }
 
-  for (const [
-    name,
-    selector,
-  ] of demoCompositionCards) {
+  for (const [name, selector] of demoCompositionCards) {
     it(`keeps the ${name} popover stable`, async () => {
       const card = demoCard(selector);
       const mark = card.querySelectorAll(".orchid-charts-mark")[1];
@@ -875,10 +331,7 @@ describe.sequential("visual regression baselines", () => {
     });
   }
 
-  for (const [
-    name,
-    selector,
-  ] of demoSections) {
+  for (const [name, selector] of demoSections) {
     it(`keeps the desktop ${name} section stable`, async () => {
       if (name === "composition-and-activity") {
         await page.viewport(1280, 1200);
@@ -887,10 +340,7 @@ describe.sequential("visual regression baselines", () => {
     });
   }
 
-  for (const [
-    name,
-    selector,
-  ] of responsiveCards) {
+  for (const [name, selector] of responsiveCards) {
     it(`keeps the mobile ${name} card stable`, async () => {
       await page.viewport(390, 900);
       await matchScreenshot(demoCard(selector), `demo-mobile-light-${name}`);
@@ -902,22 +352,26 @@ describe.sequential("visual regression baselines", () => {
     });
   }
 
-  for (const [
-    name,
-  ] of stateFixtures) {
-    for (const variant of stateVariants) {
-      it(`keeps ${name} ${variant} feedback stable`, async () => {
-        if (variant === "keyboard-active" && sharedActiveAppearance.has(name)) {
-          applyState(name, "pointer-active");
-          const pointerAppearance = activeAppearance(name);
-          resetInteractionState();
-          applyState(name, variant);
-          expect(activeAppearance(name)).toEqual(pointerAppearance);
-          return;
-        }
-        applyState(name, variant);
-        await matchScreenshot(stateCard(name), `interaction-${name}-${variant}`);
-      });
-    }
-  }
+  it.each(screenshotStates)("keeps $name $variant feedback stable", async ({ name, variant }) => {
+    applyState(name, variant);
+    await matchScreenshot(stateCard(name), `interaction-${name}-${variant}`);
+  });
+});
+
+describe.sequential("selection appearance equivalence", () => {
+  it.each(equivalentStates)(
+    "keeps $name keyboard-active equivalent to pointer selection",
+    async ({ name }) => {
+      stateCard(name).scrollIntoView({ block: "center" });
+      await settle();
+      applyState(name, "pointer-active");
+      const position = { left: window.scrollX, top: window.scrollY };
+      const pointerAppearance = activeAppearance(name);
+      resetInteractionState();
+      applyState(name, "keyboard-active");
+      window.scrollTo(position);
+      await settle();
+      expect(activeAppearance(name)).toEqual(pointerAppearance);
+    },
+  );
 });

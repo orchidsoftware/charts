@@ -16,9 +16,9 @@ function mountDuration(values) {
   const startedAt = performance.now();
   const chart = LineChart.make("#chart").dataset(values).render();
   const duration = performance.now() - startedAt;
-  expect(chart.point(values.length - 1).values).toEqual([
-    values.at(-1),
-  ]);
+  expect(chart.point(values.length - 1).values).toEqual([values.at(-1)]);
+  const path = chart.element.querySelector(".orchid-charts-line").getAttribute("d");
+  expect(path.match(/[CL]/g)).toHaveLength(values.length - 1);
   chart.destroy();
   return duration;
 }
@@ -45,37 +45,23 @@ describe("performance budgets in Chromium", () => {
   });
 
   it("handles 200 live updates within a one-second median budget", () => {
-    const chart = LineChart.make("#chart")
-      .dataset([
-        1,
-      ])
-      .render();
+    const chart = LineChart.make("#chart").dataset([1]).render();
     const update = () => {
       for (let iteration = 0; iteration < 200; iteration += 1) {
         chart.update({
-          datasets: [
-            { values: Array.from({ length: 100 }, (_value, index) => index + iteration) },
-          ],
+          datasets: [{ values: Array.from({ length: 100 }, (_value, index) => index + iteration) }],
         });
       }
     };
     update();
     const samples = Array.from({ length: 5 }, () => measure(update));
     expect(median(samples)).toBeLessThan(1000);
-    expect(chart.point(99).values).toEqual([
-      298,
-    ]);
+    expect(chart.point(99).values).toEqual([298]);
   });
 
   it("has measurable chart geometry at the next rendered frame within one second", async () => {
     const startedAt = performance.now();
-    const chart = LineChart.make("#chart")
-      .dataset([
-        1,
-        3,
-        2,
-      ])
-      .render();
+    const chart = LineChart.make("#chart").dataset([1, 3, 2]).render();
     await new Promise((resolve) => {
       requestAnimationFrame(() => requestAnimationFrame(resolve));
     });

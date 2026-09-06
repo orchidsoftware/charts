@@ -1,4 +1,5 @@
 import eslint from "@eslint/js";
+import vitest from "@vitest/eslint-plugin";
 import { importX } from "eslint-plugin-import-x";
 import jsdocPlugin, { configs as jsdocConfigs } from "eslint-plugin-jsdoc";
 import node from "eslint-plugin-n";
@@ -7,6 +8,8 @@ import security from "eslint-plugin-security";
 import sonarjs from "eslint-plugin-sonarjs";
 import unicorn from "eslint-plugin-unicorn";
 import globals from "globals";
+
+import { maxTestLines } from "./scripts/TestLintRules.mjs";
 
 const JAVASCRIPT_FILES = [
   "**/*.{js,mjs,cjs}",
@@ -134,6 +137,7 @@ const multilineReturnObjectRule = {
 const orchidChartsPlugin = {
   rules: {
     "multiline-array": multilineArrayRule,
+    "max-test-lines": maxTestLines,
     "multiline-return-object": multilineReturnObjectRule,
   },
 };
@@ -493,6 +497,69 @@ export default [
     rules: correctnessRules,
   },
   {
+    files: [
+      "test/**/*.js",
+      "test-node/**/*.mjs",
+    ],
+    rules: {
+      "orchid-charts/multiline-array": "off",
+      "orchid-charts/max-test-lines": [
+        "error",
+        { max: 60 },
+      ],
+      "max-lines": [
+        "error",
+        { max: 500, skipBlankLines: true, skipComments: true },
+      ],
+    },
+  },
+  {
+    files: [
+      "test/**/*.test.js",
+    ],
+    plugins: { vitest },
+    rules: {
+      "vitest/no-focused-tests": "error",
+      "vitest/valid-expect": [
+        "error",
+        { maxArgs: 2 },
+      ],
+      "vitest/valid-expect-in-promise": "error",
+      "vitest/no-conditional-expect": "error",
+      "vitest/no-identical-title": "error",
+      "vitest/valid-title": "error",
+      "vitest/max-nested-describe": [
+        "error",
+        { max: 2 },
+      ],
+    },
+  },
+  {
+    files: [
+      "test/support/**/*.js",
+    ],
+    rules: {
+      "max-lines-per-function": [
+        "error",
+        { max: 60, skipBlankLines: true, skipComments: true },
+      ],
+    },
+  },
+  {
+    files: [
+      "test/policies/Normalization.test.js",
+      "test/policies/BoundaryPolicies.test.js",
+    ],
+    rules: { "vitest/no-conditional-in-test": "error", "vitest/prefer-each": "error" },
+  },
+  {
+    files: [
+      "test/ChartTicks.test.js",
+      "test/TimesheetRendering.test.js",
+    ],
+    rules: { "vitest/prefer-each": "error" },
+  },
+  {
     files: SOURCE_FILES,
     plugins: { jsdoc: jsdocPlugin },
     rules: { ...architectureRules, ...maintainabilityRules, ...jsdocRules },
@@ -512,15 +579,8 @@ export default [
   },
   {
     files: [
-      "test/Chart.test.js",
-      "test/Demo.test.js",
-      "test/FluentApi.test.js",
-      "test/FluentCoverage.test.js",
-      "test/Frameless.test.js",
-      "test/Interactions.test.js",
-      "test/Performance.test.js",
-      "test/UnifiedPipeline.test.js",
-      "test/VisualRegression.test.js",
+      "test/*.test.js",
+      "test/support/VisualFixtures.js",
       "test/support/MountChart.js",
     ],
     rules: {

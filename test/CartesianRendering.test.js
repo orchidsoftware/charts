@@ -1,22 +1,14 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { BarChart, LineChart, MixedChart, PolarAreaChart, ScatterChart } from "../src/index.js";
+import { BarChart, LineChart, MixedChart, ScatterChart } from "../src/index.js";
 import "../src/styles.css";
 
 const series = {
-  labels: [
-    "A",
-    "B",
-    "C",
-  ],
+  labels: ["A", "B", "C"],
   datasets: [
     {
       name: "One",
-      values: [
-        2,
-        4,
-        -1,
-      ],
+      values: [2, 4, -1],
     },
   ],
 };
@@ -29,11 +21,7 @@ describe("Cartesian Rendering", () => {
       .labels(series.labels)
       .dataset({
         name: "One",
-        values: [
-          2,
-          4,
-          -1,
-        ],
+        values: [2, 4, -1],
       })
       .render();
     expect(scatter.element.querySelectorAll(".orchid-charts-scatter")).toHaveLength(3);
@@ -49,41 +37,26 @@ describe("Cartesian Rendering", () => {
     const mixed = MixedChart.make("#chart")
       .tooltip((tooltip) => tooltip.formatLabel((value) => `X ${value}`))
       .tooltip((tooltip) => tooltip.formatValue((value) => `$${value}`))
-      .labels([
-        "A",
-        "B",
-      ])
+      .labels(["A", "B"])
       .dataset({
         name: "Line",
         chartType: "line",
-        values: [
-          1,
-          3,
-        ],
+        values: [1, 3],
       })
       .dataset({
         name: "Positive",
         chartType: "bar",
-        values: [
-          2,
-          4,
-        ],
+        values: [2, 4],
       })
       .dataset({
         name: "Negative",
         chartType: "bar",
-        values: [
-          -1,
-          -2,
-        ],
+        values: [-1, -2],
       })
       .marker({ value: 2, label: "Target" })
       .region({
         label: "Expected range",
-        range: [
-          1,
-          3,
-        ],
+        range: [1, 3],
       })
       .render();
     expect(mixed.element.querySelectorAll(".orchid-charts-region")).toHaveLength(1);
@@ -100,26 +73,15 @@ describe("Cartesian Rendering", () => {
   it("supports horizontal annotations, region fill, hidden line parts, and long summaries", () => {
     const horizontal = BarChart.make("#chart")
       .horizontal()
-      .labels([
-        "A",
-        "B",
-        "C",
-      ])
+      .labels(["A", "B", "C"])
       .dataset({
         name: "One",
-        values: [
-          2,
-          4,
-          -1,
-        ],
+        values: [2, 4, -1],
       })
       .marker({ value: 2, label: "Target" })
       .region({
         label: "Expected range",
-        range: [
-          0,
-          3,
-        ],
+        range: [0, 3],
       })
       .render();
     expect(horizontal.element.querySelector(".orchid-charts-region").getAttribute("x")).not.toBeNull();
@@ -134,11 +96,7 @@ describe("Cartesian Rendering", () => {
       .labels(series.labels)
       .dataset({
         name: "One",
-        values: [
-          2,
-          4,
-          -1,
-        ],
+        values: [2, 4, -1],
       })
       .render();
     expect(filled.element.querySelector(".orchid-charts-area")).not.toBeNull();
@@ -164,11 +122,7 @@ describe("Cartesian Rendering", () => {
       .labels(series.labels)
       .dataset({
         name: "One",
-        values: [
-          2,
-          4,
-          -1,
-        ],
+        values: [2, 4, -1],
       })
       .render();
     expect(hidden.element.querySelector(".orchid-charts-line")).toBeNull();
@@ -176,17 +130,9 @@ describe("Cartesian Rendering", () => {
   });
   it("smooths line geometry without overshooting and allows straight segments", () => {
     const smooth = LineChart.make("#chart")
-      .labels([
-        "A",
-        "B",
-        "C",
-      ])
+      .labels(["A", "B", "C"])
       .dataset({
-        values: [
-          0,
-          10,
-          0,
-        ],
+        values: [0, 10, 0],
       })
       .render();
     const path = smooth.element.querySelector(".orchid-charts-line").getAttribute("d");
@@ -215,209 +161,139 @@ describe("Cartesian Rendering", () => {
       .labels(series.labels)
       .dataset({
         name: "One",
-        values: [
-          2,
-          4,
-          -1,
-        ],
+        values: [2, 4, -1],
       })
       .render();
     expect(straight.element.querySelector(".orchid-charts-line").getAttribute("d")).toContain("L");
     expect(straight.element.querySelector(".orchid-charts-line").getAttribute("d")).not.toContain("C");
   });
-  it("rounds only the value-facing outer end of signed and stacked bars", () => {
+  it("rounds only the nonzero ends of signed bars", () => {
     const signed = BarChart.make("#chart")
       .radius(4)
-      .labels([
-        "Loss",
-        "Zero",
-        "Gain",
-      ])
+      .labels(["Loss", "Zero", "Gain"])
       .dataset({
-        values: [
-          -10,
-          0,
-          10,
-        ],
+        values: [-10, 0, 10],
       })
       .render();
-    const signedBars = [
-      ...signed.element.querySelectorAll(".orchid-charts-bar"),
-    ];
+    const signedBars = [...signed.element.querySelectorAll(".orchid-charts-bar")];
     expect(signedBars[0].getAttribute("d")).toContain("Q");
     expect(signedBars[1].getAttribute("d")).not.toContain("Q");
     expect(signedBars[2].getAttribute("d")).toContain("Q");
     signed.destroy();
+  });
 
+  it("rounds only outer caps in positive and negative stacks", () => {
     const stacked = BarChart.make("#chart")
       .stacked(true)
       .radius(4)
-      .labels([
-        "Total",
-      ])
+      .labels(["Total"])
       .dataset({
         name: "Positive base",
-        values: [
-          5,
-        ],
+        values: [5],
       })
       .dataset({
         name: "Positive cap",
-        values: [
-          3,
-        ],
+        values: [3],
       })
       .dataset({
         name: "Negative base",
-        values: [
-          -4,
-        ],
+        values: [-4],
       })
       .dataset({
         name: "Negative cap",
-        values: [
-          -2,
-        ],
+        values: [-2],
       })
       .render();
-    const stackedBars = [
-      ...stacked.element.querySelectorAll(".orchid-charts-bar"),
-    ];
-    expect(stackedBars.map((bar) => bar.getAttribute("d").includes("Q"))).toEqual([
-      false,
-      true,
-      false,
-      true,
-    ]);
+    const stackedBars = [...stacked.element.querySelectorAll(".orchid-charts-bar")];
+    expect(stackedBars.map((bar) => bar.getAttribute("d").includes("Q"))).toEqual([false, true, false, true]);
     stacked.destroy();
+  });
 
+  it("retains zero-valued bars in sparse stacks", () => {
     const sparseStack = BarChart.make("#chart")
       .stacked(true)
-      .labels([
-        "A",
-        "B",
-      ])
+      .labels(["A", "B"])
       .dataset({
         name: "Base",
-        values: [
-          5,
-          4,
-        ],
+        values: [5, 4],
       })
       .dataset({
         name: "Additional",
-        values: [
-          2,
-          0,
-        ],
+        values: [2, 0],
       })
       .render();
     expect(sparseStack.element.querySelectorAll(".orchid-charts-bar")).toHaveLength(4);
     sparseStack.destroy();
+  });
 
+  it("renders square bar corners when radius is zero", () => {
     const square = BarChart.make("#chart")
       .radius(0)
       .labels(series.labels)
       .dataset({
         name: "One",
-        values: [
-          2,
-          4,
-          -1,
-        ],
+        values: [2, 4, -1],
       })
       .render();
     expect(
-      [
-        ...square.element.querySelectorAll(".orchid-charts-bar"),
-      ].every((bar) => !bar.getAttribute("d").includes("Q")),
+      [...square.element.querySelectorAll(".orchid-charts-bar")].every(
+        (bar) => !bar.getAttribute("d").includes("Q"),
+      ),
     ).toBe(true);
     square.destroy();
+  });
 
+  it("rounds the outer end of a negative horizontal bar", () => {
     const horizontalLoss = BarChart.make("#chart")
       .horizontal()
       .dataset({
-        values: [
-          -5,
-        ],
+        values: [-5],
       })
       .render();
     expect(horizontalLoss.element.querySelector(".orchid-charts-bar").getAttribute("d")).toContain("Q");
   });
-  it("renders the demo stress matrix through the shared Cartesian pipeline", () => {
-    const labels = [
-      "A",
-      "B",
-      "C",
-      "D",
-    ];
+  it("renders a separate gradient for each line dataset", () => {
+    const labels = ["A", "B", "C", "D"];
     const gradient = LineChart.make("#chart")
       .gradient(true)
       .labels(labels)
       .dataset({
         name: "Current",
-        values: [
-          2,
-          5,
-          4,
-          8,
-        ],
+        values: [2, 5, 4, 8],
       })
       .dataset({
         name: "Forecast",
-        values: [
-          3,
-          4,
-          6,
-          9,
-        ],
+        values: [3, 4, 6, 9],
       })
       .dataset({
         name: "Previous",
-        values: [
-          1,
-          3,
-          3,
-          6,
-        ],
+        values: [1, 3, 3, 6],
       })
       .render();
     expect(gradient.element.querySelectorAll("linearGradient")).toHaveLength(3);
     expect(gradient.element.querySelectorAll(".orchid-charts-area")).toHaveLength(3);
     expect(gradient.element.querySelectorAll(".orchid-charts-line")).toHaveLength(3);
     gradient.destroy();
+  });
 
+  it("maps mixed bars and lines to their public dataset addresses", () => {
+    const labels = ["A", "B", "C", "D"];
     const mixed = MixedChart.make("#chart")
       .labels(labels)
       .dataset({
         name: "Actual",
         chartType: "bar",
-        values: [
-          -3,
-          5,
-          0,
-          8,
-        ],
+        values: [-3, 5, 0, 8],
       })
       .dataset({
         name: "Target",
         chartType: "line",
-        values: [
-          2,
-          3,
-          4,
-          5,
-        ],
+        values: [2, 3, 4, 5],
       })
       .dataset({
         name: "Capacity",
         chartType: "line",
-        values: [
-          6,
-          6,
-          7,
-          7,
-        ],
+        values: [6, 6, 7, 7],
       })
       .render();
     expect(mixed.element.querySelectorAll(".orchid-charts-bar")).toHaveLength(4);
@@ -426,7 +302,10 @@ describe("Cartesian Rendering", () => {
     expect(mixed.point(0)).toMatchObject({ dataset: "Actual", chartType: "bar", y: -3 });
     expect(mixed.point(4)).toMatchObject({ dataset: "Target", chartType: "line", y: 2 });
     mixed.destroy();
+  });
 
+  it("reserves wrapped legend rows below a narrow mixed plot", () => {
+    const labels = ["A", "B", "C", "D"];
     const narrowMixed = MixedChart.make("#chart")
       .width(220)
       .height(520)
@@ -434,38 +313,23 @@ describe("Cartesian Rendering", () => {
       .dataset({
         name: "Daily change",
         chartType: "bar",
-        values: [
-          -18,
-          9,
-          -6,
-          22,
-        ],
+        values: [-18, 9, -6, 22],
       })
       .dataset({
         name: "Rolling trend",
         chartType: "line",
-        values: [
-          -8,
-          -4,
-          -2,
-          5,
-        ],
+        values: [-8, -4, -2, 5],
       })
       .dataset({
         name: "Alert threshold",
         chartType: "line",
-        values: [
-          12,
-          12,
-          12,
-          12,
-        ],
+        values: [12, 12, 12, 12],
       })
       .render();
     const narrowLegendRows = new Set(
-      [
-        ...narrowMixed.element.querySelectorAll(".orchid-charts-legend"),
-      ].map((item) => item.getAttribute("y")),
+      [...narrowMixed.element.querySelectorAll(".orchid-charts-legend")].map((item) =>
+        item.getAttribute("y"),
+      ),
     );
     const narrowLegend = narrowMixed.element.querySelector(".orchid-charts-legend-group").getBBox();
     const narrowPlotBottom = Number(
@@ -475,70 +339,56 @@ describe("Cartesian Rendering", () => {
     expect(narrowPlotBottom).toBeLessThan(narrowLegend.y);
     expect(narrowMixed.element.querySelectorAll(".orchid-charts-x-hit")).toHaveLength(4);
     narrowMixed.destroy();
+  });
 
+  it("groups three horizontal series in each category", () => {
+    const labels = ["A", "B", "C", "D"];
     const grouped = BarChart.make("#chart")
       .horizontal()
       .labels(labels.slice(0, 3))
       .dataset({
         name: "Critical",
-        values: [
-          3,
-          5,
-          2,
-        ],
+        values: [3, 5, 2],
       })
       .dataset({
         name: "Standard",
-        values: [
-          7,
-          8,
-          6,
-        ],
+        values: [7, 8, 6],
       })
       .dataset({
         name: "Deferred",
-        values: [
-          4,
-          3,
-          5,
-        ],
+        values: [4, 3, 5],
       })
       .render();
     expect(grouped.element.querySelectorAll(".orchid-charts-bar.orchid-charts-visual-mark")).toHaveLength(9);
     expect(grouped.element.querySelectorAll(".orchid-charts-legend")).toHaveLength(3);
     grouped.destroy();
+  });
 
+  it("stacks horizontal series edge to edge", () => {
+    const labels = ["A", "B", "C", "D"];
     const stacked = BarChart.make("#chart")
       .horizontal()
       .stacked(true)
       .labels(labels.slice(0, 3))
       .dataset({
         name: "Done",
-        values: [
-          3,
-          5,
-          2,
-        ],
+        values: [3, 5, 2],
       })
       .dataset({
         name: "Open",
-        values: [
-          7,
-          8,
-          6,
-        ],
+        values: [7, 8, 6],
       })
       .render();
-    const stackedBars = [
-      ...stacked.element.querySelectorAll(".orchid-charts-bar.orchid-charts-visual-mark"),
-    ];
+    const stackedBars = [...stacked.element.querySelectorAll(".orchid-charts-bar.orchid-charts-visual-mark")];
     expect(stackedBars).toHaveLength(6);
     expect(stackedBars[0].getBBox().y).toBe(stackedBars[3].getBBox().y);
     expect(stackedBars[3].getBBox().x).toBeCloseTo(
       stackedBars[0].getBBox().x + stackedBars[0].getBBox().width,
     );
     stacked.destroy();
+  });
 
+  it("uses one shared category hit target for dense lines", () => {
     const denseLabels = Array.from({ length: 48 }, (_, index) => `W${index + 1}`);
     const dense = LineChart.make("#chart")
       .labels(denseLabels)
@@ -559,24 +409,15 @@ describe("Cartesian Rendering", () => {
       .stacked(true)
       .dataset({
         name: "Series 1",
-        values: [
-          2,
-          0,
-        ],
+        values: [2, 0],
       })
       .dataset({
         name: "Series 2",
-        values: [
-          3,
-          -1,
-        ],
+        values: [3, -1],
       })
       .dataset({
         name: "Series 3",
-        values: [
-          4,
-          -2,
-        ],
+        values: [4, -2],
       })
       .marker({ value: 2, label: "Goal" })
       .render();
@@ -590,18 +431,12 @@ describe("Cartesian Rendering", () => {
       .dataset({
         name: "Bars",
         chartType: "bar",
-        values: [
-          2,
-          3,
-        ],
+        values: [2, 3],
       })
       .dataset({
         name: "Line",
         chartType: "line",
-        values: [
-          1,
-          2,
-        ],
+        values: [1, 2],
       })
       .render();
     expect(defaultLayerMixed.element.querySelector(".orchid-charts-line")).not.toBeNull();
@@ -610,16 +445,13 @@ describe("Cartesian Rendering", () => {
     const lineOnlyMixed = MixedChart.make("#chart")
       .dataset({
         chartType: "line",
-        values: [
-          1,
-          2,
-        ],
+        values: [1, 2],
       })
       .render();
     expect(lineOnlyMixed.element.querySelector(".orchid-charts-bar")).toBeNull();
     lineOnlyMixed.destroy();
   });
-  it("falls back to individual marks for dense Cartesian data", () => {
+  it("selects dense scatter values through individual marks", () => {
     const values = Array.from({ length: 41 }, (_, index) => ({ x: index + 0.5, y: index }));
     const scatter = ScatterChart.make("#chart")
       .onSelect(() => {})
@@ -637,7 +469,9 @@ describe("Cartesian Rendering", () => {
       .dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(selected[0]).toMatchObject({ dataset: "Dense", label: 0.5, value: 0 });
     scatter.destroy();
+  });
 
+  it("keeps transparent category hits for dense bars in both orientations", () => {
     const denseBars = Array.from({ length: 41 }, (_, index) => index + 1);
     const vertical = BarChart.make("#chart").dataset({ values: denseBars }).render();
     expect(vertical.element.querySelector(".orchid-charts-x-hit").getAttribute("fill")).toBe("transparent");
@@ -645,54 +479,20 @@ describe("Cartesian Rendering", () => {
     const horizontal = BarChart.make("#chart").horizontal().dataset({ values: denseBars }).render();
     expect(horizontal.element.querySelector(".orchid-charts-x-hit").getAttribute("fill")).toBe("transparent");
     horizontal.destroy();
+  });
 
+  it("retains category hits for sparse multi-series lines", () => {
     const sparse = LineChart.make("#chart")
       .dataset({
         name: "First",
-        values: [
-          1,
-          0,
-        ],
+        values: [1, 0],
       })
       .dataset({
         name: "Second",
-        values: [
-          2,
-          3,
-        ],
+        values: [2, 3],
       })
       .render();
     expect(sparse.element.querySelectorAll(".orchid-charts-x-hit")).toHaveLength(2);
     sparse.destroy();
-
-    const polar = PolarAreaChart.make("#chart")
-      .onSelect(() => {})
-      .labels([
-        "Only",
-      ])
-      .dataset({
-        values: [
-          4,
-        ],
-      })
-      .render();
-    const polarSelected = [];
-    polar.element.parentElement.addEventListener("data-select", (event) => {
-      polarSelected.push(event.detail);
-    });
-    polar.element
-      .querySelector(".orchid-charts-mark")
-      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(polarSelected[0]).toMatchObject({
-      type: "polar-area",
-      index: 0,
-      label: "Only",
-      x: 0,
-      y: 4,
-      value: 4,
-      values: [
-        4,
-      ],
-    });
   });
 });

@@ -20,9 +20,7 @@ export default class ChartScenario {
    * @returns {Element[]} Ordered interactive marks.
    */
   marks(selector = ".orchid-charts-interactive-mark") {
-    return [
-      ...this.#chart.element.querySelectorAll(selector),
-    ];
+    return [...this.#chart.element.querySelectorAll(selector)];
   }
 
   /**

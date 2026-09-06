@@ -6,6 +6,12 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ## Unreleased
 
+### Changed
+
+- Split fast test feedback from visual, site, input and performance projects while
+  retaining the complete coverage and release gates. Simplified test scenarios,
+  added ESLint readability checks and isolated timing benchmarks in CI.
+
 ## 0.0.4 - 2026-09-06
 
 ### Fixed

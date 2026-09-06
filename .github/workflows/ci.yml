@@ -13,49 +13,76 @@ permissions:
   contents: read
 
 jobs:
-  quality:
-    name: Complete quality gate (Node.js 22.12.0)
+  static:
+    name: Static checks and package contracts
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
       - name: Check out the source
         uses: actions/checkout@v7
-
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
           node-version: 22.12.0
           cache: npm
-
       - name: Install dependencies
         run: npm ci
-
-      - name: Install browsers
+      - name: Install browsers for distribution smoke tests
         run: npx playwright install --with-deps chromium firefox webkit
-
-      - name: Run the complete quality gate
-        run: npm run check
-
+      - name: Verify source, policies, types, bundle size and distribution
+        run: npm run format:check && npm run lint && npm run test:policies && npm run typecheck && npm run build && npm run test:dist
       - name: Audit the published dependency graph
         run: npm audit --omit=dev --audit-level=high
-
       - name: Inspect the package archive
         run: npm run pack:check
 
+  browser:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: coverage
+            name: Coverage, visuals and browser contracts
+            browsers: chromium
+            command: npm run coverage
+          - suite: performance
+            name: Isolated performance budgets
+            browsers: chromium
+            command: npm run test:performance
+          - suite: compatibility
+            name: Chromium, Firefox and WebKit compatibility
+            browsers: chromium firefox webkit
+            command: npm run test:compatibility
+    steps:
+      - name: Check out the source
+        uses: actions/checkout@v7
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install the required browsers
+        run: npx playwright install --with-deps ${{ matrix.browsers }}
+      - name: Run the browser gate and record timings
+        run: ${{ matrix.command }} -- --reporter=default --reporter=json --outputFile.json=.vitest-attachments/${{ matrix.suite }}-timings.json
       - name: Upload coverage report
-        if: always()
+        if: ${{ always() && matrix.suite == 'coverage' }}
         uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: coverage/
           if-no-files-found: ignore
           retention-days: 14
-
-      - name: Upload browser diagnostics
-        if: failure()
+      - name: Upload timings and browser diagnostics
+        if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: browser-diagnostics-node-22
+          name: browser-${{ matrix.suite }}
           path: .vitest-attachments/
           include-hidden-files: true
           if-no-files-found: ignore
@@ -77,3 +104,20 @@ jobs:
         run: npm ci
       - name: Verify strict types and build on the second Node.js version
         run: npm run typecheck && npm run build:library && npm run test:ssr:built && npm run pack:check
+
+  quality:
+    name: Complete quality gate (Node.js 22.12.0)
+    if: always()
+    needs: [static, browser, toolchain]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require every independent gate to pass
+        env:
+          STATIC_RESULT: ${{ needs.static.result }}
+          BROWSER_RESULT: ${{ needs.browser.result }}
+          TOOLCHAIN_RESULT: ${{ needs.toolchain.result }}
+        run: |
+          test "$STATIC_RESULT" = success
+          test "$BROWSER_RESULT" = success
+          test "$TOOLCHAIN_RESULT" = success

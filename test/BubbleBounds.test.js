@@ -40,15 +40,10 @@ describe("Bubble bounds", () => {
       .render();
     expectContained(chart);
     expect(
-      [
-        ...chart.element.querySelectorAll(".orchid-charts-bubble"),
-      ].map((circle) => Number(circle.getAttribute("r"))),
-    ).toEqual([
-      28,
-      0,
-      42,
-      12,
-    ]);
+      [...chart.element.querySelectorAll(".orchid-charts-bubble")].map((circle) =>
+        Number(circle.getAttribute("r")),
+      ),
+    ).toEqual([28, 0, 42, 12]);
     chart.update({
       datasets: [
         {
@@ -82,9 +77,7 @@ describe("Bubble bounds", () => {
     expectContained(chart);
     const decimal = new Intl.NumberFormat().formatToParts(0.1).find((part) => part.type === "decimal").value;
     expect(
-      [
-        ...chart.element.querySelectorAll(".orchid-charts-value-label"),
-      ].map((label) => label.textContent),
+      [...chart.element.querySelectorAll(".orchid-charts-value-label")].map((label) => label.textContent),
     ).toContainEqual(expect.stringContaining(decimal));
     chart.destroy();
   });
@@ -93,9 +86,7 @@ describe("Bubble bounds", () => {
     const chart = BubbleChart.make("#chart")
       .height(120)
       .frameless()
-      .dataset([
-        { x: 0, y: 0, r: 40 },
-      ])
+      .dataset([{ x: 0, y: 0, r: 40 }])
       .render();
     const box = chart.element.querySelector(".orchid-charts-bubble").getBBox();
     expect(box.y).toBeGreaterThanOrEqual(0);
@@ -103,9 +94,7 @@ describe("Bubble bounds", () => {
     chart.update({
       datasets: [
         {
-          values: [
-            { x: 1, y: 2, r: 200 },
-          ],
+          values: [{ x: 1, y: 2, r: 200 }],
         },
       ],
     });

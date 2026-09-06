@@ -55,13 +55,13 @@
     "lint:css": "stylelint \"{src,demo}/**/*.css\" --max-warnings 0",
     "lint:css:fix": "stylelint \"{src,demo}/**/*.css\" --fix --max-warnings 0",
     "typecheck": "tsc -p tsconfig.types.json --module ESNext --moduleResolution Bundler && tsc -p tsconfig.types.json --module Node16 --moduleResolution Node16 && tsc -p tsconfig.types.json",
-    "test": "vitest run",
+    "test": "vitest run --project node --project browser-chromium",
     "test:size": "npm run build",
-    "test:lab": "vitest run test/Lab.test.js",
-    "test:watch": "vitest",
-    "test:visual": "vitest run test/VisualRegression.test.js",
-    "test:visual:update": "vitest run test/VisualRegression.test.js --update",
-    "test:performance": "vitest run test/Performance.test.js",
+    "test:lab": "vitest run --project site-chromium test/Lab.test.js",
+    "test:watch": "vitest --project node --project browser-chromium",
+    "test:visual": "vitest run --project visual-chromium",
+    "test:visual:update": "vitest run --project visual-chromium --update",
+    "test:performance": "vitest run --project performance-chromium",
     "test:compatibility": "ORCHID_CHARTS_COMPATIBILITY=1 vitest run",
     "test:no-build": "npm run build:library && node scripts/TestNoBuild.mjs",
     "test:ssr": "npm run build:library && npm run test:ssr:built",
@@ -74,13 +74,23 @@
     "build:library": "vite build",
     "test:dist": "node scripts/TestNoBuild.mjs && npm run test:ssr:built",
     "test:ssr:built": "node --input-type=module --eval \"await import('./dist/index.js')\"",
-    "test:policies": "node --test test-node/*.test.mjs"
+    "test:policies": "node --test test-node/*.test.mjs",
+    "test:all": "vitest run",
+    "test:unit": "vitest run --project node",
+    "test:site": "vitest run --project site-chromium",
+    "test:input": "vitest run --project input-chromium"
   },
   "engines": {
     "node": ">=22.12"
   },
   "overrides": {
     "eslint-plugin-sonarjs": {
+      "typescript": "5.9.3"
+    },
+    "@typescript-eslint/utils": {
+      "typescript": "5.9.3"
+    },
+    "ts-api-utils": {
       "typescript": "5.9.3"
     }
   },
@@ -113,6 +123,7 @@
     "@eslint/js": "^10.0.1",
     "@vitest/browser-playwright": "^4.1.11",
     "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/eslint-plugin": "^1.6.27",
     "eslint": "^10.9.1",
     "eslint-plugin-import-x": "^4.17.1",
     "eslint-plugin-jsdoc": "^64.2.1",

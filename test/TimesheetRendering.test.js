@@ -9,7 +9,7 @@ beforeEach(() => {
   document.body.innerHTML = '<div id="chart" style="width: 640px"></div>';
 });
 describe("Timesheet Rendering", () => {
-  it("renders, formats, updates, and selects timesheet work intervals", () => {
+  it("renders formatted intervals and preserves selection through updates", () => {
     const onSelect = vi.fn();
     const chart = TimesheetChart.make("#chart")
       .width(320)
@@ -45,12 +45,10 @@ describe("Timesheet Rendering", () => {
       "Design review",
     );
     expect(
-      [
-        ...tooltipFor(chart).querySelectorAll(".orchid-charts-tooltip-row span"),
-      ].map((node) => node.textContent),
-    ).toEqual([
-      "D1 – D2",
-    ]);
+      [...tooltipFor(chart).querySelectorAll(".orchid-charts-tooltip-row span")].map(
+        (node) => node.textContent,
+      ),
+    ).toEqual(["D1 – D2"]);
     expect(tooltipFor(chart).querySelector(".orchid-charts-tooltip-row strong").textContent).toBe("24 hours");
     first.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(chart.point()).toEqual(chart.point(0));
@@ -64,17 +62,23 @@ describe("Timesheet Rendering", () => {
       }),
     );
     expect(chart.point(1)).toMatchObject({ label: "Build", color: "#AF52DE" });
+  });
 
+  it("keeps duration formatting when replacing task intervals", () => {
+    const chart = TimesheetChart.make("#chart")
+      .formatDuration((milliseconds) => `${milliseconds / 3_600_000} hours`)
+      .task({ label: "Build", start: "2026-09-02T00:00:00Z", end: "2026-09-04T00:00:00Z" })
+      .render();
     expect(
       chart.update({
-        tasks: [
-          { label: "Task 1", start: "2026-10-01T08:00:00Z", end: "2026-10-01T12:00:00Z" },
-        ],
+        tasks: [{ label: "Task 1", start: "2026-10-01T08:00:00Z", end: "2026-10-01T12:00:00Z" }],
       }),
     ).toBe(chart);
     expect(chart.element.querySelector(".orchid-charts-timesheet-task-label").textContent).toBe("Task 1");
     expect(chart.element.querySelector(".orchid-charts-timesheet-hit").dataset.tooltip).toContain("4 hours");
+  });
 
+  it("renders square task bars when radius is zero", () => {
     const square = TimesheetChart.make("#chart")
       .radius(0)
       .task({ label: "Task 1", start: "2026-10-01T08:00:00Z", end: "2026-10-01T12:00:00Z" })
@@ -113,71 +117,53 @@ describe("Timesheet Rendering", () => {
         .render(),
     ).toThrow("contain every task");
   });
-  it("adapts timesheet tick units and can hide all labels", () => {
-    const ranges = [
-      [
-        new Date("2026-01-01T00:00:00Z"),
-        new Date("2026-01-02T00:00:00Z"),
-      ],
-      [
-        "2026-01-01",
-        "2026-01-12",
-      ],
-      [
-        "2026-01-01",
-        "2027-01-01",
-      ],
-      [
-        "2020-01-01",
-        "2025-01-01",
-      ],
-      [
-        "2000-01-01",
-        "2020-01-01",
-      ],
-    ];
-    for (const [
-      index,
-      [
-        start,
-        end,
-      ],
-    ] of ranges.entries()) {
-      const chart = TimesheetChart.make("#chart")
-        .width(240)
-        .valueLabels(index !== 4)
-        .task({ label: `Task ${index + 1}`, start, end })
-        .render();
-      expect(chart.element.querySelectorAll(".orchid-charts-timesheet-bar")).toHaveLength(1);
-      if (index === 4) {
-        expect(chart.element.querySelector(".orchid-charts-timesheet-tick")).toBeNull();
-        expect(chart.element.querySelector(".orchid-charts-timesheet-task-label")).toBeNull();
-      }
-
-      if (index !== 4) {
-        expect(chart.element.querySelector(".orchid-charts-timesheet-tick")).not.toBeNull();
-      }
-      expect(chart.element.querySelector(".orchid-charts-timesheet-hit").dataset.tooltip).toMatch(
-        index === 0 ? /1 day/ : /days|year/,
-      );
-      chart.destroy();
-    }
-
-    const hours = TimesheetChart.make("#chart")
-      .task({ label: "Task", start: "2026-01-01T08:00:00Z", end: "2026-01-01T12:00:00Z" })
-      .render();
-    expect(hours.element.querySelector(".orchid-charts-timesheet-hit").dataset.tooltip).toContain("4 hours");
-
-    const bare = TimesheetChart.make("#chart")
-      .width(240)
-      .axes(false)
-      .grid(false)
-      .valueLabels(false)
-      .task({ label: "Task", start: "2026-01-01", end: "2026-01-02" })
-      .render();
-    expect(bare.element.querySelector(".orchid-charts-grid")).toBeNull();
-    expect(bare.element.querySelector(".orchid-charts-axis")).toBeNull();
-    expect(bare.element.querySelector("text")).toBeNull();
-    expect(bare.element.querySelector(".orchid-charts-timesheet-hit").getAttribute("x")).toBe("0");
+  it.each([
+    {
+      name: "one day",
+      start: new Date("2026-01-01T00:00:00Z"),
+      end: new Date("2026-01-02T00:00:00Z"),
+      duration: /1 day/,
+    },
+    { name: "eleven days", start: "2026-01-01", end: "2026-01-12", duration: /days|year/ },
+    { name: "one year", start: "2026-01-01", end: "2027-01-01", duration: /days|year/ },
+    { name: "five years", start: "2020-01-01", end: "2025-01-01", duration: /days|year/ },
+  ])("adapts tick units to $name", ({ start, end, duration }) => {
+    const chart = TimesheetChart.make("#chart").width(240).task({ label: "Task", start, end }).render();
+    expect(chart.element.querySelectorAll(".orchid-charts-timesheet-bar")).toHaveLength(1);
+    expect(chart.element.querySelector(".orchid-charts-timesheet-tick")).not.toBeNull();
+    expect(chart.element.querySelector(".orchid-charts-timesheet-hit").dataset.tooltip).toMatch(duration);
   });
+
+  it("hides tick and task labels on a twenty-year chart when value labels are disabled", () => {
+    const chart = TimesheetChart.make("#chart")
+      .width(240)
+      .valueLabels(false)
+      .task({ label: "Task 5", start: "2000-01-01", end: "2020-01-01" })
+      .render();
+    expect(chart.element.querySelectorAll(".orchid-charts-timesheet-bar")).toHaveLength(1);
+    expect(chart.element.querySelector(".orchid-charts-timesheet-tick")).toBeNull();
+    expect(chart.element.querySelector(".orchid-charts-timesheet-task-label")).toBeNull();
+    expect(chart.element.querySelector(".orchid-charts-timesheet-hit").dataset.tooltip).toMatch(/days|year/);
+  });
+});
+
+it("formats a four-hour duration by default", () => {
+  const hours = TimesheetChart.make("#chart")
+    .task({ label: "Task", start: "2026-01-01T08:00:00Z", end: "2026-01-01T12:00:00Z" })
+    .render();
+  expect(hours.element.querySelector(".orchid-charts-timesheet-hit").dataset.tooltip).toContain("4 hours");
+});
+
+it("removes axes, grids and text from a bare timesheet", () => {
+  const bare = TimesheetChart.make("#chart")
+    .width(240)
+    .axes(false)
+    .grid(false)
+    .valueLabels(false)
+    .task({ label: "Task", start: "2026-01-01", end: "2026-01-02" })
+    .render();
+  expect(bare.element.querySelector(".orchid-charts-grid")).toBeNull();
+  expect(bare.element.querySelector(".orchid-charts-axis")).toBeNull();
+  expect(bare.element.querySelector("text")).toBeNull();
+  expect(bare.element.querySelector(".orchid-charts-timesheet-hit").getAttribute("x")).toBe("0");
 });

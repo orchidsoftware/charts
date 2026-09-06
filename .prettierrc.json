@@ -1,5 +1,7 @@
 {
-  "plugins": ["prettier-plugin-multiline-arrays"],
+  "plugins": [
+    "prettier-plugin-multiline-arrays"
+  ],
   "objectWrap": "preserve",
   "printWidth": 110,
   "semi": true,
@@ -9,16 +11,34 @@
   "useTabs": false,
   "overrides": [
     {
-      "files": ["docs/**/*.md", "README.md"],
+      "files": [
+        "docs/**/*.md",
+        "README.md"
+      ],
       "options": {
         "embeddedLanguageFormatting": "off"
       }
     },
     {
-      "files": "*.{js,mjs,cjs}",
+      "files": [
+        "src/**/*.{js,mjs,cjs}",
+        "demo/**/*.{js,mjs,cjs}",
+        "scripts/**/*.{js,mjs,cjs}",
+        "*.config.js",
+        "ViteDemoConfig.js"
+      ],
       "options": {
         "multilineArraysLinePattern": "1",
         "multilineArraysWrapThreshold": 2
+      }
+    },
+    {
+      "files": [
+        "test/**/*.js",
+        "test-node/**/*.mjs"
+      ],
+      "options": {
+        "plugins": []
       }
     }
   ]

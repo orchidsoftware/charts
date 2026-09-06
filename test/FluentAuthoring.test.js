@@ -33,22 +33,16 @@ function annotationScopeMethod(scope, receiver) {
 describe("complete fluent authoring surface", () => {
   beforeEach(resetHost);
 
-  it("covers common, Cartesian, tooltip, axis, line, and annotation scopes", () => {
+  it("applies common presentation, tooltip and axis scopes before they expire", () => {
     let tooltipScope;
     let axisScope;
-    let markerScope;
-    let regionScope;
-    const select = vi.fn();
     const chart = LineChart.make("#chart")
       .title("Revenue")
       .description("Monthly revenue")
       .ariaLabel("Revenue chart")
       .width(600)
       .height(280)
-      .colors([
-        "#123456",
-        "#654321",
-      ])
+      .colors(["#123456", "#654321"])
       .legend(false)
       .axes(true)
       .grid(true)
@@ -71,6 +65,45 @@ describe("complete fluent authoring surface", () => {
       .area(true)
       .gradient({ fromOpacity: 0.5, toOpacity: 0.1 })
       .strokeWidth(4)
+      .labels(["A", "B"])
+      .dataset("Primary", [3, 7])
+      .onSelect(vi.fn())
+      .render();
+    expect(chart.element.getAttribute("aria-label")).toBe("Revenue chart");
+    expect(chart.element.getAttribute("viewBox")).toBe("0 0 600 280");
+    expectFailure(() => tooltipScope.formatValue(String), "Tooltip scope has expired");
+    expectFailure(() => axisScope.position("left"), "Y-axis scope has expired");
+    expectFailure(() => datasetScopeMethod(tooltipScope, {}), "Builder scope has expired");
+  });
+
+  it("applies dataset presentation overrides", () => {
+    const chart = LineChart.make("#chart")
+      .labels(["A", "B"])
+      .dataset("Primary", [3, 7], (dataset) =>
+        dataset
+          .color("#abcdef")
+          .opacity(0.8)
+          .formatValue((value) => `D:${value}`)
+          .gradient(false)
+          .smooth(true)
+          .dots(true)
+          .dotSize(6)
+          .line(true)
+          .area(false)
+          .strokeWidth(3),
+      )
+      .render();
+    expect(chart.point(1).values).toEqual([7]);
+    expect(chart.element.querySelector(".orchid-charts-line").getAttribute("stroke")).toBe("#abcdef");
+    expect(chart.element.querySelector(".orchid-charts-area")).toBeNull();
+  });
+
+  it("formats region and marker labels and expires their authoring scopes", () => {
+    let markerScope;
+    let regionScope;
+    const chart = LineChart.make("#chart")
+      .width(600)
+      .height(280)
       .marker("Goal", 8, (marker) => {
         markerScope = marker;
         marker
@@ -82,99 +115,44 @@ describe("complete fluent authoring surface", () => {
           .formatLabel((label) => `M:${label}`)
           .width(2)
           .lineStyle("dotted")
-          .dash([
-            2,
-            3,
-          ]);
+          .dash([2, 3]);
       })
-      .region(
-        "Band",
-        [
-          2,
-          6,
-        ],
-        (region) => {
-          regionScope = region;
-          region
-            .color("#0000ff")
-            .opacity(0.2)
-            .labelPosition("start")
-            .labelColor("#ffffff")
-            .includeInDomain(true)
-            .formatLabel((label) => `R:${label}`);
-        },
-      )
-      .labels([
-        "A",
-        "B",
-      ])
-      .dataset(
-        "Primary",
-        [
-          3,
-          7,
-        ],
-        (dataset) =>
-          dataset
-            .color("#abcdef")
-            .opacity(0.8)
-            .formatValue((value) => `D:${value}`)
-            .gradient(false)
-            .smooth(true)
-            .dots(true)
-            .dotSize(6)
-            .line(true)
-            .area(false)
-            .strokeWidth(3),
-      )
-      .onSelect(select)
+      .region("Band", [2, 6], (region) => {
+        regionScope = region;
+        region
+          .color("#0000ff")
+          .opacity(0.2)
+          .labelPosition("start")
+          .labelColor("#ffffff")
+          .includeInDomain(true)
+          .formatLabel((label) => `R:${label}`);
+      })
+      .labels(["A", "B"])
+      .dataset("Primary", [3, 7])
       .render();
-
-    expect(chart.element.getAttribute("aria-label")).toBe("Revenue chart");
-    expect(chart.element.getAttribute("viewBox")).toBe("0 0 600 280");
     expect(
-      [
-        ...chart.element.querySelectorAll(".orchid-charts-annotation"),
-      ].map((node) => node.textContent),
-    ).toEqual([
-      "R:Band",
-      "M:Goal",
-    ]);
+      [...chart.element.querySelectorAll(".orchid-charts-annotation")].map((node) => node.textContent),
+    ).toEqual(["R:Band", "M:Goal"]);
     expect(
-      [
-        ...chart.element.querySelectorAll(".orchid-charts-annotation"),
-      ].every(
+      [...chart.element.querySelectorAll(".orchid-charts-annotation")].every(
         (label) =>
           getComputedStyle(label).paintOrder === "stroke" && getComputedStyle(label).fontWeight === "500",
       ),
     ).toBe(true);
     expect(chart.element.querySelectorAll(".orchid-charts-annotation-background")).toHaveLength(0);
     expect(chart.element.querySelectorAll(".orchid-charts-annotation-sample")).toHaveLength(0);
-    expectFailure(() => tooltipScope.formatValue(String), "Tooltip scope has expired");
-    expectFailure(() => axisScope.position("left"), "Y-axis scope has expired");
     expectFailure(() => markerScope.width(1), "Marker scope has expired");
     expectFailure(() => regionScope.opacity(1), "Region scope has expired");
-    expectFailure(() => datasetScopeMethod(tooltipScope, {}), "Builder scope has expired");
     expectFailure(() => annotationScopeMethod(markerScope, {}), "Builder scope has expired");
   });
 
   it("covers bar, scatter, bubble, and every mixed dataset grammar", () => {
     const bar = BarChart.make("#chart")
-      .labels([
-        "A",
-        "B",
-      ])
+      .labels(["A", "B"])
       .horizontal(false)
       .stacked(false)
       .radius(3)
-      .dataset(
-        "Bars",
-        [
-          2,
-          4,
-        ],
-        "#123456",
-      )
+      .dataset("Bars", [2, 4], "#123456")
       .render();
     expect(bar.element.querySelectorAll(".orchid-charts-bar")).toHaveLength(2);
     bar.destroy();
@@ -182,13 +160,7 @@ describe("complete fluent authoring surface", () => {
     resetHost();
     const scatter = ScatterChart.make("#chart")
       .dots(true)
-      .dataset(
-        "Points",
-        [
-          { x: 1, y: 2 },
-        ],
-        (dataset) => dataset.color("#234567").opacity(0.6),
-      )
+      .dataset("Points", [{ x: 1, y: 2 }], (dataset) => dataset.color("#234567").opacity(0.6))
       .render();
     expect(scatter.point(0).x).toBe(1);
     scatter.destroy();
@@ -197,9 +169,7 @@ describe("complete fluent authoring surface", () => {
     const bubble = BubbleChart.make("#chart")
       .dataset({
         name: "Bubbles",
-        values: [
-          { x: 1, y: 2, r: 3 },
-        ],
+        values: [{ x: 1, y: 2, r: 3 }],
         color: "#345678",
       })
       .render();
@@ -208,43 +178,16 @@ describe("complete fluent authoring surface", () => {
 
     resetHost();
     const mixed = MixedChart.make("#chart")
-      .labels([
-        "A",
-        "B",
-      ])
+      .labels(["A", "B"])
       .gradient(false)
-      .line(
-        "Line",
-        [
-          2,
-          3,
-        ],
-        (dataset) => dataset.smooth(false),
-      )
-      .bar(
-        "Bar",
-        [
-          1,
-          2,
-        ],
-        (dataset) => dataset.radius(4),
-      )
-      .scatter(
-        "Scatter",
-        [
-          3,
-          4,
-        ],
-        (dataset) => dataset.opacity(0.5),
-      )
+      .line("Line", [2, 3], (dataset) => dataset.smooth(false))
+      .bar("Bar", [1, 2], (dataset) => dataset.radius(4))
+      .scatter("Scatter", [3, 4], (dataset) => dataset.opacity(0.5))
       .dataset(
         {
           chartType: "line",
           name: "Advanced",
-          values: [
-            4,
-            5,
-          ],
+          values: [4, 5],
         },
         (dataset) => dataset.line(false),
       )
@@ -256,19 +199,8 @@ describe("complete fluent authoring surface", () => {
     const renderers = [
       () =>
         PieChart.make("#chart")
-          .labels([
-            "A",
-            "B",
-            "C",
-          ])
-          .dataset(
-            [
-              1,
-              2,
-              3,
-            ],
-            "#123456",
-          )
+          .labels(["A", "B", "C"])
+          .dataset([1, 2, 3], "#123456")
           .maxSlices(2)
           .startAngle(-90)
           .padAngle(2)
@@ -276,16 +208,10 @@ describe("complete fluent authoring surface", () => {
           .render(),
       () =>
         DonutChart.make("#chart")
-          .labels([
-            "A",
-            "B",
-          ])
+          .labels(["A", "B"])
           .dataset(
             {
-              values: [
-                1,
-                2,
-              ],
+              values: [1, 2],
               color: "#234567",
             },
             (dataset) => dataset.opacity(0.7),
@@ -294,46 +220,10 @@ describe("complete fluent authoring surface", () => {
           .padAngle(1)
           .cornerRadius(2)
           .render(),
+      () => PercentageChart.make("#chart").labels(["A", "B"]).dataset([1, 2]).maxSlices(2).radius(5).render(),
       () =>
-        PercentageChart.make("#chart")
-          .labels([
-            "A",
-            "B",
-          ])
-          .dataset([
-            1,
-            2,
-          ])
-          .maxSlices(2)
-          .radius(5)
-          .render(),
-      () =>
-        PolarAreaChart.make("#chart")
-          .labels([
-            "A",
-            "B",
-          ])
-          .dataset([
-            1,
-            2,
-          ])
-          .padAngle(3)
-          .cornerRadius(4)
-          .render(),
-      () =>
-        RadarChart.make("#chart")
-          .labels([
-            "A",
-            "B",
-            "C",
-          ])
-          .dataset([
-            1,
-            2,
-            3,
-          ])
-          .strokeWidth(2)
-          .render(),
+        PolarAreaChart.make("#chart").labels(["A", "B"]).dataset([1, 2]).padAngle(3).cornerRadius(4).render(),
+      () => RadarChart.make("#chart").labels(["A", "B", "C"]).dataset([1, 2, 3]).strokeWidth(2).render(),
     ];
 
     for (const render of renderers) {
@@ -391,20 +281,10 @@ describe("complete fluent authoring surface", () => {
 
   it("covers explicit temporal tooltip switches and positional annotation colors", () => {
     const chart = LineChart.make("#chart")
-      .dataset([
-        1,
-        2,
-      ])
+      .dataset([1, 2])
       .frameless()
       .marker("Goal", 2, "#ff0000")
-      .region(
-        "Band",
-        [
-          0,
-          1,
-        ],
-        "#00ff00",
-      )
+      .region("Band", [0, 1], "#00ff00")
       .render();
     expect(chart.element.querySelector(".orchid-charts-marker").getAttribute("stroke")).toBe("#ff0000");
     chart.destroy();
@@ -424,23 +304,14 @@ describe("complete fluent authoring surface", () => {
 
   it("covers independently optional tooltip formatters and vertical multiline labels", () => {
     const line = LineChart.make("#chart")
-      .labels([
-        "A",
-      ])
-      .dataset([
-        1,
-      ])
-      .formatLabel(() => [
-        "First",
-        "Second",
-      ])
+      .labels(["A"])
+      .dataset([1])
+      .formatLabel(() => ["First", "Second"])
       .tooltip((tooltip) => tooltip.formatLabel((label) => `Tooltip ${label}`))
       .render();
-    expect(
-      [
-        ...line.element.querySelectorAll(".orchid-charts-label"),
-      ].at(-1).textContent,
-    ).toBe("First Second");
+    expect([...line.element.querySelectorAll(".orchid-charts-label")].at(-1).textContent).toBe(
+      "First Second",
+    );
     line.destroy();
 
     resetHost();
@@ -480,27 +351,10 @@ describe("complete fluent authoring surface", () => {
 
     vi.stubGlobal("ResizeObserver", FakeResizeObserver);
     const line = LineChart.make("#chart")
-      .dataset([
-        0,
-        1,
-      ])
+      .dataset([0, 1])
       .marker("Outside", 100, (marker) => marker.includeInDomain(false))
-      .region(
-        "Outside",
-        [
-          100,
-          200,
-        ],
-        (region) => region.includeInDomain(false),
-      )
-      .region(
-        "Below",
-        [
-          -200,
-          -100,
-        ],
-        (region) => region.includeInDomain(false),
-      )
+      .region("Outside", [100, 200], (region) => region.includeInDomain(false))
+      .region("Below", [-200, -100], (region) => region.includeInDomain(false))
       .gradient({ fromOpacity: 0.4 })
       .render();
     expect(line.element.querySelector(".orchid-charts-marker")).toBeNull();
@@ -518,22 +372,13 @@ describe("complete fluent authoring surface", () => {
     animationFrame.mockRestore();
     vi.stubGlobal("ResizeObserver", null);
     resetHost();
-    const fallback = LineChart.make("#chart")
-      .dataset([
-        1,
-        2,
-      ])
-      .render();
+    const fallback = LineChart.make("#chart").dataset([1, 2]).render();
     dispatchEvent(new Event("resize"));
     fallback.destroy();
     vi.stubGlobal("ResizeObserver", OriginalResizeObserver);
 
     resetHost();
-    const scatter = ScatterChart.make("#chart")
-      .dataset([
-        2,
-      ])
-      .render();
+    const scatter = ScatterChart.make("#chart").dataset([2]).render();
     expect(scatter.point(0).x).toBe(0);
     expect(scatter.point(9)).toBeUndefined();
     scatter.destroy();

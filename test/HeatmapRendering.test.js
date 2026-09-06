@@ -7,22 +7,27 @@ const tooltipFor = (chart) => chart.element.parentElement.querySelector(".orchid
 const widthOf = (chart) => chart.element.viewBox.baseVal.width;
 const heightOf = (chart) => chart.element.viewBox.baseVal.height;
 const series = {
-  labels: [
-    "A",
-    "B",
-    "C",
-  ],
+  labels: ["A", "B", "C"],
   datasets: [
     {
       name: "One",
-      values: [
-        2,
-        4,
-        -1,
-      ],
+      values: [2, 4, -1],
     },
   ],
 };
+const palette = [
+  "#f8f8f8",
+  "#e4f2ff",
+  "#cce5ff",
+  "#acd7ff",
+  "#8bc7ff",
+  "#67b5ff",
+  "#429fff",
+  "#2188e5",
+  "#126fbd",
+  "#084b83",
+];
+
 beforeEach(() => {
   document.body.innerHTML = '<div id="chart" style="width: 640px"></div>';
 });
@@ -33,9 +38,7 @@ describe("Heatmap Rendering", () => {
       .points({ "2026-09-01": 0, "2026-09-02": 0, "2026-09-03": 0, "2026-09-04": 0 })
       .render();
     const expectCompact = () => {
-      const cells = [
-        ...chart.element.querySelectorAll(".orchid-charts-heat-cell"),
-      ];
+      const cells = [...chart.element.querySelectorAll(".orchid-charts-heat-cell")];
       expect(cells).toHaveLength(4);
       for (const cell of cells) {
         expect(Number(cell.getAttribute("width"))).toBeLessThanOrEqual(32);
@@ -57,20 +60,8 @@ describe("Heatmap Rendering", () => {
     chart.destroy();
   });
 
-  it("normalizes heatmap dates, colors, updates, and invalid inputs", () => {
+  it("normalizes timestamp dates and paints the complete palette", () => {
     const stamp = Date.parse("2026-01-02T00:00:00Z") / 1000;
-    const palette = [
-      "#f8f8f8",
-      "#e4f2ff",
-      "#cce5ff",
-      "#acd7ff",
-      "#8bc7ff",
-      "#67b5ff",
-      "#429fff",
-      "#2188e5",
-      "#126fbd",
-      "#084b83",
-    ];
     const heatmap = HeatmapChart.make("#chart")
       .countLabel("events")
       .radius(4)
@@ -81,20 +72,13 @@ describe("Heatmap Rendering", () => {
       "2026-01-01: 1 events",
     );
     expect(heatmap.element.querySelector(".orchid-charts-heat-cell title")).toBeNull();
-    const cells = [
-      ...heatmap.element.querySelectorAll(".orchid-charts-heat-cell"),
-    ];
-    const swatches = [
-      ...heatmap.element.querySelectorAll(".orchid-charts-heat-legend-swatch"),
-    ];
+    const cells = [...heatmap.element.querySelectorAll(".orchid-charts-heat-cell")];
+    const swatches = [...heatmap.element.querySelectorAll(".orchid-charts-heat-legend-swatch")];
     expect(cells.every((cell) => cell.getAttribute("width") === cell.getAttribute("height"))).toBe(true);
     const cellSize = Number(cells[0].getAttribute("width"));
     expect(cells[0]).toHaveAttribute("x", "0");
     expect(Number(cells[0].getAttribute("y"))).toBeCloseTo(3 * (cellSize + 3));
-    expect(cells.map((cell) => cell.getAttribute("fill"))).toEqual([
-      palette[0],
-      palette.at(-1),
-    ]);
+    expect(cells.map((cell) => cell.getAttribute("fill"))).toEqual([palette[0], palette.at(-1)]);
     expect(swatches.map((swatch) => swatch.getAttribute("fill"))).toEqual(palette);
     const gridBottom = Math.max(
       ...cells.map((cell) => Number(cell.getAttribute("y")) + Number(cell.getAttribute("height"))),
@@ -112,9 +96,7 @@ describe("Heatmap Rendering", () => {
     dispatchEvent(new Event("resize"));
     expect(widthOf(heatmap)).toBe(180);
     expect(heatmap.element.style.minWidth).toBe("");
-    const resizedCells = [
-      ...heatmap.element.querySelectorAll(".orchid-charts-heat-cell"),
-    ];
+    const resizedCells = [...heatmap.element.querySelectorAll(".orchid-charts-heat-cell")];
     expect(resizedCells.every((cell) => cell.getAttribute("width") === cell.getAttribute("height"))).toBe(
       true,
     );
@@ -127,10 +109,15 @@ describe("Heatmap Rendering", () => {
     expect(heatmap.element.querySelector(".orchid-charts-heat-cell")).not.toBeNull();
     expect(heatmap.element.querySelectorAll(".orchid-charts-heat-legend-swatch")).toHaveLength(10);
     heatmap.destroy();
+  });
+
+  it("shows a legend for a single day", () => {
     const singleDay = HeatmapChart.make("#chart").points({ "2026-01-01": 2 }).render();
     expect(singleDay.element.querySelector(".orchid-charts-heat-legend")).not.toBeNull();
     singleDay.destroy();
+  });
 
+  it("fits a full year into a narrow host and selects individual days", () => {
     const year = Object.fromEntries(
       Array.from({ length: 365 }, (_, index) => [
         new Date(Date.UTC(2026, 0, index + 1)).toISOString().slice(0, 10),
@@ -144,15 +131,9 @@ describe("Heatmap Rendering", () => {
       .onSelect(onWeekSelect)
       .points(year)
       .render();
-    const narrowCells = [
-      ...narrow.element.querySelectorAll(".orchid-charts-heat-cell"),
-    ];
-    const narrowSwatches = [
-      ...narrow.element.querySelectorAll(".orchid-charts-heat-legend-swatch"),
-    ];
-    const weekHits = [
-      ...narrow.element.querySelectorAll(".orchid-charts-heat-week-hit"),
-    ];
+    const narrowCells = [...narrow.element.querySelectorAll(".orchid-charts-heat-cell")];
+    const narrowSwatches = [...narrow.element.querySelectorAll(".orchid-charts-heat-legend-swatch")];
+    const weekHits = [...narrow.element.querySelectorAll(".orchid-charts-heat-week-hit")];
     expect(narrow.element.parentElement).not.toHaveClass("orchid-charts-scrollable-heatmap");
     expect(narrow.element.getBoundingClientRect().width).toBe(
       narrow.element.parentElement.getBoundingClientRect().width,
@@ -180,14 +161,15 @@ describe("Heatmap Rendering", () => {
       }),
     );
     narrow.destroy();
+  });
+
+  it("packs a ten-color legend into a narrow single-day chart", () => {
     const compactLegend = HeatmapChart.make("#chart")
       .width(100)
       .colors(palette)
       .points({ "2026-01-01": 1 })
       .render();
-    const compactSwatches = [
-      ...compactLegend.element.querySelectorAll(".orchid-charts-heat-legend-swatch"),
-    ];
+    const compactSwatches = [...compactLegend.element.querySelectorAll(".orchid-charts-heat-legend-swatch")];
     expect(compactLegend.element.parentElement).not.toHaveClass("orchid-charts-scrollable-heatmap");
     expect(
       Number(compactSwatches[1].getAttribute("x")) -
@@ -195,10 +177,17 @@ describe("Heatmap Rendering", () => {
         Number(compactSwatches[0].getAttribute("width")),
     ).toBeCloseTo(0);
     compactLegend.destroy();
+  });
+
+  it("reserves legend space beneath a full-year grid", () => {
+    const year = Object.fromEntries(
+      Array.from({ length: 365 }, (_, index) => [
+        new Date(Date.UTC(2026, 0, index + 1)).toISOString().slice(0, 10),
+        index,
+      ]),
+    );
     const tall = HeatmapChart.make("#chart").points(year).render();
-    const tallCells = [
-      ...tall.element.querySelectorAll(".orchid-charts-heat-cell"),
-    ];
+    const tallCells = [...tall.element.querySelectorAll(".orchid-charts-heat-cell")];
     const tallGridBottom = Math.max(
       ...tallCells.map((cell) => Number(cell.getAttribute("y")) + Number(cell.getAttribute("height"))),
     );
@@ -209,6 +198,9 @@ describe("Heatmap Rendering", () => {
     ).toBe(12);
     expect(heightOf(tall)).toBeGreaterThan(280);
     tall.destroy();
+  });
+
+  it("rejects invalid dates, values, ranges, and empty palettes", () => {
     expect(() =>
       HeatmapChart.make("#chart")
         .range(new Date("2026-02-01"), new Date("2026-01-01"))
@@ -223,11 +215,7 @@ describe("Heatmap Rendering", () => {
         .labels(series.labels)
         .dataset({
           name: "One",
-          values: [
-            2,
-            4,
-            -1,
-          ],
+          values: [2, 4, -1],
         })
         .render(),
     ).toThrow("colors");

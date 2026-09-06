@@ -5,10 +5,7 @@ import SvgSurface from "../../src/renderers/SvgSurface.js";
 import { chartMark } from "../../src/support/ChartMark.js";
 import { svg } from "../../src/support/Dom.js";
 
-it.each([
-  true,
-  false,
-])("links an explicit visual peer independently of append order: %s", (hitFirst) => {
+it.each([true, false])("links an explicit visual peer independently of append order: %s", (hitFirst) => {
   const root = svg("svg");
   const surface = new SvgSurface(root);
   const visual = svg("circle", { cx: 10, cy: 10, r: 3 });
@@ -31,9 +28,7 @@ it.each([
     surface.append(visual);
   }
   const controller = new InteractionController(
-    [
-      hit,
-    ],
+    [hit],
     { root },
     {
       labelFor: (element) => chartMark(element).label,

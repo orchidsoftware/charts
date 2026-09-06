@@ -1,0 +1,119 @@
+{
+  "date": "2026-09-06",
+  "environment": {
+    "os": "macOS",
+    "arch": "arm64",
+    "node": "26.3.0",
+    "vitest": "4.1.11",
+    "playwright": "1.62.1",
+    "browser": "headless Chromium",
+    "coverage": false
+  },
+  "baselineCommit": "1e42ebe",
+  "afterState": "working tree after test refactor, before parallel Why Orchid demo edits at 17:07 Moscow",
+  "method": "Three sequential runs per command on the same machine; Vitest-reported duration. Baseline includes one timeout. Fast is a smaller scope. No remote CI timing claims.",
+  "series": {
+    "before": {
+      "command": "npm test",
+      "medianSeconds": 47.68,
+      "runs": [
+        {
+          "run": 1,
+          "seconds": 47.68,
+          "tests": 506,
+          "passed": 506,
+          "failed": []
+        },
+        {
+          "run": 2,
+          "seconds": 55.11,
+          "tests": 506,
+          "passed": 505,
+          "failed": [
+            "hits both sides of every axis regardless of the overlapping profiles"
+          ]
+        },
+        {
+          "run": 3,
+          "seconds": 42.64,
+          "tests": 506,
+          "passed": 506,
+          "failed": []
+        }
+      ]
+    },
+    "after": {
+      "command": "npm run test:all",
+      "medianSeconds": 42.76,
+      "runs": [
+        {
+          "run": 1,
+          "seconds": 39.55,
+          "tests": 652,
+          "passed": 652,
+          "failed": []
+        },
+        {
+          "run": 2,
+          "seconds": 42.76,
+          "tests": 652,
+          "passed": 652,
+          "failed": []
+        },
+        {
+          "run": 3,
+          "seconds": 61.87,
+          "tests": 652,
+          "passed": 652,
+          "failed": []
+        }
+      ]
+    },
+    "fast": {
+      "command": "npm test",
+      "medianSeconds": 12.74,
+      "runs": [
+        {
+          "run": 1,
+          "seconds": 14.59,
+          "tests": 416,
+          "passed": 416,
+          "failed": []
+        },
+        {
+          "run": 2,
+          "seconds": 8.31,
+          "tests": 416,
+          "passed": 416,
+          "failed": []
+        },
+        {
+          "run": 3,
+          "seconds": 12.74,
+          "tests": 416,
+          "passed": 416,
+          "failed": []
+        }
+      ]
+    }
+  },
+  "qualityGate": {
+    "name": "check-final",
+    "exitCode": 0,
+    "wallSeconds": 98.86
+  },
+  "shuffledVerification": {
+    "command": "npm run test:all -- --sequence.shuffle.tests --sequence.seed=106",
+    "seconds": 45.01,
+    "tests": 652,
+    "passed": 652,
+    "note": "The visual baseline tour explicitly retains its capture order."
+  },
+  "laterWorkingTreeVerification": {
+    "command": "npm run test:visual",
+    "time": "2026-09-06 17:11 Europe/Moscow",
+    "passed": 24,
+    "failed": 87,
+    "context": "Parallel README and demo changes arrived after all recorded successful runs. Current visual gate fails against the unchanged references."
+  }
+}

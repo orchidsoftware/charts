@@ -4,30 +4,9 @@ import { page, userEvent } from "vitest/browser";
 import { RadarChart } from "../src/index.js";
 import "../src/styles.css";
 
-const labels = [
-  "Performance",
-  "Battery",
-  "Camera",
-  "Display",
-  "Portability",
-  "Value",
-];
-const current = [
-  92,
-  84,
-  89,
-  91,
-  76,
-  72,
-];
-const previous = [
-  74,
-  77,
-  71,
-  78,
-  84,
-  81,
-];
+const labels = ["Performance", "Battery", "Camera", "Display", "Portability", "Value"];
+const current = [92, 84, 89, 91, 76, 72];
+const previous = [74, 77, 71, 78, 84, 81];
 const tooltip = () => document.querySelector(".orchid-charts-tooltip");
 
 function phoneChart() {
@@ -39,11 +18,7 @@ function phoneChart() {
 }
 
 function tap(mark) {
-  for (const type of [
-    "pointerdown",
-    "pointerup",
-    "pointerleave",
-  ]) {
+  for (const type of ["pointerdown", "pointerup", "pointerleave"]) {
     mark.dispatchEvent(new PointerEvent(type, { bubbles: true, pointerType: "touch" }));
   }
 }
@@ -60,14 +35,8 @@ it("hits both sides of every axis regardless of the overlapping profiles", async
   const line = marks[0].querySelector("line");
   const center = { x: Number(line.getAttribute("x1")), y: Number(line.getAttribute("y1")) };
   const radius = center.y - Number(line.getAttribute("y2"));
-  for (const [
-    index,
-    label,
-  ] of labels.entries()) {
-    for (const offset of [
-      -0.3,
-      0.3,
-    ]) {
+  for (const [index, label] of labels.entries()) {
+    for (const offset of [-0.3, 0.3]) {
       const angle = -Math.PI / 2 + (index * Math.PI) / 3 + offset;
       const position = {
         x: center.x + Math.cos(angle) * radius * 0.6,
@@ -77,11 +46,7 @@ it("hits both sides of every axis regardless of the overlapping profiles", async
       await page.elementLocator(chart.element).hover({ position });
       expect(tooltip().hidden).toBe(false);
       expect(tooltip().querySelector(".orchid-charts-tooltip-heading").textContent).toBe(label);
-      expect(
-        [
-          ...tooltip().querySelectorAll("strong"),
-        ].map((node) => node.textContent),
-      ).toEqual([
+      expect([...tooltip().querySelectorAll("strong")].map((node) => node.textContent)).toEqual([
         String(current[index]),
         String(previous[index]),
       ]);
@@ -102,11 +67,7 @@ it("pins completed taps, switches measures and dismisses outside without treatin
   expect(tooltip().textContent).toContain("Camera");
   document.body.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "touch" }));
   expect(tooltip().hidden).toBe(true);
-  for (const type of [
-    "pointerdown",
-    "pointercancel",
-    "pointerup",
-  ]) {
+  for (const type of ["pointerdown", "pointercancel", "pointerup"]) {
     marks[3].dispatchEvent(new PointerEvent(type, { bubbles: true, pointerType: "touch" }));
   }
   expect(tooltip().hidden).toBe(true);
@@ -120,10 +81,7 @@ it("reads every named pair from one tab stop and closes a focus preview with Esc
   document.body.prepend(start);
   start.focus();
   await userEvent.tab();
-  for (const [
-    index,
-    label,
-  ] of labels.entries()) {
+  for (const [index, label] of labels.entries()) {
     expect(document.activeElement).toBe(marks[index]);
     expect(marks[index].getAttribute("aria-label")).toContain(`${label} — Current phone: ${current[index]}`);
     expect(marks[index].getAttribute("aria-label")).toContain(`Previous phone: ${previous[index]}`);
@@ -148,10 +106,7 @@ it("preserves measure selection and formatter identity after update", () => {
   mark.dispatchEvent(new MouseEvent("click", { bubbles: true }));
   expect(onSelect.mock.lastCall[0]).toMatchObject({
     label: "Battery",
-    values: [
-      84,
-      77,
-    ],
+    values: [84, 77],
   });
   expect(tooltip().querySelector("strong").textContent).toBe("Current phone: 84");
   expect(formatter).toHaveBeenCalledWith(
@@ -170,36 +125,32 @@ it("preserves measure selection and formatter identity after update", () => {
   expect(chart.point()).toEqual({
     index: 1,
     label: "Battery",
-    values: [
-      85,
-      77,
-    ],
+    values: [85, 77],
   });
   expect(tooltip().querySelector("strong").textContent).toBe("Current phone: 85");
 });
 
-it.each([
-  240,
-  320,
-  390,
-])("keeps every pair inside a %ipx chart without obscuring the legend", async (width) => {
-  document.querySelector("#chart").style.width = `${width}px`;
-  const chart = phoneChart().render();
-  const hostBox = document.querySelector("#chart").getBoundingClientRect();
-  const legendBox = chart.element.querySelector(".orchid-charts-legend-group").getBoundingClientRect();
-  for (const mark of chart.element.querySelectorAll(".orchid-charts-radar-axis")) {
-    mark.focus();
-    const box = tooltip().getBoundingClientRect();
-    expect(box.left).toBeGreaterThanOrEqual(hostBox.left);
-    expect(box.right).toBeLessThanOrEqual(hostBox.right);
-    expect(box.top).toBeGreaterThanOrEqual(hostBox.top);
-    expect(box.bottom).toBeLessThan(legendBox.top);
-    expect(tooltip().scrollHeight).toBeLessThanOrEqual(tooltip().clientHeight);
-  }
-  await expect
-    .element(page.elementLocator(document.querySelector("#chart")))
-    .toMatchScreenshot(`phone-comparison-${width}`);
-});
+it.each([240, 320, 390])(
+  "keeps every pair inside a %ipx chart without obscuring the legend",
+  async (width) => {
+    document.querySelector("#chart").style.width = `${width}px`;
+    const chart = phoneChart().render();
+    const hostBox = document.querySelector("#chart").getBoundingClientRect();
+    const legendBox = chart.element.querySelector(".orchid-charts-legend-group").getBoundingClientRect();
+    for (const mark of chart.element.querySelectorAll(".orchid-charts-radar-axis")) {
+      mark.focus();
+      const box = tooltip().getBoundingClientRect();
+      expect(box.left).toBeGreaterThanOrEqual(hostBox.left);
+      expect(box.right).toBeLessThanOrEqual(hostBox.right);
+      expect(box.top).toBeGreaterThanOrEqual(hostBox.top);
+      expect(box.bottom).toBeLessThan(legendBox.top);
+      expect(tooltip().scrollHeight).toBeLessThanOrEqual(tooltip().clientHeight);
+    }
+    await expect
+      .element(page.elementLocator(document.querySelector("#chart")))
+      .toMatchScreenshot(`phone-comparison-${width}`);
+  },
+);
 
 it("keeps long similar names distinct at enlarged text size", () => {
   document.querySelector("#chart").style.width = "280px";
@@ -218,10 +169,7 @@ it("keeps long similar names distinct at enlarged text size", () => {
   expect(tooltip().scrollHeight).toBeLessThanOrEqual(tooltip().clientHeight);
 });
 
-it.each([
-  1,
-  2,
-])("inspects %i measures even when all values overlap at zero", async (count) => {
+it.each([1, 2])("inspects %i measures even when all values overlap at zero", async (count) => {
   const chart = RadarChart.make("#chart")
     .labels(labels.slice(0, count))
     .dataset(
@@ -237,12 +185,5 @@ it.each([
   expect(marks).toHaveLength(count);
   await page.elementLocator(chart.element).hover({ position: { x: 195, y: 60 } });
   expect(tooltip().hidden).toBe(false);
-  expect(
-    [
-      ...tooltip().querySelectorAll("strong"),
-    ].map((node) => node.textContent),
-  ).toEqual([
-    "0",
-    "0",
-  ]);
+  expect([...tooltip().querySelectorAll("strong")].map((node) => node.textContent)).toEqual(["0", "0"]);
 });

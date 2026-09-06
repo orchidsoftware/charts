@@ -2,7 +2,11 @@
 
 Install the locked dependency graph with `npm ci`, then run `npm run check`
 before opening a change. Use `npm run dev` for the demo and `npm run test:watch`
-for a fast feedback loop.
+for a fast feedback loop. `npm test` runs pure Node policies and compact Chromium
+contracts. `npm run test:all` includes site, visuals, real input, and isolated
+performance; `npm run check` also enforces coverage, cross-browser compatibility,
+types, lint, and package contracts. See [Testing](./maintainers/TESTING.md) for the
+complete command map and test readability rules.
 
 The demo serves documentation at `/docs/`, generated from the Markdown files in
 `docs`. Run `npm run build:demo` to build both the demo and static documentation
@@ -15,7 +19,7 @@ uses the sidebar and the demo's chart gallery instead of separate overview pages
 
 ```bash
 npm ci
-npx playwright install chromium
+npx playwright install chromium firefox webkit
 npm run check
 ```
 

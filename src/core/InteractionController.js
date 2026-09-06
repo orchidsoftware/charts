@@ -172,7 +172,11 @@ export default class InteractionController {
 
     if (this.#previewable) {
       this.#listen(root, "mousemove", (event) => this.#previewMove(event));
-      this.#listen(root, "mouseleave", () => this.#restoreSelection());
+      this.#listen(root, "mouseleave", () => {
+        if (!this.#touchPendingItem && !this.#touchPreviewItem) {
+          this.#restoreSelection();
+        }
+      });
     }
 
     this.#listen(root.ownerDocument, "pointerdown", (event) => {
@@ -191,7 +195,7 @@ export default class InteractionController {
    * @returns {void} The matching mark is previewed or its tooltip is hidden.
    */
   #previewMove(event) {
-    if (event.sourceCapabilities?.firesTouchEvents) {
+    if (this.#touchPendingItem || this.#touchPreviewItem || event.sourceCapabilities?.firesTouchEvents) {
       return;
     }
 

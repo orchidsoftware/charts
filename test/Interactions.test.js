@@ -754,8 +754,16 @@ describe("shared chart interaction contract", () => {
     chart.destroy();
   });
 
-  it("keeps a tooltip-only touch preview pinned after the pointer leaves", () => {
-    const chart = PieChart.make("#chart")
+  it.each([
+    LineChart,
+    BarChart,
+    PieChart,
+    DonutChart,
+    RadarChart,
+    PercentageChart,
+    PolarAreaChart,
+  ])("keeps a tooltip-only touch preview pinned after the pointer leaves (%s)", (ChartType) => {
+    const chart = ChartType.make("#chart")
       .labels([
         "Direct",
         "Search",
@@ -778,6 +786,7 @@ describe("shared chart interaction contract", () => {
       value: { firesTouchEvents: true },
     });
     first.dispatchEvent(emulatedMouseMove);
+    first.dispatchEvent(new MouseEvent("mousemove", { bubbles: true }));
     first.dispatchEvent(new PointerEvent("pointercancel", { pointerType: "touch" }));
     expect(first).not.toHaveClass("is-hovered");
     expect(tooltipFor(chart).hidden).toBe(true);
@@ -790,11 +799,21 @@ describe("shared chart interaction contract", () => {
     expect(tooltipFor(chart).hidden).toBe(false);
     expect(tooltipFor(chart).textContent).toContain("Direct");
 
+    // Compatibility mouse events may omit sourceCapabilities (for example in WebKit).
+    chart.element.dispatchEvent(new MouseEvent("mousemove", { bubbles: true }));
+    chart.element.dispatchEvent(new MouseEvent("mouseleave"));
+    expect(first).toHaveClass("is-hovered");
+    expect(tooltipFor(chart).hidden).toBe(false);
+
     second.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "touch" }));
     second.dispatchEvent(new PointerEvent("pointerup", { pointerType: "touch" }));
     expect(first).not.toHaveClass("is-hovered");
     expect(second).toHaveClass("is-hovered");
     expect(tooltipFor(chart).textContent).toContain("Search");
+
+    chart.element.dispatchEvent(new MouseEvent("mouseleave"));
+    expect(second).toHaveClass("is-hovered");
+    expect(tooltipFor(chart).hidden).toBe(false);
 
     document.body.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "touch" }));
     expect(second).not.toHaveClass("is-hovered");

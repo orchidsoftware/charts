@@ -1,6 +1,32 @@
 @import url("../src/styles.css");
 @import url("./site.css");
 
+/* Reserve chart content before the rendering module loads. */
+.demo-chart::before {
+  display: block;
+  height: var(--demo-chart-height);
+  content: "";
+}
+
+.demo-chart:has(> svg)::before {
+  display: none;
+}
+
+.gallery > article > header:not(:has(.example-code-actions))::after,
+.spark-grid > article > header:not(:has(.example-code-actions))::after {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  margin-left: 12px;
+  content: "";
+}
+
+.spark-grid > article > header:not(:has(.example-code-actions))::after {
+  grid-row: 1;
+  grid-column: 2;
+  margin-left: 0;
+}
+
 /* Hero and primary actions */
 
 .hero {
@@ -743,20 +769,122 @@ article header strong {
 }
 
 .selection-status {
-  min-height: 18px;
-  margin: 8px 4px 0;
-  font-size: 12px;
-  line-height: 1.45;
+  display: grid;
+  grid-template-columns: minmax(112px, 0.8fr) minmax(0, 3fr);
+  gap: 24px;
+  padding-top: 16px;
+  margin-top: 12px;
+  color: var(--charts2-demo-ink);
+  border-top: 1px solid var(--charts2-demo-border);
+}
+
+.selection-status-label,
+.selection-status-values dt {
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--charts2-demo-muted);
 }
 
-.selection-status:empty {
-  display: none;
+.selection-status-summary,
+.selection-status-values dd {
+  margin: 4px 0 0;
+  font-size: 20px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+}
+
+.selection-status-values {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+
+@media (width <= 600px) {
+  .selection-status {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .selection-status-period {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+  }
+
+  .selection-status-summary {
+    margin: 0;
+    font-size: 15px;
+  }
+}
+
+@media (width <= 360px) {
+  .selection-status-values dt {
+    min-height: 3em;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .selection-status {
+    border-color: var(--charts2-demo-ink);
+  }
 }
 
 #heatmap {
   width: 100%;
   max-width: 100%;
+  container-type: inline-size;
+}
+
+/* The 2026 calendar has 53 weeks. Match its balanced bands of 16px cells
+   with 3px gaps, seven day rows per band, and 25px for the legend. */
+#heatmap::before {
+  --calendar-columns: 9;
+  --calendar-rows: 42;
+
+  display: block;
+  height: calc(var(--calendar-rows) * min(35px, (100cqw + 3px) / var(--calendar-columns)) + 22px);
+  content: "";
+}
+
+#heatmap:has(> svg)::before {
+  display: none;
+}
+
+@container (min-width: 206px) {
+  #heatmap::before {
+    --calendar-columns: 11;
+    --calendar-rows: 35;
+  }
+}
+
+@container (min-width: 263px) {
+  #heatmap::before {
+    --calendar-columns: 14;
+    --calendar-rows: 28;
+  }
+}
+
+@container (min-width: 339px) {
+  #heatmap::before {
+    --calendar-columns: 18;
+    --calendar-rows: 21;
+  }
+}
+
+@container (min-width: 510px) {
+  #heatmap::before {
+    --calendar-columns: 27;
+    --calendar-rows: 14;
+  }
+}
+
+@container (min-width: 1004px) {
+  #heatmap::before {
+    --calendar-columns: 53;
+    --calendar-rows: 7;
+  }
 }
 
 /* Compact charts */

@@ -30,7 +30,7 @@
           <a href="#supported-charts">Chart Types</a>
           <a href="/docs/">Docs</a>
           <a href="https://github.com/orchidsoftware/charts">GitHub</a>
-          <a class="header-cta" href="#install">Get Started</a>
+          <a class="header-cta" href="/docs/getting-started.html">Get Started</a>
         </nav>
       </header>
 
@@ -44,7 +44,7 @@
               into a project. One small API covers trends, comparisons, composition, activity, and planning.
             </p>
             <div class="actions">
-              <a class="primary-action" href="#install">Start building</a>
+              <a class="primary-action" href="/docs/getting-started.html">Start building</a>
               <button id="shuffle" class="text-action">Refresh the demo ↻</button>
             </div>
           </div>
@@ -82,7 +82,7 @@
                 <div class="preview-chart-title">
                   <strong>Revenue and plan</strong><span>USD, thousands</span>
                 </div>
-                <div id="hero-revenue"></div>
+                <div id="hero-revenue" class="demo-chart" style="--demo-chart-height: 220px"></div>
                 <div class="preview-footer">
                   <span><i class="preview-key preview-key-current" aria-hidden="true"></i>Revenue</span>
                   <span><i class="preview-key preview-key-plan" aria-hidden="true"></i>Plan</span>
@@ -309,7 +309,27 @@
                 <h2>App Store Downloads</h2>
               </div>
             </header>
-            <div id="line"></div>
+            <div id="line" class="demo-chart" style="--demo-chart-height: 320px"></div>
+            <div class="selection-status" role="status" aria-live="polite" aria-atomic="true">
+              <div class="selection-status-period">
+                <span class="selection-status-label">Latest month</span>
+                <p class="selection-status-summary">Dec</p>
+              </div>
+              <dl class="selection-status-values">
+                <div>
+                  <dt>Downloads</dt>
+                  <dd>116k</dd>
+                </div>
+                <div>
+                  <dt>Plan</dt>
+                  <dd>86k</dd>
+                </div>
+                <div>
+                  <dt>Previous year</dt>
+                  <dd>59k</dd>
+                </div>
+              </dl>
+            </div>
           </article>
           <article>
             <header>
@@ -318,7 +338,7 @@
                 <h2>Subscription Growth</h2>
               </div>
             </header>
-            <div id="line-gradient"></div>
+            <div id="line-gradient" class="demo-chart" style="--demo-chart-height: 300px"></div>
           </article>
           <article>
             <header>
@@ -327,7 +347,7 @@
                 <h2>Healthy Latency Range</h2>
               </div>
             </header>
-            <div id="line-region"></div>
+            <div id="line-region" class="demo-chart" style="--demo-chart-height: 280px"></div>
           </article>
           <article>
             <header>
@@ -336,7 +356,7 @@
                 <h2>Activation Target</h2>
               </div>
             </header>
-            <div id="line-marker"></div>
+            <div id="line-marker" class="demo-chart" style="--demo-chart-height: 280px"></div>
           </article>
           <article>
             <header>
@@ -345,7 +365,7 @@
                 <h2>Store Visits, Plan, and Capacity</h2>
               </div>
             </header>
-            <div id="mixed"></div>
+            <div id="mixed" class="demo-chart" style="--demo-chart-height: 300px"></div>
           </article>
           <article>
             <header>
@@ -354,7 +374,7 @@
                 <h2>Account Balance Movement</h2>
               </div>
             </header>
-            <div id="mixed-signed"></div>
+            <div id="mixed-signed" class="demo-chart" style="--demo-chart-height: 300px"></div>
           </article>
           <article id="timesheet-card">
             <header>
@@ -363,7 +383,7 @@
                 <h2>App Release Plan</h2>
               </div>
             </header>
-            <div id="timesheet"></div>
+            <div id="timesheet" class="demo-chart" style="--demo-chart-height: 300px"></div>
           </article>
         </div>
       </section>
@@ -381,7 +401,7 @@
                 <h2>Notifications by App</h2>
               </div>
             </header>
-            <div id="bar-vertical"></div>
+            <div id="bar-vertical" class="demo-chart" style="--demo-chart-height: 220px"></div>
           </article>
           <article>
             <header>
@@ -390,7 +410,7 @@
                 <h2>Delivery Time by Region</h2>
               </div>
             </header>
-            <div id="bar-horizontal"></div>
+            <div id="bar-horizontal" class="demo-chart" style="--demo-chart-height: 250px"></div>
           </article>
           <article>
             <header>
@@ -399,7 +419,7 @@
                 <h2>Order Fulfillment</h2>
               </div>
             </header>
-            <div id="bar-horizontal-stacked"></div>
+            <div id="bar-horizontal-stacked" class="demo-chart" style="--demo-chart-height: 250px"></div>
           </article>
           <article>
             <header>
@@ -408,7 +428,7 @@
                 <h2>Price and Battery Life</h2>
               </div>
             </header>
-            <div id="scatter"></div>
+            <div id="scatter" class="demo-chart" style="--demo-chart-height: 260px"></div>
           </article>
           <article>
             <header>
@@ -417,7 +437,7 @@
                 <h2>App Portfolio</h2>
               </div>
             </header>
-            <div id="bubble"></div>
+            <div id="bubble" class="demo-chart" style="--demo-chart-height: 300px"></div>
           </article>
           <article>
             <header>
@@ -426,7 +446,7 @@
                 <h2>Phone Comparison</h2>
               </div>
             </header>
-            <div id="radar"></div>
+            <div id="radar" class="demo-chart" style="--demo-chart-height: 320px"></div>
           </article>
         </div>
       </section>
@@ -444,7 +464,7 @@
                 <h2>Screen Time</h2>
               </div>
             </header>
-            <div id="polar"></div>
+            <div id="polar" class="demo-chart" style="--demo-chart-height: 280px"></div>
           </article>
           <article>
             <header>
@@ -453,7 +473,7 @@
                 <h2>Website Traffic</h2>
               </div>
             </header>
-            <div id="pie"></div>
+            <div id="pie" class="demo-chart" style="--demo-chart-height: 260px"></div>
           </article>
           <article>
             <header>
@@ -462,7 +482,7 @@
                 <h2>Subscription Plans</h2>
               </div>
             </header>
-            <div id="donut"></div>
+            <div id="donut" class="demo-chart" style="--demo-chart-height: 260px"></div>
           </article>
           <article class="percentage-card">
             <header>
@@ -471,7 +491,7 @@
                 <h2>iPhone Storage</h2>
               </div>
             </header>
-            <div id="percentage"></div>
+            <div id="percentage" class="demo-chart" style="--demo-chart-height: 80px"></div>
           </article>
           <article class="wide">
             <header>
@@ -497,17 +517,17 @@
         <div class="spark-grid">
           <article>
             <header><span>Revenue · line</span><strong>$84k</strong></header>
-            <div id="spark-line"></div>
+            <div id="spark-line" class="demo-chart" style="--demo-chart-height: 90px"></div>
           </article>
           <article>
             <header><span>Users · area</span><strong>12.8k</strong></header>
-            <div id="spark-area"></div>
+            <div id="spark-area" class="demo-chart" style="--demo-chart-height: 90px"></div>
           </article>
           <article>
             <header>
               <span>Deploys · bar</span><strong>248 <small>in 12 months</small></strong>
             </header>
-            <div id="spark-bar"></div>
+            <div id="spark-bar" class="demo-chart" style="--demo-chart-height: 90px"></div>
           </article>
         </div>
       </section>

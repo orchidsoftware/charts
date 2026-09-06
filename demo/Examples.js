@@ -24,23 +24,60 @@ function formatDemoValue(value) {
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(value);
 }
 
-function selectionReporter(selector) {
+/**
+ * Keeps the featured chart summary in sync with selection and refreshed data.
+ *
+ * @param {string} selector - Chart host selector.
+ * @param {object} source - Initial monthly series.
+ * @returns {object} Selection and data update callbacks.
+ */
+export function selectionReporter(selector, source) {
   const host = document.querySelector(selector);
-  const status = document.createElement("p");
-  status.className = "selection-status";
+  let status = host.nextElementSibling;
+  if (!status?.matches(".selection-status")) {
+    status = document.createElement("div");
+    status.className = "selection-status";
+    status.innerHTML = `
+      <div class="selection-status-period">
+        <span class="selection-status-label">Latest month</span>
+        <p class="selection-status-summary">Dec</p>
+      </div>
+      <dl class="selection-status-values">
+        <div><dt>Downloads</dt><dd>116k</dd></div>
+        <div><dt>Plan</dt><dd>86k</dd></div>
+        <div><dt>Previous year</dt><dd>59k</dd></div>
+      </dl>`;
+    host.after(status);
+  }
+  status.setAttribute("role", "status");
   status.setAttribute("aria-live", "polite");
-  host.after(status);
-  return (detail) => {
-    const series = detail.dataset ? `${detail.dataset} · ` : "";
-    const label = detail.label ?? detail.key ?? `Point ${detail.index + 1}`;
-    const value =
-      detail.value === undefined
-        ? detail.values
-            ?.filter((item) => item !== undefined)
-            .map((item) => formatDemoValue(item))
-            .join(", ")
-        : formatDemoValue(detail.value);
-    status.textContent = `${series}${label}: ${value}`;
+  status.setAttribute("aria-atomic", "true");
+  const label = status.querySelector(".selection-status-label");
+  const summary = status.querySelector(".selection-status-summary");
+  const values = status.querySelectorAll("dd");
+  let currentSource = source;
+  let selectedIndex = null;
+  const render = () => {
+    const index = selectedIndex ?? currentSource.labels.length - 1;
+    label.textContent = selectedIndex === null ? "Latest month" : "Selected month";
+    summary.textContent = currentSource.labels[index];
+    for (const [
+      datasetIndex,
+      value,
+    ] of values.entries()) {
+      value.textContent = `${formatDemoValue(currentSource.datasets[datasetIndex].values[index])}k`;
+    }
+  };
+  render();
+  return {
+    select(detail) {
+      selectedIndex = detail?.index ?? null;
+      render();
+    },
+    update(data) {
+      currentSource = data;
+      render();
+    },
   };
 }
 
@@ -118,6 +155,7 @@ function lineExample() {
       },
     ],
   };
+  const selection = selectionReporter("#line", data);
   const chart = LineChart.make("#line")
     .labels(data.labels)
     .dataset(data.datasets[0])
@@ -129,12 +167,13 @@ function lineExample() {
       "Downloads trend upward across the year; values are shown in thousands and the plan and previous-year series provide context.",
     )
     .tooltip((tooltip) => tooltip.formatValue((value) => `${formatDemoValue(value)}k`))
-    .onSelect(selectionReporter("#line"))
+    .onSelect(selection.select)
     .render();
 
   return {
     chart,
     source: data,
+    onUpdate: selection.update,
   };
 }
 

@@ -145,19 +145,21 @@ function varyValue(value) {
 }
 
 document.querySelector("#shuffle")?.addEventListener("click", () => {
-  for (const { chart, source } of [
+  for (const { chart, source, onUpdate } of [
     ...updatableCharts,
     ...sparks,
   ]) {
     if (!source.datasets) {
       continue;
     }
-    chart.update({
+    const updated = {
       ...source,
       datasets: source.datasets.map((dataset) => ({
         ...dataset,
         values: dataset.values.map((value) => varyValue(value)),
       })),
-    });
+    };
+    chart.update(updated);
+    onUpdate?.(updated);
   }
 });

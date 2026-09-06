@@ -1,3 +1,5 @@
+import { selectionReporter } from "./Examples.js";
+
 function exampleBody(renderExample) {
   const source = renderExample.toString();
   const body = source.slice(source.indexOf("{") + 1, source.lastIndexOf("}"));
@@ -31,22 +33,6 @@ function formatHelper() {
 }`;
 }
 
-function selectionHelper(selector) {
-  return `function reportSelection(detail) {
-  const host = document.querySelector(${JSON.stringify(selector)});
-  let status = host.nextElementSibling;
-  if (!status?.matches("[aria-live]")) {
-    status = document.createElement("p");
-    status.setAttribute("aria-live", "polite");
-    host.after(status);
-  }
-  const series = detail.dataset ? \`\${detail.dataset} · \` : "";
-  const label = detail.label ?? detail.key ?? \`Point \${detail.index + 1}\`;
-  const value = detail.value ?? detail.values?.join(", ");
-  status.textContent = \`\${series}\${label}: \${value}\`;
-}`;
-}
-
 /**
  * Reads the actual fluent example function used to render a card.
  * There is no second configuration representation to keep in sync.
@@ -65,8 +51,7 @@ export function exampleCode(selector, renderExample) {
     helpers.push(formatHelper());
   }
   if (body.includes("selectionReporter")) {
-    body = body.replace(`selectionReporter(${JSON.stringify(selector)})`, "reportSelection");
-    helpers.push(selectionHelper(selector));
+    helpers.push(selectionReporter.toString().replaceAll("formatDemoValue", "formatValue"));
   }
 
   return [

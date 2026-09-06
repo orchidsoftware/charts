@@ -114,7 +114,7 @@ describe("real-world demo", () => {
     expect(showcaseExamples).toHaveLength(17);
     expect(qualityExamples).toHaveLength(11);
     expect(document.querySelectorAll(".selection-status")).toHaveLength(1);
-    expect(document.querySelector(".selection-status").textContent).toBe("");
+    expect(document.querySelector(".selection-status-summary").textContent).toBe("Dec");
     expect(document.querySelector("#bundle-size-value").textContent).toMatch(/^\d+\.\d kB$/);
     expect(document.querySelector("#bundle-size-gzip").textContent).toMatch(/^\(\d+\.\d kB gzip\)$/);
     expect(document.querySelector("#line svg").getAttribute("height")).toBe("320");
@@ -354,5 +354,118 @@ describe("real-world demo", () => {
 
     expect(document.querySelector("#line .charts2-line").getAttribute("d")).not.toBe(showcaseBefore);
     expect(stressIds.map((id) => document.querySelector(`#${id} svg`).getHTML())).toEqual(stressBefore);
+    expect(
+      [
+        ...document.querySelectorAll(".selection-status dd"),
+      ].map((value) => value.textContent),
+    ).toEqual([
+      "83.52k",
+      "61.92k",
+      "42.48k",
+    ]);
+  });
+});
+
+function measureLayout(element) {
+  const bounds = element.getBoundingClientRect();
+  return {
+    height: bounds.height,
+    y: bounds.y + window.scrollY,
+  };
+}
+
+describe("demo loading layout", () => {
+  it.each([
+    1440,
+    1024,
+    768,
+    390,
+    320,
+  ])("reserves the rendered layout at %ipx", async (width) => {
+    await page.viewport(width, 900);
+    const demo = new DOMParser().parseFromString(demoMarkup, "text/html");
+    document.body.innerHTML = demo.body.getHTML();
+    await document.fonts.ready;
+
+    const elements = [
+      ...document.querySelectorAll(".demo-chart, #heatmap, article, #install"),
+    ];
+    const before = elements.map((element) => measureLayout(element));
+    for (const link of document.querySelectorAll(".header-cta, .primary-action")) {
+      expect(link.getAttribute("href")).toBe("/docs/getting-started.html");
+    }
+
+    const { showcaseExamples, heatmapExamples, sparkExamples } = await import("../demo/Examples.js");
+    const { showExampleCode } = await import("../demo/ExampleCode.js");
+    const examples = [
+      ...showcaseExamples,
+      ...heatmapExamples,
+      ...sparkExamples,
+    ];
+    for (const [
+      selector,
+      renderExample,
+    ] of examples) {
+      if (document.querySelector(selector)) {
+        renderExample();
+      }
+    }
+    showExampleCode(examples);
+    expect(document.querySelectorAll(".demo-chart > svg, #heatmap > svg")).toHaveLength(21);
+    for (const [
+      index,
+      element,
+    ] of elements.entries()) {
+      const after = measureLayout(element);
+      expect(after.height, `${element.id || element.tagName} height`).toBeCloseTo(before[index].height, 1);
+      expect(after.y, `${element.id || element.tagName} position`).toBeCloseTo(before[index].y, 1);
+    }
+
+    const status = document.querySelector(".selection-status");
+    const initialHeight = status.getBoundingClientRect().height;
+    const selectedValues = () =>
+      [
+        ...status.querySelectorAll("dd"),
+      ].map((value) => value.textContent);
+    const point = document.querySelector("#line .charts2-x-hit");
+    expect(status).toHaveAttribute("role", "status");
+    expect(status).toHaveAttribute("aria-atomic", "true");
+    expect(status.textContent).toContain("Latest month");
+    expect(selectedValues()).toEqual([
+      "116k",
+      "86k",
+      "59k",
+    ]);
+    point.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(status.textContent).toContain("Selected month");
+    expect(status.querySelector(".selection-status-summary").textContent).toBe("Jan");
+    expect(selectedValues()).toEqual([
+      "48k",
+      "36k",
+      "22k",
+    ]);
+    expect(status.getBoundingClientRect().height).toBe(initialHeight);
+
+    point.focus();
+    point.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    expect(status.textContent).toContain("Latest month");
+    expect(status.querySelector(".selection-status-summary").textContent).toBe("Dec");
+    expect(selectedValues()).toEqual([
+      "116k",
+      "86k",
+      "59k",
+    ]);
+    expect(document.activeElement).toBe(point);
+    expect(status.getBoundingClientRect().height).toBe(initialHeight);
+
+    point.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    document.activeElement.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
+    expect(status.querySelector(".selection-status-summary").textContent).toBe("Feb");
+    expect(selectedValues()).toEqual([
+      "57k",
+      "40k",
+      "27k",
+    ]);
+    expect(status.getBoundingClientRect().height).toBe(initialHeight);
   });
 });

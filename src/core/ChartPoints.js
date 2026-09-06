@@ -120,16 +120,6 @@ export { categoryPointAt, independentPointAt, heatmapPointAt, timesheetPointAt }
  * @returns {object | undefined} Defensive public snapshot of the addressed data.
  */
 function seriesPointFor(type, collections, mark) {
-  if (mark.kind === "dataset") {
-    const dataset = collections.datasets[mark.datasetIndex];
-
-    return Object.freeze({
-      index: mark.datasetIndex,
-      label: dataset.name,
-      values: Object.freeze(dataset.points.map((point) => point.y)),
-    });
-  }
-
   if (
     [
       ChartType.SCATTER,

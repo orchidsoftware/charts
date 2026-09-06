@@ -43,7 +43,7 @@ export default class SvgSurface {
    * @returns {SVGElement} Appended interactive mark.
    */
   mark(name, attributes, metadata) {
-    const { dataset, point, title, kind = "point", visualElement, tooltip, anchor } = metadata;
+    const { dataset, point, title, kind = "point", visualElement, tooltip, anchor, inspection } = metadata;
     const element = typeof name === "string" ? svg(name, attributes) : name;
     const label = typeof title === "string" ? title : title.text;
     const content = tooltip ?? (typeof title === "string" ? { heading: title, items: [] } : title);
@@ -55,6 +55,7 @@ export default class SvgSurface {
       label,
       tooltip: content,
       anchor,
+      inspection,
     });
 
     return this.append(titled(element, label));

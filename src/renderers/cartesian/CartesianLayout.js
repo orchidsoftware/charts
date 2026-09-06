@@ -89,7 +89,6 @@ export default class CartesianLayout {
   #y;
   #pointX;
   #valuePosition;
-  #inspectorBands;
 
   /**
    * Resolves chart geometry once and freezes the public layout vocabulary.
@@ -112,7 +111,6 @@ export default class CartesianLayout {
     this.categories = Object.freeze({ labels: state.labels, count: state.count, gutter: state.gutter });
     this.values = Object.freeze(state.values);
     this.bars = Object.freeze({ datasets: state.barDatasets, isStacked: state.isStacked });
-    this.#inspectorBands = this.#resolveInspectorBands();
     Object.freeze(this);
   }
 
@@ -204,13 +202,27 @@ export default class CartesianLayout {
   }
 
   /**
-   * Returns the precomputed interaction rectangle for one category.
+   * Calculates one category interaction rectangle without allocating all bands.
    *
    * @param {number} index - Zero-based category position.
-   * @returns {object | undefined} SVG rectangle attributes or undefined outside the layout.
+   * @returns {object} SVG rectangle attributes for a valid category index.
    */
   inspectorAt(index) {
-    return this.#inspectorBands[index];
+    const { bottom, left, right, top } = this.frame;
+    const center = this.#inspectorCenter(index);
+    const firstBoundary = this.isHorizontal ? top : left;
+    const lastBoundary = this.isHorizontal ? bottom : right;
+
+    const start = index === 0 ? firstBoundary : (this.#inspectorCenter(index - 1) + center) / 2;
+
+    const end =
+      index === this.categories.count - 1 ? lastBoundary : (center + this.#inspectorCenter(index + 1)) / 2;
+
+    return Object.freeze(
+      this.isHorizontal
+        ? { x: left, y: start, width: right - left, height: Math.max(1, end - start) }
+        : { x: start, y: top, width: Math.max(1, end - start), height: bottom - top },
+    );
   }
 
   /**
@@ -235,9 +247,14 @@ export default class CartesianLayout {
       left: presentation.isYAxisRight ? 0 : data.gutter,
     };
 
-    const supportsInspector = this.#supportsInspector(type);
-
-    const usesInspector = supportsInspector && data.count <= MAX_X_INSPECTOR_POINTS;
+    const usesInspector =
+      this.#supportsInspector(type) &&
+      (data.count <= MAX_X_INSPECTOR_POINTS ||
+        [
+          ChartType.LINE,
+          ChartType.BAR,
+          ChartType.AXIS_MIXED,
+        ].includes(type));
 
     return {
       orientation,
@@ -510,38 +527,43 @@ export default class CartesianLayout {
   }
 
   /**
-   * Precomputes category-sized interaction rectangles for constant-time lookup.
+   * Maps a category to its inspection axis center.
    *
-   * @returns {Array<object>} Frozen inspector rectangle attributes.
+   * @param {number} index - Category position.
+   * @returns {number} Plot coordinate on the category axis.
    */
-  #resolveInspectorBands() {
-    const { bottom, left, right, top } = this.frame;
+  #inspectorCenter(index) {
+    const { top, bottom } = this.frame;
 
-    const centers = Array.from({ length: this.categories.count }, (_, index) => {
-      if (this.isHorizontal) {
-        return top + ((index + SLOT_MIDPOINT) * (bottom - top)) / this.categories.count;
+    return this.isHorizontal
+      ? top + ((index + SLOT_MIDPOINT) * (bottom - top)) / this.categories.count
+      : this.categoryAt(index);
+  }
+
+  /**
+   * Finds the nearest category with logarithmic work and no point-sized allocation.
+   *
+   * @param {number} x - Plot x coordinate.
+   * @param {number} y - Plot y coordinate.
+   * @returns {number} Clamped category index.
+   */
+  inspectionIndexAt(x, y) {
+    const coordinate = this.isHorizontal ? y : x;
+    let low = 0;
+    let high = this.categories.count - 1;
+
+    while (low < high) {
+      const middle = Math.floor((low + high) / 2);
+      const boundary = (this.#inspectorCenter(middle) + this.#inspectorCenter(middle + 1)) / 2;
+
+      if (coordinate < boundary) {
+        high = middle;
+        continue;
       }
 
-      return this.categoryAt(index);
-    });
+      low = middle + 1;
+    }
 
-    const boundaries = [
-      this.isHorizontal ? top : left,
-      ...centers.slice(1).map((center, index) => (centers[index] + center) / 2),
-      this.isHorizontal ? bottom : right,
-    ];
-
-    return Object.freeze(
-      centers.map((_center, index) => {
-        const start = boundaries[index];
-        const end = boundaries[index + 1];
-
-        const rectangle = this.isHorizontal
-          ? { x: left, y: start, width: right - left, height: Math.max(1, end - start) }
-          : { x: start, y: top, width: Math.max(1, end - start), height: bottom - top };
-
-        return Object.freeze(rectangle);
-      }),
-    );
+    return low;
   }
 }

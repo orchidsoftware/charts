@@ -375,7 +375,9 @@ describe("Pipeline Contracts", () => {
         ],
       })
       .render();
-    expect(unlabeled.element.querySelector(".orchid-charts-line title").textContent).toContain("1: 2");
+    expect(unlabeled.element.querySelector(".orchid-charts-x-hit").getAttribute("aria-label")).toContain(
+      "1 — Series 1: 2",
+    );
     expect(
       unlabeled.element.querySelector(".orchid-charts-label:not(.orchid-charts-value-label)").textContent,
     ).toBe("1");

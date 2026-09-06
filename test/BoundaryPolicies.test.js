@@ -7,7 +7,6 @@ import { linePath } from "../src/support/geometry/CartesianGeometry.js";
 import { roundedSectorPath } from "../src/support/geometry/SectorGeometry.js";
 import { intensityLevel } from "../src/support/Palette.js";
 import { formatterText } from "../src/support/presentation/Formatting.js";
-import { datasetSummary } from "../src/support/presentation/Presentation.js";
 import { wrappedLabelElement } from "../src/support/presentation/TextLayout.js";
 import "../src/styles.css";
 
@@ -198,16 +197,13 @@ describe("Boundary Policies", () => {
       maxWidth: 8,
     });
     expect(truncatedWord.querySelector("title").textContent).toBe("Supercalifragilisticexpialidocious");
-    expect(
-      datasetSummary(
-        {
-          name: "A",
-          points: [
-            { x: 5, y: 2 },
-          ],
-        },
-        [],
-      ),
-    ).toContain("5: 2");
+    const chart = LineChart.make("#chart")
+      .dataset([
+        2,
+      ])
+      .render();
+    expect(chart.element.querySelector(".orchid-charts-x-hit").getAttribute("aria-label")).toContain(
+      "1 — Series 1: 2",
+    );
   });
 });

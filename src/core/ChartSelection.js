@@ -164,40 +164,6 @@ function compositionPayload(type, index, collections) {
 }
 
 /**
- * Creates one complete dataset payload for a dataset-sized interaction target.
- *
- * @param {string} type - Concrete chart type.
- * @param {number} index - Selected dataset position.
- * @param {object} collections - Normalized datasets and labels.
- * @returns {object} Public radar payload.
- */
-function datasetPayload(type, index, collections) {
-  const dataset = collections.datasets[index];
-
-  const points = dataset.points.map((_point, pointIndex) =>
-    selectionPoint(type, collections, {
-      dataset,
-      datasetIndex: index,
-      pointIndex,
-      label: collections.labels[pointIndex],
-    }),
-  );
-
-  return Object.freeze({
-    type,
-    index,
-    label: dataset.name,
-    datasetIndex: index,
-    dataset: dataset.name,
-    x: points[0]?.x,
-    y: points[0]?.y,
-    value: points[0]?.y,
-    values: points.map((point) => point.y),
-    points,
-  });
-}
-
-/**
  * Translates mark metadata through one family-specific immutable policy.
  */
 export default class ChartSelection {
@@ -243,10 +209,6 @@ export default class ChartSelection {
 function createSeriesSelection(type, collections) {
   return new ChartSelection({
     from: (mark) => {
-      if (mark.kind === "dataset") {
-        return datasetPayload(type, mark.datasetIndex, collections);
-      }
-
       const pointIndex = mark.pointIndex;
 
       if (mark.kind === "category") {
@@ -271,12 +233,6 @@ function createSeriesSelection(type, collections) {
  * @returns {string | null} Stable identity when the source names are unambiguous.
  */
 function seriesIdentity(collections, mark) {
-  if (mark.kind === "dataset") {
-    return identityKey("series-dataset", [
-      collections.datasets[mark.datasetIndex].identityName,
-    ]);
-  }
-
   const pointIndex = mark.pointIndex;
 
   if (mark.kind === "category") {

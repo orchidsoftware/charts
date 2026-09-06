@@ -4,6 +4,7 @@ import { ChartOrientation, ChartType } from "../support/Constants.js";
 import { measureParentWidth, resolveParent, svg } from "../support/Dom.js";
 
 import ChartTooltip from "./ChartTooltip.js";
+import DenseInspectionController from "./DenseInspectionController.js";
 import InteractionController from "./InteractionController.js";
 import { normalizeChartOptions, validateChartColors } from "./Options.js";
 
@@ -437,8 +438,18 @@ export default class Chart {
 
     const marks = this.#orderedMarks(staged);
 
-    const matches = marks.flatMap((mark, index) =>
-      model.identityFor(chartMark(mark)) === this.#selectionIdentity
+    const inspection = chartMark(marks[0])?.inspection;
+
+    const addresses = inspection
+      ? Array.from({ length: inspection.count }, (_, pointIndex) => ({
+          kind: "category",
+          datasetIndex: 0,
+          pointIndex,
+        }))
+      : marks.map((mark) => chartMark(mark));
+
+    const matches = addresses.flatMap((address, index) =>
+      model.identityFor(address) === this.#selectionIdentity
         ? [
             index,
           ]
@@ -524,7 +535,9 @@ export default class Chart {
       onActiveChange: (index, mark) => this.#handleActiveChange(index, mark),
     };
 
-    this.#interactions = new InteractionController(marks, interactionBehavior, interactionCallbacks);
+    this.#interactions = chartMark(marks[0])?.inspection
+      ? new DenseInspectionController(marks[0], interactionBehavior, interactionCallbacks)
+      : new InteractionController(marks, interactionBehavior, interactionCallbacks);
   }
 
   /**

@@ -7,10 +7,8 @@ import {
   LEGEND_BASELINE_INSET,
   LEGEND_CONTENT_GAP,
 } from "../Constants.js";
-import { extent } from "../geometry/Math.js";
 
 import { formatLabel, formatValue } from "./Formatting.js";
-import { formatNumber } from "./NumberFormatting.js";
 import { truncateText, measuredTextWidth, measuredLegendTextWidth } from "./TextLayout.js";
 
 const MINIMUM_CONTENT_HEIGHT = 8;
@@ -20,7 +18,6 @@ const HORIZONTAL_LABEL_WIDTH_RATIO = 0.42;
 const HORIZONTAL_MULTILINE_LABEL_WIDTH_RATIO = 0.55;
 const LEGEND_ITEM_GAP = 16;
 const LEGEND_MAXIMUM_LABEL_WIDTH = 160;
-const DATASET_SUMMARY_LIMIT = 12;
 
 /**
  * Applies the optional category formatter and validates its display contract.
@@ -143,54 +140,6 @@ function seriesContentLayout(chart) {
 }
 
 /**
- * Summarizes a dataset for accessibility without overwhelming long series.
- *
- * @param {{name: string, points: Array<{x: number, y: number}>}} dataset - Normalized series to describe.
- * @param {unknown[]} labels - Optional category values corresponding to points.
- * @param {object} [formatting={}] - Formatter options and stable dataset identity.
- * @param {object} [formatting.options={}] - Chart-level formatter options.
- * @param {number} [formatting.datasetIndex=0] - Stable dataset position.
- * @returns {string} Detailed short-series summary or bounded long-series statistics.
- */
-function datasetSummary(dataset, labels, { options = {}, datasetIndex = 0 } = {}) {
-  const formatPoint = (point, index) => {
-    const label = formatLabel(options, labels[index] ?? point.x, {
-      target: "accessibility",
-      datasetIndex,
-      index,
-      point,
-    });
-
-    const value = formatValue(options, point.y, {
-      target: "accessibility",
-      dataset,
-      datasetIndex,
-      index,
-      label: labels[index] ?? point.x,
-      point,
-    });
-
-    return `${label}: ${value}`;
-  };
-
-  if (dataset.points.length > DATASET_SUMMARY_LIMIT) {
-    const [
-      minimum,
-      maximum,
-    ] = extent(dataset.points.map((point) => point.y));
-
-    const first = formatPoint(dataset.points[0], 0);
-    const last = formatPoint(dataset.points.at(-1), dataset.points.length - 1);
-
-    return `${dataset.name}: ${dataset.points.length} points · ${first} · ${last} · range ${formatNumber(minimum)}–${formatNumber(maximum)}`;
-  }
-
-  const values = dataset.points.map((point, index) => formatPoint(point, index));
-
-  return `${dataset.name}: ${values.join(", ")}`;
-}
-
-/**
  * Formats one tooltip row without encoding its structure in display text.
  *
  * @param {object} content - Formatting inputs, color, suffix and accessible prefix.
@@ -226,6 +175,5 @@ export {
   verticalValuePadding,
   chartContentLayout,
   seriesContentLayout,
-  datasetSummary,
   tooltipContent,
 };

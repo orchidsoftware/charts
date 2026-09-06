@@ -344,7 +344,7 @@ it("applies chart and dataset line widths to computed style", () => {
   ]);
 });
 
-it("reads a dense line as a dataset instead of its first category", () => {
+it("reads a dense line at the inspected category across all datasets", () => {
   const values = Array.from({ length: 65 }, (_, index) => index + 1);
   const callback = vi.fn();
   const chart = LineChart.make(host())
@@ -355,20 +355,26 @@ it("reads a dense line as a dataset instead of its first category", () => {
     )
     .onSelect(callback)
     .render();
-  chart.element
-    .querySelectorAll(".orchid-charts-mark")[1]
-    .dispatchEvent(new MouseEvent("click", { bubbles: true }));
-  expect(chart.point().label).toBe("Second");
-  expect(chart.point().values).toHaveLength(65);
+  const mark = chart.element.querySelector(".orchid-charts-dense-hit");
+  mark.dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }));
+  mark.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+  expect(chart.point().index).toBe(64);
+  expect(chart.point().values).toEqual([
+    65,
+    130,
+  ]);
   expect(callback.mock.lastCall[0].values).toEqual(chart.point().values);
   chart.update({
     datasets: [
-      { name: "Second", values },
       { name: "First", values },
+      { name: "Second", values },
     ],
   });
-  expect(chart.point().label).toBe("Second");
-  expect(chart.point().values).toEqual(values);
+  expect(chart.point().index).toBe(64);
+  expect(chart.point().values).toEqual([
+    65,
+    65,
+  ]);
 });
 
 it("preserves gradient snapshots after caller mutation and resize", () => {

@@ -3,7 +3,7 @@ import { svg } from "../../support/Dom.js";
 import { linePath, roundedBarPath } from "../../support/geometry/Math.js";
 import { formatLabel, formatValue, seriesContext } from "../../support/presentation/Formatting.js";
 import { formatNumber } from "../../support/presentation/NumberFormatting.js";
-import { datasetSummary, tooltipContent } from "../../support/presentation/Presentation.js";
+import { tooltipContent } from "../../support/presentation/Presentation.js";
 
 const CARTESIAN_LAYER = Object.freeze({
   [ChartType.BAR]: 0,
@@ -187,28 +187,18 @@ function renderArea(rendering, entry) {
  * @returns {void} One line path is appended.
  */
 function renderLineStroke(rendering, entry) {
-  const { chart, layout, surface, visuals } = rendering;
+  const { surface, visuals } = rendering;
   const { dataset, datasetIndex, path, presentation } = entry;
-  const isDense = !layout.usesInspector && layout.type !== ChartType.AXIS_MIXED;
 
-  const visual = surface.mark(
-    "path",
-    {
-      d: path,
-      fill: "none",
-      stroke: dataset.color,
-      "stroke-width": presentation.strokeWidth,
-      style: `stroke-width:var(--orchid-charts-stroke-width, ${presentation.strokeWidth}px)`,
-      opacity: dataset.opacity ?? 1,
-      class: `${isDense ? "orchid-charts-line orchid-charts-mark" : "orchid-charts-line"} orchid-charts-series-${datasetIndex % SERIES_CLASS_COUNT}`,
-    },
-    {
-      kind: isDense ? "dataset" : "visual",
-      dataset: datasetIndex,
-      point: 0,
-      title: datasetSummary(dataset, chart.labels, { options: chart.options, datasetIndex }),
-    },
-  );
+  const visual = surface.append("path", {
+    d: path,
+    fill: "none",
+    stroke: dataset.color,
+    "stroke-width": presentation.strokeWidth,
+    style: `stroke-width:var(--orchid-charts-stroke-width, ${presentation.strokeWidth}px)`,
+    opacity: dataset.opacity ?? 1,
+    class: `orchid-charts-line orchid-charts-series-${datasetIndex % SERIES_CLASS_COUNT}`,
+  });
 
   visuals[datasetIndex] = dataset.points.map(() => visual);
 }

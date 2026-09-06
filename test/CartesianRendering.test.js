@@ -147,18 +147,16 @@ describe("Cartesian Rendering", () => {
     const points = Array.from({ length: 201 }, (_, index) => index);
     const long = LineChart.make("#chart").dataset({ values: points }).render();
     expect(long.element.querySelectorAll(".orchid-charts-mark")).toHaveLength(1);
-    expect(long.element.querySelector(".orchid-charts-mark").dataset.tooltip).toContain("201 points");
-    expect(long.element.querySelector(".orchid-charts-mark").dataset.tooltip).toContain("range 0–200");
+    expect(long.element.querySelector(".orchid-charts-mark").dataset.tooltip).toContain("Series 1: 0");
+    expect(long.element.querySelector(".orchid-charts-mark").dataset.tooltip).toContain("1 —");
     expect(long.element.querySelector(".orchid-charts-mark").dataset.tooltip.length).toBeLessThan(100);
     long.destroy();
     const denseHorizontal = BarChart.make("#chart")
       .horizontal()
       .dataset({ values: Array.from({ length: 65 }, (_, index) => index) })
       .render();
-    expect(denseHorizontal.element.querySelectorAll(".orchid-charts-bar.orchid-charts-mark")).toHaveLength(
-      65,
-    );
-    expect(denseHorizontal.element.querySelector(".orchid-charts-x-hit")).toBeNull();
+    expect(denseHorizontal.element.querySelectorAll(".orchid-charts-bar.orchid-charts-mark")).toHaveLength(0);
+    expect(denseHorizontal.element.querySelector(".orchid-charts-dense-hit")).not.toBeNull();
     denseHorizontal.destroy();
     const hidden = LineChart.make("#chart")
       .line(false)

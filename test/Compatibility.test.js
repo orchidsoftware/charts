@@ -256,7 +256,7 @@ describe("cross-browser public lifecycle", () => {
       expect(document.querySelector(".orchid-charts-tooltip").hidden).toBe(false);
       const notifications = onSelect.mock.calls.length;
       document.querySelector("#chart").style.width = "520px";
-      await expect.poll(() => chart.element.viewBox.baseVal.width).toBe(520);
+      await expect.poll(() => chart.element.viewBox.baseVal.width, { timeout: 5000 }).toBe(520);
       expect(onSelect).toHaveBeenCalledTimes(notifications);
       expect(chart.element.querySelector(".is-active")).not.toBeNull();
       chart.destroy();

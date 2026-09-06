@@ -21,6 +21,9 @@
   display: block;
   max-width: 100%;
   overflow: visible;
+
+  /* Chart states provide touch feedback without the browser's fading overlay. */
+  -webkit-tap-highlight-color: transparent;
   font-family:
     system-ui,
     -apple-system,

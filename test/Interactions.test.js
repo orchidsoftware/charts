@@ -30,6 +30,44 @@ beforeEach(() => {
 });
 
 describe("shared chart interaction contract", () => {
+  it.each([
+    LineChart,
+    BarChart,
+    ScatterChart,
+  ])("uses only chart feedback for touch inspection (%s)", (ChartType) => {
+    const chart = ChartType.make("#chart")
+      .labels([
+        "Direct",
+        "Search",
+      ])
+      .dataset({
+        values: [
+          60,
+          40,
+        ],
+      })
+      .render();
+    const mark = chart.element.querySelector(".orchid-charts-interactive-mark");
+
+    // Native tap feedback paints above the SVG and tooltip, then fades to our preview.
+    expect(getComputedStyle(mark).webkitTapHighlightColor).toBe("rgba(0, 0, 0, 0)");
+    const touch = new PointerEvent("pointerdown", {
+      bubbles: true,
+      cancelable: true,
+      pointerType: "touch",
+    });
+    mark.dispatchEvent(touch);
+    expect(touch.defaultPrevented).toBe(false);
+    expect(tooltipFor(chart).hidden).toBe(true);
+
+    mark.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerType: "touch" }));
+    mark.dispatchEvent(new PointerEvent("pointerleave", { pointerType: "touch" }));
+    expect(mark).toHaveClass("is-hovered");
+    expect(getComputedStyle(mark).fillOpacity).toBe("0.08");
+    expect(tooltipFor(chart).hidden).toBe(false);
+    chart.destroy();
+  });
+
   it("uses one tab stop, arrow navigation, persistent active state, and Escape", () => {
     const scenario = new ChartScenario(
       BarChart.make("#chart")

@@ -3,77 +3,32 @@ import { copyInput } from "../../support/data/Copy.js";
 import { LineDatasetBuilder, MarkerBuilder, RegionBuilder, runScope } from "./BuilderScopes.js";
 
 /**
- * Resolves one named positional dataset call.
- *
- * @param {string} name - Human-readable legend label.
- * @param {unknown} values - Ordered numeric payload copied into the series.
- * @param {unknown} colorOrConfigure - Optional color or scoped configurator.
- * @returns {{dataset: object, configure?: (scope: LineDatasetBuilder) => void}} Detached named dataset arguments.
- */
-function namedDatasetArguments(name, values, colorOrConfigure) {
-  const dataset = { name, values: copyInput(values) };
-
-  if (typeof colorOrConfigure === "string") {
-    dataset.color = colorOrConfigure;
-  }
-
-  const configure = typeof colorOrConfigure === "function" ? colorOrConfigure : undefined;
-
-  return {
-    dataset,
-    configure,
-  };
-}
-
-/**
- * Resolves one unnamed shorthand dataset call.
- *
- * @param {unknown[]} values - Ordered numeric values for one series.
- * @param {unknown} colorOrConfigure - Optional color or scoped configurator.
- * @returns {{dataset: object, configure?: (scope: LineDatasetBuilder) => void}} Detached unnamed dataset arguments.
- */
-function unnamedDatasetArguments(values, colorOrConfigure) {
-  const dataset = { values: copyInput(values) };
-
-  if (typeof colorOrConfigure === "string") {
-    dataset.color = colorOrConfigure;
-  }
-
-  const configure = typeof colorOrConfigure === "function" ? colorOrConfigure : undefined;
-
-  return {
-    dataset,
-    configure,
-  };
-}
-
-/**
- * Creates a configured dataset record from positional or object grammar.
+ * Resolves positional and object dataset grammar into one detached record.
  *
  * @param {unknown} first - Values, name, or advanced dataset input.
  * @param {unknown} second - Values, color, or configurator.
  * @param {unknown} third - Color or configurator for a named dataset.
- * @returns {object} Completed detached dataset record.
+ * @returns {object} Detached dataset and optional configurator.
  */
 function datasetArguments(first, second, third) {
-  let result;
+  const isNamed = typeof first === "string";
+  const values = isNamed ? second : first;
+  const candidate = isNamed ? third : second;
+  const isPositional = isNamed || Array.isArray(first);
+  const dataset = isPositional ? { values: copyInput(values) } : copyInput(first);
 
-  if (typeof first === "string") {
-    result = namedDatasetArguments(first, second, third);
+  if (isNamed) {
+    dataset.name = first;
   }
 
-  if (Array.isArray(first)) {
-    result = unnamedDatasetArguments(first, second);
+  if (isPositional && typeof candidate === "string") {
+    dataset.color = candidate;
   }
 
-  if (!result) {
-    result = {
-      dataset: copyInput(first),
-      configure: typeof second === "function" ? second : undefined,
-    };
-  }
-
-  return result;
+  return {
+    dataset,
+    configure: typeof candidate === "function" ? candidate : undefined,
+  };
 }
 
 /**
@@ -113,51 +68,55 @@ function lineDataset(first, second, third) {
 }
 
 /**
- * Creates a marker record from positional or object grammar.
+ * Resolves marker and region grammar before entering their capability scope.
  *
- * @param {unknown} first - Label or advanced marker input.
- * @param {unknown} second - Marker value or configurator.
- * @param {unknown} third - Color or configurator for a positional marker.
- * @returns {object} Completed detached marker record.
+ * @param {unknown[]} inputs - Public positional or object arguments.
+ * @param {string} property - Annotation payload field.
+ * @param {new (record: object) => object} Scope - Annotation capability scope.
+ * @returns {object} Detached configured annotation.
  */
-function markerInput(first, second, third) {
+function annotationInput(
+  [
+    first,
+    second,
+    third,
+  ],
+  property,
+  Scope,
+) {
   const isPositional = typeof first === "string";
-  const marker = isPositional ? { label: first, value: second } : copyInput(first);
-  const callbackCandidate = isPositional ? third : second;
+  const record = isPositional ? { label: first, [property]: copyInput(second) } : copyInput(first);
+  const candidate = isPositional ? third : second;
 
   if (isPositional && typeof third === "string") {
-    marker.color = third;
+    record.color = third;
   }
 
-  if (typeof callbackCandidate === "function") {
-    runScope(new MarkerBuilder(marker), callbackCandidate);
+  if (typeof candidate === "function") {
+    runScope(new Scope(record), candidate);
   }
 
-  return marker;
+  return record;
 }
 
 /**
- * Creates a region record from positional or object grammar.
+ * Resolves one marker's public arguments.
  *
- * @param {unknown} first - Label or advanced region input.
- * @param {unknown} second - Numeric range or configurator.
- * @param {unknown} third - Color or configurator for a positional region.
- * @returns {object} Completed detached region record.
+ * @param {...unknown} inputs - Public marker arguments.
+ * @returns {object} Detached configured marker.
  */
-function regionInput(first, second, third) {
-  const isPositional = typeof first === "string";
-  const region = isPositional ? { label: first, range: copyInput(second) } : copyInput(first);
-  const callbackCandidate = isPositional ? third : second;
+function markerInput(...inputs) {
+  return annotationInput(inputs, "value", MarkerBuilder);
+}
 
-  if (isPositional && typeof third === "string") {
-    region.color = third;
-  }
-
-  if (typeof callbackCandidate === "function") {
-    runScope(new RegionBuilder(region), callbackCandidate);
-  }
-
-  return region;
+/**
+ * Resolves one region's public arguments.
+ *
+ * @param {...unknown} inputs - Public region arguments.
+ * @returns {object} Detached configured region.
+ */
+function regionInput(...inputs) {
+  return annotationInput(inputs, "range", RegionBuilder);
 }
 
 export { configuredDataset, lineDataset, markerInput, regionInput };

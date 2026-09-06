@@ -1,13 +1,16 @@
-import { markMetadata } from "../../support/ChartMark.js";
 import { HEATMAP_MIN_CELL_WIDTH } from "../../support/Constants.js";
-import { formatNumber, measuredTextWidth, svg, titled } from "../../support/Dom.js";
+import { svg } from "../../support/Dom.js";
 import { formatContext, formatterText } from "../../support/presentation/Formatting.js";
+import { formatNumber } from "../../support/presentation/NumberFormatting.js";
+import { measuredTextWidth } from "../../support/presentation/TextLayout.js";
 
 const PREFERRED_CELL_GAP = 3;
+const MAXIMUM_CELL_SIZE = 32;
 const LEGEND_HEIGHT = 11;
 const DAYS_PER_WEEK = 7;
 const MONDAY_FIRST_OFFSET = 6;
 const LEGEND_TOP_GAP = 12;
+const LEGEND_BOTTOM_GAP = 2;
 const LEGEND_BASELINE_OFFSET = 10;
 const LEGEND_LABEL_GAP = 8;
 const DESIRED_SWATCH_WIDTH = 11;
@@ -93,14 +96,17 @@ function heatmapGeometry(width, heatmap) {
 
   const cellSize = Math.max(
     Number.EPSILON,
-    (width - (arrangement.columns - 1) * PREFERRED_CELL_GAP) / arrangement.columns,
+    Math.min(
+      MAXIMUM_CELL_SIZE,
+      (width - (arrangement.columns - 1) * PREFERRED_CELL_GAP) / arrangement.columns,
+    ),
   );
 
   const rows = visibleRowCount(heatmap, startWeekday, arrangement);
   const gridBottom = rows * cellSize + (rows - 1) * PREFERRED_CELL_GAP;
 
   return Object.freeze({
-    height: gridBottom + LEGEND_TOP_GAP + LEGEND_HEIGHT,
+    height: gridBottom + LEGEND_TOP_GAP + LEGEND_HEIGHT + LEGEND_BOTTOM_GAP,
     layoutWidth: width,
     cellSize,
     columns: arrangement.columns,
@@ -137,6 +143,11 @@ class HeatmapRenderer {
     const layout = this.#layout();
     this.#renderCells(layout);
     this.#renderLegend(layout);
+
+    return {
+      width: layout.layoutWidth,
+      height: layout.height,
+    };
   }
 
   /**
@@ -153,22 +164,7 @@ class HeatmapRenderer {
       ...palette,
     });
 
-    this.#configureSurface(layout.layoutWidth, layout.height);
-
     return layout;
-  }
-
-  /**
-   * Makes the SVG responsive horizontally and intrinsic vertically.
-   *
-   * @param {number} width - Current measured width.
-   * @param {number} height - Content-derived height.
-   * @returns {void} Surface dimensions are updated.
-   */
-  #configureSurface(width, height) {
-    this.#surface.attribute("viewBox", `0 0 ${width} ${height}`);
-    this.#surface.attribute("height", height);
-    this.#surface.styles({ width: "100%", maxWidth: "100%", height: `${height}px` });
   }
 
   /**
@@ -200,12 +196,7 @@ class HeatmapRenderer {
 
       const content = this.#cellContent(item, index);
 
-      const visibleCell = titled(
-        markMetadata(cell, { kind: "cell", datasetIndex: 0, pointIndex: index }),
-        content,
-      );
-
-      this.#surface.append(visibleCell);
+      this.#surface.mark(cell, {}, { kind: "cell", dataset: 0, point: index, title: content });
     }
   }
 
@@ -403,7 +394,7 @@ class HeatmapRenderer {
  * @returns {void} Heatmap content is appended to the chart SVG.
  */
 function renderHeatmapChart(rendering) {
-  new HeatmapRenderer(rendering).render();
+  return new HeatmapRenderer(rendering).render();
 }
 
 export { renderHeatmapChart };

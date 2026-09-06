@@ -1,6 +1,6 @@
 import { DEFAULT_BAR_RADIUS } from "../../support/Constants.js";
-import { measuredTextWidth } from "../../support/Dom.js";
 import { scale } from "../../support/geometry/Math.js";
+import { measuredTextWidth } from "../../support/presentation/TextLayout.js";
 import {
   formatTimeTick,
   formatTimesheetDate,

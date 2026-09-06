@@ -7,10 +7,11 @@ import {
   LEGEND_BASELINE_INSET,
   LEGEND_CONTENT_GAP,
 } from "../Constants.js";
-import { formatNumber, truncateText, measuredTextWidth, measuredLegendTextWidth } from "../Dom.js";
 import { extent } from "../geometry/Math.js";
 
 import { formatLabel, formatValue } from "./Formatting.js";
+import { formatNumber } from "./NumberFormatting.js";
+import { truncateText, measuredTextWidth, measuredLegendTextWidth } from "./TextLayout.js";
 
 const MINIMUM_CONTENT_HEIGHT = 8;
 const HORIZONTAL_LABEL_MAXIMUM_PADDING = 176;
@@ -75,12 +76,12 @@ function horizontalCategoryPadding(labels, width) {
 /**
  * Expands value-axis padding to prevent formatted ticks from clipping.
  *
- * @param {number[]} ticks - Values rendered along the vertical axis.
+ * @param {string[]} labels - Values rendered along the vertical axis.
  * @param {number} basePadding - Minimum padding required by the chart layout.
  * @returns {number} Pixel padding large enough for the widest tick label.
  */
-function verticalValuePadding(ticks, basePadding) {
-  const maximumLabelWidth = Math.max(0, ...ticks.map((value) => measuredTextWidth(formatNumber(value))));
+function verticalValuePadding(labels, basePadding) {
+  const maximumLabelWidth = Math.max(0, ...labels.map((label) => measuredTextWidth(label)));
 
   return Math.max(basePadding, Math.ceil(maximumLabelWidth + VALUE_LABEL_GAP));
 }

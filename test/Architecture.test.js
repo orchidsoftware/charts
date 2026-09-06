@@ -100,6 +100,8 @@ describe("architecture fitness functions", () => {
       "core/ChartData.js",
       "core/ChartPoints.js",
       "core/ChartSelection.js",
+      "support/presentation/Formatting.js",
+      "support/presentation/NumberFormatting.js",
     ];
     const visited = new Set();
     while (pending.length > 0) {
@@ -113,7 +115,9 @@ describe("architecture fitness functions", () => {
       const dependencies = imports(path).filter((value) => value.startsWith("."));
       for (const dependency of dependencies) {
         const resolved = new URL(dependency, `https://source.test/src/${path}`).pathname.slice(5);
-        expect(resolved, path).not.toMatch(/^(renderers\/|support\/Dom\.js|support\/ChartMark\.js)/);
+        expect(resolved, path).not.toMatch(
+          /^(renderers\/|support\/Dom\.js|support\/ChartMark\.js|support\/presentation\/TextLayout\.js)/,
+        );
         pending.push(resolved);
       }
     }

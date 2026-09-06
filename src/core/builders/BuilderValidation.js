@@ -1,3 +1,4 @@
+import { isValidDash, isLineStyle, isLabelPosition } from "../../support/data/Annotations.js";
 import { validateGradient } from "../../support/data/Gradient.js";
 import { validateText, validateNumber } from "../../support/data/InputValidation.js";
 import { isBoolean, isChoice, isNumberAtLeast, isOpacity, isPadAngle } from "../../support/Validation.js";
@@ -205,13 +206,7 @@ function validatePosition(value) {
  * @returns {void} Supported styles pass unchanged.
  */
 function validateLineStyle(value) {
-  if (
-    !isChoice(value, [
-      "solid",
-      "dashed",
-      "dotted",
-    ])
-  ) {
+  if (!isLineStyle(value)) {
     throw new TypeError("lineStyle must be solid, dashed, or dotted");
   }
 }
@@ -223,13 +218,7 @@ function validateLineStyle(value) {
  * @returns {void} Supported positions pass unchanged.
  */
 function validateLabelPosition(value) {
-  if (
-    !isChoice(value, [
-      "start",
-      "center",
-      "end",
-    ])
-  ) {
+  if (!isLabelPosition(value)) {
     throw new TypeError("labelPosition must be start, center, or end");
   }
 }
@@ -241,12 +230,10 @@ function validateLabelPosition(value) {
  * @returns {void} A usable non-negative pattern passes unchanged.
  */
 function validateDash(value) {
-  if (!Array.isArray(value) || value.length === 0) {
-    throw new TypeError("dash must be a non-empty array");
-  }
-
-  if (value.some((part) => !Number.isFinite(part) || part < 0) || value.every((part) => part === 0)) {
-    throw new TypeError("dash values must be non-negative with at least one positive value");
+  if (!isValidDash(value)) {
+    throw new TypeError(
+      "dash values must form a non-empty array of non-negative numbers with at least one positive value",
+    );
   }
 }
 

@@ -56,6 +56,7 @@ export default class Chart {
   #autoWidth;
   #options;
   #model;
+  #dimensions;
   #element;
   #tooltip;
   #interactions = null;
@@ -91,7 +92,7 @@ export default class Chart {
     this.#model = model;
     this.#element = this.#createElement();
     this.#tooltip = new ChartTooltip(this.#host, this.#element, this.#id);
-    this.#renderInto(this.#element, this.#model);
+    this.#dimensions = this.#renderInto(this.#element, this.#model);
     this.#commitHostPresentation(this.#element);
     this.#bindInteractions();
 
@@ -172,8 +173,8 @@ export default class Chart {
     validateChartColors(this.#host, data);
 
     const staged = this.#createElement();
-    this.#renderInto(staged, model);
-    this.#commitUpdate(staged, model);
+    const dimensions = this.#renderInto(staged, model);
+    this.#commitUpdate(staged, model, dimensions);
 
     return this;
   }
@@ -187,7 +188,13 @@ export default class Chart {
   point(index) {
     this.#assertMounted();
 
-    const requestedIndex = index ?? this.#interactions?.pointIndex ?? 0;
+    const activeMark = this.#interactions?.activeMark;
+
+    if (index === undefined && activeMark) {
+      return this.#model.pointFor(chartMark(activeMark));
+    }
+
+    const requestedIndex = index ?? 0;
 
     if (!Number.isSafeInteger(requestedIndex) || requestedIndex < 0) {
       throw new TypeError("Chart point index must be a non-negative integer");
@@ -309,9 +316,10 @@ export default class Chart {
 
     const options = { ...this.#options, width };
     const staged = this.#createElement(options);
-    this.#renderInto(staged, this.#model, options);
+    const dimensions = this.#renderInto(staged, this.#model, options);
     const activeIndex = this.#preservedIndex(staged, this.#model);
     this.#options = options;
+    this.#dimensions = dimensions;
     this.#replaceSurface(staged);
     this.#bindInteractions(activeIndex);
   }
@@ -364,19 +372,8 @@ export default class Chart {
       element.append(title);
     }
 
-    renderChart(
-      {
-        host: this.#host,
-        element,
-        options,
-        source: model.source,
-        datasets: model.datasets,
-        labels: model.labels,
-        heatmap: model.heatmap,
-        timesheet: model.timesheet,
-        palette: model.palette,
-        id: this.#id,
-      },
+    return renderChart(
+      { element, options, data: model.renderData, id: this.#id },
       this.#implementation.render,
     );
   }
@@ -410,12 +407,14 @@ export default class Chart {
    *
    * @param {SVGSVGElement} staged - Detached rendered candidate.
    * @param {object} model - Fully normalized replacement model.
+   * @param {object} dimensions - Actual dimensions of the candidate scene.
    * @returns {void} Mounted data, SVG, and interactions advance together.
    */
-  #commitUpdate(staged, model) {
+  #commitUpdate(staged, model, dimensions) {
     const activeIndex = this.#preservedIndex(staged, model);
     this.#replaceSurface(staged);
     this.#model = model;
+    this.#dimensions = dimensions;
     if (activeIndex < 0) {
       this.#selectionIdentity = null;
     }
@@ -518,7 +517,7 @@ export default class Chart {
 
     const interactionCallbacks = {
       labelFor: (mark) => chartMark(mark).label,
-      onShow: this.#options.tooltip ? (mark) => this.#tooltip.show(mark, this.#options) : () => {},
+      onShow: this.#options.tooltip ? (mark) => this.#tooltip.show(mark, this.#dimensions) : () => {},
       onHide: () => this.#tooltip.hide(),
       onActiveChange: (index, mark) => this.#handleActiveChange(index, mark),
     };

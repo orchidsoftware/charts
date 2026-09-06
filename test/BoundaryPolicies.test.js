@@ -3,12 +3,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LineChart } from "../src/index.js";
 import Composition from "../src/renderers/composition/Composition.js";
 import { normalizePoint, validateChartData } from "../src/support/data/SeriesData.js";
-import { wrappedLabelElement } from "../src/support/Dom.js";
 import { linePath } from "../src/support/geometry/CartesianGeometry.js";
 import { roundedSectorPath } from "../src/support/geometry/SectorGeometry.js";
 import { intensityLevel } from "../src/support/Palette.js";
 import { formatterText } from "../src/support/presentation/Formatting.js";
 import { datasetSummary } from "../src/support/presentation/Presentation.js";
+import { wrappedLabelElement } from "../src/support/presentation/TextLayout.js";
 import "../src/styles.css";
 
 function resetHost() {

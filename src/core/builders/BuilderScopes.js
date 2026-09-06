@@ -65,7 +65,7 @@ function writeScopeValue(scope, name, value) {
  * @returns {object} The same scope for chaining.
  */
 function validatedScopeValue(scope, rule, value) {
-  rule.validate(value, rule.name);
+  rule.validate(value, rule.label ?? rule.name);
   writeScopeValue(scope, rule.name, value);
 
   return scope;
@@ -249,7 +249,11 @@ class SeriesTooltipBuilder {
    * @returns {this} Active tooltip scope.
    */
   formatLabel(formatter) {
-    return validatedScopeValue(this, { name: "formatLabel", validate: validateFunction }, formatter);
+    return validatedScopeValue(
+      this,
+      { name: "tooltipFormatLabel", label: "formatLabel", validate: validateFunction },
+      formatter,
+    );
   }
 
   /**
@@ -259,7 +263,7 @@ class SeriesTooltipBuilder {
    * @returns {this} Active tooltip scope.
    */
   formatValue(formatter) {
-    return validatedScopeValue(this, { name: "tooltipValue", validate: validateFunction }, formatter);
+    return tooltipValue(this, formatter);
   }
 }
 
@@ -284,7 +288,7 @@ class AxisBuilder {
    */
   position(value) {
     validatePosition(value);
-    writeScopeValue(this, "position", value);
+    writeScopeValue(this, "yAxisPosition", value);
 
     return this;
   }
@@ -296,7 +300,7 @@ class AxisBuilder {
    * @returns {this} Active axis scope.
    */
   formatValue(formatter) {
-    return validatedScopeValue(this, { name: "axisValue", validate: validateFunction }, formatter);
+    return validatedScopeValue(this, { name: "axisFormatValue", validate: validateFunction }, formatter);
   }
 }
 
@@ -469,7 +473,11 @@ class DateTooltipBuilder {
    * @returns {this} Active temporal tooltip scope.
    */
   formatDate(formatter) {
-    return validatedScopeValue(this, { name: "formatDate", validate: validateFunction }, formatter);
+    return validatedScopeValue(
+      this,
+      { name: "tooltipFormatDate", label: "formatDate", validate: validateFunction },
+      formatter,
+    );
   }
 }
 
@@ -493,7 +501,7 @@ class HeatmapTooltipBuilder extends DateTooltipBuilder {
    * @returns {this} Active heatmap tooltip scope.
    */
   formatValue(formatter) {
-    return validatedScopeValue(this, { name: "formatValue", validate: validateFunction }, formatter);
+    return tooltipValue(this, formatter);
   }
 }
 
@@ -517,7 +525,11 @@ class TimesheetTooltipBuilder extends DateTooltipBuilder {
    * @returns {this} Active timesheet tooltip scope.
    */
   formatDuration(formatter) {
-    return validatedScopeValue(this, { name: "formatDuration", validate: validateFunction }, formatter);
+    return validatedScopeValue(
+      this,
+      { name: "tooltipFormatDuration", label: "formatDuration", validate: validateFunction },
+      formatter,
+    );
   }
 }
 
@@ -548,3 +560,18 @@ export {
   TimesheetTooltipBuilder,
   runScope,
 };
+
+/**
+ * Applies the numeric formatter shared by series and heatmap tooltip scopes.
+ *
+ * @param {object} scope - Active callback scope.
+ * @param {(value: number, context: object) => string} formatter - Public numeric formatter.
+ * @returns {object} The same scope for fluent chaining.
+ */
+function tooltipValue(scope, formatter) {
+  return validatedScopeValue(
+    scope,
+    { name: "tooltipFormatValue", label: "formatValue", validate: validateFunction },
+    formatter,
+  );
+}

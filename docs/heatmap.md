@@ -6,8 +6,10 @@ Calendar heatmaps show activity day by day. Color intensity makes recurring
 patterns, quiet periods, and unusually active days easy to find.
 Each day remains a square at every responsive size; long ranges continue in
 additional horizontal calendar bands instead of scrolling.
-The heatmap consumes the available width and derives its height from the date
-range, number of bands, and current container width. It adds no month headings
+The heatmap uses the available width and derives its height from the date
+range, number of bands, and current container width. Day cells grow to at most
+32 CSS pixels, so short ranges remain compact even in wide containers.
+It adds no month headings
 or decorative section gaps, so the data remains one continuous field.
 The SVG adds no outer inset, so apply any desired padding to the chart's host
 element.

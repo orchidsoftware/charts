@@ -1,6 +1,12 @@
 import { lineDataset, markerInput, regionInput } from "./BuilderArguments.js";
-import { AxisBuilder, SeriesTooltipBuilder, runScope } from "./BuilderScopes.js";
-import { builderOption, builderState, initializeBuilder } from "./BuilderState.js";
+import { AxisBuilder, SeriesTooltipBuilder } from "./BuilderScopes.js";
+import {
+  builderOption,
+  builderState,
+  builderTooltip,
+  builderScope,
+  initializeBuilder,
+} from "./BuilderState.js";
 
 /**
  * Owns common chart authoring state without resolving DOM until `render()`.
@@ -78,35 +84,6 @@ class CommonChartBuilder {
   }
 
   /**
-   * Configures tooltip visibility or scoped formatting.
-   *
-   * @param {boolean | ((tooltip: SeriesTooltipBuilder) => void)} value - Visibility switch or tooltip configurator.
-   * @returns {this} Current builder.
-   */
-  tooltip(value) {
-    if (typeof value !== "function") {
-      builderState(this).explicitOption("tooltip", value);
-
-      return this;
-    }
-
-    const tooltip = {};
-    runScope(new SeriesTooltipBuilder(tooltip), value);
-    const state = builderState(this);
-    state.explicitOption("tooltip", true);
-
-    if (tooltip.formatLabel !== undefined) {
-      state.option("tooltipFormatLabel", tooltip.formatLabel);
-    }
-
-    if (tooltip.tooltipValue !== undefined) {
-      state.option("tooltipFormatValue", tooltip.tooltipValue);
-    }
-
-    return this;
-  }
-
-  /**
    * Enables persistent selection and registers its callback.
    *
    * @param {(selection: object | undefined) => void} callback - Selection observer.
@@ -135,6 +112,16 @@ class CommonChartBuilder {
  * Adds ordered category and dataset authoring to a common chart builder.
  */
 class SeriesChartBuilder extends CommonChartBuilder {
+  /**
+   * Configures tooltip visibility or scoped formatting.
+   *
+   * @param {boolean | ((tooltip: SeriesTooltipBuilder) => void)} value - Visibility switch or tooltip configurator.
+   * @returns {this} Current builder.
+   */
+  tooltip(value) {
+    return builderTooltip(this, value, SeriesTooltipBuilder);
+  }
+
   /**
    * Chooses legend visibility instead of the dataset-count convention.
    *
@@ -237,19 +224,7 @@ class CartesianChartBuilder extends SeriesChartBuilder {
    * @returns {this} Current builder.
    */
   yAxis(configure) {
-    const axis = {};
-    runScope(new AxisBuilder(axis), configure);
-    const state = builderState(this);
-
-    if (axis.position !== undefined) {
-      state.option("yAxisPosition", axis.position);
-    }
-
-    if (axis.axisValue !== undefined) {
-      state.option("axisFormatValue", axis.axisValue);
-    }
-
-    return this;
+    return builderScope(this, AxisBuilder, configure);
   }
 
   /**

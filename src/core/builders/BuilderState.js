@@ -1,5 +1,6 @@
 import { copyInput } from "../../support/data/Copy.js";
 
+import { runScope } from "./BuilderScopes.js";
 import { validateBuilderOption, validateLabels } from "./BuilderValidation.js";
 
 const FULL_CIRCLE_DEGREES = 360;
@@ -275,3 +276,45 @@ function builderOption(builder, name, value) {
 }
 
 export { builderOption, builderState, initializeBuilder };
+
+/**
+ * Applies a callback scope whose fields already use chart option names.
+ *
+ * @param {object} builder - Active chart builder.
+ * @param {new (record: object) => object} Scope - Restricted callback builder.
+ * @param {(scope: object) => void} configure - Synchronous author callback.
+ * @returns {object} Original chart builder.
+ */
+function builderScope(builder, Scope, configure) {
+  const state = builderState(builder);
+  const options = {};
+  runScope(new Scope(options), configure);
+  for (const [
+    name,
+    value,
+  ] of Object.entries(options)) {
+    state.option(name, value);
+  }
+
+  return builder;
+}
+
+/**
+ * Applies the shared visibility-or-callback tooltip grammar.
+ *
+ * @param {object} builder - Active chart builder.
+ * @param {unknown} value - Visibility or formatter callback.
+ * @param {new (record: object) => object} Scope - Family tooltip scope.
+ * @returns {object} Original chart builder.
+ */
+function builderTooltip(builder, value, Scope) {
+  if (typeof value === "function") {
+    builderScope(builder, Scope, value);
+  }
+
+  builderState(builder).explicitOption("tooltip", typeof value === "function" ? true : value);
+
+  return builder;
+}
+
+export { builderScope, builderTooltip };

@@ -110,3 +110,41 @@ function timesheetPointAt(tasks, index) {
 }
 
 export { categoryPointAt, independentPointAt, heatmapPointAt, timesheetPointAt };
+
+/**
+ * Resolves a renderer address independently of DOM navigation order.
+ *
+ * @param {string} type - Chart family.
+ * @param {object} collections - Normalized model collections.
+ * @param {object} mark - Dataset and point address.
+ * @returns {object | undefined} Defensive public snapshot of the addressed data.
+ */
+function seriesPointFor(type, collections, mark) {
+  if (mark.kind === "dataset") {
+    const dataset = collections.datasets[mark.datasetIndex];
+
+    return Object.freeze({
+      index: mark.datasetIndex,
+      label: dataset.name,
+      values: Object.freeze(dataset.points.map((point) => point.y)),
+    });
+  }
+
+  if (
+    [
+      ChartType.SCATTER,
+      ChartType.BUBBLE,
+      ChartType.AXIS_MIXED,
+    ].includes(type)
+  ) {
+    const offset = collections.datasets
+      .slice(0, mark.datasetIndex)
+      .reduce((sum, dataset) => sum + dataset.points.length, 0);
+
+    return independentPointAt(type, collections, offset + mark.pointIndex);
+  }
+
+  return categoryPointAt(collections, mark.pointIndex);
+}
+
+export { seriesPointFor };

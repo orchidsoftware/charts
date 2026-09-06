@@ -53,6 +53,7 @@ describe("Timesheet Rendering", () => {
     ]);
     expect(tooltipFor(chart).querySelector(".charts2-tooltip-row strong").textContent).toBe("24 hours");
     first.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(chart.point()).toEqual(chart.point(0));
     expect(onSelect).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "timesheet",

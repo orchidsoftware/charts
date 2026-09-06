@@ -1,5 +1,6 @@
 import { renderLegend } from "../LegendRendering.js";
 
+import CartesianAnnotationsRenderer from "./CartesianAnnotationsRenderer.js";
 import CartesianAxesRenderer from "./CartesianAxesRenderer.js";
 import CartesianInspectorRenderer from "./CartesianInspectorRenderer.js";
 import CartesianLayout from "./CartesianLayout.js";
@@ -11,47 +12,32 @@ import {
 } from "./CartesianSeriesRendering.js";
 
 /**
- * Coordinates one Cartesian pass across layout, axes, series, and inspection.
+ * Coordinates layout, axes, series, inspection, and legend for one render pass.
+ *
+ * @param {object} snapshot - Chart data and owned SVG surface.
+ * @param {object} snapshot.chart - Normalized chart data.
+ * @param {object} snapshot.surface - Owned SVG surface.
+ * @param {(rendering: object) => void} renderSeries - Family series renderer.
+ * @returns {void} Complete Cartesian content is appended to the surface.
  */
-class CartesianRenderer {
-  #chart;
-  #surface;
-  #renderSeries;
+function renderCartesianChart({ chart, surface }, renderSeries) {
+  const layout = new CartesianLayout(chart);
+  const rendering = { chart, layout, surface, visuals: [] };
+  const axes = new CartesianAxesRenderer(rendering);
+  const annotations = new CartesianAnnotationsRenderer(rendering);
+  axes.renderBackground();
+  annotations.renderBackground();
+  axes.renderAxis();
+  renderSeries(rendering);
+  annotations.renderForeground();
+  axes.renderForeground();
+  const interactive = chart.options.tooltip || typeof chart.options.onSelect === "function";
 
-  /**
-   * Captures the chart snapshot and its owned SVG surface.
-   *
-   * @param {object} rendering - Collaborators for one Cartesian pass.
-   * @param {object} rendering.chart - Frozen Cartesian data and options.
-   * @param {import("../SvgSurface.js").default} rendering.surface - Owned SVG drawing surface.
-   * @param {(rendering: object) => void} renderSeries - Family-specific series drawing function.
-   */
-  constructor({ chart, surface }, renderSeries) {
-    this.#chart = chart;
-    this.#surface = surface;
-    this.#renderSeries = renderSeries;
+  if (layout.usesInspector && interactive) {
+    new CartesianInspectorRenderer(rendering).render();
   }
 
-  /**
-   * Renders background, data marks, foreground, and optional category targets.
-   *
-   * @returns {void} Complete Cartesian content is appended to the chart SVG.
-   */
-  render() {
-    const layout = new CartesianLayout(this.#chart);
-    const rendering = { chart: this.#chart, layout, surface: this.#surface };
-    const axes = new CartesianAxesRenderer(rendering);
-    axes.renderBackground();
-    this.#renderSeries(rendering);
-    axes.renderForeground();
-    const interactive = this.#chart.options.tooltip || typeof this.#chart.options.onSelect === "function";
-
-    if (layout.usesInspector && interactive) {
-      new CartesianInspectorRenderer(rendering).render();
-    }
-
-    renderLegend(rendering);
-  }
+  renderLegend(rendering);
 }
 
 /**
@@ -61,7 +47,7 @@ class CartesianRenderer {
  * @returns {void} Line content is appended to the chart SVG.
  */
 function renderLineChart(rendering) {
-  new CartesianRenderer(rendering, renderLineSeries).render();
+  renderCartesianChart(rendering, renderLineSeries);
 }
 
 /**
@@ -71,7 +57,7 @@ function renderLineChart(rendering) {
  * @returns {void} Bar content is appended to the chart SVG.
  */
 function renderBarChart(rendering) {
-  new CartesianRenderer(rendering, renderBarSeries).render();
+  renderCartesianChart(rendering, renderBarSeries);
 }
 
 /**
@@ -81,7 +67,7 @@ function renderBarChart(rendering) {
  * @returns {void} Point content is appended to the chart SVG.
  */
 function renderPointChart(rendering) {
-  new CartesianRenderer(rendering, renderPointSeries).render();
+  renderCartesianChart(rendering, renderPointSeries);
 }
 
 /**
@@ -91,7 +77,7 @@ function renderPointChart(rendering) {
  * @returns {void} Mixed content is appended to the chart SVG.
  */
 function renderMixedChart(rendering) {
-  new CartesianRenderer(rendering, renderMixedSeries).render();
+  renderCartesianChart(rendering, renderMixedSeries);
 }
 
 export { renderBarChart, renderLineChart, renderMixedChart, renderPointChart };

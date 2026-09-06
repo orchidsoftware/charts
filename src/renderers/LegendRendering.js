@@ -1,6 +1,7 @@
 import { SERIES_SWATCH_DIAMETER, LEGEND_LABEL_OFFSET } from "../support/Constants.js";
-import { svg, labelElement } from "../support/Dom.js";
+import { svg } from "../support/Dom.js";
 import { seriesContentLayout } from "../support/presentation/Presentation.js";
+import { labelElement } from "../support/presentation/TextLayout.js";
 
 /**
  * Draws one compact color key using shared wrapping and bottom placement.

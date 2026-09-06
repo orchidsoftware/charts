@@ -1,6 +1,4 @@
-import { markMetadata, markTooltip } from "../../support/ChartMark.js";
-import { svg, titled } from "../../support/Dom.js";
-import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
+import { formatLabel, formatValue, seriesContext } from "../../support/presentation/Formatting.js";
 
 /**
  * Renders category-sized interaction targets for dense Cartesian series.
@@ -9,6 +7,7 @@ export default class CartesianInspectorRenderer {
   #chart;
   #layout;
   #surface;
+  #visuals;
 
   /**
    * Binds normalized chart state to one immutable Cartesian layout snapshot.
@@ -17,11 +16,13 @@ export default class CartesianInspectorRenderer {
    * @param {object} state.chart - Frozen chart data and options.
    * @param {object} state.layout - Scales and bounds resolved by `CartesianRenderer`.
    * @param {import("../SvgSurface.js").default} state.surface - Owned SVG drawing surface.
+   * @param {SVGElement[][]} state.visuals - Explicit visual peers indexed by dataset and point.
    */
-  constructor({ chart, layout, surface }) {
+  constructor({ chart, layout, surface, visuals }) {
     this.#chart = chart;
     this.#layout = layout;
     this.#surface = surface;
+    this.#visuals = visuals;
   }
 
   /**
@@ -35,18 +36,23 @@ export default class CartesianInspectorRenderer {
       const label = formatLabel(this.#chart.options, rawLabel, { target: "tooltip", index });
       const items = this.#itemsAt(index);
 
-      const hitTarget = markMetadata(
-        svg("rect", {
+      const summary = items.map((item) => `${item.name}: ${item.value}`).join(" · ");
+      this.#surface.mark(
+        "rect",
+        {
           ...this.#layout.inspectorAt(index),
           fill: "transparent",
           class: "charts2-x-hit charts2-mark",
-        }),
-        { kind: "category", datasetIndex: 0, pointIndex: index },
+        },
+        {
+          kind: "category",
+          dataset: 0,
+          point: index,
+          title: `${label} — ${summary}`,
+          tooltip: { heading: String(label), items },
+          visualElement: this.#visuals[0]?.[index],
+        },
       );
-
-      markTooltip(hitTarget, { heading: String(label), items });
-      const summary = items.map((item) => `${item.name}: ${item.value}`).join(" · ");
-      this.#surface.append(titled(hitTarget, `${label} — ${summary}`));
     }
   }
 
@@ -61,13 +67,8 @@ export default class CartesianInspectorRenderer {
       const point = dataset.points[index];
 
       const formattedValue = formatValue(this.#chart.options, point.y, {
+        ...seriesContext(this.#chart, datasetIndex, index),
         target: "tooltip",
-        dataset,
-        datasetIndex,
-        datasetName: dataset.name,
-        index,
-        label: this.#chart.labels[index],
-        point,
       });
 
       const size = point.r === undefined ? "" : `, size ${point.r}`;

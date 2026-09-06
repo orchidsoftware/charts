@@ -53,7 +53,7 @@ function normalizedDataset(dataset, datasetIndex) {
     chartType: dataset.chartType ?? dataset.type,
     opacity: dataset.opacity,
     formatValue: dataset.formatValue,
-    gradient: dataset.gradient,
+    gradient: isRecord(dataset.gradient) ? { ...dataset.gradient } : dataset.gradient,
     smooth: dataset.smooth,
     dots: dataset.dots,
     dotSize: dataset.dotSize,

@@ -1,17 +1,23 @@
 import { AGGREGATION_TYPES, ChartType } from "../support/Constants.js";
+import { normalizeCartesianSource } from "../support/data/Annotations.js";
 import { normalizeHeatmapData } from "../support/data/HeatmapData.js";
 import { normalizeDatasets, validateChartData, validateSeriesScene } from "../support/data/SeriesData.js";
 import { normalizeTimesheetData } from "../support/data/TimesheetData.js";
 import { chartColors, heatmapPalette } from "../support/Palette.js";
 
-import { categoryPointAt, heatmapPointAt, independentPointAt, timesheetPointAt } from "./ChartPoints.js";
+import {
+  categoryPointAt,
+  heatmapPointAt,
+  independentPointAt,
+  timesheetPointAt,
+  seriesPointFor,
+} from "./ChartPoints.js";
 import {
   createCompositionSelection,
   createHeatmapSelection,
   createSeriesSelection,
   createTimesheetSelection,
 } from "./ChartSelection.js";
-import { normalizeCartesianSource } from "./NormalizeAnnotations.js";
 
 const DEFAULT_MAXIMUM_SLICES = 20;
 
@@ -27,7 +33,9 @@ function chartModel(source, collections, behavior) {
   return Object.freeze({
     source,
     ...collections,
+    renderData: Object.freeze({ source, ...collections }),
     pointAt: behavior.pointAt,
+    pointFor: behavior.pointFor ?? ((mark) => behavior.pointAt(mark.pointIndex)),
     selectionFor: (mark) => behavior.selection.from(mark),
     identityFor: (mark) => behavior.selection.identityFor(mark),
   });
@@ -53,7 +61,7 @@ function isNormalizedLabel(label) {
  * @param {string} type - Concrete series or composition type.
  * @param {object} data - Caller-controlled data.
  * @param {string[]} colors - Effective palette.
- * @returns {{source: object, collections: object}} Validated series snapshot.
+ * @returns {{datasets: object[], labels: unknown[]}} Validated series collections.
  */
 function normalizeSeries(type, data, colors) {
   validateSeriesScene(type, data);
@@ -70,7 +78,7 @@ function normalizeSeries(type, data, colors) {
   const pointCount = Math.max(...datasets.map((dataset) => dataset.points.length));
 
   const labels =
-    data.labels ??
+    data.labels?.slice() ??
     ([
       ChartType.SCATTER,
       ChartType.BUBBLE,
@@ -81,8 +89,8 @@ function normalizeSeries(type, data, colors) {
   validateChartData(type, datasets, labels);
 
   return {
-    source: normalizeCartesianSource(data),
-    collections: { datasets, labels },
+    datasets,
+    labels,
   };
 }
 
@@ -139,8 +147,9 @@ function aggregateComposition(collections, maximum) {
  */
 function createSeriesModel(type, data, config) {
   const colors = chartColors(type, config.colors);
-  const normalized = normalizeSeries(type, data, colors);
-  const selection = createSeriesSelection(type, { ...normalized.collections, colors });
+  const collections = normalizeSeries(type, data, colors);
+  const source = normalizeCartesianSource(data);
+  const selection = createSeriesSelection(type, { ...collections, colors });
 
   const isIndependent = [
     ChartType.SCATTER,
@@ -149,10 +158,14 @@ function createSeriesModel(type, data, config) {
   ].includes(type);
 
   const pointAt = isIndependent
-    ? (index) => independentPointAt(type, normalized.collections, index)
-    : (index) => categoryPointAt(normalized.collections, index);
+    ? (index) => independentPointAt(type, collections, index)
+    : (index) => categoryPointAt(collections, index);
 
-  return chartModel(normalized.source, normalized.collections, { selection, pointAt });
+  return chartModel(source, collections, {
+    selection,
+    pointAt,
+    pointFor: (mark) => seriesPointFor(type, collections, mark),
+  });
 }
 
 /**
@@ -169,14 +182,15 @@ function createCompositionModel(type, data, config) {
   const maximum = config.maxSlices ?? DEFAULT_MAXIMUM_SLICES;
 
   const collections = AGGREGATION_TYPES.includes(type)
-    ? aggregateComposition(normalized.collections, maximum)
-    : normalized.collections;
+    ? aggregateComposition(normalized, maximum)
+    : normalized;
 
   const selection = createCompositionSelection(type, { ...collections, colors });
 
-  return chartModel(normalized.source, collections, {
+  return chartModel({ yMarkers: [], yRegions: [] }, collections, {
     selection,
     pointAt: (index) => categoryPointAt(collections, index),
+    pointFor: (mark) => seriesPointFor(type, collections, mark),
   });
 }
 
@@ -194,7 +208,7 @@ function createHeatmapModel(type, data, config) {
   const collections = { heatmap, palette: heatmapPalette(heatmap, colors) };
   const selection = createHeatmapSelection({ ...collections, colors });
 
-  return chartModel(data, collections, {
+  return chartModel(undefined, collections, {
     selection,
     pointAt: (index) => heatmapPointAt(collections.heatmap, index),
   });
@@ -215,7 +229,7 @@ function createTimesheetModel(type, data, config) {
   const collections = { timesheet, labels };
   const selection = createTimesheetSelection(collections);
 
-  return chartModel(data, collections, {
+  return chartModel(undefined, collections, {
     selection,
     pointAt: (index) => timesheetPointAt(timesheet.tasks, index),
   });

@@ -1,5 +1,6 @@
-import { validateObjectKeys, validateText } from "../support/data/InputValidation.js";
-import { isBoolean, isChoice, isNumberAtLeast, isOpacity, isRecord } from "../support/Validation.js";
+import { isBoolean, isChoice, isNumberAtLeast, isOpacity, isRecord } from "../Validation.js";
+
+import { validateObjectKeys, validateText } from "./InputValidation.js";
 
 const MARKER_KEYS = [
   "label",
@@ -56,7 +57,9 @@ function normalizedMarker(marker) {
     color: marker.color ?? SECONDARY_LABEL_COLOR,
     width: marker.width ?? 1,
     opacity: marker.opacity ?? 1,
-    dash: marker.dash ?? DASH_PATTERNS[marker.lineStyle ?? "dashed"],
+    dash: [
+      ...(marker.dash ?? DASH_PATTERNS[marker.lineStyle ?? "dashed"]),
+    ],
     labelPosition: marker.labelPosition ?? "end",
     labelColor: marker.labelColor ?? SECONDARY_LABEL_COLOR,
     includeInDomain: marker.includeInDomain ?? true,
@@ -106,7 +109,7 @@ function normalizeMarker(marker) {
     throw new TypeError("marker width must be a non-negative finite number");
   }
 
-  if (marker.lineStyle !== undefined && !Object.hasOwn(DASH_PATTERNS, marker.lineStyle)) {
+  if (marker.lineStyle !== undefined && !isLineStyle(marker.lineStyle)) {
     throw new TypeError("marker lineStyle must be solid, dashed, or dotted");
   }
 
@@ -175,14 +178,7 @@ function validateAnnotationPresentation(annotation, concept) {
     throw new TypeError(`${concept} opacity must be from 0 through 1`);
   }
 
-  if (
-    annotation.labelPosition !== undefined &&
-    !isChoice(annotation.labelPosition, [
-      "start",
-      "center",
-      "end",
-    ])
-  ) {
+  if (annotation.labelPosition !== undefined && !isLabelPosition(annotation.labelPosition)) {
     throw new TypeError(`${concept} labelPosition must be start, center, or end`);
   }
 
@@ -206,10 +202,35 @@ function normalizeCartesianSource(data) {
   const regions = data.regions ?? [];
 
   return {
-    ...data,
     yMarkers: markers.map((marker) => normalizeMarker(marker)),
     yRegions: regions.map((region) => normalizeRegion(region)),
   };
 }
 
 export { normalizeCartesianSource };
+
+/**
+ * Tests a supported annotation line style.
+ *
+ * @param {unknown} value - Requested line style.
+ * @returns {boolean} Whether the style has a dash definition.
+ */
+function isLineStyle(value) {
+  return Object.hasOwn(DASH_PATTERNS, value);
+}
+
+/**
+ * Tests a supported logical label position.
+ *
+ * @param {unknown} value - Requested position.
+ * @returns {boolean} Whether the position is supported.
+ */
+function isLabelPosition(value) {
+  return isChoice(value, [
+    "start",
+    "center",
+    "end",
+  ]);
+}
+
+export { isValidDash, isLineStyle, isLabelPosition };

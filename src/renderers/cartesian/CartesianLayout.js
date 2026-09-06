@@ -6,6 +6,7 @@ import {
   YAxisPosition,
 } from "../../support/Constants.js";
 import { extent, niceValueScale, scale } from "../../support/geometry/Math.js";
+import { formatValue } from "../../support/presentation/Formatting.js";
 import {
   formatCategoryLabel,
   horizontalCategoryPadding,
@@ -300,6 +301,12 @@ export default class CartesianLayout {
 
     const isStacked = Boolean(this.#chart.options.stacked);
     const values = this.#valueScale(points, barDatasets, state);
+    values.labels = new Map(
+      (this.#chart.options.valueLabels ? values.ticks : []).map((value) => [
+        value,
+        formatValue(this.#chart.options, value, { target: "axis" }),
+      ]),
+    );
     const gutter = this.#valueGutter(state.labels, values, state);
 
     return {
@@ -453,7 +460,12 @@ export default class CartesianLayout {
       return horizontalCategoryPadding(labels, presentation.width);
     }
 
-    return verticalValuePadding(values.ticks, 0);
+    return verticalValuePadding(
+      [
+        ...values.labels.values(),
+      ],
+      0,
+    );
   }
 
   /**

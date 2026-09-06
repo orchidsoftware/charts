@@ -1,4 +1,4 @@
-import { chartMark, markMetadata } from "../support/ChartMark.js";
+import { markMetadata } from "../support/ChartMark.js";
 import { svg, titled } from "../support/Dom.js";
 
 /**
@@ -6,7 +6,6 @@ import { svg, titled } from "../support/Dom.js";
  */
 export default class SvgSurface {
   #root;
-  #visuals = new Map();
 
   /**
    * Captures the SVG element owned by the chart lifecycle.
@@ -26,32 +25,9 @@ export default class SvgSurface {
    */
   append(node, attributes = {}) {
     const element = typeof node === "string" ? svg(node, attributes) : node;
-    this.#linkMark(element);
     this.#root.append(element);
 
     return element;
-  }
-
-  /**
-   * Links hit targets to visual peers using renderer-provided model coordinates.
-   *
-   * @param {SVGElement} element - Newly appended data element.
-   * @returns {void} The explicit mark record receives its visual peer.
-   */
-  #linkMark(element) {
-    const record = chartMark(element);
-
-    if (!record) {
-      return;
-    }
-
-    const key = `${record.datasetIndex}:${record.pointIndex}`;
-
-    if (record.kind === "visual") {
-      this.#visuals.set(key, element);
-    }
-
-    record.visualElement = this.#visuals.get(key) ?? element;
   }
 
   /**
@@ -66,13 +42,22 @@ export default class SvgSurface {
    * @param {string} [metadata.kind="point"] - Explicit model mark kind.
    * @returns {SVGElement} Appended interactive mark.
    */
-  mark(name, attributes, { dataset, point, title, kind = "point" }) {
-    const element = titled(
-      markMetadata(svg(name, attributes), { kind, datasetIndex: dataset, pointIndex: point }),
-      title,
-    );
+  mark(name, attributes, metadata) {
+    const { dataset, point, title, kind = "point", visualElement, tooltip, anchor } = metadata;
+    const element = typeof name === "string" ? svg(name, attributes) : name;
+    const label = typeof title === "string" ? title : title.text;
+    const content = tooltip ?? (typeof title === "string" ? { heading: title, items: [] } : title);
+    markMetadata(element, {
+      kind,
+      datasetIndex: dataset,
+      pointIndex: point,
+      visualElement: visualElement ?? element,
+      label,
+      tooltip: content,
+      anchor,
+    });
 
-    return this.append(element);
+    return this.append(titled(element, label));
   }
 
   /**
@@ -91,23 +76,15 @@ export default class SvgSurface {
   }
 
   /**
-   * Updates one attribute on the owned SVG root.
+   * Applies the actual dimensions resolved by the family layout.
    *
-   * @param {string} name - Root attribute name.
-   * @param {string | number} value - Serializable attribute value.
-   * @returns {void} The existing root is updated in place.
+   * @param {object} dimensions - Logical SVG width and height.
+   * @param {number} dimensions.width - Logical width.
+   * @param {number} dimensions.height - Logical height.
+   * @returns {void} Updates the detached surface consistently.
    */
-  attribute(name, value) {
-    this.#root.setAttribute(name, String(value));
-  }
-
-  /**
-   * Applies a bounded set of inline styles to the owned SVG root.
-   *
-   * @param {Record<string, string>} properties - CSS property names and values.
-   * @returns {void} Root style declarations are updated in place.
-   */
-  styles(properties) {
-    Object.assign(this.#root.style, properties);
+  size({ width, height }) {
+    this.#root.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    this.#root.setAttribute("height", String(height));
   }
 }

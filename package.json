@@ -68,12 +68,13 @@
     "coverage": "vitest run --coverage --exclude test/Performance.test.js",
     "audit": "npm audit --audit-level=high",
     "pack:check": "npm pack --dry-run --ignore-scripts",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm run coverage && npm run test:performance && npm run test:compatibility && npm run build && npm run test:dist",
+    "check": "npm run format:check && npm run lint && npm run test:policies && npm run typecheck && npm run coverage && npm run test:performance && npm run test:compatibility && npm run build && npm run test:dist",
     "prepack": "npm run build",
     "prepublishOnly": "npm run check",
     "build:library": "vite build",
     "test:dist": "node scripts/TestNoBuild.mjs && npm run test:ssr:built",
-    "test:ssr:built": "node --input-type=module --eval \"await import('./dist/index.js')\""
+    "test:ssr:built": "node --input-type=module --eval \"await import('./dist/index.js')\"",
+    "test:policies": "node --test test-node/*.test.mjs"
   },
   "engines": {
     "node": ">=22.12"

@@ -1,6 +1,6 @@
 import { ChartType, DEFAULT_PERCENTAGE_RADIUS } from "../../support/Constants.js";
 import { svg } from "../../support/Dom.js";
-import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
+import { formatLabel, formatValue, seriesContext } from "../../support/presentation/Formatting.js";
 import { chartContentLayout, tooltipContent } from "../../support/presentation/Presentation.js";
 import { renderLegend } from "../LegendRendering.js";
 
@@ -142,6 +142,7 @@ class AggregationRenderer {
           dataset: 0,
           point: index,
           title: tooltipContent({
+            ...seriesContext(this.#chart, 0, index),
             options: this.#chart.options,
             label: part.label,
             color: colors[index % colors.length],
@@ -230,14 +231,12 @@ class AggregationRenderer {
       sector.name,
       {
         ...sector.attributes,
-        "data-tooltip-anchor-x": sector.tooltip.x,
-        "data-tooltip-anchor-y": sector.tooltip.y,
-        "data-tooltip-placement": sector.tooltip.placement,
         class: `charts2-${type}-slice charts2-mark`,
       },
       {
         dataset: 0,
         point: sector.index,
+        anchor: sector.tooltip,
         title: this.#sectorTitle(composition, sector.part, sector.index),
       },
     );
@@ -257,10 +256,7 @@ class AggregationRenderer {
       label: part.label,
       color: this.#chart.options.colors[index % this.#chart.options.colors.length],
       value: part.value,
-      dataset: this.#chart.datasets[0],
-      datasetIndex: 0,
-      index,
-      point: this.#chart.datasets[0].points[index],
+      ...seriesContext(this.#chart, 0, index),
       suffix: ` (${Math.round(composition.shareOf(part) * FULL_PERCENTAGE)}%)`,
     });
   }

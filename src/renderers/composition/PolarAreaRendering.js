@@ -1,14 +1,14 @@
-import { markMetadata } from "../../support/ChartMark.js";
 import {
   DEFAULT_SECTOR_CORNER_RADIUS,
   POLAR_LABEL_EDGE_INSET,
   POLAR_LABEL_GAP,
   POLAR_LABEL_MIN_WIDTH,
 } from "../../support/Constants.js";
-import { labelElement, svg, titled } from "../../support/Dom.js";
+import { svg } from "../../support/Dom.js";
 import { paddedSector, polarPoint, roundedSectorPath } from "../../support/geometry/Math.js";
-import { formatLabel } from "../../support/presentation/Formatting.js";
+import { formatLabel, seriesContext } from "../../support/presentation/Formatting.js";
 import { tooltipContent, seriesContentLayout } from "../../support/presentation/Presentation.js";
+import { labelElement } from "../../support/presentation/TextLayout.js";
 import { renderLegend } from "../LegendRendering.js";
 
 const MINIMUM_POLAR_RADIUS = 8;
@@ -144,16 +144,19 @@ class PolarAreaRenderer {
     const colors = this.#chart.options.colors;
     sectorElement.setAttribute("fill", colors[index % colors.length]);
     sectorElement.classList.add("charts2-polar-area", "charts2-mark");
-    this.#surface.append(
-      titled(
-        markMetadata(sectorElement, { kind: "point", datasetIndex: 0, pointIndex: index }),
-        tooltipContent({
+    this.#surface.mark(
+      sectorElement,
+      {},
+      {
+        dataset: 0,
+        point: index,
+        title: tooltipContent({
+          ...seriesContext(this.#chart, 0, index),
           options: this.#chart.options,
-          label: this.#chart.labels[index],
           color: colors[index % colors.length],
           value: point.y,
         }),
-      ),
+      },
     );
     this.#renderLabel(index, { start, slice: layout.slice }, layout);
   }

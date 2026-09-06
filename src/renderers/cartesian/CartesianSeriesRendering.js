@@ -1,8 +1,8 @@
-import { markMetadata, markTooltip } from "../../support/ChartMark.js";
 import { ChartType, DEFAULT_BAR_RADIUS } from "../../support/Constants.js";
-import { formatNumber, svg, titled } from "../../support/Dom.js";
+import { svg } from "../../support/Dom.js";
 import { linePath, roundedBarPath } from "../../support/geometry/Math.js";
-import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
+import { formatLabel, formatValue, seriesContext } from "../../support/presentation/Formatting.js";
+import { formatNumber } from "../../support/presentation/NumberFormatting.js";
 import { datasetSummary, tooltipContent } from "../../support/presentation/Presentation.js";
 
 const CARTESIAN_LAYER = Object.freeze({
@@ -87,14 +87,10 @@ function seriesPointContent(rendering, source) {
   const { dataset, datasetIndex, pointIndex, point } = source;
 
   return tooltipContent({
+    ...seriesContext(chart, datasetIndex, pointIndex),
     prefix: seriesPrefix(chart, dataset),
     options: chart.options,
-    label: chart.labels[pointIndex],
     value: point.y,
-    dataset,
-    datasetIndex,
-    index: pointIndex,
-    point,
   });
 }
 
@@ -107,21 +103,7 @@ function seriesPointContent(rendering, source) {
  * @returns {void} One hit target is appended.
  */
 function renderPointHit(rendering, series, target) {
-  const { surface } = rendering;
-
-  const hit = markMetadata(
-    svg("circle", {
-      ...target.coordinates,
-      r: Math.max(MINIMUM_POINT_HIT_RADIUS, target.radius),
-      fill: "transparent",
-      stroke: "transparent",
-      "data-tooltip-anchor-x": target.coordinates.cx,
-      "data-tooltip-anchor-y": target.coordinates.cy,
-      class: `charts2-point-hit charts2-mark charts2-series-${series.datasetIndex % SERIES_CLASS_COUNT}`,
-      style: `color:${series.dataset.color}`,
-    }),
-    { kind: "point", datasetIndex: series.datasetIndex, pointIndex: target.pointIndex },
-  );
+  const { visuals } = rendering;
 
   const content = target.tooltip.content ?? {
     heading: target.tooltip.heading,
@@ -130,9 +112,25 @@ function renderPointHit(rendering, series, target) {
     ],
   };
 
-  markTooltip(hit, content);
-
-  surface.append(titled(hit, target.label));
+  rendering.surface.mark(
+    "circle",
+    {
+      ...target.coordinates,
+      r: Math.max(MINIMUM_POINT_HIT_RADIUS, target.radius),
+      fill: "transparent",
+      stroke: "transparent",
+      class: `charts2-point-hit charts2-mark charts2-series-${series.datasetIndex % SERIES_CLASS_COUNT}`,
+      style: `color:${series.dataset.color}`,
+    },
+    {
+      dataset: series.datasetIndex,
+      point: target.pointIndex,
+      title: target.label,
+      tooltip: content,
+      anchor: { x: target.coordinates.cx, y: target.coordinates.cy },
+      visualElement: visuals[series.datasetIndex][target.pointIndex],
+    },
+  );
 }
 
 /**
@@ -189,27 +187,30 @@ function renderArea(rendering, entry) {
  * @returns {void} One line path is appended.
  */
 function renderLineStroke(rendering, entry) {
-  const { chart, layout, surface } = rendering;
+  const { chart, layout, surface, visuals } = rendering;
   const { dataset, datasetIndex, path, presentation } = entry;
   const isDense = !layout.usesInspector && layout.type !== ChartType.AXIS_MIXED;
 
-  surface.mark(
+  const visual = surface.mark(
     "path",
     {
       d: path,
       fill: "none",
       stroke: dataset.color,
       "stroke-width": presentation.strokeWidth,
+      style: `stroke-width:var(--charts-stroke-width, ${presentation.strokeWidth}px)`,
       opacity: dataset.opacity ?? 1,
       class: `${isDense ? "charts2-line charts2-mark" : "charts2-line"} charts2-series-${datasetIndex % SERIES_CLASS_COUNT}`,
     },
     {
-      kind: "visual",
+      kind: isDense ? "dataset" : "visual",
       dataset: datasetIndex,
       point: 0,
       title: datasetSummary(dataset, chart.labels, { options: chart.options, datasetIndex }),
     },
   );
+
+  visuals[datasetIndex] = dataset.points.map(() => visual);
 }
 
 /**
@@ -221,7 +222,7 @@ function renderLineStroke(rendering, entry) {
  */
 // eslint-disable-next-line max-lines-per-function -- Array layout lines do not add behavior.
 function renderVisibleLinePoints(rendering, entry) {
-  const { layout, surface } = rendering;
+  const { layout, surface, visuals } = rendering;
   const { dataset, datasetIndex, presentation } = entry;
 
   for (const [
@@ -238,23 +239,24 @@ function renderVisibleLinePoints(rendering, entry) {
       class: "charts2-point-halo charts2-line-point-halo",
       "aria-hidden": "true",
     });
-    surface.append(
-      titled(
-        markMetadata(
-          svg("circle", {
-            cx: coordinates.x,
-            cy: coordinates.y,
-            r: presentation.dotSize,
-            fill: "var(--charts-point-fill)",
-            stroke: dataset.color,
-            opacity: dataset.opacity ?? 1,
-            class: `charts2-point charts2-visual-mark charts2-series-${datasetIndex % SERIES_CLASS_COUNT}`,
-            "aria-hidden": "true",
-          }),
-          { kind: "visual", datasetIndex, pointIndex },
-        ),
-        label,
-      ),
+    visuals[datasetIndex][pointIndex] = surface.mark(
+      "circle",
+      {
+        cx: coordinates.x,
+        cy: coordinates.y,
+        r: presentation.dotSize,
+        fill: "var(--charts-point-fill)",
+        stroke: dataset.color,
+        opacity: dataset.opacity ?? 1,
+        class: `charts2-point charts2-visual-mark charts2-series-${datasetIndex % SERIES_CLASS_COUNT}`,
+        "aria-hidden": "true",
+      },
+      {
+        kind: "visual",
+        dataset: datasetIndex,
+        point: pointIndex,
+        title: label,
+      },
     );
   }
 }
@@ -299,10 +301,11 @@ function renderLineHits(rendering, entry) {
  * @returns {void} One complete line dataset is appended.
  */
 function renderLine(rendering, source) {
-  const { chart, layout } = rendering;
+  const { chart, layout, visuals } = rendering;
   const { dataset } = source;
   const geometry = dataset.points.map((point, index) => layout.pointAt(point, index));
   const presentation = new LinePresentation(dataset, chart.options);
+  visuals[source.datasetIndex] = [];
   const entry = { ...source, path: linePath(geometry, presentation.isSmooth), presentation };
 
   if (presentation.hasArea) {
@@ -333,14 +336,7 @@ function pointTooltip(rendering, state) {
   const { chart } = rendering;
   const { series, source, pointIndex } = state;
 
-  const context = {
-    target: "tooltip",
-    dataset: series.dataset,
-    datasetIndex: series.datasetIndex,
-    datasetName: series.dataset.name,
-    index: pointIndex,
-    point: source,
-  };
+  const context = { ...seriesContext(chart, series.datasetIndex, pointIndex), target: "tooltip" };
 
   const rawCategory = chart.labels[pointIndex] ?? source.x;
   const heading = formatLabel(chart.options, rawCategory, context);
@@ -364,7 +360,7 @@ function pointTooltip(rendering, state) {
  */
 // eslint-disable-next-line max-lines-per-function -- Array layout lines do not add behavior.
 function renderPoints(rendering, series) {
-  const { layout, surface } = rendering;
+  const { layout, surface, visuals } = rendering;
 
   for (const [
     pointIndex,
@@ -384,8 +380,10 @@ function renderPoints(rendering, series) {
       });
     }
 
-    const point = markMetadata(
-      svg("circle", {
+    visuals[series.datasetIndex] ??= [];
+    visuals[series.datasetIndex][pointIndex] = surface.mark(
+      "circle",
+      {
         ...coordinates,
         r: radius,
         fill: isOutlined ? "var(--charts-point-fill)" : series.dataset.color,
@@ -393,11 +391,14 @@ function renderPoints(rendering, series) {
         opacity: series.dataset.opacity ?? (isOutlined ? 1 : BUBBLE_OPACITY),
         class: `charts2-${series.datasetType} charts2-visual-mark charts2-series-${series.datasetIndex % SERIES_CLASS_COUNT}`,
         "aria-hidden": "true",
-      }),
-      { kind: "visual", datasetIndex: series.datasetIndex, pointIndex },
+      },
+      {
+        kind: "visual",
+        dataset: series.datasetIndex,
+        point: pointIndex,
+        title: tooltip.label,
+      },
     );
-
-    surface.append(titled(point, tooltip.label));
 
     if (!layout.usesInspector) {
       renderPointHit(rendering, series, { coordinates, radius, label: tooltip.label, pointIndex, tooltip });
@@ -471,10 +472,11 @@ function barHitStrokeWidth(layout, geometry) {
  * @returns {void} One accessible bar path is appended.
  */
 function renderBar(rendering, state) {
-  const { chart, layout, surface } = rendering;
+  const { chart, layout, surface, visuals } = rendering;
   const { dataset, datasetIndex, point, pointIndex, geometry, shouldRoundValueEnd } = state;
 
-  surface.mark(
+  visuals[datasetIndex] ??= [];
+  visuals[datasetIndex][pointIndex] = surface.mark(
     "path",
     {
       d: roundedBarPath({

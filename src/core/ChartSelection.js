@@ -164,17 +164,18 @@ function compositionPayload(type, index, collections) {
 }
 
 /**
- * Creates one complete radar-dataset payload.
+ * Creates one complete dataset payload for a dataset-sized interaction target.
  *
+ * @param {string} type - Concrete chart type.
  * @param {number} index - Selected dataset position.
  * @param {object} collections - Normalized datasets and labels.
  * @returns {object} Public radar payload.
  */
-function radarPayload(index, collections) {
+function datasetPayload(type, index, collections) {
   const dataset = collections.datasets[index];
 
   const points = dataset.points.map((_point, pointIndex) =>
-    selectionPoint(ChartType.RADAR, collections, {
+    selectionPoint(type, collections, {
       dataset,
       datasetIndex: index,
       pointIndex,
@@ -183,7 +184,7 @@ function radarPayload(index, collections) {
   );
 
   return Object.freeze({
-    type: ChartType.RADAR,
+    type,
     index,
     label: dataset.name,
     datasetIndex: index,
@@ -242,6 +243,10 @@ export default class ChartSelection {
 function createSeriesSelection(type, collections) {
   return new ChartSelection({
     from: (mark) => {
+      if (mark.kind === "dataset") {
+        return datasetPayload(type, mark.datasetIndex, collections);
+      }
+
       const pointIndex = mark.pointIndex;
 
       if (mark.kind === "category") {
@@ -254,26 +259,41 @@ function createSeriesSelection(type, collections) {
 
       return seriesPayload(type, { dataset, datasetIndex, pointIndex }, point);
     },
-    identityFor: (mark) => {
-      const pointIndex = mark.pointIndex;
-
-      if (mark.kind === "category") {
-        const names = collections.datasets.map((dataset) => dataset.identityName);
-
-        return identityKey("series-category", [
-          ...names,
-          pointLabel(collections, 0, pointIndex),
-        ]);
-      }
-
-      const datasetIndex = mark.datasetIndex;
-
-      return identityKey("series", [
-        collections.datasets[datasetIndex]?.identityName,
-        pointLabel(collections, datasetIndex, pointIndex),
-      ]);
-    },
+    identityFor: (mark) => seriesIdentity(collections, mark),
   });
+}
+
+/**
+ * Resolves stable series identity from the semantic mark address.
+ *
+ * @param {object} collections - Normalized series.
+ * @param {object} mark - Dataset, category, or point address.
+ * @returns {string | null} Stable identity when the source names are unambiguous.
+ */
+function seriesIdentity(collections, mark) {
+  if (mark.kind === "dataset") {
+    return identityKey("series-dataset", [
+      collections.datasets[mark.datasetIndex].identityName,
+    ]);
+  }
+
+  const pointIndex = mark.pointIndex;
+
+  if (mark.kind === "category") {
+    const names = collections.datasets.map((dataset) => dataset.identityName);
+
+    return identityKey("series-category", [
+      ...names,
+      pointLabel(collections, 0, pointIndex),
+    ]);
+  }
+
+  const datasetIndex = mark.datasetIndex;
+
+  return identityKey("series", [
+    collections.datasets[datasetIndex]?.identityName,
+    pointLabel(collections, datasetIndex, pointIndex),
+  ]);
 }
 
 /**
@@ -290,7 +310,7 @@ function createCompositionSelection(type, collections) {
       const pointIndex = mark.pointIndex;
 
       return type === ChartType.RADAR
-        ? radarPayload(datasetIndex, collections)
+        ? datasetPayload(type, datasetIndex, collections)
         : compositionPayload(type, pointIndex, collections);
     },
     identityFor: (mark) => {

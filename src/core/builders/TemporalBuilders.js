@@ -1,6 +1,6 @@
 import { CommonChartBuilder } from "./Builder.js";
-import { HeatmapTooltipBuilder, TimesheetTooltipBuilder, runScope } from "./BuilderScopes.js";
-import { builderOption, builderState } from "./BuilderState.js";
+import { HeatmapTooltipBuilder, TimesheetTooltipBuilder } from "./BuilderScopes.js";
+import { builderOption, builderState, builderTooltip } from "./BuilderState.js";
 import { validateHeatmapPoints, validateTask } from "./BuilderValidation.js";
 
 const MAXIMUM_POSITIONAL_TASK_ARGUMENTS = 3;
@@ -81,26 +81,7 @@ class HeatmapChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   tooltip(value) {
-    if (typeof value !== "function") {
-      builderState(this).explicitOption("tooltip", value);
-
-      return this;
-    }
-
-    const tooltip = {};
-    runScope(new HeatmapTooltipBuilder(tooltip), value);
-    const state = builderState(this);
-    state.explicitOption("tooltip", true);
-
-    if (tooltip.formatDate !== undefined) {
-      state.option("tooltipFormatDate", tooltip.formatDate);
-    }
-
-    if (tooltip.formatValue !== undefined) {
-      state.option("tooltipFormatValue", tooltip.formatValue);
-    }
-
-    return this;
+    return builderTooltip(this, value, HeatmapTooltipBuilder);
   }
 }
 
@@ -196,26 +177,7 @@ class TimesheetChartBuilder extends RangedChartBuilder {
    * @returns {this} Current builder.
    */
   tooltip(value) {
-    if (typeof value !== "function") {
-      builderState(this).explicitOption("tooltip", value);
-
-      return this;
-    }
-
-    const tooltip = {};
-    runScope(new TimesheetTooltipBuilder(tooltip), value);
-    const state = builderState(this);
-    state.explicitOption("tooltip", true);
-
-    if (tooltip.formatDate !== undefined) {
-      state.option("tooltipFormatDate", tooltip.formatDate);
-    }
-
-    if (tooltip.formatDuration !== undefined) {
-      state.option("tooltipFormatDuration", tooltip.formatDuration);
-    }
-
-    return this;
+    return builderTooltip(this, value, TimesheetTooltipBuilder);
   }
 }
 

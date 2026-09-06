@@ -37,7 +37,6 @@
 }
 
 .charts2-line {
-  stroke-width: var(--charts-stroke-width, 2px);
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
@@ -52,7 +51,6 @@
 }
 
 .charts2-radar {
-  stroke-width: 2;
   vector-effect: non-scaling-stroke;
 }
 
@@ -249,7 +247,7 @@
   box-sizing: border-box;
   width: max-content;
   max-width: min(280px, calc(100% - 16px));
-  max-height: min(240px, calc(100% - 8px));
+  max-height: calc(100% - 8px);
   padding: 8px 10px;
   overflow: hidden;
   font:
@@ -266,7 +264,6 @@
   border: 1px solid rgb(0 0 0 / 8%);
   border-radius: 8px;
   box-shadow: 0 4px 14px rgb(0 0 0 / 12%);
-  transform: translate(-50%, -100%);
 }
 
 .charts2-tooltip[hidden] {
@@ -360,4 +357,9 @@
     fill: CanvasText !important;
     stroke: Canvas;
   }
+}
+
+.charts2-heatmap-chart {
+  width: 100%;
+  max-width: 100%;
 }

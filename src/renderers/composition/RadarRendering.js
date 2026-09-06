@@ -1,10 +1,10 @@
-import { markMetadata, markTooltip } from "../../support/ChartMark.js";
-import { labelElement, svg, titled } from "../../support/Dom.js";
 import { polarPoint } from "../../support/geometry/Math.js";
-import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
+import { formatLabel, formatValue, seriesContext } from "../../support/presentation/Formatting.js";
 import { datasetSummary, seriesContentLayout } from "../../support/presentation/Presentation.js";
+import { labelElement } from "../../support/presentation/TextLayout.js";
 import { renderLegend } from "../LegendRendering.js";
 
+const DEFAULT_RADAR_OPACITY = 0.28;
 const RADAR_RADIUS_RATIO = 0.38;
 const LABEL_OFFSET = 12;
 const MINIMUM_LABEL_WIDTH = 54;
@@ -122,24 +122,26 @@ class RadarRenderer {
         }),
       );
 
-      const polygon = titled(
-        markMetadata(
-          svg("polygon", {
-            points: shape.map((point) => `${point.x},${point.y}`).join(" "),
-            fill: dataset.color,
-            stroke: dataset.color,
-            "stroke-linejoin": "round",
-            "stroke-linecap": "round",
-            opacity: 0.28,
-            class: "charts2-radar charts2-mark",
-          }),
-          { kind: "dataset", datasetIndex, pointIndex: 0 },
-        ),
-        datasetSummary(dataset, this.#chart.labels, { options: this.#chart.options, datasetIndex }),
+      this.#surface.mark(
+        "polygon",
+        {
+          points: shape.map((point) => `${point.x},${point.y}`).join(" "),
+          fill: dataset.color,
+          stroke: dataset.color,
+          "stroke-width": this.#chart.options.strokeWidth,
+          "stroke-linejoin": "round",
+          "stroke-linecap": "round",
+          opacity: dataset.opacity ?? DEFAULT_RADAR_OPACITY,
+          class: "charts2-radar charts2-mark",
+        },
+        {
+          kind: "dataset",
+          dataset: datasetIndex,
+          point: 0,
+          title: datasetSummary(dataset, this.#chart.labels, { options: this.#chart.options, datasetIndex }),
+          tooltip: { heading: dataset.name, items: this.#tooltipItems(dataset) },
+        },
       );
-
-      markTooltip(polygon, { heading: dataset.name, items: this.#tooltipItems(dataset) });
-      this.#surface.append(polygon);
     }
   }
 
@@ -150,23 +152,17 @@ class RadarRenderer {
    * @returns {Array<object>} Display-ready tooltip rows.
    */
   #tooltipItems(dataset) {
-    return dataset.points.map((point, index) => ({
-      name: formatLabel(this.#chart.options, this.#chart.labels[index], {
-        target: "tooltip",
-        datasetIndex: this.#chart.datasets.indexOf(dataset),
-        index,
-        point,
-      }),
-      value: formatValue(this.#chart.options, point.y, {
-        target: "tooltip",
-        dataset,
-        datasetIndex: this.#chart.datasets.indexOf(dataset),
-        index,
-        label: this.#chart.labels[index],
-        point,
-      }),
-      color: dataset.color,
-    }));
+    const datasetIndex = this.#chart.datasets.indexOf(dataset);
+
+    return dataset.points.map((point, index) => {
+      const context = { ...seriesContext(this.#chart, datasetIndex, index), target: "tooltip" };
+
+      return {
+        name: formatLabel(this.#chart.options, context.label, context),
+        value: formatValue(this.#chart.options, point.y, context),
+        color: dataset.color,
+      };
+    });
   }
 
   /**

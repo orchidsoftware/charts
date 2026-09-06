@@ -130,6 +130,15 @@ export default class InteractionController {
   }
 
   /**
+   * Reads the selected or keyboard-focused element without interpreting its data address.
+   *
+   * @returns {SVGElement | undefined} Current interaction target.
+   */
+  get activeMark() {
+    return this.#items[this.pointIndex];
+  }
+
+  /**
    * Releases every listener owned by this interaction session.
    *
    * @returns {void} Detached elements and document listeners stop reacting.

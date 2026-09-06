@@ -8,6 +8,15 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ### Changed
 
+- Limited calendar heatmap cells to 32 CSS pixels so short date ranges remain
+  compact, with space below the intensity legend for its text.
+- Allowed tooltips to use the chart's available height instead of clipping
+  twelve-series lists at 240 pixels.
+- Consolidated render metadata, model point lookup, annotation rendering, and
+  formatting helpers, with browser-independent model policy tests.
+- Added lab fixtures for zero, million-scale, empty, and twelve-parameter inputs
+  across every chart family, including copyable examples and validation errors.
+
 - Bubble charts now fit their automatic coordinate domains around complete circles
   on render, update, and resize, preserving explicit pixel radii and the existing API.
 

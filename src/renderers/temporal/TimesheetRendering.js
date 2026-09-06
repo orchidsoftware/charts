@@ -1,5 +1,4 @@
-import { markMetadata, markTooltip } from "../../support/ChartMark.js";
-import { labelElement, svg, titled } from "../../support/Dom.js";
+import { labelElement } from "../../support/presentation/TextLayout.js";
 
 import TimesheetLayout from "./TimesheetLayout.js";
 
@@ -120,13 +119,10 @@ class TimesheetRenderer {
 
     this.#renderRowGrid(row, index, layout.frame);
     this.#renderTaskLabel(task, row, layout.frame);
-    this.#renderTaskBar(task, row, layout.frame.barHeight);
+    const visualElement = this.#renderTaskBar(task, row, layout.frame.barHeight);
 
-    const hit = this.#taskHit({ task, row, index, frame: layout.frame });
-    const group = task.group ? `, ${task.group}` : "";
-    const title = `${task.label}: ${row.dateStart} – ${row.dateEnd}, ${row.duration}${group}`;
-
-    this.#surface.append(titled(hit, title));
+    const state = { task, row, index, frame: layout.frame, visualElement };
+    this.#taskHit(state);
   }
 
   /**
@@ -188,7 +184,7 @@ class TimesheetRenderer {
    * @returns {void} One decorative bar is appended.
    */
   #renderTaskBar(task, row, barHeight) {
-    this.#surface.append("rect", {
+    return this.#surface.append("rect", {
       x: row.barX,
       y: row.centerY - barHeight / 2,
       width: row.barWidth,
@@ -204,13 +200,14 @@ class TimesheetRenderer {
    * Builds the full-row interaction target and tooltip metadata.
    *
    * @param {object} state - Task, row, index, and shared frame.
-   * @returns {SVGElement} Transparent interactive row element.
+   * @returns {void} Appends the interactive row with its visual peer.
    */
   #taskHit(state) {
-    const { task, row, index, frame } = state;
-
-    const hit = markMetadata(
-      svg("rect", {
+    const { task, row, index, frame, visualElement } = state;
+    const group = task.group ? `, ${task.group}` : "";
+    this.#surface.mark(
+      "rect",
+      {
         x: frame.left,
         y: row.rowTop,
         width: frame.plotWidth,
@@ -218,20 +215,22 @@ class TimesheetRenderer {
         fill: "transparent",
         class: "charts2-x-hit charts2-timesheet-hit charts2-mark",
         style: `color:${task.color}`,
-      }),
-      { kind: "task", datasetIndex: 0, pointIndex: index },
+      },
+      {
+        kind: "task",
+        dataset: 0,
+        point: index,
+        visualElement,
+        title: `${task.label}: ${row.dateStart} – ${row.dateEnd}, ${row.duration}${group}`,
+        tooltip: {
+          heading: task.label,
+          items: [
+            { name: `${row.dateStart} – ${row.dateEnd}`, value: row.duration, color: task.color },
+          ],
+        },
+        anchor: { x: row.barX + row.barWidth / 2, y: row.centerY - frame.barHeight / 2 },
+      },
     );
-
-    markTooltip(hit, {
-      heading: task.label,
-      items: [
-        { name: `${row.dateStart} – ${row.dateEnd}`, value: row.duration, color: task.color },
-      ],
-    });
-    hit.dataset.tooltipAnchorX = String(row.barX + row.barWidth / 2);
-    hit.dataset.tooltipAnchorY = String(row.centerY - frame.barHeight / 2);
-
-    return hit;
   }
 }
 

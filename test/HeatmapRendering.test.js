@@ -27,6 +27,36 @@ beforeEach(() => {
   document.body.innerHTML = '<div id="chart" style="width: 640px"></div>';
 });
 describe("Heatmap Rendering", () => {
+  it("keeps short ranges compact regardless of values, container width, and updates", async () => {
+    const chart = HeatmapChart.make("#chart")
+      .range("2026-09-01", "2026-09-04")
+      .points({ "2026-09-01": 0, "2026-09-02": 0, "2026-09-03": 0, "2026-09-04": 0 })
+      .render();
+    const expectCompact = () => {
+      const cells = [
+        ...chart.element.querySelectorAll(".charts2-heat-cell"),
+      ];
+      expect(cells).toHaveLength(4);
+      for (const cell of cells) {
+        expect(Number(cell.getAttribute("width"))).toBeLessThanOrEqual(32);
+        expect(cell.getAttribute("width")).toBe(cell.getAttribute("height"));
+      }
+      expect(heightOf(chart)).toBeLessThan(200);
+      const legend = chart.element.querySelector(".charts2-heat-legend").getBBox();
+      expect(legend.y + legend.height).toBeLessThanOrEqual(heightOf(chart));
+    };
+    expectCompact();
+    const initialHeight = heightOf(chart);
+    document.querySelector("#chart").style.width = "1200px";
+    await expect.poll(() => widthOf(chart)).toBe(1200);
+    expectCompact();
+    expect(heightOf(chart)).toBe(initialHeight);
+    chart.update({ points: { "2026-09-01": 1_250_000, "2026-09-04": 2_375_000 } });
+    expectCompact();
+    expect(heightOf(chart)).toBe(initialHeight);
+    chart.destroy();
+  });
+
   it("normalizes heatmap dates, colors, updates, and invalid inputs", () => {
     const stamp = Date.parse("2026-01-02T00:00:00Z") / 1000;
     const palette = [
@@ -122,7 +152,9 @@ describe("Heatmap Rendering", () => {
       ...narrow.element.querySelectorAll(".charts2-heat-week-hit"),
     ];
     expect(narrow.element.parentElement).not.toHaveClass("charts2-scrollable-heatmap");
-    expect(narrow.element.style.width).toBe("100%");
+    expect(narrow.element.getBoundingClientRect().width).toBe(
+      narrow.element.parentElement.getBoundingClientRect().width,
+    );
     expect(widthOf(narrow)).toBe(100);
     expect(narrowCells.every((cell) => cell.getAttribute("width") === cell.getAttribute("height"))).toBe(
       true,

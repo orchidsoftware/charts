@@ -1,4 +1,4 @@
-import { formatNumber } from "../Dom.js";
+import { formatNumber } from "./NumberFormatting.js";
 
 /**
  * Creates one frozen formatter context with a frozen point when present.
@@ -11,17 +11,10 @@ import { formatNumber } from "../Dom.js";
 function formatContext(options, target, details = {}) {
   const point = details.point ? Object.freeze({ ...details.point }) : undefined;
 
-  return Object.freeze({ target, chartType: publicChartType(options.type), ...details, point });
-}
+  // eslint-disable-next-line sonarjs/no-unused-vars -- Dataset is internal formatter dispatch state.
+  const { dataset: _dataset, ...identity } = details;
 
-/**
- * Hides the transitional internal mixed renderer name from callbacks.
- *
- * @param {string} type - Internal renderer chart type.
- * @returns {string} Renderer-only mixed naming mapped onto the public union.
- */
-function publicChartType(type) {
-  return type;
+  return Object.freeze({ target, chartType: options.type, ...identity, point });
 }
 
 /**
@@ -113,3 +106,27 @@ function formatValue(options, value, details) {
 }
 
 export { formatContext, formatLabel, formatValue, formatterLabel, formatterText };
+
+/**
+ * Resolves complete formatter identity from one series address.
+ *
+ * @param {object} chart - Normalized series collections.
+ * @param {number} datasetIndex - Dataset address.
+ * @param {number} index - Point address.
+ * @returns {object} Canonical dataset and point context.
+ */
+function seriesContext(chart, datasetIndex, index) {
+  const dataset = chart.datasets[datasetIndex];
+  const point = dataset.points[index];
+
+  return {
+    dataset,
+    datasetIndex,
+    datasetName: dataset.name,
+    index,
+    point,
+    label: chart.labels[index] ?? point.x,
+  };
+}
+
+export { seriesContext };

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { svg, titled, measuredTextWidth } from "../../src/support/Dom.js";
+import { svg, titled } from "../../src/support/Dom.js";
+import { measuredTextWidth } from "../../src/support/presentation/TextLayout.js";
 
 describe("DOM support", () => {
   it("reuses one detached canvas context for every text measurement", () => {

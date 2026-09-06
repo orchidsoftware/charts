@@ -582,11 +582,17 @@ describe("Pipeline Contracts", () => {
     ];
     expect(compactLabels.map((node) => node.textContent)).toEqual([
       "A",
+      "B",
       "C",
+      "D",
+      "E",
       "F",
     ]);
     expect(compactLabels.map((node) => node.getAttribute("text-anchor"))).toEqual([
       "start",
+      "middle",
+      "middle",
+      "middle",
       "middle",
       "end",
     ]);

@@ -1,35 +1,17 @@
 import {
-  ChartType,
   HORIZONTAL_LABEL_EDGE_INSET,
   HORIZONTAL_LABEL_GAP,
   VALUE_LABEL_GAP,
 } from "../../support/Constants.js";
 import { labelElement, wrappedLabelElement } from "../../support/presentation/TextLayout.js";
 
+import { categoryAxisLabels } from "./CategoryAxisLabels.js";
+
 const VALUE_LABEL_BASELINE_OFFSET = 7;
 const VALUE_LABEL_CENTER_OFFSET = 3;
 const CATEGORY_MIDPOINT = 0.5;
 const CATEGORY_LABEL_BASELINE_OFFSET = 3;
-const TARGET_CATEGORY_LABEL_SPACING = 36;
 const CATEGORY_LABEL_BOTTOM_OFFSET = 7;
-const MINIMUM_CATEGORY_LABEL_WIDTH = 24;
-const CATEGORY_LABEL_SIDE_GAP = 4;
-const CATEGORY_LABEL_TOTAL_GAP = 8;
-
-/**
- * Names a visible category label's relationship to the viewport edges.
- *
- * @param {number} index - Position in the sampled visible-label collection.
- * @param {number} count - Number of visible category labels.
- * @returns {"first" | "middle" | "last"} Edge-aware placement role.
- */
-function verticalLabelEdge(index, count) {
-  if (index === 0) {
-    return "first";
-  }
-
-  return index === count - 1 ? "last" : "middle";
-}
 
 /**
  * Renders Cartesian axes, grid lines, and labels.
@@ -235,179 +217,30 @@ export default class CartesianAxesRenderer {
    *
    * @returns {void} Vertical category labels are appended to the chart SVG.
    */
-  // eslint-disable-next-line max-lines-per-function -- Array layout lines do not add behavior.
   #renderVerticalLabels() {
     const { bottom, padding, left, right } = this.#layout.frame;
-    const shouldCenterCategories = this.#layout.type !== ChartType.LINE;
-    const intervals = shouldCenterCategories ? this.#chart.labels.length : this.#chart.labels.length - 1;
-    const step = (right - left) / Math.max(1, intervals);
-    const stride = Math.max(1, Math.ceil(TARGET_CATEGORY_LABEL_SPACING / Math.max(1, step)));
-    const visibleIndexes = [];
 
-    for (let index = 0; index < this.#chart.labels.length; index += stride) {
-      visibleIndexes.push(index);
-    }
+    const labels = categoryAxisLabels({
+      labels: this.#layout.categories.labels,
+      positionAt: (index) => this.#layout.categoryAt(index),
+      left,
+      right,
+    });
 
-    const lastIndex = this.#chart.labels.length - 1;
-
-    if (visibleIndexes.at(-1) !== lastIndex) {
-      visibleIndexes.pop();
-      visibleIndexes.push(lastIndex);
-    }
-
-    for (const [
-      visibleIndex,
-      index,
-    ] of visibleIndexes.entries()) {
-      const placement = shouldCenterCategories
-        ? this.#centeredLabelPlacement({ visibleIndexes, visibleIndex, index })
-        : this.#verticalLabelPlacement({ visibleIndexes, visibleIndex, index, step });
-
-      const formatted = this.#layout.categories.labels[index];
-      const value = Array.isArray(formatted) ? formatted.join(" ") : formatted;
-
+    for (const { index, value, x, anchor, width } of labels) {
       const text = labelElement({
         value,
         attributes: {
-          x: placement.x,
+          x,
           y: bottom + padding - CATEGORY_LABEL_BOTTOM_OFFSET,
           class: "orchid-charts-label",
-          "text-anchor": placement.anchor,
+          "text-anchor": anchor,
         },
-        measurement: { maxWidth: placement.width },
+        measurement: { maxWidth: width },
         originalValue: this.#chart.labels[index],
       });
 
       this.#surface.append(text);
     }
-  }
-
-  /**
-   * Centers a category label on the same slot or point used by its mark.
-   *
-   * @param {object} state - Visible indexes and the current sampled label.
-   * @param {number[]} state.visibleIndexes - Ordered source indexes that remain visible.
-   * @param {number} state.visibleIndex - Position in the sampled visible collection.
-   * @param {number} state.index - Source category index.
-   * @returns {{x: number, anchor: string, width: number}} Bounded centered label placement.
-   */
-  #centeredLabelPlacement({ visibleIndexes, visibleIndex, index }) {
-    const { left: plotLeft, right: plotRight } = this.#layout.frame;
-    const position = this.#layout.categoryAt(index);
-
-    if (visibleIndexes.length === 1) {
-      return {
-        x: position,
-        anchor: "middle",
-        width: plotRight - plotLeft,
-      };
-    }
-
-    const previousBoundary =
-      visibleIndex === 0
-        ? plotLeft
-        : (this.#layout.categoryAt(visibleIndexes[visibleIndex - 1]) + position) / 2;
-
-    const nextBoundary =
-      visibleIndex === visibleIndexes.length - 1
-        ? plotRight
-        : (position + this.#layout.categoryAt(visibleIndexes[visibleIndex + 1])) / 2;
-
-    return {
-      x: position,
-      anchor: "middle",
-      width: Math.max(
-        MINIMUM_CATEGORY_LABEL_WIDTH,
-        2 * Math.min(position - previousBoundary, nextBoundary - position) - CATEGORY_LABEL_TOTAL_GAP,
-      ),
-    };
-  }
-
-  /**
-   * Calculates alignment and width for one sampled vertical category label.
-   *
-   * @param {object} state - Visible indexes, current positions, and horizontal step.
-   * @param {number[]} state.visibleIndexes - Ordered category indexes selected for display.
-   * @param {number} state.visibleIndex - Position within the displayed-index collection.
-   * @param {number} state.index - Original category index represented by the label.
-   * @param {number} state.step - Horizontal distance between adjacent categories.
-   * @returns {{x: number, anchor: string, width: number}} Edge-aware label placement.
-   */
-  #verticalLabelPlacement({ visibleIndexes, visibleIndex, index, step }) {
-    const { left: plotLeft, right: plotRight } = this.#layout.frame;
-
-    if (visibleIndexes.length === 1) {
-      return {
-        x: plotLeft,
-        anchor: "start",
-        width: plotRight - plotLeft,
-      };
-    }
-
-    const position = plotLeft + index * step;
-    const previousPosition = visibleIndex > 0 ? plotLeft + visibleIndexes[visibleIndex - 1] * step : plotLeft;
-
-    const nextPosition =
-      visibleIndex < visibleIndexes.length - 1
-        ? plotLeft + visibleIndexes[visibleIndex + 1] * step
-        : plotRight;
-
-    const edgePlacement = this.#edgeVerticalLabelPlacement({
-      position,
-      previousPosition,
-      nextPosition,
-      edge: verticalLabelEdge(visibleIndex, visibleIndexes.length),
-    });
-
-    if (edgePlacement) {
-      return edgePlacement;
-    }
-
-    return {
-      x: position,
-      anchor: "middle",
-      width: Math.max(
-        MINIMUM_CATEGORY_LABEL_WIDTH,
-        Math.min(position - previousPosition, nextPosition - position) - CATEGORY_LABEL_TOTAL_GAP,
-      ),
-    };
-  }
-
-  /**
-   * Resolves the asymmetric placement used by the first and last category labels.
-   *
-   * @param {object} geometry - Current and neighboring sampled positions.
-   * @param {number} geometry.position - Current label position.
-   * @param {number} geometry.previousPosition - Previous sampled label position.
-   * @param {number} geometry.nextPosition - Next sampled label position.
-   * @param {"first" | "middle" | "last"} geometry.edge - Position within the sampled collection.
-   * @returns {{x: number, anchor: string, width: number} | null} Edge placement or null for middle labels.
-   */
-  #edgeVerticalLabelPlacement({ position, previousPosition, nextPosition, edge }) {
-    const { left: plotLeft, right: plotRight } = this.#layout.frame;
-
-    if (edge === "first") {
-      return {
-        x: plotLeft,
-        anchor: "start",
-        width: Math.max(
-          MINIMUM_CATEGORY_LABEL_WIDTH,
-          (nextPosition - position) / 2 - CATEGORY_LABEL_SIDE_GAP,
-        ),
-      };
-    }
-
-    if (edge === "last") {
-      return {
-        x: plotRight,
-        anchor: "end",
-        width: Math.max(
-          MINIMUM_CATEGORY_LABEL_WIDTH,
-          (position - previousPosition) / 2 - CATEGORY_LABEL_SIDE_GAP,
-        ),
-      };
-    }
-
-    return null;
   }
 }

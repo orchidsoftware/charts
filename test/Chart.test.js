@@ -468,11 +468,12 @@ describe("Chart", () => {
       ...narrow.element.querySelectorAll(".orchid-charts-label:not(.orchid-charts-value-label)"),
     ];
     const narrowBoxes = narrowNodes.map((node) => node.getBBox());
-    expect(narrowNodes.every((node) => node.firstChild.textContent.endsWith("…"))).toBe(true);
+    expect(narrowNodes.map((node) => node.textContent)).toEqual([
+      labels[0],
+    ]);
     expect(narrowNodes.every((node) => node.querySelector("tspan") === null)).toBe(true);
     expect(narrowBoxes[0].x).toBeGreaterThanOrEqual(0);
-    expect(narrowBoxes[1].x + narrowBoxes[1].width).toBeLessThanOrEqual(widthOf(narrow) + 0.5);
-    expect(narrowBoxes[0].x + narrowBoxes[0].width).toBeLessThanOrEqual(narrowBoxes[1].x);
+    expect(narrowBoxes[0].x + narrowBoxes[0].width).toBeLessThanOrEqual(widthOf(narrow) + 0.5);
   });
 
   it("uses whole-number nice ticks for integer data and preserves meaningful fractions", () => {

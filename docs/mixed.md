@@ -1,4 +1,4 @@
-# Mixed charts
+# Mixed Charts
 
 ## Introduction
 
@@ -6,7 +6,7 @@ Mixed charts place line, bar, and scatter datasets on the same cartesian scale.
 They are useful for comparing an actual value with a plan, or showing events
 alongside a trend.
 
-## Creating a mixed chart
+## Creating a Mixed Chart
 
 ```js
 import { MixedChart } from "@orchidsoftware/charts";
@@ -22,7 +22,7 @@ const chart = MixedChart.make("#plan")
 Unlike other series charts, mixed charts use a method named after the desired
 dataset type.
 
-## Line datasets
+## Line Datasets
 
 Use `line(name, values, colorOrCallback?)` to add a line:
 
@@ -41,7 +41,7 @@ The callback supports every line-dataset method: `color()`, `opacity()`,
 `formatValue()`, `smooth()`, `gradient()`, `dots()`, `dotSize()`, `line()`,
 `area()`, and `strokeWidth()`.
 
-## Bar datasets
+## Bar Datasets
 
 Use `bar(name, values, colorOrCallback?)` to add bars:
 
@@ -58,7 +58,7 @@ MixedChart.make("#plan")
 
 The callback supports `color()`, `opacity()`, `formatValue()`, and `radius()`.
 
-## Scatter datasets
+## Scatter Datasets
 
 Use `scatter(name, values, colorOrCallback?)` to add individual observations:
 
@@ -76,7 +76,7 @@ MixedChart.make("#plan")
 Scatter values may be `{ x, y }` points or numbers. The callback supports
 `color()`, `opacity()`, and `formatValue()`.
 
-## Gradient fills
+## Gradient Fills
 
 Call `gradient()` on the chart to add a fading fill to every line dataset:
 
@@ -93,7 +93,7 @@ MixedChart.make("#plan")
 
 Use a line callback when only one line should have a gradient.
 
-## Advanced dataset input
+## Advanced Dataset Input
 
 The named methods are the clearest way to add mixed data. When your data is
 already stored as objects, `dataset()` also accepts an explicit `chartType`:

@@ -1,4 +1,4 @@
-# Orchid Charts documentation
+# Orchid Charts Documentation
 
 Orchid Charts helps you turn product data into responsive SVG charts with a small,
 consistent JavaScript API. It is part of [Orchid Software](https://orchid.software).
@@ -6,7 +6,7 @@ consistent JavaScript API. It is part of [Orchid Software](https://orchid.softwa
 If this is your first chart, begin with [Getting started](./getting-started.md).
 You will install the package and render a useful line chart in a few minutes.
 
-## Learn by result
+## Learn by Result
 
 - [Getting started](./getting-started.md) — render a chart, add another series,
   and understand the three-step API.
@@ -18,7 +18,7 @@ You will install the package and render a useful line chart in a few minutes.
 - [React, Vue, and Hotwire](./frameworks.md) — mount, update, and destroy charts with component lifecycles.
 - [API reference](./api-reference.md) — look up chart definitions and public methods.
 
-## Chart types
+## Chart Types
 
 - [Line](./line.md)
 - [Bar](./bar.md)

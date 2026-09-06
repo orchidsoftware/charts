@@ -1,11 +1,11 @@
-# Scatter charts
+# Scatter Charts
 
 ## Introduction
 
 Scatter charts show whether two measurements move together. Each point has an
 `x` and `y` coordinate; multiple named datasets may be compared in one chart.
 
-## Creating a scatter chart
+## Creating a Scatter Chart
 
 ```js
 import { ScatterChart } from "@orchidsoftware/charts";
@@ -23,7 +23,7 @@ const chart = ScatterChart.make("#results")
 The value returned by `render()` is the mounted chart and may be updated,
 selected, or exported.
 
-## Point data
+## Point Data
 
 The clearest scatter input uses `{ x, y }` objects:
 
@@ -53,7 +53,7 @@ import { ScatterChart } from "@orchidsoftware/charts";
 ScatterChart.make("#results").dataset([18, 31, 46]).render();
 ```
 
-## Point visibility
+## Point Visibility
 
 Use `dots(false)` to hide scatter marks while keeping the chart's scale and
 annotations:
@@ -64,7 +64,7 @@ import { ScatterChart } from "@orchidsoftware/charts";
 ScatterChart.make("#results").dataset(points).dots(false).render();
 ```
 
-## Dataset appearance
+## Dataset Appearance
 
 A scatter dataset callback supports `color()`, `opacity()`, and
 `formatValue()`:

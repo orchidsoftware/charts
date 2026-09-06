@@ -4,6 +4,15 @@ Install the locked dependency graph with `npm ci`, then run `npm run check`
 before opening a change. Use `npm run dev` for the demo and `npm run test:watch`
 for a fast feedback loop.
 
+The demo serves documentation at `/docs/`, generated from the Markdown files in
+`docs`. Run `npm run build:demo` to build both the demo and static documentation
+into `pages-dist` for deployment. Markdown links are converted to HTML links,
+and code highlighting runs at build time. New Markdown pages are included
+automatically; edit `scripts/Documentation.mjs` to adjust navigation ordering.
+The documentation opens directly on Getting started. `docs/readme.md` and
+`docs/chart-types.md` remain Markdown indexes for repository readers; the website
+uses the sidebar and the demo's chart gallery instead of separate overview pages.
+
 ```bash
 npm ci
 npx playwright install chromium

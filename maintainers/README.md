@@ -10,6 +10,7 @@ instructions live in [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 ## Current references
 
 - [Positioning](./POSITIONING.md)
+- [Documentation design matrix](./DOCUMENTATION_DESIGN_MATRIX.md)
 - [Launch readiness audit](./LAUNCH_AUDIT.md)
 - [Fluent API specification](./FLUENT_API.md)
 - [Architecture](./ARCHITECTURE.md)

@@ -1,4 +1,4 @@
-# Getting started
+# Getting Started
 
 This page takes you from an empty element to a responsive product chart.
 
@@ -17,7 +17,7 @@ import { LineChart } from "@orchidsoftware/charts";
 import "@orchidsoftware/charts/style.css";
 ```
 
-## Render your first chart
+## Render Your First Chart
 
 Add a host element to your page:
 
@@ -40,7 +40,7 @@ const revenue = LineChart.make("#revenue")
 Orchid Charts uses the width of the host element and redraws when that width changes.
 The default height, palette, axes, legend, labels, and tooltip are ready to use.
 
-## Understand the chain
+## Understand the Chain
 
 Every chart follows the same path:
 
@@ -69,7 +69,7 @@ const revenue = LineChart.make("#revenue")
   .render();
 ```
 
-## Add another series
+## Add Another Series
 
 Call `dataset()` again. Names appear in the legend and tooltip.
 
@@ -86,7 +86,7 @@ const revenue = LineChart.make("#revenue")
 
 Each dataset must contain one value for every label.
 
-## Use Orchid Charts without a build step
+## Use Orchid Charts Without a Build Step
 
 For a plain HTML page, use an import map and load the stylesheet with a
 `<link>`. Pin an exact version in production.
@@ -114,8 +114,8 @@ For a plain HTML page, use an import map and load the stylesheet with a
 Native browsers load CSS through `<link>`; a JavaScript `import` cannot load the
 stylesheet without a bundler.
 
-## Where to go next
+## Where to Go Next
 
-- Pick a visualization in [Chart types](./chart-types.md).
+- Explore [line charts](./line.md) for trends or [bar charts](./bar.md) for comparisons.
 - Make it fit your interface in [Customization](./customization.md).
 - Connect it to changing data in [Updates and interaction](./updates-and-interaction.md).

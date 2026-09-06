@@ -6,7 +6,7 @@ Every Orchid Charts chart is rendered as SVG. The runtime API can return that SV
 a string or download it as a file. Export always uses the chart's current data
 and presentation.
 
-## Getting the SVG source
+## Getting the SVG Source
 
 The `toSvg()` method returns the complete SVG markup as a string:
 
@@ -35,7 +35,7 @@ await fetch("/reports/revenue.svg", {
 });
 ```
 
-## Downloading an SVG file
+## Downloading an SVG File
 
 The `download()` method starts a browser download:
 
@@ -57,7 +57,7 @@ omitted, the chart title is used; a chart without a title downloads as
 
 The filename must not be empty or contain `/` or `\\` path separators.
 
-## Exporting updated data
+## Exporting Updated Data
 
 Export reflects the latest successful update:
 
@@ -81,7 +81,7 @@ chart.download("latest-revenue");
 An invalid update leaves the previous chart unchanged, so a later export still
 contains the last successfully rendered data.
 
-## Exporting after cleanup
+## Exporting After Cleanup
 
 Do not call `toSvg()` or `download()` after `destroy()`. Destroying a chart
 releases its SVG and browser resources, and the chart can no longer be used.

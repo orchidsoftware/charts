@@ -1,4 +1,4 @@
-# Pie charts
+# Pie Charts
 
 ## Introduction
 
@@ -6,7 +6,7 @@ Pie charts show how a whole is divided into a small number of categories. They
 work best when the differences between slices are clear and precise comparison
 is not required.
 
-## Creating a pie chart
+## Creating a Pie Chart
 
 ```js
 import { PieChart } from "@orchidsoftware/charts";
@@ -21,7 +21,7 @@ const chart = PieChart.make("#plans")
 
 Pie values must be non-negative and at least one value must be positive.
 
-## Limiting slices
+## Limiting Slices
 
 Use `maxSlices()` when incoming data may contain more categories than the chart
 can communicate clearly. Orchid Charts keeps the largest slices and combines the
@@ -33,7 +33,7 @@ import { PieChart } from "@orchidsoftware/charts";
 PieChart.make("#sources").labels(sources).dataset(visits).maxSlices(5).render();
 ```
 
-## Starting angle
+## Starting Angle
 
 `startAngle()` rotates the chart by the given number of degrees:
 
@@ -43,7 +43,7 @@ import { PieChart } from "@orchidsoftware/charts";
 PieChart.make("#plans").labels(plans).dataset(accounts).startAngle(-90).render();
 ```
 
-## Slice spacing and corners
+## Slice Spacing and Corners
 
 Use `padAngle()` to place space between slices and `cornerRadius()` to soften
 their corners:

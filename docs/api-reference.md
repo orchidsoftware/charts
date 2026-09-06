@@ -1,4 +1,4 @@
-# API reference
+# API Reference
 
 This page is a compact map of the public Orchid Charts API. Begin with
 [Getting started](./getting-started.md) if you have not rendered a chart yet.
@@ -28,7 +28,7 @@ Each definition exposes `make(parent)`, where `parent` is a CSS selector or an
 `Element`. Configuration methods return the same builder, and `render()` mounts
 the chart.
 
-## Common chart methods
+## Common Chart Methods
 
 | Method               | Result                                                     |
 | -------------------- | ---------------------------------------------------------- |
@@ -46,7 +46,7 @@ the chart.
 Charts with a legend also provide `legend(false)`. Categorical legends share one
 bottom placement with color dots beside their labels and whole-item wrapping.
 
-## Series data
+## Series Data
 
 Line, bar, scatter, bubble, radar, pie, donut, percentage, and polar area charts
 use `dataset()`:
@@ -86,7 +86,7 @@ A numeric dataset input has this shape:
 `labels()` is optional. When omitted, Orchid Charts generates positional labels.
 Named datasets are recommended when a legend or tooltip compares series.
 
-## Cartesian methods
+## Cartesian Methods
 
 Line, bar, scatter, bubble, and mixed charts provide:
 
@@ -179,7 +179,7 @@ Use `bar(name, values, colorOrCallback?)`, `line(...)`, and `scatter(...)`.
 
 See [Mixed charts](./mixed.md) for each dataset type and its methods.
 
-## Composition and radial charts
+## Composition and Radial Charts
 
 These charts use numeric `labels()` and `dataset()` data. They also provide
 `formatLabel(formatter)` and `formatValue(formatter)`.
@@ -262,7 +262,7 @@ with an explicit timezone.
 
 See [Timesheet charts](./timesheet.md) for task, range, and formatting examples.
 
-## Scoped customization
+## Scoped Customization
 
 Callbacks expose methods only for the item they configure:
 

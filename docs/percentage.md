@@ -1,4 +1,4 @@
-# Percentage charts
+# Percentage Charts
 
 ## Introduction
 
@@ -6,7 +6,7 @@ Percentage charts show composition as a compact horizontal strip. They are a
 good fit for storage, plan distribution, progress allocation, and other places
 where a full pie or donut would use too much space.
 
-## Creating a percentage chart
+## Creating a Percentage Chart
 
 ```js
 import { PercentageChart } from "@orchidsoftware/charts";
@@ -23,7 +23,7 @@ Values must be non-negative and at least one value must be positive. Orchid Char
 calculates each category's share from the supplied values; they do not need to
 sum to 100.
 
-## Limiting segments
+## Limiting Segments
 
 Use `maxSlices()` to keep the largest categories and combine the remainder:
 
@@ -33,7 +33,7 @@ import { PercentageChart } from "@orchidsoftware/charts";
 PercentageChart.make("#traffic").labels(sources).dataset(visits).maxSlices(5).render();
 ```
 
-## Rounded segments
+## Rounded Segments
 
 The `radius()` method rounds segment corners in CSS pixels:
 

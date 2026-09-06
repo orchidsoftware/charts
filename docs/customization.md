@@ -3,7 +3,7 @@
 Orchid Charts starts with product-ready defaults. Add only the methods that change
 the result you need.
 
-## Set the size
+## Set the Size
 
 Charts are responsive by default: they follow the content width of their host element,
 excluding CSS padding and borders. CSS transforms do not change the drawing coordinates.
@@ -40,7 +40,7 @@ space on the parent instead of inside the chart:
 </div>
 ```
 
-## Choose chart colors
+## Choose Chart Colors
 
 Pass colors in the order they should be used. The palette repeats when there
 are more series or categories than colors.
@@ -70,7 +70,7 @@ LineChart.make("#revenue")
   .render();
 ```
 
-## Match the surrounding interface
+## Match the Surrounding Interface
 
 Orchid Charts uses CSS variables for shared surface colors. Override them on a page,
 card, or chart host:
@@ -91,7 +91,7 @@ card, or chart host:
 This is usually enough for a dark card or branded product surface. Keep data
 colors in `colors()` so they remain explicit and readable.
 
-## Change the presentation
+## Change the Presentation
 
 Common chart-wide methods describe the result directly:
 
@@ -121,7 +121,7 @@ const compactTrend = LineChart.make("#trend")
 Boolean conventions use the short form when enabled. Their optional boolean
 argument is useful for conditional code, such as `.stacked(isCompact)`.
 
-## Format labels and values
+## Format Labels and Values
 
 Use chart-level formatters when the same rule should apply everywhere:
 
@@ -155,7 +155,7 @@ Items fit their text and wrap together on narrow containers.
 Pass `false` to `tooltip()` or `legend()` when that layer does not help the
 reader.
 
-## Add context to a cartesian chart
+## Add Context to a Cartesian Chart
 
 Markers show a target or threshold. Regions show a meaningful range.
 
@@ -178,7 +178,7 @@ Override `--charts-annotation-halo` on the host when annotation outlines need a
 different surface color. Use the existing `labelColor()` scope method to override
 one annotation's text color.
 
-## Customize one dataset
+## Customize One Dataset
 
 Use a dataset callback only when one series needs different treatment:
 

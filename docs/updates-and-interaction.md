@@ -1,4 +1,4 @@
-# Updates and interaction
+# Updates and Interaction
 
 `render()` returns the mounted chart. Keep that value when data can change or
 when your interface needs to react to the chart.
@@ -13,7 +13,7 @@ const chart = LineChart.make("#revenue")
   .render();
 ```
 
-## Replace the data
+## Replace the Data
 
 `update(data)` replaces the complete data scene and redraws the existing chart.
 
@@ -58,7 +58,7 @@ plan.update({
 });
 ```
 
-## React to a selection
+## React to a Selection
 
 Use `onSelect()` to connect a mark to the rest of your interface.
 
@@ -91,7 +91,7 @@ Pointer, touch, and keyboard input share the same selection model. Arrow keys
 move between values, Enter or Space keeps a selection open, and Escape clears
 it.
 
-## Read a normalized point
+## Read a Normalized Point
 
 `point(index)` returns an immutable snapshot without exposing internal SVG
 nodes. Without an index it returns the active keyboard or pointer point, or the
@@ -104,12 +104,12 @@ const third = chart.point(2);
 
 It returns `undefined` when the index is outside the chart data.
 
-## Export the chart
+## Export the Chart
 
 Every mounted chart can return its current SVG source or download an SVG file.
 See [Exporting SVG](./exporting.md) for both workflows.
 
-## Clean up
+## Clean Up
 
 Destroy a chart when its view is permanently removed:
 

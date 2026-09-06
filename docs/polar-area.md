@@ -1,4 +1,4 @@
-# Polar area charts
+# Polar Area Charts
 
 ## Introduction
 
@@ -6,7 +6,7 @@ Polar area charts give every category the same angle and encode its value with
 radius. Use one when the circular form is useful and magnitude—not a share of a
 fixed whole—is the main comparison.
 
-## Creating a polar area chart
+## Creating a Polar Area Chart
 
 ```js
 import { PolarAreaChart } from "@orchidsoftware/charts";
@@ -21,7 +21,7 @@ const chart = PolarAreaChart.make("#sources")
 
 Values must be non-negative and at least one value must be positive.
 
-## Segment spacing
+## Segment Spacing
 
 `padAngle()` adds space between segments, measured in degrees:
 
@@ -31,7 +31,7 @@ import { PolarAreaChart } from "@orchidsoftware/charts";
 PolarAreaChart.make("#sources").labels(sources).dataset(visits).padAngle(3).render();
 ```
 
-## Rounded segments
+## Rounded Segments
 
 Use `cornerRadius()` to round segment corners in CSS pixels:
 

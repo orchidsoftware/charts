@@ -1,9 +1,9 @@
-# Chart types
+# Chart Types
 
 Orchid Charts includes twelve chart types for common product questions. Choose the
 question you need to answer, then open the corresponding guide.
 
-## Change and comparison
+## Change and Comparison
 
 - [Line charts](./line.md) show change across an ordered sequence.
 - [Bar charts](./bar.md) compare categories, groups, and totals.
@@ -14,7 +14,7 @@ question you need to answer, then open the corresponding guide.
 - [Scatter charts](./scatter.md) compare two measurements.
 - [Bubble charts](./bubble.md) add a third measurement through radius.
 
-## Composition and profiles
+## Composition and Profiles
 
 - [Pie charts](./pie.md) divide a whole into a few slices.
 - [Donut charts](./donut.md) show the same relationship as a ring.
@@ -22,7 +22,7 @@ question you need to answer, then open the corresponding guide.
 - [Radar charts](./radar.md) compare profiles across a shared scale.
 - [Polar area charts](./polar-area.md) compare magnitude with equal angles.
 
-## Activity and planning
+## Activity and Planning
 
 - [Calendar heatmaps](./heatmap.md) show daily activity and recurring patterns.
 - [Timesheet charts](./timesheet.md) place tasks and phases on a timeline.

@@ -1,4 +1,4 @@
-# Line charts
+# Line Charts
 
 ## Introduction
 
@@ -7,7 +7,7 @@ time, response time by hour, or the growth of several plans. A line chart may
 contain one or more datasets, and every dataset must contain one value for each
 label.
 
-## Creating a line chart
+## Creating a Line Chart
 
 Import `LineChart`, choose a host element with `make()`, add the labels and
 values, and call `render()`:
@@ -26,7 +26,7 @@ The value returned by `render()` is the mounted chart. You may use it to
 [update the data](./updates-and-interaction.md#replace-the-data), react to a
 selection, or export the SVG.
 
-## Multiple lines
+## Multiple Lines
 
 Call `dataset()` once for each line. Named datasets appear in the legend and
 tooltip. The bottom legend groups a color dot beside each series name:
@@ -42,7 +42,7 @@ LineChart.make("#revenue")
   .render();
 ```
 
-## Smooth lines
+## Smooth Lines
 
 The `smooth()` method rounds the path between points. It applies to every line
 in the chart:
@@ -65,7 +65,7 @@ import { LineChart } from "@orchidsoftware/charts";
 LineChart.make("#signups").dataset(values).smooth(shouldSmooth).render();
 ```
 
-## Gradient and area fills
+## Gradient and Area Fills
 
 The `gradient()` method fills the area beneath every visible line with a
 fading version of its color:
@@ -100,7 +100,7 @@ import { LineChart } from "@orchidsoftware/charts";
 LineChart.make("#usage").dataset([18, 24, 31, 39]).area().line(false).render();
 ```
 
-## Points and stroke
+## Points and Stroke
 
 Points use a 3 px radius and a light outline by default. Their visible size
 does not reduce the chart’s inspection targets.
@@ -114,7 +114,7 @@ import { LineChart } from "@orchidsoftware/charts";
 LineChart.make("#latency").dataset([180, 210, 195, 205]).dots(false).dotSize(5).strokeWidth(3).render();
 ```
 
-## Compact line charts
+## Compact Line Charts
 
 `frameless()` hides the axes, grid, direct values, legend, tooltip, and points
 unless you explicitly enable one of them. This is useful for a chart embedded
@@ -126,7 +126,7 @@ import { LineChart } from "@orchidsoftware/charts";
 LineChart.make("#revenue-trend").dataset([42, 48, 57, 63]).height(90).gradient().frameless().render();
 ```
 
-## Customizing one line
+## Customizing One Line
 
 Chart-level methods are the usual choice. When one line needs different
 styling, configure only that dataset:

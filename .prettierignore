@@ -1,5 +1,6 @@
 coverage/
 dist/
+pages-dist/
 node_modules/
 test/__screenshots__/
 .vitest-attachments/

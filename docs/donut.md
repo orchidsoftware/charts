@@ -1,4 +1,4 @@
-# Donut charts
+# Donut Charts
 
 ## Introduction
 
@@ -6,7 +6,7 @@ Donut charts show the same part-to-whole relationship as pie charts while
 leaving the center open. Use one when the ring shape fits the surrounding
 interface better than a solid circle.
 
-## Creating a donut chart
+## Creating a Donut Chart
 
 ```js
 import { DonutChart } from "@orchidsoftware/charts";
@@ -21,7 +21,7 @@ const chart = DonutChart.make("#plans")
 
 Donut values must be non-negative and at least one value must be positive.
 
-## Limiting slices
+## Limiting Slices
 
 `maxSlices()` keeps the largest categories and combines the remainder:
 
@@ -31,7 +31,7 @@ import { DonutChart } from "@orchidsoftware/charts";
 DonutChart.make("#sources").labels(sources).dataset(visits).maxSlices(5).render();
 ```
 
-## Starting angle
+## Starting Angle
 
 Use `startAngle()` to rotate the first slice to a deliberate position:
 
@@ -41,7 +41,7 @@ import { DonutChart } from "@orchidsoftware/charts";
 DonutChart.make("#plans").labels(plans).dataset(accounts).startAngle(-90).render();
 ```
 
-## Slice spacing and corners
+## Slice Spacing and Corners
 
 `padAngle()` adds spacing between slices. `cornerRadius()` rounds their corners:
 

@@ -1,4 +1,4 @@
-# Timesheet charts
+# Timesheet Charts
 
 ## Introduction
 
@@ -6,7 +6,7 @@ Timesheet charts place tasks across a time axis. They are suitable for release
 plans, phases, bookings, schedules, and other product views where both start
 and end dates matter.
 
-## Creating a timesheet chart
+## Creating a Timesheet Chart
 
 ```js
 import { TimesheetChart } from "@orchidsoftware/charts";
@@ -21,7 +21,7 @@ const chart = TimesheetChart.make("#release-plan")
 Dates may be `Date` objects, millisecond timestamps, `YYYY-MM-DD` strings, or
 date-time strings with an explicit timezone.
 
-## Task details
+## Task Details
 
 Pass an object when a task needs a group or color:
 
@@ -46,7 +46,7 @@ TimesheetChart.make("#release-plan")
   .render();
 ```
 
-## Displaying a fixed range
+## Displaying a Fixed Range
 
 Without `range()`, Orchid Charts derives the timeline from the earliest start and
 latest end. Use `range()` when the view should include additional time:
@@ -61,7 +61,7 @@ TimesheetChart.make("#release-plan")
   .render();
 ```
 
-## Axes, grid, and labels
+## Axes, Grid, and Labels
 
 Use `axes(false)`, `grid(false)`, and `valueLabels(false)` to remove individual
 presentation layers:
@@ -77,7 +77,7 @@ TimesheetChart.make("#release-plan")
   .render();
 ```
 
-## Date and duration formatting
+## Date and Duration Formatting
 
 `formatDate()` formats dates in chart content, `formatDuration()` formats task
 durations, and `formatTick()` formats the time axis:
@@ -93,7 +93,7 @@ TimesheetChart.make("#release-plan")
   .render();
 ```
 
-## Rounded task bars
+## Rounded Task Bars
 
 The `radius()` method rounds task bars in CSS pixels:
 
@@ -103,7 +103,7 @@ import { TimesheetChart } from "@orchidsoftware/charts";
 TimesheetChart.make("#release-plan").task("Design", "2026-09-01", "2026-09-03").radius(5).render();
 ```
 
-## Formatting the tooltip
+## Formatting the Tooltip
 
 The timesheet tooltip provides its own date and duration formatters:
 

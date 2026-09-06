@@ -122,6 +122,8 @@
     "eslint-plugin-sonarjs": "^4.2.0",
     "eslint-plugin-unicorn": "^73.0.0",
     "globals": "^17.11.0",
+    "highlight.js": "^11.12.0",
+    "markdown-it": "^15.0.1",
     "playwright": "^1.62.1",
     "prettier": "^3.9.6",
     "prettier-plugin-multiline-arrays": "^4.1.11",

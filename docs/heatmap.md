@@ -1,4 +1,4 @@
-# Calendar heatmaps
+# Calendar Heatmaps
 
 ## Introduction
 
@@ -14,7 +14,7 @@ or decorative section gaps, so the data remains one continuous field.
 The SVG adds no outer inset, so apply any desired padding to the chart's host
 element.
 
-## Creating a calendar heatmap
+## Creating a Calendar Heatmap
 
 Point keys use the timezone-free `YYYY-MM-DD` form:
 
@@ -36,7 +36,7 @@ Point values must be finite numbers. Zero is valid and represents an inactive
 day. Missing dates between the first and last point are rendered as zero, so
 sparse input never collapses the calendar.
 
-## Displaying a fixed range
+## Displaying a Fixed Range
 
 Without `range()`, Orchid Charts derives the calendar range from the first and last
 point. Use `range(start, end)` when the chart should also show inactive days
@@ -51,7 +51,7 @@ HeatmapChart.make("#activity")
   .render();
 ```
 
-## Naming the count
+## Naming the Count
 
 `countLabel()` names the unit in the tooltip and accessible text:
 
@@ -61,7 +61,7 @@ import { HeatmapChart } from "@orchidsoftware/charts";
 HeatmapChart.make("#activity").points(activity).countLabel("contributions").render();
 ```
 
-## Color scale
+## Color Scale
 
 For a heatmap, `colors()` defines a low-to-high intensity scale. Unlike a
 series palette, the supplied colors are used once rather than cycled:
@@ -75,7 +75,7 @@ HeatmapChart.make("#activity")
   .render();
 ```
 
-## Rounded day cells
+## Rounded Day Cells
 
 Use `radius()` to round each day cell in CSS pixels:
 
@@ -85,7 +85,7 @@ import { HeatmapChart } from "@orchidsoftware/charts";
 HeatmapChart.make("#activity").points(activity).radius(2).render();
 ```
 
-## Formatting the tooltip
+## Formatting the Tooltip
 
 The heatmap tooltip provides `formatDate()` and `formatValue()`:
 

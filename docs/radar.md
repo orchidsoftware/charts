@@ -1,11 +1,11 @@
-# Radar charts
+# Radar Charts
 
 ## Introduction
 
 Radar charts compare profiles across several measures that share a common
 scale. They work best with a small number of measures and datasets.
 
-## Creating a radar chart
+## Creating a Radar Chart
 
 ```js
 import { RadarChart } from "@orchidsoftware/charts";
@@ -20,7 +20,7 @@ const chart = RadarChart.make("#quality")
 Radar values must be non-negative. Every dataset must contain one value for
 each label.
 
-## Comparing profiles
+## Comparing Profiles
 
 Add another named dataset to compare profiles on the same scale:
 
@@ -35,7 +35,7 @@ RadarChart.make("#quality")
   .render();
 ```
 
-## Stroke width
+## Stroke Width
 
 Use `strokeWidth()` to change the outline of every profile:
 

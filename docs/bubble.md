@@ -1,11 +1,11 @@
-# Bubble charts
+# Bubble Charts
 
 ## Introduction
 
 Bubble charts compare three measurements at once. The `x` and `y` properties
 position each point, while `r` controls its radius.
 
-## Creating a bubble chart
+## Creating a Bubble Chart
 
 ```js
 import { BubbleChart } from "@orchidsoftware/charts";
@@ -23,7 +23,7 @@ const chart = BubbleChart.make("#accounts")
 The value returned by `render()` is the mounted chart and may be updated,
 selected, or exported.
 
-## Comparing datasets
+## Comparing Datasets
 
 Name each dataset so the legend and tooltip can distinguish its bubbles:
 
@@ -58,7 +58,7 @@ in your product; the library cannot infer them from a radius. For example,
 `{ x: 1, y: 78, r: Math.sqrt(529) }` can represent 78 thousand weekly users and
 an installed size of 529 MB when the product supplies those labels.
 
-## Point visibility
+## Point Visibility
 
 Use `dots(false)` to hide bubble marks while retaining the scale and any
 annotations:
@@ -69,7 +69,7 @@ import { BubbleChart } from "@orchidsoftware/charts";
 BubbleChart.make("#accounts").dataset(bubbles).dots(false).render();
 ```
 
-## Dataset appearance
+## Dataset Appearance
 
 A bubble dataset callback supports `color()`, `opacity()`, and
 `formatValue()`:

@@ -1,9 +1,14 @@
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vite";
 
+import { documentationPlugin } from "./scripts/Documentation.mjs";
+
 const isCompatibility = process.env.CHARTS2_COMPATIBILITY === "1";
 
 export default defineConfig({
+  plugins: [
+    { ...documentationPlugin(), apply: "serve" },
+  ],
   build: {
     lib: {
       entry: "src/index.js",
@@ -46,6 +51,9 @@ export default defineConfig({
       enabled: true,
       headless: true,
       provider: playwright(),
+      commands: {
+        emulateAppearance: ({ page }, colorScheme) => page.emulateMedia({ colorScheme }),
+      },
       instances: isCompatibility
         ? [
             { browser: "chromium" },

@@ -1,11 +1,11 @@
-# Bar charts
+# Bar Charts
 
 ## Introduction
 
 Bar charts make differences between categories easy to compare. They may be
 vertical or horizontal, and multiple datasets may be grouped or stacked.
 
-## Creating a bar chart
+## Creating a Bar Chart
 
 ```js
 import { BarChart } from "@orchidsoftware/charts";
@@ -20,7 +20,7 @@ const chart = BarChart.make("#regions")
 The value returned by `render()` is the mounted chart and may be updated,
 selected, or exported.
 
-## Grouped bars
+## Grouped Bars
 
 Add another dataset to place related bars beside one another:
 
@@ -35,7 +35,7 @@ BarChart.make("#orders")
   .render();
 ```
 
-## Horizontal bars
+## Horizontal Bars
 
 Call `horizontal()` when category labels are long or ranking is the main task:
 
@@ -57,7 +57,7 @@ import { BarChart } from "@orchidsoftware/charts";
 BarChart.make("#orders").dataset(values).horizontal(isCompact).render();
 ```
 
-## Stacked bars
+## Stacked Bars
 
 Call `stacked()` when both the total and its parts are meaningful:
 
@@ -75,7 +75,7 @@ BarChart.make("#orders")
 
 Without `stacked()`, multiple datasets remain grouped.
 
-## Rounded bars
+## Rounded Bars
 
 The `radius()` method rounds bar corners in CSS pixels:
 
@@ -85,7 +85,7 @@ import { BarChart } from "@orchidsoftware/charts";
 BarChart.make("#revenue").labels(regions).dataset(values).radius(6).render();
 ```
 
-## Customizing one dataset
+## Customizing One Dataset
 
 Use a dataset callback when one set of bars needs a different color, opacity,
 value format, or radius:

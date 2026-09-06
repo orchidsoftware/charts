@@ -104,6 +104,13 @@ argument is useful for conditional code, such as `.stacked(isCompact)`.
 
 ## Format Labels and Values
 
+Cartesian x-axis labels automatically skip categories when complete formatted
+labels would overlap. The chart retains the first and last labels whenever both
+fit, and recalculates the spacing when its container resizes. Only axis labels
+are skipped; data points and their inspection behavior are unchanged. A label
+wider than the entire plot can still be truncated. Date strings are displayed as
+provided; use `formatLabel()` to choose a shorter date format for your locale.
+
 Use chart-level formatters when the same rule should apply everywhere:
 
 ```js
@@ -135,6 +142,17 @@ Items fit their text and wrap together on narrow containers.
 
 Pass `false` to `tooltip()` or `legend()` when that layer does not help the
 reader.
+
+## Inspect Dense Series
+
+Hover inspection works automatically on line, bar, and compatible mixed charts,
+including long date ranges and lines configured with `.dots(false)`. The tooltip
+shows all series at the nearest category. No point-count option is required.
+
+Dense charts use one reusable hit area and highlight instead of creating a DOM
+node for every category. Focus the chart and use arrow keys to inspect neighboring
+categories, or Home and End to reach the first and last. Touch pins a preview;
+Escape or a tap outside dismisses it. Use `.tooltip(false)` to disable tooltips.
 
 ## Add Context to a Cartesian Chart
 

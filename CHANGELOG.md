@@ -6,6 +6,17 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ## Unreleased
 
+### Fixed
+
+- Hover inspection now works automatically for long line, bar, and compatible
+  mixed series, including hidden dots. Dense charts use a constant number of
+  interaction elements and support keyboard and touch inspection. The per-family
+  gzip budget is now 22.8 kB (previously 22.4 kB) for this default interaction.
+
+- Cartesian x-axis labels now use measured text widths to skip crowded labels
+  instead of truncating every date. Endpoint labels stay inside the plot, and
+  responsive resizing adjusts label density without dropping data points.
+
 ## 0.0.3 - 2026-09-06
 
 ### Changed

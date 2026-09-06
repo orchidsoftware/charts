@@ -1,4 +1,5 @@
-import { markMetadata, svg, titled } from "../../support/Dom.js";
+import { markMetadata, markTooltip } from "../../support/ChartMark.js";
+import { svg, titled } from "../../support/Dom.js";
 import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
 
 /**
@@ -40,14 +41,10 @@ export default class CartesianInspectorRenderer {
           fill: "transparent",
           class: "charts2-x-hit charts2-mark",
         }),
-        -1,
-        index,
+        { kind: "category", datasetIndex: 0, pointIndex: index },
       );
 
-      Object.assign(hitTarget.dataset, {
-        tooltipHeading: String(label),
-        tooltipItems: JSON.stringify(items),
-      });
+      markTooltip(hitTarget, { heading: String(label), items });
       const summary = items.map((item) => `${item.name}: ${item.value}`).join(" · ");
       this.#surface.append(titled(hitTarget, `${label} — ${summary}`));
     }

@@ -1,7 +1,7 @@
 import { ChartType, DEFAULT_PERCENTAGE_RADIUS } from "../../support/Constants.js";
 import { svg } from "../../support/Dom.js";
 import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
-import { chartContentLayout, tooltipText } from "../../support/presentation/Presentation.js";
+import { chartContentLayout, tooltipContent } from "../../support/presentation/Presentation.js";
 import { renderLegend } from "../LegendRendering.js";
 
 import Composition from "./Composition.js";
@@ -141,9 +141,10 @@ class AggregationRenderer {
         {
           dataset: 0,
           point: index,
-          title: tooltipText({
+          title: tooltipContent({
             options: this.#chart.options,
             label: part.label,
+            color: colors[index % colors.length],
             value: part.value,
             suffix: ` (${Math.round(composition.shareOf(part) * FULL_PERCENTAGE)}%)`,
           }),
@@ -251,9 +252,10 @@ class AggregationRenderer {
    * @returns {string} Plain tooltip and accessibility text.
    */
   #sectorTitle(composition, part, index) {
-    return tooltipText({
+    return tooltipContent({
       options: this.#chart.options,
       label: part.label,
+      color: this.#chart.options.colors[index % this.#chart.options.colors.length],
       value: part.value,
       dataset: this.#chart.datasets[0],
       datasetIndex: 0,

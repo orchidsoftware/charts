@@ -1,8 +1,7 @@
-import { HEATMAP_COLORS, HEATMAP_MIN_CELL_WIDTH } from "../../support/Constants.js";
-import { formatNumber, markMetadata, measuredTextWidth, svg, titled } from "../../support/Dom.js";
-import { extent } from "../../support/geometry/Math.js";
+import { markMetadata } from "../../support/ChartMark.js";
+import { HEATMAP_MIN_CELL_WIDTH } from "../../support/Constants.js";
+import { formatNumber, measuredTextWidth, svg, titled } from "../../support/Dom.js";
 import { formatContext, formatterText } from "../../support/presentation/Formatting.js";
-import { intensityLevel } from "../../support/presentation/Presentation.js";
 
 const PREFERRED_CELL_GAP = 3;
 const LEGEND_HEIGHT = 11;
@@ -147,7 +146,7 @@ class HeatmapRenderer {
    */
   #layout() {
     const geometry = heatmapGeometry(this.#chart.options.width, this.#chart.heatmap);
-    const palette = this.#palette();
+    const palette = this.#chart.palette;
 
     const layout = Object.freeze({
       ...geometry,
@@ -173,50 +172,16 @@ class HeatmapRenderer {
   }
 
   /**
-   * Resolves the active palette and its value-to-color mapping.
-   *
-   * @returns {object} Palette and bounded color-level function.
-   */
-  #palette() {
-    const values = this.#chart.heatmap.map((item) => item.value);
-
-    const [
-      minimum,
-      maximum,
-    ] = extent(values);
-
-    const colors = this.#chart.hasCustomColors ? this.#chart.options.colors : HEATMAP_COLORS;
-
-    const colorLevel = (value) =>
-      intensityLevel(
-        value,
-        [
-          minimum,
-          maximum,
-        ],
-        colors.length,
-      );
-
-    return {
-      colors,
-      colorLevel,
-    };
-  }
-
-  /**
    * Appends visible daily cells and individual interaction metadata when enabled.
    *
    * @param {object} layout - Heatmap dimensions and color scale from `#layout`.
    * @returns {void} Daily heat cells are appended to the chart SVG.
    */
   #renderCells(layout) {
-    const suffix = this.#countSuffix();
-
     for (const [
       index,
       item,
     ] of this.#chart.heatmap.entries()) {
-      const level = layout.colorLevel(item.value);
       const absoluteWeek = Math.floor((layout.startWeekday + index) / DAYS_PER_WEEK);
       const band = Math.floor(absoluteWeek / layout.columns);
       const column = absoluteWeek % layout.columns;
@@ -229,17 +194,40 @@ class HeatmapRenderer {
         width: layout.cellSize,
         height: layout.cellSize,
         rx: Math.min(this.#chart.options.radius ?? 2, layout.cellSize / 2),
-        fill: layout.colors[level],
+        fill: layout.colorFor(item.value),
         class: "charts2-heat-cell charts2-mark",
       });
 
+      const content = this.#cellContent(item, index);
+
       const visibleCell = titled(
-        markMetadata(cell, 0, index),
-        `${this.#formatDate(item)}: ${this.#formatValue(item, index)}${suffix}`,
+        markMetadata(cell, { kind: "cell", datasetIndex: 0, pointIndex: index }),
+        content,
       );
 
       this.#surface.append(visibleCell);
     }
+  }
+
+  /**
+   * Formats a cell once for both accessibility and structured tooltip display.
+   *
+   * @param {object} item - Normalized heatmap entry.
+   * @param {number} index - Source entry index.
+   * @returns {object} Accessible text and tooltip row.
+   */
+  #cellContent(item, index) {
+    const name = this.#formatDate(item);
+    const value = `${this.#formatValue(item, index)}${this.#countSuffix()}`;
+    const color = this.#chart.palette.colorFor(item.value);
+
+    return {
+      text: `${name}: ${value}`,
+      heading: "",
+      items: [
+        { name, value, color },
+      ],
+    };
   }
 
   /**

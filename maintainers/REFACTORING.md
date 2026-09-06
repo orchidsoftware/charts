@@ -1,5 +1,9 @@
 # Матрица архитектурного рефакторинга
 
+This document records earlier review decisions and measurements. For the current
+module structure and matrix implementation, see [ARCHITECTURE.md](./ARCHITECTURE.md)
+and [MATRIX_IMPLEMENTATION.md](./MATRIX_IMPLEMENTATION.md).
+
 Это не стенограмма и не личное одобрение перечисленных авторов. Матрица —
 проверяемая интерпретация их публичных принципов применительно к Orchid Charts.
 

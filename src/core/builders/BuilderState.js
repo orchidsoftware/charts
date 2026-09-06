@@ -1,3 +1,5 @@
+import { copyInput } from "../../support/data/Copy.js";
+
 import { validateBuilderOption, validateLabels } from "./BuilderValidation.js";
 
 const FULL_CIRCLE_DEGREES = 360;
@@ -23,38 +25,6 @@ const TEMPORAL_TYPES = new Set([
 ]);
 
 const states = new WeakMap();
-
-/**
- * Copies caller-owned authoring data while retaining formatter callbacks by reference.
- *
- * @param {unknown} value - Value crossing the fluent authoring boundary.
- * @returns {unknown} Independent arrays, records, and dates suitable for builder state.
- */
-function copyBuilderValue(value) {
-  if (value instanceof Date) {
-    return new Date(value.valueOf());
-  }
-
-  if (Array.isArray(value)) {
-    return value.map((item) => copyBuilderValue(item));
-  }
-
-  if (value && typeof value === "object") {
-    return Object.fromEntries(
-      Object.entries(value).map(
-        ([
-          key,
-          item,
-        ]) => [
-          key,
-          copyBuilderValue(item),
-        ],
-      ),
-    );
-  }
-
-  return value;
-}
 
 /**
  * Applies presentation defaults without overriding explicit choices.
@@ -113,7 +83,6 @@ function familyData(source, type) {
  * Owns mutable fluent-authoring state and its single-use lifecycle.
  */
 class BuilderState {
-  #owner;
   #parent;
   #type;
   #mount;
@@ -125,14 +94,12 @@ class BuilderState {
   /**
    * Creates private state for one public builder.
    *
-   * @param {object} owner - Public fluent builder returned by writes.
    * @param {object} definition - Builder rendering definition.
    * @param {object} definition.parent - Chart factory receiving compiled options.
    * @param {string} definition.type - Requested chart type.
    * @param {Element|string} definition.mount - Chart mount target.
    */
-  constructor(owner, { parent, type, mount }) {
-    this.#owner = owner;
+  constructor({ parent, type, mount }) {
     this.#parent = parent;
     this.#type = type;
     this.#mount = mount;
@@ -155,14 +122,12 @@ class BuilderState {
    *
    * @param {string} name - Internal option name.
    * @param {unknown} value - Caller-controlled option value.
-   * @returns {object} Public fluent builder.
+   * @returns {void} The authoring state is updated.
    */
   option(name, value) {
     this.assertActive();
     validateBuilderOption(name, value);
-    this.#options[name] = copyBuilderValue(value);
-
-    return this.#owner;
+    this.#options[name] = copyInput(value);
   }
 
   /**
@@ -170,27 +135,23 @@ class BuilderState {
    *
    * @param {string} name - Internal option name.
    * @param {unknown} value - Caller-controlled option value.
-   * @returns {object} Public fluent builder.
+   * @returns {void} The authoring state is updated.
    */
   explicitOption(name, value) {
     this.option(name, value);
     this.#explicit.add(name);
-
-    return this.#owner;
   }
 
   /**
    * Validates and records category labels.
    *
    * @param {unknown} values - Candidate label collection.
-   * @returns {object} Public fluent builder.
+   * @returns {void} The authoring state is updated.
    */
   labels(values) {
     this.assertActive();
     validateLabels(values);
-    this.#data.labels = copyBuilderValue(values);
-
-    return this.#owner;
+    this.#data.labels = copyInput(values);
   }
 
   /**
@@ -198,13 +159,11 @@ class BuilderState {
    *
    * @param {string} name - Data property name.
    * @param {unknown} value - Caller-controlled data value.
-   * @returns {object} Public fluent builder.
+   * @returns {void} The authoring state is updated.
    */
   data(name, value) {
     this.assertActive();
-    this.#data[name] = copyBuilderValue(value);
-
-    return this.#owner;
+    this.#data[name] = copyInput(value);
   }
 
   /**
@@ -212,21 +171,19 @@ class BuilderState {
    *
    * @param {string} collection - Data collection name.
    * @param {unknown} value - Caller-controlled collection item.
-   * @returns {object} Public fluent builder.
+   * @returns {void} The authoring state is updated.
    */
   append(collection, value) {
     this.assertActive();
     this.#data[collection] ??= [];
-    this.#data[collection].push(copyBuilderValue(value));
-
-    return this.#owner;
+    this.#data[collection].push(copyInput(value));
   }
 
   /**
    * Adds a configured dataset under family cardinality rules.
    *
    * @param {object} dataset - Detached dataset record.
-   * @returns {object} Public fluent builder.
+   * @returns {void} The authoring state is updated.
    * @throws {TypeError} When a composition chart already has a dataset.
    */
   dataset(dataset) {
@@ -236,8 +193,6 @@ class BuilderState {
     }
 
     this.#data.datasets.push(dataset);
-
-    return this.#owner;
   }
 
   /**
@@ -283,7 +238,7 @@ class BuilderState {
  * @returns {void} The builder becomes active.
  */
 function initializeBuilder(builder, definition) {
-  states.set(builder, new BuilderState(builder, definition));
+  states.set(builder, new BuilderState(definition));
 }
 
 /**
@@ -305,4 +260,18 @@ function builderState(builder) {
   return state;
 }
 
-export { builderState, copyBuilderValue, initializeBuilder };
+/**
+ * Writes a chart option and returns the public builder without retaining it in state.
+ *
+ * @param {object} builder - Active fluent builder.
+ * @param {string} name - Chart option name.
+ * @param {unknown} value - Requested option value.
+ * @returns {object} The same public builder for chaining.
+ */
+function builderOption(builder, name, value) {
+  builderState(builder).option(name, value);
+
+  return builder;
+}
+
+export { builderOption, builderState, initializeBuilder };

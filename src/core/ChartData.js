@@ -1,12 +1,10 @@
-import { AGGREGATION_TYPES, ChartType, DEFAULT_COLORS, HEATMAP_COLORS } from "../support/Constants.js";
-import {
-  normalizeDatasets,
-  normalizeHeatmapData,
-  normalizeTimesheetData,
-  validateChartData,
-  validateSeriesScene,
-} from "../support/Normalize.js";
+import { AGGREGATION_TYPES, ChartType } from "../support/Constants.js";
+import { normalizeHeatmapData } from "../support/data/HeatmapData.js";
+import { normalizeDatasets, validateChartData, validateSeriesScene } from "../support/data/SeriesData.js";
+import { normalizeTimesheetData } from "../support/data/TimesheetData.js";
+import { chartColors, heatmapPalette } from "../support/Palette.js";
 
+import { categoryPointAt, heatmapPointAt, independentPointAt, timesheetPointAt } from "./ChartPoints.js";
 import {
   createCompositionSelection,
   createHeatmapSelection,
@@ -17,194 +15,22 @@ import { normalizeCartesianSource } from "./NormalizeAnnotations.js";
 
 const DEFAULT_MAXIMUM_SLICES = 20;
 
-const INDEPENDENT_TYPES = new Set([
-  ChartType.SCATTER,
-  ChartType.AXIS_MIXED,
-  ChartType.BUBBLE,
-]);
-
 /**
- * Creates one immutable independently-positioned series mark snapshot.
+ * Combines normalized family collections with explicit public projections.
  *
- * @param {object} source - Dataset, point, coordinates, and public index.
- * @returns {object} Frozen public point snapshot.
+ * @param {object} source - Validated caller data.
+ * @param {object} collections - Only the collections belonging to this family.
+ * @param {object} behavior - Family point and selection projections.
+ * @returns {object} Immutable model interface used by the chart lifecycle.
  */
-function seriesMarkSnapshot(source) {
-  const snapshot = {
-    index: source.index,
-    datasetIndex: source.datasetIndex,
-    dataset: source.dataset.name,
-    pointIndex: source.pointIndex,
-    label: source.label,
-    x: source.point.x,
-    y: source.point.y,
-  };
-
-  if (source.point.r !== undefined) {
-    snapshot.r = source.point.r;
-  }
-
-  if (source.chartType !== undefined) {
-    snapshot.chartType = source.chartType;
-  }
-
-  return Object.freeze(snapshot);
-}
-
-/**
- * Owns normalized chart data and projects lifecycle selection through one
- * cohesive presenter.
- */
-export default class ChartData {
-  #type;
-  #source;
-  #datasets;
-  #labels;
-  #heatmap;
-  #timesheet;
-  #selection;
-
-  /**
-   * Captures one completely normalized family snapshot.
-   *
-   * @param {object} state - Type, source, collections, and effective palette.
-   */
-  constructor(state) {
-    const { type, source, collections, selection } = state;
-    const { datasets = [], labels = [], heatmap = [], timesheet = null } = collections;
-
-    this.#type = type;
-    this.#source = source;
-    this.#datasets = datasets;
-    this.#labels = labels;
-    this.#heatmap = heatmap;
-    this.#timesheet = timesheet;
-    this.#selection = selection;
-  }
-
-  /**
-   * Exposes normalized series datasets.
-   *
-   * @returns {Array<object>} Canonical series datasets.
-   */
-  get datasets() {
-    return this.#datasets;
-  }
-
-  /**
-   * Exposes normalized category or task labels.
-   *
-   * @returns {unknown[]} Canonical category or task labels.
-   */
-  get labels() {
-    return this.#labels;
-  }
-
-  /**
-   * Exposes normalized heatmap entries.
-   *
-   * @returns {Array<object>} Canonical heatmap entries.
-   */
-  get heatmap() {
-    return this.#heatmap;
-  }
-
-  /**
-   * Exposes normalized timesheet state.
-   *
-   * @returns {object | null} Canonical timesheet state.
-   */
-  get timesheet() {
-    return this.#timesheet;
-  }
-
-  /**
-   * Exposes the completely validated caller source.
-   *
-   * @returns {object} Completely validated caller source.
-   */
-  get source() {
-    return this.#source;
-  }
-
-  /**
-   * Reads one type-appropriate normalized value without exposing mutable internals.
-   *
-   * @param {number} index - Requested point, entry, or task index.
-   * @returns {object | undefined} Defensive public data snapshot.
-   */
-  pointAt(index) {
-    if (this.#type === ChartType.HEATMAP) {
-      const point = this.#heatmap[index];
-
-      return point && Object.freeze({ ...point, date: new Date(point.date) });
-    }
-
-    if (this.#type === ChartType.TIMESHEET) {
-      const task = this.#timesheet.tasks[index];
-
-      return task && Object.freeze({ ...task, start: new Date(task.start), end: new Date(task.end) });
-    }
-
-    if (INDEPENDENT_TYPES.has(this.#type)) {
-      return this.#seriesMarkAt(index);
-    }
-
-    if (this.#datasets.every((dataset) => dataset.points[index] === undefined)) {
-      return;
-    }
-
-    return Object.freeze({
-      index,
-      label: this.#labels[index],
-      values: Object.freeze(this.#datasets.map((dataset) => dataset.points[index]?.y)),
-    });
-  }
-
-  /**
-   * Projects renderer metadata through the selection presenter.
-   *
-   * @param {SVGElement} mark - Rendered mark carrying source indices.
-   * @returns {object} Frozen public selection payload.
-   */
-  selectionFor(mark) {
-    return this.#selection.from(mark);
-  }
-
-  /**
-   * Resolves a rendered mark into its stable lifecycle identity.
-   *
-   * @param {SVGElement} mark - Rendered mark carrying source indices.
-   * @returns {string | null} Stable identity or null when ambiguous.
-   */
-  identityFor(mark) {
-    return this.#selection.identityFor(mark);
-  }
-
-  /**
-   * Reads one independently-positioned mark in renderer navigation order.
-   *
-   * @param {number} index - Flattened mark position.
-   * @returns {object | undefined} Immutable mark snapshot.
-   */
-  #seriesMarkAt(index) {
-    const marks = this.#datasets.flatMap((dataset, datasetIndex) =>
-      dataset.points.map((point, pointIndex) => ({ dataset, datasetIndex, point, pointIndex })),
-    );
-
-    const mark = marks[index];
-
-    if (!mark) {
-      return;
-    }
-
-    return seriesMarkSnapshot({
-      ...mark,
-      index,
-      label: this.#labels[mark.pointIndex],
-      chartType: this.#type === ChartType.AXIS_MIXED ? mark.dataset.chartType : undefined,
-    });
-  }
+function chartModel(source, collections, behavior) {
+  return Object.freeze({
+    source,
+    ...collections,
+    pointAt: behavior.pointAt,
+    selectionFor: (mark) => behavior.selection.from(mark),
+    identityFor: (mark) => behavior.selection.identityFor(mark),
+  });
 }
 
 /**
@@ -309,14 +135,24 @@ function aggregateComposition(collections, maximum) {
  * @param {string} type - Concrete Cartesian type.
  * @param {object} data - Caller-controlled data.
  * @param {object} config - Effective chart configuration.
- * @returns {ChartData} Normalized series model.
+ * @returns {object} Normalized series model.
  */
 function createSeriesModel(type, data, config) {
-  const colors = config.colors ?? DEFAULT_COLORS;
+  const colors = chartColors(type, config.colors);
   const normalized = normalizeSeries(type, data, colors);
   const selection = createSeriesSelection(type, { ...normalized.collections, colors });
 
-  return new ChartData({ type, ...normalized, selection });
+  const isIndependent = [
+    ChartType.SCATTER,
+    ChartType.BUBBLE,
+    ChartType.AXIS_MIXED,
+  ].includes(type);
+
+  const pointAt = isIndependent
+    ? (index) => independentPointAt(type, normalized.collections, index)
+    : (index) => categoryPointAt(normalized.collections, index);
+
+  return chartModel(normalized.source, normalized.collections, { selection, pointAt });
 }
 
 /**
@@ -325,10 +161,10 @@ function createSeriesModel(type, data, config) {
  * @param {string} type - Concrete composition type.
  * @param {object} data - Caller-controlled data.
  * @param {object} config - Effective chart configuration.
- * @returns {ChartData} Normalized composition model.
+ * @returns {object} Normalized composition model.
  */
 function createCompositionModel(type, data, config) {
-  const colors = config.colors ?? DEFAULT_COLORS;
+  const colors = chartColors(type, config.colors);
   const normalized = normalizeSeries(type, data, colors);
   const maximum = config.maxSlices ?? DEFAULT_MAXIMUM_SLICES;
 
@@ -338,7 +174,10 @@ function createCompositionModel(type, data, config) {
 
   const selection = createCompositionSelection(type, { ...collections, colors });
 
-  return new ChartData({ type, source: normalized.source, collections, selection });
+  return chartModel(normalized.source, collections, {
+    selection,
+    pointAt: (index) => categoryPointAt(collections, index),
+  });
 }
 
 /**
@@ -347,14 +186,18 @@ function createCompositionModel(type, data, config) {
  * @param {string} type - Heatmap chart type.
  * @param {object} data - Caller-controlled heatmap data.
  * @param {object} config - Effective chart configuration.
- * @returns {ChartData} Normalized heatmap model.
+ * @returns {object} Normalized heatmap model.
  */
 function createHeatmapModel(type, data, config) {
-  const colors = config.colors ?? HEATMAP_COLORS;
-  const collections = { heatmap: normalizeHeatmapData(data) };
+  const colors = chartColors(type, config.colors);
+  const heatmap = normalizeHeatmapData(data);
+  const collections = { heatmap, palette: heatmapPalette(heatmap, colors) };
   const selection = createHeatmapSelection({ ...collections, colors });
 
-  return new ChartData({ type, source: data, collections, selection });
+  return chartModel(data, collections, {
+    selection,
+    pointAt: (index) => heatmapPointAt(collections.heatmap, index),
+  });
 }
 
 /**
@@ -363,16 +206,19 @@ function createHeatmapModel(type, data, config) {
  * @param {string} type - Timesheet chart type.
  * @param {object} data - Caller-controlled timesheet data.
  * @param {object} config - Effective chart configuration.
- * @returns {ChartData} Normalized timesheet model.
+ * @returns {object} Normalized timesheet model.
  */
 function createTimesheetModel(type, data, config) {
-  const colors = config.colors ?? DEFAULT_COLORS;
+  const colors = chartColors(type, config.colors);
   const timesheet = normalizeTimesheetData(data, colors);
   const labels = timesheet.tasks.map((task) => task.label);
   const collections = { timesheet, labels };
   const selection = createTimesheetSelection(collections);
 
-  return new ChartData({ type, source: data, collections, selection });
+  return chartModel(data, collections, {
+    selection,
+    pointAt: (index) => timesheetPointAt(timesheet.tasks, index),
+  });
 }
 
 export { createCompositionModel, createHeatmapModel, createSeriesModel, createTimesheetModel };

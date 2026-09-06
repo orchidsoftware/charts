@@ -33,7 +33,8 @@ src
 ├─ core
 │  ├─ Chart.js                      # Mounted façade; private DOM lifecycle
 │  ├─ ChartDefinition.js            # Immutable make(parent) entry
-│  ├─ ChartData.js                  # Family-normalized model snapshots
+│  ├─ ChartData.js                  # Family model factories
+│  ├─ ChartPoints.js                # Family-specific public point projections
 │  ├─ ChartSelection.js             # Public selection payload policy
 │  ├─ ChartTooltip.js               # Safe content and viewport placement
 │  ├─ InteractionController.js      # Pointer, focus, keyboard, selection state
@@ -70,7 +71,16 @@ src
 └─ support
    ├─ Constants.js                  # Frozen enums and immutable design values
    ├─ Dom.js                        # Small SVG, text, and host primitives
-   ├─ Normalize.js                  # Pure validation and normalization rules
+   ├─ ChartMark.js                  # Explicit SVG metadata and structured tooltip content
+   ├─ Palette.js                    # Shared display and selection colors
+   ├─ data
+   │  ├─ SeriesData.js              # Series grammar and cardinality
+   │  ├─ HeatmapData.js             # Calendar input and continuous days
+   │  ├─ TimesheetData.js           # Task grammar, bounds, and group palette
+   │  ├─ Dates.js                   # Shared date parsing
+   │  ├─ InputValidation.js         # Shared primitive input rules
+   │  ├─ Gradient.js                # Shared gradient rules
+   │  └─ Copy.js                    # Detached copies of authoring input
    ├─ Validation.js                 # Shared validation predicates
    ├─ geometry
    │  ├─ Math.js                    # Explicit geometry re-exports
@@ -83,145 +93,34 @@ src
       └─ Time.js                    # Time ticks and display formatting
 ```
 
-## Class relationships
+## Ownership and data flow
 
-```mermaid
-classDiagram
-  class Chart {
-    -#host Element
-    -#options object
-    -#model ChartData
-    -#element SVGSVGElement
-    -#tooltip HTMLElement
-    -#interactions InteractionController
-    +element SVGSVGElement
-    +update(data) Chart
-    +point(index) object
-    +toSvg() string
-    +download(filename) Chart
-    +destroy() void
-    -#render() void
-    -#bindInteractions() void
-  }
+`ChartDefinition` binds a builder, model factory, and renderer. A successful
+render consumes the detached builder; a failed render leaves it reusable.
+Builder state has no reference back to its owner. Callback scopes retain their
+explicit name, record, and active flag in one private map, and expire in `finally`.
 
-  class ChartData {
-    -#type string
-    -#datasets Array
-    -#labels Array
-    -#heatmap Array
-    -#timesheet object
-    +update(data) void
-    +pointAt(index) object
-    +selectionFor(mark) object
-  }
+`Chart` owns the host, responsive lifecycle, current model, SVG, tooltip, and
+controller. It prepares a replacement before committing it. The model is a
+frozen record with only its family's collections and bound `pointAt`,
+`selectionFor`, and `identityFor` operations. `ChartPoints` projects public point
+payloads without inspecting DOM nodes.
 
-  class ChartSelection {
-    -#type string
-    -#datasets Array
-    +from(mark) object
-  }
+`InteractionController` owns preview, focus, and selected indexes, including the
+root pointer and document dismissal listeners. `Chart` retains only the stable
+selection identity needed across model replacement. Destroying a controller
+aborts its listeners, including listeners on detached marks.
 
-  class ChartTooltip {
-    -#host Element
-    -#svg SVGSVGElement
-    -#element HTMLDivElement
-    +element HTMLDivElement
-    +show(mark, label, dimensions) void
-    +hide() void
-    +destroy() void
-    -#positionWithinViewport(left, top, hostBox) void
-    -#renderContent(mark, label) void
-  }
+`ChartMark` associates a rendered element with an explicit record containing
+its kind, indexes, visual element, and structured tooltip content. `SvgSurface`
+links hit targets to visible marks while constructing the SVG. DOM attributes
+remain diagnostic mirrors; selection and tooltip content do not parse them.
+`Palette` supplies the same heatmap color rule to rendering and selection.
 
-  class InteractionController {
-    -#items Array
-    -#selectedIndex number
-    +dismiss() void
-    -#updateSelection(index) void
-    -#moveFocus(current, next) void
-  }
-
-  class ConcreteRenderer {
-    -#chart object
-    -#surface SvgSurface
-    +render() void
-  }
-
-  class CartesianRenderer {
-    -#chart object
-    -#surface SvgSurface
-    +render() void
-  }
-
-  class CartesianLayout {
-    -#chart object
-    -#x Function
-    -#y Function
-    +pointAt(point, index) object
-    +barFor(point, placement) object
-    +inspectorAt(index) object
-  }
-
-  class SvgSurface {
-    -#root SVGSVGElement
-    +append(node, attributes) Element
-    +mark(name, attributes, metadata) Element
-    +text(value, attributes) SVGTextElement
-  }
-
-  class CartesianAxesRenderer {
-    -#chart object
-    -#layout CartesianLayout
-    -#surface SvgSurface
-    +renderBackground() void
-    +renderForeground() void
-  }
-
-  class CartesianSeriesRendering {
-    <<module>>
-    -#chart object
-    -#layout CartesianLayout
-    -#surface SvgSurface
-    +render() void
-  }
-
-  class CartesianInspectorRenderer {
-    -#chart object
-    -#layout CartesianLayout
-    -#surface SvgSurface
-    +render() void
-  }
-
-  Chart *-- ChartData : owns
-  ChartData ..> ChartSelection : projects through
-  Chart *-- ChartTooltip : owns
-  Chart *-- InteractionController : replaces per render
-  Chart ..> ConcreteRenderer : selects through render function
-  ConcreteRenderer --> Object : reads frozen chart state
-  ConcreteRenderer --> SvgSurface : appends owned SVG
-  CartesianRenderer *-- CartesianLayout : creates
-  CartesianRenderer *-- CartesianAxesRenderer : composes
-  CartesianRenderer --> CartesianSeriesRendering : calls strategies
-  CartesianRenderer *-- CartesianInspectorRenderer : composes
-  CartesianAxesRenderer --> CartesianLayout : asks geometry
-  CartesianSeriesRendering --> CartesianLayout : asks geometry
-  CartesianInspectorRenderer --> CartesianLayout : asks hit bands
-```
-
-`ConcreteRenderer` denotes the chart-family renderer classes. They do not
-inherit from a base class because JavaScript has no native `protected` scope and
-there is no shared stateful algorithm worth forcing into inheritance. They share
-one frozen plain-object chart state plus a narrow `SvgSurface`; a getter-only
-DTO class added no behavior.
-
-`CartesianRenderer` is private to `CartesianRendering`, which exports the bound
-family strategies. Its definition supplies family-specific layout and series
-functions; no global registry or runtime lookup exists. Axes and inspector
-collaborators remain cohesive exported classes, while
-`CartesianSeriesRendering` owns stateless data-mark strategies. None are public
-package extension points.
-`CartesianLayout`, `TimesheetLayout`, and `Composition` are behavioral objects:
-they answer domain questions and keep calculated geometry out of DOM code.
+Renderers read a frozen snapshot and write through `SvgSurface`. Cartesian
+layout owns scales and hit-band geometry; temporal layout owns time rows and
+ticks; composition owns part-to-whole geometry. These collaborators are internal
+implementation details, not package extension points.
 
 ## Dependency direction
 
@@ -237,13 +136,13 @@ concrete renderers → support
 - `ChartDefinition` is the composition root. It binds immutable type identity,
   one model factory, one renderer function, and `make(parent)`.
   Builders own authoring state and compile it without reading or mutating DOM.
-- Pure support calculations (`Normalize`, `geometry`, and `presentation`) never
+- Pure support calculations (`data`, `geometry`, and `presentation`) never
   import `core`, a renderer, or browser globals.
-- `ChartData` owns normalization state and knows nothing about tooltips, SVG
+- `ChartData` constructs family model snapshots and knows nothing about tooltips, SVG
   layout, or listeners. Public payload construction belongs to the
   snapshot-bound `ChartSelection` presenter.
-- `Chart` is the only lifecycle root for hosts, global listeners, resize, and
-  destruction. Its owned `ChartTooltip` collaborator owns safe tooltip content
+- `Chart` is the lifecycle root for the host, resize, and destruction.
+  Its interaction controller owns root and document input listeners. Its owned `ChartTooltip` collaborator owns safe tooltip content
   and viewport placement.
 - `renderChart` validates the bound renderer function before reading state, then
   supplies frozen chart state and one `SvgSurface`. There is no registry.
@@ -311,8 +210,9 @@ adapter.
    definition; they do not add another lifecycle or public constructor.
 8. No compatibility adapter may be added without an explicit removal release.
 9. Stateful classes use native `#private` ownership and explanatory JSDoc.
-10. Architecture fitness tests enforce dependency direction, class form, private
-    ownership, package exports, and removed compatibility paths.
+10. Architecture fitness tests enforce dependency direction, absence of import
+    cycles, family isolation, browser-free model rules, and package exports.
+    They do not prescribe class names, private fields, or exact directory lists.
 11. Production functions and methods carry multiline explanatory JSDoc with
     parameter and return descriptions; ESLint rejects incomplete contracts.
 12. Closed domain vocabularies use frozen enum objects; exported palettes,

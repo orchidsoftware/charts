@@ -1,6 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import createChart from "./support/MountChart.js";
+import {
+  BarChart,
+  BubbleChart,
+  DonutChart,
+  LineChart,
+  MixedChart,
+  PieChart,
+  PolarAreaChart,
+  RadarChart,
+  TimesheetChart,
+} from "../src/index.js";
+import "../src/styles.css";
 
 const tooltipFor = (chart) => chart.element.parentElement.querySelector(".charts2-tooltip");
 const widthOf = (chart) => chart.element.viewBox.baseVal.width;
@@ -37,7 +48,25 @@ describe("Chart", () => {
   });
 
   it("groups compact color dots beside their labels without adding interaction targets", () => {
-    const chart = createChart("#chart", { type: "line", data });
+    const chart = LineChart.make("#chart")
+      .dataset({
+        name: "Alpha",
+        color: "#123456",
+        values: [
+          2,
+          -1,
+          4,
+        ],
+      })
+      .dataset({
+        name: "Beta",
+        values: [
+          1,
+          3,
+          2,
+        ],
+      })
+      .render();
     const samples = [
       ...chart.element.querySelectorAll(".charts2-legend-swatch"),
     ];
@@ -69,25 +98,27 @@ describe("Chart", () => {
   });
 
   it("uses the same color dots for every series in a mixed legend", () => {
-    const chart = createChart("#chart", {
-      type: "mixed",
-      data: {
-        datasets: [
-          "bar",
-          "line",
-          "scatter",
-          "line",
-        ].map((chartType, index) => ({
-          chartType,
-          name: `Series ${index}`,
-          values: [
-            1,
-            2,
-            3,
-          ],
-        })),
-      },
-    });
+    const builder = MixedChart.make("#chart");
+    for (const [
+      index,
+      chartType,
+    ] of [
+      "bar",
+      "line",
+      "scatter",
+      "line",
+    ].entries()) {
+      builder.dataset({
+        chartType,
+        name: `Series ${index}`,
+        values: [
+          1,
+          2,
+          3,
+        ],
+      });
+    }
+    const chart = builder.render();
     const samples = [
       ...chart.element.querySelectorAll(".charts2-legend-swatch"),
     ];
@@ -101,7 +132,28 @@ describe("Chart", () => {
   });
 
   it("renders and updates a line chart through the friendly factory", () => {
-    const chart = createChart("#chart", { type: "line", data, width: 400, height: 200, ariaLabel: "Growth" });
+    const chart = LineChart.make("#chart")
+      .width(400)
+      .height(200)
+      .ariaLabel("Growth")
+      .dataset({
+        name: "Alpha",
+        color: "#123456",
+        values: [
+          2,
+          -1,
+          4,
+        ],
+      })
+      .dataset({
+        name: "Beta",
+        values: [
+          1,
+          3,
+          2,
+        ],
+      })
+      .render();
     expect(chart.element.getAttribute("aria-label")).toBe("Growth");
     expect(chart.element.getAttribute("height")).toBe("200");
     expect(chart.element.querySelectorAll(".charts2-line")).toHaveLength(2);
@@ -146,7 +198,25 @@ describe("Chart", () => {
   ])("measures %s content width independently of padding, borders, and transforms", async (boxSizing) => {
     const host = document.querySelector("#chart");
     host.style.cssText = `box-sizing:${boxSizing};width:300.5px;padding:12px 20px;border:3px solid;transform:scale(1.5)`;
-    const chart = createChart(host, { type: "line", data });
+    const chart = LineChart.make(host)
+      .dataset({
+        name: "Alpha",
+        color: "#123456",
+        values: [
+          2,
+          -1,
+          4,
+        ],
+      })
+      .dataset({
+        name: "Beta",
+        values: [
+          1,
+          3,
+          2,
+        ],
+      })
+      .render();
     const decorationWidth = boxSizing === "border-box" ? 46 : 0;
     expect(widthOf(chart)).toBe(300.5 - decorationWidth);
     expect(chart.element.getScreenCTM().a).toBeCloseTo(1.5, 3);
@@ -159,7 +229,25 @@ describe("Chart", () => {
 
   it("uses a readable fallback width before a zero-width host receives layout", () => {
     document.querySelector("#chart").style.width = "0px";
-    const chart = createChart("#chart", { type: "line", data });
+    const chart = LineChart.make("#chart")
+      .dataset({
+        name: "Alpha",
+        color: "#123456",
+        values: [
+          2,
+          -1,
+          4,
+        ],
+      })
+      .dataset({
+        name: "Beta",
+        values: [
+          1,
+          3,
+          2,
+        ],
+      })
+      .render();
     expect(widthOf(chart)).toBe(640);
     const legend = chart.element.querySelector(".charts2-legend-group").getBBox();
     expect(legend.x + legend.width).toBeLessThanOrEqual(widthOf(chart));
@@ -167,7 +255,26 @@ describe("Chart", () => {
   });
 
   it("reserves legend space only while a legend is visible", () => {
-    const chart = createChart("#chart", { type: "line", data, width: 400 });
+    const chart = LineChart.make("#chart")
+      .width(400)
+      .dataset({
+        name: "Alpha",
+        color: "#123456",
+        values: [
+          2,
+          -1,
+          4,
+        ],
+      })
+      .dataset({
+        name: "Beta",
+        values: [
+          1,
+          3,
+          2,
+        ],
+      })
+      .render();
     const plotTop = () => Number(chart.element.querySelector(".charts2-grid-horizontal").getAttribute("y1"));
     const originalBottom = Number(chart.element.querySelector(".charts2-x-axis").getAttribute("y1"));
     expect(plotTop()).toBe(8);
@@ -191,37 +298,71 @@ describe("Chart", () => {
     expect(plotTop()).toBe(8);
     chart.destroy();
 
-    const hidden = createChart("#chart", { type: "line", data, legend: false });
+    const hidden = LineChart.make("#chart")
+      .legend(false)
+      .dataset({
+        name: "Alpha",
+        color: "#123456",
+        values: [
+          2,
+          -1,
+          4,
+        ],
+      })
+      .dataset({
+        name: "Beta",
+        values: [
+          1,
+          3,
+          2,
+        ],
+      })
+      .render();
     expect(hidden.element.querySelector(".charts2-legend-group")).toBeNull();
     expect(Number(hidden.element.querySelector(".charts2-grid-horizontal").getAttribute("y1"))).toBe(8);
     hidden.destroy();
 
-    const bare = createChart("#chart", { type: "line", data, legend: false, valueLabels: false });
+    const bare = LineChart.make("#chart")
+      .legend(false)
+      .valueLabels(false)
+      .dataset({
+        name: "Alpha",
+        color: "#123456",
+        values: [
+          2,
+          -1,
+          4,
+        ],
+      })
+      .dataset({
+        name: "Beta",
+        values: [
+          1,
+          3,
+          2,
+        ],
+      })
+      .render();
     expect(Number(bare.element.querySelector(".charts2-grid-horizontal").getAttribute("y1"))).toBe(0);
   });
 
   it("renders a labelled gradient line with native hover titles", () => {
-    const chart = createChart("#chart", {
-      type: "line",
-      gradient: true,
-      data: {
-        labels: [
-          "Mon",
-          "Tue",
-          "Wed",
+    const chart = LineChart.make("#chart")
+      .gradient(true)
+      .labels([
+        "Mon",
+        "Tue",
+        "Wed",
+      ])
+      .dataset({
+        name: "Revenue",
+        values: [
+          1,
+          4,
+          2,
         ],
-        datasets: [
-          {
-            name: "Revenue",
-            values: [
-              1,
-              4,
-              2,
-            ],
-          },
-        ],
-      },
-    });
+      })
+      .render();
     expect(chart.element.querySelectorAll("linearGradient stop")).toHaveLength(2);
     expect(chart.element.querySelector(".charts2-area").getAttribute("fill")).toContain("charts2-gradient-");
     expect(chart.element.querySelectorAll(".charts2-grid-horizontal")).toHaveLength(5);
@@ -266,23 +407,18 @@ describe("Chart", () => {
       "Post-validation measurement",
       "Final stabilized sample",
     ];
-    const chart = createChart("#chart", {
-      type: "line",
-      width: 900,
-      data: {
-        labels,
-        datasets: [
-          {
-            values: [
-              1,
-              2,
-              1.5,
-              3,
-            ],
-          },
+    const chart = LineChart.make("#chart")
+      .width(900)
+      .labels(labels)
+      .dataset({
+        values: [
+          1,
+          2,
+          1.5,
+          3,
         ],
-      },
-    });
+      })
+      .render();
     const nodes = [
       ...chart.element.querySelectorAll(".charts2-label:not(.charts2-value-label)"),
     ];
@@ -308,24 +444,19 @@ describe("Chart", () => {
     }
     chart.destroy();
 
-    const narrow = createChart("#chart", {
-      type: "line",
-      width: 240,
-      data: {
-        labels: [
-          labels[0],
-          labels.at(-1),
+    const narrow = LineChart.make("#chart")
+      .width(240)
+      .labels([
+        labels[0],
+        labels.at(-1),
+      ])
+      .dataset({
+        values: [
+          1,
+          2,
         ],
-        datasets: [
-          {
-            values: [
-              1,
-              2,
-            ],
-          },
-        ],
-      },
-    });
+      })
+      .render();
     const narrowNodes = [
       ...narrow.element.querySelectorAll(".charts2-label:not(.charts2-value-label)"),
     ];
@@ -338,21 +469,16 @@ describe("Chart", () => {
   });
 
   it("uses whole-number nice ticks for integer data and preserves meaningful fractions", () => {
-    const integer = createChart("#chart", {
-      type: "line",
-      data: {
-        datasets: [
-          {
-            values: [
-              1,
-              2,
-              3,
-              5,
-            ],
-          },
+    const integer = LineChart.make("#chart")
+      .dataset({
+        values: [
+          1,
+          2,
+          3,
+          5,
         ],
-      },
-    });
+      })
+      .render();
     expect(tickText(integer)).toEqual([
       "5",
       "4",
@@ -382,19 +508,14 @@ describe("Chart", () => {
     );
     integer.destroy();
 
-    const small = createChart("#chart", {
-      type: "bar",
-      data: {
-        datasets: [
-          {
-            values: [
-              1,
-              2,
-            ],
-          },
+    const small = BarChart.make("#chart")
+      .dataset({
+        values: [
+          1,
+          2,
         ],
-      },
-    });
+      })
+      .render();
     expect(tickText(small)).toEqual([
       "2",
       "1",
@@ -408,20 +529,15 @@ describe("Chart", () => {
     );
     small.destroy();
 
-    const negative = createChart("#chart", {
-      type: "bar",
-      orientation: "horizontal",
-      data: {
-        datasets: [
-          {
-            values: [
-              -3,
-              4,
-            ],
-          },
+    const negative = BarChart.make("#chart")
+      .horizontal()
+      .dataset({
+        values: [
+          -3,
+          4,
         ],
-      },
-    });
+      })
+      .render();
     expect(tickText(negative)).toEqual([
       "-4",
       "-2",
@@ -443,19 +559,14 @@ describe("Chart", () => {
     }
     negative.destroy();
 
-    const millions = createChart("#chart", {
-      type: "line",
-      data: {
-        datasets: [
-          {
-            values: [
-              6_450_000,
-              12_750_000,
-            ],
-          },
+    const millions = LineChart.make("#chart")
+      .dataset({
+        values: [
+          6_450_000,
+          12_750_000,
         ],
-      },
-    });
+      })
+      .render();
     expect(tickText(millions)).toEqual([
       "15M",
       "10M",
@@ -464,19 +575,14 @@ describe("Chart", () => {
     ]);
     millions.destroy();
 
-    const fractions = createChart("#chart", {
-      type: "line",
-      data: {
-        datasets: [
-          {
-            values: [
-              0.00009,
-              0.00021,
-            ],
-          },
+    const fractions = LineChart.make("#chart")
+      .dataset({
+        values: [
+          0.00009,
+          0.00021,
         ],
-      },
-    });
+      })
+      .render();
     expect(tickText(fractions)).toEqual([
       "0.00025",
       "0.0002",
@@ -501,19 +607,14 @@ describe("Chart", () => {
     ).toBe(fractionPlotLeft);
     fractions.destroy();
 
-    const tens = createChart("#chart", {
-      type: "line",
-      data: {
-        datasets: [
-          {
-            values: [
-              8,
-              32,
-            ],
-          },
+    const tens = LineChart.make("#chart")
+      .dataset({
+        values: [
+          8,
+          32,
         ],
-      },
-    });
+      })
+      .render();
     expect(tickText(tens)).toEqual([
       "40",
       "30",
@@ -523,19 +624,14 @@ describe("Chart", () => {
     ]);
     tens.destroy();
 
-    const zero = createChart("#chart", {
-      type: "line",
-      data: {
-        datasets: [
-          {
-            values: [
-              0,
-              0,
-            ],
-          },
+    const zero = LineChart.make("#chart")
+      .dataset({
+        values: [
+          0,
+          0,
         ],
-      },
-    });
+      })
+      .render();
     expect(tickText(zero)).toEqual([
       "1",
       "0",
@@ -543,29 +639,42 @@ describe("Chart", () => {
     ]);
     zero.destroy();
 
-    const equalFractions = createChart("#chart", {
-      type: "line",
-      axes: false,
-      grid: true,
-      valueLabels: false,
-      data: {
-        datasets: [
-          {
-            values: [
-              0.25,
-              0.25,
-            ],
-          },
+    const equalFractions = LineChart.make("#chart")
+      .axes(false)
+      .grid(true)
+      .valueLabels(false)
+      .dataset({
+        values: [
+          0.25,
+          0.25,
         ],
-      },
-    });
+      })
+      .render();
     expect(equalFractions.element.querySelector(".charts2-axis")).toBeNull();
     expect(equalFractions.element.querySelector(".charts2-grid-horizontal")).not.toBeNull();
     equalFractions.destroy();
   });
 
   it("renders vertical grouped bars for positive and negative values", () => {
-    const chart = createChart(document.querySelector("#chart"), { type: "bar", data });
+    const chart = BarChart.make(document.querySelector("#chart"))
+      .dataset({
+        name: "Alpha",
+        color: "#123456",
+        values: [
+          2,
+          -1,
+          4,
+        ],
+      })
+      .dataset({
+        name: "Beta",
+        values: [
+          1,
+          3,
+          2,
+        ],
+      })
+      .render();
     const bars = [
       ...chart.element.querySelectorAll(".charts2-bar.charts2-visual-mark"),
     ];
@@ -583,18 +692,31 @@ describe("Chart", () => {
   });
 
   it("renders horizontal bars", () => {
-    const chart = createChart("#chart", {
-      type: "bar",
-      orientation: "horizontal",
-      data: {
-        ...data,
-        labels: [
-          "One",
-          "Two",
-          "Three",
+    const chart = BarChart.make("#chart")
+      .horizontal()
+      .labels([
+        "One",
+        "Two",
+        "Three",
+      ])
+      .dataset({
+        name: "Alpha",
+        color: "#123456",
+        values: [
+          2,
+          -1,
+          4,
         ],
-      },
-    });
+      })
+      .dataset({
+        name: "Beta",
+        values: [
+          1,
+          3,
+          2,
+        ],
+      })
+      .render();
     const bars = chart.element.querySelectorAll(".charts2-bar.charts2-visual-mark");
     expect(bars).toHaveLength(6);
     expect(bars[0].getBBox().width).toBeGreaterThan(0);
@@ -651,7 +773,26 @@ describe("Chart", () => {
     chart.destroy();
 
     document.querySelector("#chart").style.width = "500px";
-    const unlabelled = createChart("#chart", { type: "bar", orientation: "horizontal", data });
+    const unlabelled = BarChart.make("#chart")
+      .horizontal()
+      .dataset({
+        name: "Alpha",
+        color: "#123456",
+        values: [
+          2,
+          -1,
+          4,
+        ],
+      })
+      .dataset({
+        name: "Beta",
+        values: [
+          1,
+          3,
+          2,
+        ],
+      })
+      .render();
     expect(unlabelled.element.querySelector(".charts2-bar title").textContent).toBe("Alpha, 1: 2");
     expect(widthOf(unlabelled)).toBe(500);
     document.querySelector("#chart").style.width = "560px";
@@ -663,27 +804,22 @@ describe("Chart", () => {
   });
 
   it("places the Y-axis and its labels on the right without overflow", () => {
-    const line = createChart("#chart", {
-      type: "line",
-      width: 220,
-      yAxisPosition: "right",
-      data: {
-        labels: [
-          "A",
-          "B",
-          "C",
+    const line = LineChart.make("#chart")
+      .width(220)
+      .yAxis((axis) => axis.position("right"))
+      .labels([
+        "A",
+        "B",
+        "C",
+      ])
+      .dataset({
+        values: [
+          0.00009,
+          0.00014,
+          0.00021,
         ],
-        datasets: [
-          {
-            values: [
-              0.00009,
-              0.00014,
-              0.00021,
-            ],
-          },
-        ],
-      },
-    });
+      })
+      .render();
     const valueLabels = [
       ...line.element.querySelectorAll(".charts2-value-label"),
     ];
@@ -700,28 +836,23 @@ describe("Chart", () => {
     expect(Number(lastHit.getAttribute("x")) + Number(lastHit.getAttribute("width"))).toBe(plotRight);
     line.destroy();
 
-    const horizontal = createChart("#chart", {
-      type: "bar",
-      width: 240,
-      orientation: "horizontal",
-      yAxisPosition: "right",
-      data: {
-        labels: [
-          "North America",
-          "Europe",
-          "Asia-Pacific",
+    const horizontal = BarChart.make("#chart")
+      .width(240)
+      .horizontal()
+      .yAxis((axis) => axis.position("right"))
+      .labels([
+        "North America",
+        "Europe",
+        "Asia-Pacific",
+      ])
+      .dataset({
+        values: [
+          42,
+          36,
+          54,
         ],
-        datasets: [
-          {
-            values: [
-              42,
-              36,
-              54,
-            ],
-          },
-        ],
-      },
-    });
+      })
+      .render();
     const categoryLabels = [
       ...horizontal.element.querySelectorAll(".charts2-label:not(.charts2-value-label)"),
     ];
@@ -740,24 +871,19 @@ describe("Chart", () => {
       "Asia-Pacific",
     ];
     const formatLabel = vi.fn((label) => `Region: ${label}`);
-    const chart = createChart("#chart", {
-      type: "bar",
-      orientation: "horizontal",
-      width: 640,
-      formatLabel,
-      data: {
-        labels: sourceLabels,
-        datasets: [
-          {
-            values: [
-              9_800_000,
-              12_750_000,
-              6_450_000,
-            ],
-          },
+    const chart = BarChart.make("#chart")
+      .horizontal()
+      .width(640)
+      .formatLabel(formatLabel)
+      .labels(sourceLabels)
+      .dataset({
+        values: [
+          9_800_000,
+          12_750_000,
+          6_450_000,
         ],
-      },
-    });
+      })
+      .render();
     const labels = [
       ...chart.element.querySelectorAll(".charts2-multiline-label"),
     ];
@@ -774,27 +900,22 @@ describe("Chart", () => {
   });
 
   it("preserves explicit formatter lines on horizontal category axes", () => {
-    const chart = createChart("#chart", {
-      type: "bar",
-      orientation: "horizontal",
-      formatLabel: () => [
+    const chart = BarChart.make("#chart")
+      .horizontal()
+      .formatLabel(() => [
         "Партнёрские интеграции",
         "проверка доступности",
         "и локализации",
-      ],
-      data: {
-        labels: [
-          "Партнёрские интеграции с проверкой",
+      ])
+      .labels([
+        "Партнёрские интеграции с проверкой",
+      ])
+      .dataset({
+        values: [
+          61,
         ],
-        datasets: [
-          {
-            values: [
-              61,
-            ],
-          },
-        ],
-      },
-    });
+      })
+      .render();
     const label = chart.element.querySelector(".charts2-multiline-label");
 
     expect(
@@ -810,23 +931,18 @@ describe("Chart", () => {
   });
 
   it("balances ordinary long horizontal labels without browser-dependent SVG wrapping", () => {
-    const chart = createChart("#chart", {
-      type: "bar",
-      orientation: "horizontal",
-      width: 320,
-      data: {
-        labels: [
-          "Partner integrations with availability and localization review",
+    const chart = BarChart.make("#chart")
+      .horizontal()
+      .width(320)
+      .labels([
+        "Partner integrations with availability and localization review",
+      ])
+      .dataset({
+        values: [
+          61,
         ],
-        datasets: [
-          {
-            values: [
-              61,
-            ],
-          },
-        ],
-      },
-    });
+      })
+      .render();
     const lines = [
       ...chart.element.querySelectorAll(".charts2-multiline-label tspan"),
     ];
@@ -845,40 +961,30 @@ describe("Chart", () => {
     ],
   ])("rejects invalid formatted labels", (formatted) => {
     expect(() =>
-      createChart("#chart", {
-        type: "bar",
-        orientation: "horizontal",
-        formatLabel: () => formatted,
-        data: {
-          labels: [
-            "A",
+      BarChart.make("#chart")
+        .horizontal()
+        .formatLabel(() => formatted)
+        .labels([
+          "A",
+        ])
+        .dataset({
+          values: [
+            1,
           ],
-          datasets: [
-            {
-              values: [
-                1,
-              ],
-            },
-          ],
-        },
-      }),
+        })
+        .render(),
     ).toThrow("Label formatter");
   });
 
   it("renders bubbles using point radii", () => {
-    const chart = createChart("#chart", {
-      type: "bubble",
-      data: {
-        datasets: [
-          {
-            values: [
-              { x: 2, y: 4, r: 9 },
-              { x: 3, y: 2, r: 5 },
-            ],
-          },
+    const chart = BubbleChart.make("#chart")
+      .dataset({
+        values: [
+          { x: 2, y: 4, r: 9 },
+          { x: 3, y: 2, r: 5 },
         ],
-      },
-    });
+      })
+      .render();
     const bubbles = chart.element.querySelectorAll(".charts2-bubble.charts2-visual-mark");
     expect(bubbles[0].getAttribute("r")).toBe("9");
     expect(bubbles[1].getAttribute("r")).toBe("5");
@@ -887,59 +993,54 @@ describe("Chart", () => {
   });
 
   it("reserves legend space and renders a stable structured radar tooltip", () => {
-    const chart = createChart("#chart", {
-      type: "radar",
-      width: 240,
-      height: 320,
-      data: {
-        labels: [
-          "Speed",
-          "DX",
-          "A11y",
-          "Quality",
-          "Size",
-          "Stability",
+    const chart = RadarChart.make("#chart")
+      .width(240)
+      .height(320)
+      .labels([
+        "Speed",
+        "DX",
+        "A11y",
+        "Quality",
+        "Size",
+        "Stability",
+      ])
+      .dataset({
+        name: "Current",
+        color: "#007aff",
+        values: [
+          2,
+          0,
+          4,
+          2,
+          3,
+          1,
         ],
-        datasets: [
-          {
-            name: "Current",
-            color: "#007aff",
-            values: [
-              2,
-              0,
-              4,
-              2,
-              3,
-              1,
-            ],
-          },
-          {
-            name: "Previous",
-            color: "#34c759",
-            values: [
-              1,
-              2,
-              3,
-              4,
-              2,
-              3,
-            ],
-          },
-          {
-            name: "Target",
-            color: "#af52de",
-            values: [
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-            ],
-          },
+      })
+      .dataset({
+        name: "Previous",
+        color: "#34c759",
+        values: [
+          1,
+          2,
+          3,
+          4,
+          2,
+          3,
         ],
-      },
-    });
+      })
+      .dataset({
+        name: "Target",
+        color: "#af52de",
+        values: [
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+        ],
+      })
+      .render();
     expect(chart.element.querySelectorAll("line")).toHaveLength(6);
     expect(chart.element.querySelectorAll(".charts2-radar")).toHaveLength(3);
     expect(chart.element.textContent).toContain("A11y");
@@ -1004,75 +1105,60 @@ describe("Chart", () => {
   });
 
   it("renders polar-area slices including a full-circle slice", () => {
-    const chart = createChart("#chart", {
-      type: "polar-area",
-      data: {
-        labels: [
-          "A",
-          "B",
-          "C",
-          "D",
+    const chart = PolarAreaChart.make("#chart")
+      .labels([
+        "A",
+        "B",
+        "C",
+        "D",
+      ])
+      .dataset({
+        values: [
+          2,
+          4,
+          2,
+          1,
         ],
-        datasets: [
-          {
-            values: [
-              2,
-              4,
-              2,
-              1,
-            ],
-          },
-        ],
-      },
-    });
+      })
+      .render();
     expect(chart.element.querySelectorAll(".charts2-polar-area")).toHaveLength(4);
     expect(chart.element.textContent).toContain("D");
-    const single = createChart("#chart", {
-      type: "polar-area",
-      data: {
-        labels: [
-          "Only",
+    const single = PolarAreaChart.make("#chart")
+      .labels([
+        "Only",
+      ])
+      .dataset({
+        values: [
+          1,
         ],
-        datasets: [
-          {
-            values: [
-              1,
-            ],
-          },
-        ],
-      },
-    });
+      })
+      .render();
     expect(single.element.querySelector("circle.charts2-polar-area")).not.toBeNull();
   });
 
   it("keeps polar-area labels inside a narrow SVG", () => {
-    const chart = createChart("#chart", {
-      type: "polar-area",
-      width: 220,
-      height: 280,
-      data: {
-        labels: [
-          "Social",
-          "Entertainment",
-          "Productivity",
-          "Creativity",
-          "Reading",
-          "Other",
+    const chart = PolarAreaChart.make("#chart")
+      .width(220)
+      .height(280)
+      .labels([
+        "Social",
+        "Entertainment",
+        "Productivity",
+        "Creativity",
+        "Reading",
+        "Other",
+      ])
+      .dataset({
+        values: [
+          74,
+          68,
+          52,
+          41,
+          24,
+          18,
         ],
-        datasets: [
-          {
-            values: [
-              74,
-              68,
-              52,
-              41,
-              24,
-              18,
-            ],
-          },
-        ],
-      },
-    });
+      })
+      .render();
     const labels = [
       ...chart.element.querySelectorAll(".charts2-polar-label"),
     ];
@@ -1086,256 +1172,391 @@ describe("Chart", () => {
   });
 
   it.each([
-    [
-      null,
-      { type: "line", data },
-    ],
-    [
-      "#missing",
-      { type: "line", data },
-    ],
-  ])("rejects an invalid parent", (parent, options) => {
-    expect(() => createChart(parent, options)).toThrow("parent");
+    null,
+    "#missing",
+  ])("rejects invalid parent %s", (parent) => {
+    expect(() =>
+      LineChart.make(parent)
+        .dataset([
+          1,
+        ])
+        .render(),
+    ).toThrow("parent");
   });
 
   it.each([
     [
-      undefined,
-      "options",
-    ],
-    [
-      { type: "unknown", data },
-      "type",
-    ],
-    [
-      { type: "bar", orientation: "diagonal", data },
-      "orientation",
-    ],
-    [
-      { type: "line", yAxisPosition: "center", data },
+      "line yAxisPosition/data: position (case 4)",
+      () =>
+        LineChart.make("#chart")
+          .yAxis((axis) => axis.position("center"))
+          .dataset({
+            name: "Alpha",
+            color: "#123456",
+            values: [
+              2,
+              -1,
+              4,
+            ],
+          })
+          .dataset({
+            name: "Beta",
+            values: [
+              1,
+              3,
+              2,
+            ],
+          })
+          .render(),
       "position",
     ],
     [
-      { type: "pie", padAngle: Infinity, data },
+      "pie padAngle/data: padAngle (case 5)",
+      () =>
+        PieChart.make("#chart")
+          .padAngle(Infinity)
+          .dataset({
+            name: "Alpha",
+            color: "#123456",
+            values: [
+              2,
+              -1,
+              4,
+            ],
+          })
+          .dataset({
+            name: "Beta",
+            values: [
+              1,
+              3,
+              2,
+            ],
+          })
+          .render(),
       "padAngle",
     ],
     [
-      { type: "pie", padAngle: -1, data },
+      "pie padAngle/data: padAngle (case 6)",
+      () =>
+        PieChart.make("#chart")
+          .padAngle(-1)
+          .dataset({
+            name: "Alpha",
+            color: "#123456",
+            values: [
+              2,
+              -1,
+              4,
+            ],
+          })
+          .dataset({
+            name: "Beta",
+            values: [
+              1,
+              3,
+              2,
+            ],
+          })
+          .render(),
       "padAngle",
     ],
     [
-      { type: "pie", padAngle: 360, data },
+      "pie padAngle/data: padAngle (case 7)",
+      () =>
+        PieChart.make("#chart")
+          .padAngle(360)
+          .dataset({
+            name: "Alpha",
+            color: "#123456",
+            values: [
+              2,
+              -1,
+              4,
+            ],
+          })
+          .dataset({
+            name: "Beta",
+            values: [
+              1,
+              3,
+              2,
+            ],
+          })
+          .render(),
       "padAngle",
     ],
     [
-      { type: "bar", radius: -1, data },
+      "bar radius/data: radius (case 8)",
+      () =>
+        BarChart.make("#chart")
+          .radius(-1)
+          .dataset({
+            name: "Alpha",
+            color: "#123456",
+            values: [
+              2,
+              -1,
+              4,
+            ],
+          })
+          .dataset({
+            name: "Beta",
+            values: [
+              1,
+              3,
+              2,
+            ],
+          })
+          .render(),
       "radius",
     ],
     [
-      { type: "donut", cornerRadius: -1, data },
+      "donut cornerRadius/data: cornerRadius (case 9)",
+      () =>
+        DonutChart.make("#chart")
+          .cornerRadius(-1)
+          .dataset({
+            name: "Alpha",
+            color: "#123456",
+            values: [
+              2,
+              -1,
+              4,
+            ],
+          })
+          .dataset({
+            name: "Beta",
+            values: [
+              1,
+              3,
+              2,
+            ],
+          })
+          .render(),
       "cornerRadius",
     ],
     [
-      {
-        type: "timesheet",
-        radius: -1,
-        data: {
-          tasks: [
-            { label: "Task", start: 1, end: 2 },
-          ],
-        },
-      },
+      "timesheet radius/data: radius (case 10)",
+      () => TimesheetChart.make("#chart").radius(-1).task({ label: "Task", start: 1, end: 2 }).render(),
       "radius",
     ],
     [
-      { type: "line" },
-      "data",
-    ],
-    [
-      { type: "line", data: { datasets: [] } },
+      "line : data (case 11)",
+      () => LineChart.make("#chart").render(),
       "dataset",
     ],
     [
-      {
-        type: "line",
-        data: {
-          datasets: [
-            null,
-          ],
-        },
-      },
+      "line data: dataset (case 12)",
+      () => LineChart.make("#chart").render(),
+      "dataset",
+    ],
+    [
+      "line data: object (case 13)",
+      () => LineChart.make("#chart").dataset(null).render(),
       "object",
     ],
     [
-      {
-        type: "line",
-        data: {
-          datasets: [
-            { values: [] },
-          ],
-        },
-      },
+      "line data: values (case 14)",
+      () => LineChart.make("#chart").dataset({ values: [] }).render(),
       "values",
     ],
     [
-      {
-        type: "line",
-        data: {
-          datasets: [
-            {
-              values: [
-                null,
-              ],
-            },
-          ],
-        },
-      },
+      "line data: finite (case 15)",
+      () =>
+        LineChart.make("#chart")
+          .dataset({
+            values: [
+              null,
+            ],
+          })
+          .render(),
       "finite",
     ],
     [
-      {
-        type: "line",
-        data: {
-          datasets: [
-            {
-              values: [
-                NaN,
-              ],
-            },
-          ],
-        },
-      },
+      "line data: finite (case 16)",
+      () =>
+        LineChart.make("#chart")
+          .dataset({
+            values: [
+              NaN,
+            ],
+          })
+          .render(),
       "finite",
     ],
     [
-      {
-        type: "bubble",
-        data: {
-          datasets: [
-            {
-              values: [
-                { y: 1, x: NaN },
-              ],
-            },
-          ],
-        },
-      },
+      "bubble data: finite (case 17)",
+      () =>
+        BubbleChart.make("#chart")
+          .dataset({
+            values: [
+              { y: 1, x: NaN },
+            ],
+          })
+          .render(),
       "finite",
     ],
     [
-      {
-        type: "bubble",
-        data: {
-          datasets: [
-            {
-              values: [
-                { x: 1, y: NaN, r: 1 },
-              ],
-            },
-          ],
-        },
-      },
+      "bubble data: finite (case 18)",
+      () =>
+        BubbleChart.make("#chart")
+          .dataset({
+            values: [
+              { x: 1, y: NaN, r: 1 },
+            ],
+          })
+          .render(),
       "finite",
     ],
     [
-      {
-        type: "bubble",
-        data: {
-          datasets: [
-            {
-              values: [
-                { x: 1, y: 1, r: NaN },
-              ],
-            },
-          ],
-        },
-      },
+      "bubble data: finite (case 19)",
+      () =>
+        BubbleChart.make("#chart")
+          .dataset({
+            values: [
+              { x: 1, y: 1, r: NaN },
+            ],
+          })
+          .render(),
       "finite",
     ],
     [
-      { type: "line", width: 0, data },
+      "line width/data: width (case 20)",
+      () =>
+        LineChart.make("#chart")
+          .width(0)
+          .dataset({
+            name: "Alpha",
+            color: "#123456",
+            values: [
+              2,
+              -1,
+              4,
+            ],
+          })
+          .dataset({
+            name: "Beta",
+            values: [
+              1,
+              3,
+              2,
+            ],
+          })
+          .render(),
       "width",
     ],
     [
-      { type: "line", height: NaN, data },
+      "line height/data: height (case 21)",
+      () =>
+        LineChart.make("#chart")
+          .height(NaN)
+          .dataset({
+            name: "Alpha",
+            color: "#123456",
+            values: [
+              2,
+              -1,
+              4,
+            ],
+          })
+          .dataset({
+            name: "Beta",
+            values: [
+              1,
+              3,
+              2,
+            ],
+          })
+          .render(),
       "height",
     ],
     [
-      {
-        type: "radar",
-        data: {
-          datasets: [
-            {
-              name: "First",
-              values: [
-                1,
-              ],
-            },
-            {
-              name: "Second",
-              values: [
-                1,
-                2,
-              ],
-            },
-          ],
-        },
-      },
-      "match",
-    ],
-    [
-      { type: "polar-area", data },
-      "exactly one",
-    ],
-    [
-      {
-        type: "bubble",
-        data: {
-          datasets: [
-            {
-              values: [
-                { x: 1, y: 1, r: -1 },
-              ],
-            },
-          ],
-        },
-      },
-      "negative",
-    ],
-    [
-      {
-        type: "line",
-        data: {
-          labels: "A",
-          datasets: [
-            {
-              values: [
-                1,
-              ],
-            },
-          ],
-        },
-      },
-      "labels",
-    ],
-  ])("rejects malformed options and data", (options, message) => {
-    expect(() => createChart("#chart", options)).toThrow(message);
-  });
-
-  it("keeps the previous state when an update is invalid", () => {
-    const chart = createChart("#chart", {
-      type: "line",
-      data: {
-        datasets: [
-          {
+      "radar data: match (case 22)",
+      () =>
+        RadarChart.make("#chart")
+          .dataset({
+            name: "First",
+            values: [
+              1,
+            ],
+          })
+          .dataset({
+            name: "Second",
             values: [
               1,
               2,
             ],
-          },
+          })
+          .render(),
+      "match",
+    ],
+    [
+      "polar-area data: exactly one (case 23)",
+      () =>
+        PolarAreaChart.make("#chart")
+          .dataset({
+            name: "Alpha",
+            color: "#123456",
+            values: [
+              2,
+              -1,
+              4,
+            ],
+          })
+          .dataset({
+            name: "Beta",
+            values: [
+              1,
+              3,
+              2,
+            ],
+          })
+          .render(),
+      "exactly one",
+    ],
+    [
+      "bubble data: negative (case 24)",
+      () =>
+        BubbleChart.make("#chart")
+          .dataset({
+            values: [
+              { x: 1, y: 1, r: -1 },
+            ],
+          })
+          .render(),
+      "negative",
+    ],
+    [
+      "line data: labels (case 25)",
+      () =>
+        LineChart.make("#chart")
+          .labels("A")
+          .dataset({
+            values: [
+              1,
+            ],
+          })
+          .render(),
+      "labels",
+    ],
+    [
+      "bar horizontal requires boolean",
+      () => BarChart.make("#chart").horizontal("diagonal"),
+      "horizontal",
+    ],
+  ])("rejects %s", (_name, build, message) => {
+    expect(build).toThrow(message);
+  });
+
+  it("keeps the previous state when an update is invalid", () => {
+    const chart = LineChart.make("#chart")
+      .dataset({
+        values: [
+          1,
+          2,
         ],
-      },
-    });
+      })
+      .render();
     expect(() =>
       chart.update({
         labels: "invalid",

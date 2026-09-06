@@ -22,31 +22,6 @@ const LEGEND_MAXIMUM_LABEL_WIDTH = 160;
 const DATASET_SUMMARY_LIMIT = 12;
 
 /**
- * Maps one heatmap value onto the complete ordered intensity palette.
- *
- * @param {number} value - Normalized heatmap value.
- * @param {[number, number]} domain - Complete data minimum and maximum.
- * @param {number} colorCount - Number of supplied intensity colors.
- * @returns {number} Bounded zero-based palette bucket.
- */
-function intensityLevel(
-  value,
-  [
-    minimum,
-    maximum,
-  ],
-  colorCount,
-) {
-  if (minimum === maximum) {
-    return value === 0 ? 0 : colorCount - 1;
-  }
-
-  const ratio = (value - minimum) / (maximum - minimum);
-
-  return Math.min(colorCount - 1, Math.floor(ratio * colorCount));
-}
-
-/**
  * Applies the optional category formatter and validates its display contract.
  *
  * @param {object} options - Chart options containing axis orientation and formatter hooks.
@@ -215,34 +190,41 @@ function datasetSummary(dataset, labels, { options = {}, datasetIndex = 0 } = {}
 }
 
 /**
- * Formats a tooltip pair through caller hooks and a stable numeric fallback.
+ * Formats one tooltip row without encoding its structure in display text.
  *
- * @param {object} content - Source values and formatting options for one tooltip pair.
- * @param {object} content.options - Chart options containing optional tooltip formatters.
- * @param {unknown} content.label - Source x or category value.
- * @param {number} content.value - Numeric y value to present.
- * @param {string} [content.suffix=""] - Unit or contextual text appended to the value.
- * @param {object} [content.dataset] - Dataset-local formatter owner.
- * @param {number} [content.datasetIndex] - Stable dataset position.
- * @param {number} [content.index] - Stable point position.
- * @param {object} [content.point] - Normalized source point.
- * @returns {string} Complete tooltip text in `label: value` form.
+ * @param {object} content - Formatting inputs, color, suffix and accessible prefix.
+ * @returns {object} Structured tooltip rows and independent accessible text.
  */
-function tooltipText(content) {
+function tooltipContent(content) {
   const { options, label, value, suffix = "", dataset, datasetIndex, index, point } = content;
-  const x = formatLabel(options, label, { target: "tooltip", datasetIndex, index, point });
-  const y = formatValue(options, value, { target: "tooltip", dataset, datasetIndex, index, label, point });
+  const name = formatLabel(options, label, { target: "tooltip", datasetIndex, index, point });
 
-  return `${x}: ${y}${suffix}`;
+  const formatted = formatValue(options, value, {
+    target: "tooltip",
+    dataset,
+    datasetIndex,
+    index,
+    label,
+    point,
+  });
+
+  const displayValue = `${formatted}${suffix}`;
+
+  return {
+    text: `${content.prefix ?? ""}${name}: ${displayValue}`,
+    heading: "",
+    items: [
+      { name: `${content.prefix ?? ""}${name}`, value: displayValue, color: content.color ?? dataset?.color },
+    ],
+  };
 }
 
 export {
-  intensityLevel,
   formatCategoryLabel,
   horizontalCategoryPadding,
   verticalValuePadding,
   chartContentLayout,
   seriesContentLayout,
   datasetSummary,
-  tooltipText,
+  tooltipContent,
 };

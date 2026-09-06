@@ -1,7 +1,7 @@
 import { SeriesChartBuilder } from "./Builder.js";
 import { configuredDataset } from "./BuilderArguments.js";
 import { DatasetBuilder } from "./BuilderScopes.js";
-import { builderState } from "./BuilderState.js";
+import { builderOption, builderState } from "./BuilderState.js";
 
 /**
  * Adds one-or-more numeric dataset authoring to radial and composition charts.
@@ -16,7 +16,7 @@ class NumericSeriesBuilder extends SeriesChartBuilder {
    * @returns {this} Current builder.
    */
   dataset(first, second, third) {
-    return builderState(this).dataset(
+    builderState(this).dataset(
       configuredDataset(
         [
           first,
@@ -26,6 +26,8 @@ class NumericSeriesBuilder extends SeriesChartBuilder {
         DatasetBuilder,
       ),
     );
+
+    return this;
   }
 }
 
@@ -40,7 +42,7 @@ class SectorChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   maxSlices(value) {
-    return builderState(this).option("maxSlices", value);
+    return builderOption(this, "maxSlices", value);
   }
 
   /**
@@ -50,7 +52,7 @@ class SectorChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   startAngle(degrees) {
-    return builderState(this).option("startAngle", degrees);
+    return builderOption(this, "startAngle", degrees);
   }
 
   /**
@@ -60,7 +62,7 @@ class SectorChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   padAngle(degrees) {
-    return builderState(this).option("padAngle", degrees);
+    return builderOption(this, "padAngle", degrees);
   }
 
   /**
@@ -70,7 +72,7 @@ class SectorChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   cornerRadius(value) {
-    return builderState(this).option("cornerRadius", value);
+    return builderOption(this, "cornerRadius", value);
   }
 }
 
@@ -85,7 +87,7 @@ class PercentageChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   maxSlices(value) {
-    return builderState(this).option("maxSlices", value);
+    return builderOption(this, "maxSlices", value);
   }
 
   /**
@@ -95,7 +97,7 @@ class PercentageChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   radius(value) {
-    return builderState(this).option("radius", value);
+    return builderOption(this, "radius", value);
   }
 }
 
@@ -110,7 +112,7 @@ class PolarAreaChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   padAngle(degrees) {
-    return builderState(this).option("padAngle", degrees);
+    return builderOption(this, "padAngle", degrees);
   }
 
   /**
@@ -120,7 +122,7 @@ class PolarAreaChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   cornerRadius(value) {
-    return builderState(this).option("cornerRadius", value);
+    return builderOption(this, "cornerRadius", value);
   }
 }
 
@@ -135,7 +137,7 @@ class RadarChartBuilder extends NumericSeriesBuilder {
    * @returns {this} Current builder.
    */
   strokeWidth(value) {
-    return builderState(this).option("strokeWidth", value);
+    return builderOption(this, "strokeWidth", value);
   }
 }
 

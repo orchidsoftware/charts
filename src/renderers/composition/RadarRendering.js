@@ -1,4 +1,5 @@
-import { labelElement, markMetadata, svg, titled } from "../../support/Dom.js";
+import { markMetadata, markTooltip } from "../../support/ChartMark.js";
+import { labelElement, svg, titled } from "../../support/Dom.js";
 import { polarPoint } from "../../support/geometry/Math.js";
 import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
 import { datasetSummary, seriesContentLayout } from "../../support/presentation/Presentation.js";
@@ -132,14 +133,12 @@ class RadarRenderer {
             opacity: 0.28,
             class: "charts2-radar charts2-mark",
           }),
-          datasetIndex,
-          0,
+          { kind: "dataset", datasetIndex, pointIndex: 0 },
         ),
         datasetSummary(dataset, this.#chart.labels, { options: this.#chart.options, datasetIndex }),
       );
 
-      polygon.dataset.tooltipHeading = dataset.name;
-      polygon.dataset.tooltipItems = JSON.stringify(this.#tooltipItems(dataset));
+      markTooltip(polygon, { heading: dataset.name, items: this.#tooltipItems(dataset) });
       this.#surface.append(polygon);
     }
   }

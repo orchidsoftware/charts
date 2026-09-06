@@ -73,4 +73,16 @@ function isChoice(value, choices) {
   return choices.includes(value);
 }
 
-export { isBoolean, isChoice, isNonEmptyText, isNumberAtLeast, isOpacity, isRecord, unknownKey };
+/**
+ * Reports whether an angle is inside one open full-circle interval.
+ *
+ * @param {unknown} value - Requested angular gap in degrees.
+ * @returns {boolean} Whether the gap is finite, nonnegative and smaller than a circle.
+ */
+function isPadAngle(value) {
+  const fullCircle = 360;
+
+  return isNumberAtLeast(value, 0) && value < fullCircle;
+}
+
+export { isPadAngle, isBoolean, isChoice, isNonEmptyText, isNumberAtLeast, isOpacity, isRecord, unknownKey };

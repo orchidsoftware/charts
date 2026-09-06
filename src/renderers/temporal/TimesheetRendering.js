@@ -1,4 +1,5 @@
-import { labelElement, markMetadata, svg, titled } from "../../support/Dom.js";
+import { markMetadata, markTooltip } from "../../support/ChartMark.js";
+import { labelElement, svg, titled } from "../../support/Dom.js";
 
 import TimesheetLayout from "./TimesheetLayout.js";
 
@@ -218,14 +219,15 @@ class TimesheetRenderer {
         class: "charts2-x-hit charts2-timesheet-hit charts2-mark",
         style: `color:${task.color}`,
       }),
-      0,
-      index,
+      { kind: "task", datasetIndex: 0, pointIndex: index },
     );
 
-    hit.dataset.tooltipHeading = task.label;
-    hit.dataset.tooltipItems = JSON.stringify([
-      { name: `${row.dateStart} – ${row.dateEnd}`, value: row.duration, color: task.color },
-    ]);
+    markTooltip(hit, {
+      heading: task.label,
+      items: [
+        { name: `${row.dateStart} – ${row.dateEnd}`, value: row.duration, color: task.color },
+      ],
+    });
     hit.dataset.tooltipAnchorX = String(row.barX + row.barWidth / 2);
     hit.dataset.tooltipAnchorY = String(row.centerY - frame.barHeight / 2);
 

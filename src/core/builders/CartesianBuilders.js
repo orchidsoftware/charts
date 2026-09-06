@@ -1,7 +1,7 @@
 import { CartesianChartBuilder } from "./Builder.js";
 import { configuredDataset } from "./BuilderArguments.js";
 import { BarDatasetBuilder, DatasetBuilder, LineDatasetBuilder } from "./BuilderScopes.js";
-import { builderState } from "./BuilderState.js";
+import { builderOption, builderState } from "./BuilderState.js";
 import { validateBoolean } from "./BuilderValidation.js";
 
 /**
@@ -17,7 +17,7 @@ class BarChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   dataset(first, second, third) {
-    return builderState(this).dataset(
+    builderState(this).dataset(
       configuredDataset(
         [
           first,
@@ -27,6 +27,8 @@ class BarChartBuilder extends CartesianChartBuilder {
         BarDatasetBuilder,
       ),
     );
+
+    return this;
   }
 
   /**
@@ -38,7 +40,7 @@ class BarChartBuilder extends CartesianChartBuilder {
   horizontal(isEnabled = true) {
     validateBoolean(isEnabled, "horizontal");
 
-    return builderState(this).option("orientation", isEnabled ? "horizontal" : "vertical");
+    return builderOption(this, "orientation", isEnabled ? "horizontal" : "vertical");
   }
 
   /**
@@ -48,7 +50,7 @@ class BarChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   stacked(isEnabled = true) {
-    return builderState(this).option("stacked", isEnabled);
+    return builderOption(this, "stacked", isEnabled);
   }
 
   /**
@@ -58,7 +60,7 @@ class BarChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   radius(value) {
-    return builderState(this).option("radius", value);
+    return builderOption(this, "radius", value);
   }
 }
 
@@ -75,7 +77,7 @@ class ScatterChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   dataset(first, second, third) {
-    return builderState(this).dataset(
+    builderState(this).dataset(
       configuredDataset(
         [
           first,
@@ -85,6 +87,8 @@ class ScatterChartBuilder extends CartesianChartBuilder {
         DatasetBuilder,
       ),
     );
+
+    return this;
   }
 
   /**
@@ -94,7 +98,9 @@ class ScatterChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   dots(visible) {
-    return builderState(this).explicitOption("dots", visible);
+    builderState(this).explicitOption("dots", visible);
+
+    return this;
   }
 }
 
@@ -120,7 +126,9 @@ class MixedChartBuilder extends CartesianChartBuilder {
       LineDatasetBuilder,
     );
 
-    return builderState(this).dataset({ ...dataset, chartType: "line" });
+    builderState(this).dataset({ ...dataset, chartType: "line" });
+
+    return this;
   }
 
   /**
@@ -141,7 +149,9 @@ class MixedChartBuilder extends CartesianChartBuilder {
       BarDatasetBuilder,
     );
 
-    return builderState(this).dataset({ ...dataset, chartType: "bar" });
+    builderState(this).dataset({ ...dataset, chartType: "bar" });
+
+    return this;
   }
 
   /**
@@ -162,7 +172,9 @@ class MixedChartBuilder extends CartesianChartBuilder {
       DatasetBuilder,
     );
 
-    return builderState(this).dataset({ ...dataset, chartType: "scatter" });
+    builderState(this).dataset({ ...dataset, chartType: "scatter" });
+
+    return this;
   }
 
   /**
@@ -180,7 +192,7 @@ class MixedChartBuilder extends CartesianChartBuilder {
       throw new TypeError("Mixed dataset chartType must be line, bar, or scatter");
     }
 
-    return builderState(this).dataset(
+    builderState(this).dataset(
       configuredDataset(
         [
           input,
@@ -189,6 +201,8 @@ class MixedChartBuilder extends CartesianChartBuilder {
         Scope,
       ),
     );
+
+    return this;
   }
 
   /**
@@ -198,7 +212,7 @@ class MixedChartBuilder extends CartesianChartBuilder {
    * @returns {this} Current builder.
    */
   gradient(isEnabled = true) {
-    return builderState(this).option("gradient", isEnabled);
+    return builderOption(this, "gradient", isEnabled);
   }
 }
 

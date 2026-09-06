@@ -1,21 +1,8 @@
-import createChart from "./MountChart.js";
-
 /**
  * Drives one interactive chart through person-level feature actions.
  */
 export default class ChartScenario {
   #chart;
-
-  /**
-   * Creates a chart scenario in the standard test host.
-   *
-   * @param {object} options - Public chart options used by the scenario.
-   * @param {string|Element} [host="#chart"] - Host selector or element for the chart.
-   * @returns {ChartScenario} Ready-to-drive feature scenario.
-   */
-  static mount(options, host = "#chart") {
-    return new ChartScenario(createChart(host, options));
-  }
 
   /**
    * Wraps one chart while leaving assertions visible in each test.
@@ -144,6 +131,7 @@ class ChartMark {
    */
   click() {
     this.#element.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    this.#element.dispatchEvent(new PointerEvent("pointerup", { bubbles: true }));
     this.#element.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     return this;
   }

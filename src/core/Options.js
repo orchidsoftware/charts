@@ -3,18 +3,24 @@ import {
   ChartOrientation,
   ChartType,
   CHART_ORIENTATIONS,
-  DEFAULT_COLORS,
   DEFAULT_PAD_ANGLE,
   TYPES,
   Y_AXIS_POSITIONS,
 } from "../support/Constants.js";
 import { measureParentWidth } from "../support/Dom.js";
-import { isChoice, isNonEmptyText, isNumberAtLeast, isRecord, unknownKey } from "../support/Validation.js";
+import { chartColors } from "../support/Palette.js";
+import {
+  isChoice,
+  isNonEmptyText,
+  isNumberAtLeast,
+  isPadAngle,
+  isRecord,
+  unknownKey,
+} from "../support/Validation.js";
 
 const DEFAULT_CHART_HEIGHT = 320;
 const DEFAULT_STROKE_WIDTH = 2;
 const DEFAULT_TIMESHEET_TASK_COUNT = 4;
-const FULL_CIRCLE_DEGREES = 360;
 const MINIMUM_TIMESHEET_HEIGHT = 220;
 const TIMESHEET_FRAME_HEIGHT = 52;
 const TIMESHEET_ROW_HEIGHT = 40;
@@ -108,7 +114,7 @@ function validateChoices(options) {
  * @throws {TypeError} When an angle or radius is outside its supported range.
  */
 function validateGeometry(options) {
-  if (isInvalidPadAngle(options.padAngle)) {
+  if (options.padAngle !== undefined && !isPadAngle(options.padAngle)) {
     throw new TypeError("Pad angle must be a finite number from 0 up to 360 degrees");
   }
 
@@ -127,24 +133,6 @@ function validateGeometry(options) {
   ]) {
     validateRadius(value, name);
   }
-}
-
-/**
- * Detects unsupported optional sector padding.
- *
- * @param {unknown} value - Optional padding angle in degrees.
- * @returns {boolean} True when a supplied angle is non-finite or outside one circle.
- */
-function isInvalidPadAngle(value) {
-  if (value === undefined) {
-    return false;
-  }
-
-  if (!isNumberAtLeast(value, 0)) {
-    return true;
-  }
-
-  return value >= FULL_CIRCLE_DEGREES;
 }
 
 /**
@@ -247,7 +235,7 @@ function chartDimensions(host, options) {
  *
  * @param {Element} host - Resolved chart host used for responsive dimensions.
  * @param {import("../index.js").ChartOptions} options - Candidate public chart configuration.
- * @returns {{options: object, hasCustomColors: boolean}} Renderer-ready options and palette provenance.
+ * @returns {{options: object}} Renderer-ready options.
  * @throws {TypeError} When the configuration cannot produce a chart.
  */
 function normalizeChartOptions(host, options) {
@@ -259,7 +247,7 @@ function normalizeChartOptions(host, options) {
       ? [
           ...options.colors,
         ]
-      : DEFAULT_COLORS,
+      : chartColors(options.type),
     strokeWidth: DEFAULT_STROKE_WIDTH,
     padAngle: options.padAngle ?? DEFAULT_PAD_ANGLE,
     ...options,
@@ -282,7 +270,6 @@ function normalizeChartOptions(host, options) {
 
   return {
     options: normalized,
-    hasCustomColors: options.colors !== undefined,
   };
 }
 

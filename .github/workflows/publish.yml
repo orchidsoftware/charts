@@ -11,7 +11,7 @@ permissions:
 jobs:
   publish:
     name: Publish to npm
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
 
     steps:
@@ -49,6 +49,10 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Publish the package
+      - name: Pack the already verified build
         if: steps.registry.outputs.exists != 'true'
-        run: npm publish
+        run: npm pack --ignore-scripts
+
+      - name: Publish the verified package archive
+        if: steps.registry.outputs.exists != 'true'
+        run: npm publish ./*.tgz --ignore-scripts

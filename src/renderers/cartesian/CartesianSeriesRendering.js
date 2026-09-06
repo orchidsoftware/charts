@@ -1,8 +1,9 @@
+import { markMetadata, markTooltip } from "../../support/ChartMark.js";
 import { ChartType, DEFAULT_BAR_RADIUS } from "../../support/Constants.js";
-import { formatNumber, markMetadata, svg, titled } from "../../support/Dom.js";
+import { formatNumber, svg, titled } from "../../support/Dom.js";
 import { linePath, roundedBarPath } from "../../support/geometry/Math.js";
 import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
-import { datasetSummary, tooltipText } from "../../support/presentation/Presentation.js";
+import { datasetSummary, tooltipContent } from "../../support/presentation/Presentation.js";
 
 const CARTESIAN_LAYER = Object.freeze({
   [ChartType.BAR]: 0,
@@ -81,11 +82,12 @@ function seriesPrefix(chart, dataset) {
  * @param {object} source - Dataset and point identity.
  * @returns {string} Formatted accessible line-point text.
  */
-function linePointLabel(rendering, source) {
+function seriesPointContent(rendering, source) {
   const { chart } = rendering;
   const { dataset, datasetIndex, pointIndex, point } = source;
 
-  return `${seriesPrefix(chart, dataset)}${tooltipText({
+  return tooltipContent({
+    prefix: seriesPrefix(chart, dataset),
     options: chart.options,
     label: chart.labels[pointIndex],
     value: point.y,
@@ -93,7 +95,7 @@ function linePointLabel(rendering, source) {
     datasetIndex,
     index: pointIndex,
     point,
-  })}`;
+  });
 }
 
 /**
@@ -118,16 +120,17 @@ function renderPointHit(rendering, series, target) {
       class: `charts2-point-hit charts2-mark charts2-series-${series.datasetIndex % SERIES_CLASS_COUNT}`,
       style: `color:${series.dataset.color}`,
     }),
-    series.datasetIndex,
-    target.pointIndex,
+    { kind: "point", datasetIndex: series.datasetIndex, pointIndex: target.pointIndex },
   );
 
-  if (target.tooltip) {
-    hit.dataset.tooltipHeading = target.tooltip.heading;
-    hit.dataset.tooltipItems = JSON.stringify([
+  const content = target.tooltip.content ?? {
+    heading: target.tooltip.heading,
+    items: [
       target.tooltip.item,
-    ]);
-  }
+    ],
+  };
+
+  markTooltip(hit, content);
 
   surface.append(titled(hit, target.label));
 }
@@ -201,6 +204,7 @@ function renderLineStroke(rendering, entry) {
       class: `${isDense ? "charts2-line charts2-mark" : "charts2-line"} charts2-series-${datasetIndex % SERIES_CLASS_COUNT}`,
     },
     {
+      kind: "visual",
       dataset: datasetIndex,
       point: 0,
       title: datasetSummary(dataset, chart.labels, { options: chart.options, datasetIndex }),
@@ -225,7 +229,7 @@ function renderVisibleLinePoints(rendering, entry) {
     point,
   ] of dataset.points.entries()) {
     const coordinates = layout.pointAt(point, pointIndex);
-    const label = linePointLabel(rendering, { dataset, datasetIndex, pointIndex, point });
+    const label = seriesPointContent(rendering, { dataset, datasetIndex, pointIndex, point }).text;
 
     surface.append("circle", {
       cx: coordinates.x,
@@ -247,8 +251,7 @@ function renderVisibleLinePoints(rendering, entry) {
             class: `charts2-point charts2-visual-mark charts2-series-${datasetIndex % SERIES_CLASS_COUNT}`,
             "aria-hidden": "true",
           }),
-          datasetIndex,
-          pointIndex,
+          { kind: "visual", datasetIndex, pointIndex },
         ),
         label,
       ),
@@ -272,6 +275,7 @@ function renderLineHits(rendering, entry) {
     point,
   ] of dataset.points.entries()) {
     const { x, y } = layout.pointAt(point, pointIndex);
+    const content = seriesPointContent(rendering, { dataset, datasetIndex, pointIndex, point });
 
     renderPointHit(
       rendering,
@@ -279,7 +283,8 @@ function renderLineHits(rendering, entry) {
       {
         coordinates: { cx: x, cy: y },
         radius: presentation.dotSize,
-        label: linePointLabel(rendering, { dataset, datasetIndex, pointIndex, point }),
+        tooltip: { content },
+        label: content.text,
         pointIndex,
       },
     );
@@ -389,8 +394,7 @@ function renderPoints(rendering, series) {
         class: `charts2-${series.datasetType} charts2-visual-mark charts2-series-${series.datasetIndex % SERIES_CLASS_COUNT}`,
         "aria-hidden": "true",
       }),
-      series.datasetIndex,
-      pointIndex,
+      { kind: "visual", datasetIndex: series.datasetIndex, pointIndex },
     );
 
     surface.append(titled(point, tooltip.label));
@@ -488,17 +492,10 @@ function renderBar(rendering, state) {
       class: `charts2-bar ${layout.usesInspector ? "charts2-visual-mark" : "charts2-mark"} charts2-series-${datasetIndex % SERIES_CLASS_COUNT}`,
     },
     {
+      kind: layout.usesInspector ? "visual" : "point",
       dataset: datasetIndex,
       point: pointIndex,
-      title: `${seriesPrefix(chart, dataset)}${tooltipText({
-        options: chart.options,
-        label: chart.labels[pointIndex],
-        value: point.y,
-        dataset,
-        datasetIndex,
-        index: pointIndex,
-        point,
-      })}`,
+      title: seriesPointContent(rendering, { dataset, datasetIndex, pointIndex, point }),
     },
   );
 }

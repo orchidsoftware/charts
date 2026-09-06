@@ -1,5 +1,9 @@
 # Naming audit
 
+This document records earlier review decisions and measurements. For the current
+module structure and matrix implementation, see [ARCHITECTURE.md](./ARCHITECTURE.md)
+and [MATRIX_IMPLEMENTATION.md](./MATRIX_IMPLEMENTATION.md).
+
 This audit applies a Laravel-style developer-experience lens to every production
 module. It is an interpretation of Taylor Otwell's public framework conventions,
 not a claim of personal approval. The deciding test is the call site: a method

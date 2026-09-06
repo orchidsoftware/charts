@@ -1,5 +1,9 @@
 # Карта кода и аудит упрощения
 
+This document records earlier review decisions and measurements. For the current
+module structure and matrix implementation, see [ARCHITECTURE.md](./ARCHITECTURE.md)
+and [MATRIX_IMPLEMENTATION.md](./MATRIX_IMPLEMENTATION.md).
+
 Снимок обновлён по текущему рабочему дереву 29 августа 2026 года. В карту
 включён production-контур `src/`: 44 текстовых файла, 12 014 строк и 377 726
 байт. Удалённый в рабочем дереве `core/NextChartId.js` не включён. PNG-снапшоты,

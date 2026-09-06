@@ -1,12 +1,6 @@
-import {
-  isBoolean,
-  isChoice,
-  isNonEmptyText,
-  isNumberAtLeast,
-  isOpacity,
-  isRecord,
-  unknownKey,
-} from "../../support/Validation.js";
+import { validateGradient } from "../../support/data/Gradient.js";
+import { validateText, validateNumber } from "../../support/data/InputValidation.js";
+import { isBoolean, isChoice, isNumberAtLeast, isOpacity, isPadAngle } from "../../support/Validation.js";
 
 const STRING_OPTIONS = new Set([
   "title",
@@ -54,35 +48,6 @@ const FUNCTION_OPTIONS = new Set([
   "tooltipFormatLabel",
   "tooltipFormatValue",
 ]);
-
-const FULL_CIRCLE_DEGREES = 360;
-
-/**
- * Requires a non-empty user-facing string.
- *
- * @param {unknown} value - Candidate label or text.
- * @param {string} name - Public concept named in failures.
- * @returns {void} Valid text passes unchanged.
- */
-function validateText(value, name) {
-  if (!isNonEmptyText(value)) {
-    throw new TypeError(`${name} must be a non-empty string`);
-  }
-}
-
-/**
- * Requires a finite numeric value within a lower bound.
- *
- * @param {unknown} value - Candidate number.
- * @param {string} name - Public concept named in failures.
- * @param {number} minimum - Inclusive lower bound.
- * @returns {void} Valid numbers pass unchanged.
- */
-function validateNumber(value, name, minimum) {
-  if (!isNumberAtLeast(value, minimum)) {
-    throw new TypeError(`${name} must be a finite number of at least ${minimum}`);
-  }
-}
 
 /**
  * Requires an actual boolean rather than accepting truthy values.
@@ -161,23 +126,13 @@ function validateSpecialOption(name, value) {
     throw new TypeError("startAngle must be a finite number");
   }
 
-  if (name === "padAngle" && isInvalidPadAngle(value)) {
+  if (name === "padAngle" && !isPadAngle(value)) {
     throw new TypeError("padAngle must be a finite number from 0 up to 360");
   }
 
   if (name === "gradient") {
     validateGradient(value);
   }
-}
-
-/**
- * Detects a value outside the supported sector-gap interval.
- *
- * @param {unknown} value - Candidate angular gap.
- * @returns {boolean} Whether the value is not finite or outside one circle.
- */
-function isInvalidPadAngle(value) {
-  return !Number.isFinite(value) || value < 0 || value >= FULL_CIRCLE_DEGREES;
 }
 
 /**
@@ -197,38 +152,6 @@ function validateColors(values) {
 }
 
 /**
- * Validates gradient switches and opacity endpoints.
- *
- * @param {unknown} value - Boolean switch or endpoint record.
- * @returns {void} Supported gradient values pass unchanged.
- */
-function validateGradient(value) {
-  if (typeof value === "boolean") {
-    return;
-  }
-
-  if (!isRecord(value)) {
-    throw new TypeError("gradient must be a boolean or GradientOptions object");
-  }
-
-  const unknown = unknownKey(value, [
-    "fromOpacity",
-    "toOpacity",
-  ]);
-
-  if (unknown) {
-    throw new TypeError(`Unsupported gradient option: ${unknown}`);
-  }
-
-  for (const endpoint of Object.values(value)) {
-    validateNumber(endpoint, "gradient opacity", 0);
-    if (!isOpacity(endpoint)) {
-      throw new TypeError("gradient opacity must be from 0 through 1");
-    }
-  }
-}
-
-/**
  * Validates category labels at the fluent call boundary.
  *
  * @param {unknown} labels - Candidate ordered labels.
@@ -241,53 +164,6 @@ function validateLabels(labels) {
 
   for (const label of labels) {
     validateText(label, "label");
-  }
-}
-
-/**
- * Validates a non-empty heatmap point record.
- *
- * @param {unknown} value - Candidate date-to-count record.
- * @returns {void} Finite point collections pass unchanged.
- */
-function validateHeatmapPoints(value) {
-  if (!isRecord(value) || Object.keys(value).length === 0) {
-    throw new TypeError("points must contain at least one entry");
-  }
-
-  if (Object.values(value).some((point) => !Number.isFinite(point))) {
-    throw new TypeError("heatmap point values must be finite numbers");
-  }
-}
-
-/**
- * Validates the structured form of a timesheet task.
- *
- * @param {unknown} value - Candidate task record.
- * @returns {void} Supported task fields pass unchanged.
- */
-function validateTask(value) {
-  if (!isRecord(value)) {
-    throw new TypeError("task must be an object or positional task arguments");
-  }
-
-  const allowed = new Set([
-    "label",
-    "start",
-    "end",
-    "group",
-    "color",
-  ]);
-
-  const unknown = unknownKey(value, allowed);
-
-  if (unknown) {
-    throw new TypeError(`Unsupported task key: ${unknown}`);
-  }
-
-  validateText(value.label, "task label");
-  if (value.group !== undefined) {
-    validateText(value.group, "task group");
   }
 }
 
@@ -379,14 +255,17 @@ export {
   validateBuilderOption,
   validateDash,
   validateFunction,
-  validateGradient,
-  validateHeatmapPoints,
   validateLabelPosition,
   validateLabels,
   validateLineStyle,
-  validateNumber,
   validateOpacity,
   validatePosition,
-  validateTask,
-  validateText,
 };
+
+export { validateGradient } from "../../support/data/Gradient.js";
+
+export { validateNumber } from "../../support/data/InputValidation.js";
+
+export { validateText } from "../../support/data/InputValidation.js";
+export { validateTask } from "../../support/data/TimesheetData.js";
+export { validateHeatmapPoints } from "../../support/data/HeatmapData.js";

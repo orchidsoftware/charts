@@ -31,6 +31,9 @@ export default defineConfig({
     },
   },
   test: {
+    setupFiles: [
+      "./test/support/Cleanup.js",
+    ],
     include: isCompatibility
       ? [
           "test/Compatibility.test.js",

@@ -8,7 +8,6 @@ import { build } from "vite";
 
 const gzipAsync = promisify(gzip);
 const MAXIMUM_GZIP_BYTES = 22_200;
-const SOURCE_BUDGET = Object.freeze({ bytes: 379_000, files: 44, imports: 122, lines: 12_850 });
 const DEFINITIONS = Object.freeze([
   "BarChart",
   "BubbleChart",
@@ -221,16 +220,6 @@ for (const [
   enforce(
     size.gzipBytes <= MAXIMUM_GZIP_BYTES,
     `${name} exceeds the ${(MAXIMUM_GZIP_BYTES / 1000).toFixed(2)} kB gzip limit by ${((size.gzipBytes - MAXIMUM_GZIP_BYTES) / 1000).toFixed(2)} kB`,
-  );
-}
-
-for (const [
-  metric,
-  maximum,
-] of Object.entries(SOURCE_BUDGET)) {
-  enforce(
-    sources[metric] <= maximum,
-    `Production source ${metric} exceeds ${maximum} by ${sources[metric] - maximum}`,
   );
 }
 

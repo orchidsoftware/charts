@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { measuredTextWidth } from "../../src/support/Dom.js";
+import { svg, titled, measuredTextWidth } from "../../src/support/Dom.js";
 
 describe("DOM support", () => {
   it("reuses one detached canvas context for every text measurement", () => {
@@ -26,4 +26,9 @@ describe("DOM support", () => {
 
     spy.mockRestore();
   });
+});
+
+it("can title a decorative SVG element without registering an interactive mark", () => {
+  const element = titled(svg("path"), "Summary: 2");
+  expect(element.querySelector("title").textContent).toBe("Summary: 2");
 });

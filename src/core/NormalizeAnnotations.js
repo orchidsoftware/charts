@@ -1,12 +1,5 @@
-import { validateObjectKeys } from "../support/Normalize.js";
-import {
-  isBoolean,
-  isChoice,
-  isNonEmptyText,
-  isNumberAtLeast,
-  isOpacity,
-  isRecord,
-} from "../support/Validation.js";
+import { validateObjectKeys, validateText } from "../support/data/InputValidation.js";
+import { isBoolean, isChoice, isNumberAtLeast, isOpacity, isRecord } from "../support/Validation.js";
 
 const MARKER_KEYS = [
   "label",
@@ -92,19 +85,6 @@ function normalizedRegion(region) {
 }
 
 /**
- * Requires a non-empty annotation label.
- *
- * @param {unknown} value - Candidate label.
- * @param {string} concept - Marker or region.
- * @returns {void} Valid labels pass unchanged.
- */
-function validateLabel(value, concept) {
-  if (!isNonEmptyText(value)) {
-    throw new TypeError(`${concept} label must be a non-empty string`);
-  }
-}
-
-/**
  * Normalizes one marker with explicit renderer-independent defaults.
  *
  * @param {object} marker - Copied public marker input.
@@ -116,7 +96,7 @@ function normalizeMarker(marker) {
   }
 
   validateObjectKeys(marker, MARKER_KEYS, "marker");
-  validateLabel(marker.label, "marker");
+  validateText(marker.label, "marker label");
   if (!Number.isFinite(marker.value)) {
     throw new TypeError("marker value must be finite");
   }
@@ -165,7 +145,7 @@ function normalizeRegion(region) {
   }
 
   validateObjectKeys(region, REGION_KEYS, "region");
-  validateLabel(region.label, "region");
+  validateText(region.label, "region label");
   if (
     !Array.isArray(region.range) ||
     region.range.length !== 2 ||

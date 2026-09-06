@@ -32,7 +32,7 @@ import {
  *
  * @param {typeof LineChartBuilder} Builder - Type-specific fluent builder constructor.
  * @param {string} type - Immutable chart type.
- * @param {{createModel: (type: string, data: object, config: object) => import("./ChartData.js").default, render: (rendering: object) => void}} implementation - Family model and renderer functions.
+ * @param {{createModel: (type: string, data: object, config: object) => object, render: (rendering: object) => void}} implementation - Family model and renderer functions.
  * @returns {Readonly<{make(parent: string | Element): object}>} Frozen public definition.
  */
 function chartDefinition(Builder, type, implementation) {

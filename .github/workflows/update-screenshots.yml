@@ -9,7 +9,7 @@ permissions:
 jobs:
   screenshots:
     name: Generate Chromium baselines
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     steps:

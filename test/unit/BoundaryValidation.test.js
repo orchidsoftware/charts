@@ -2,11 +2,9 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { createHeatmapModel, createSeriesModel } from "../../src/core/ChartData.js";
 import { normalizeChartOptions, validateChartColors, validateChartOptions } from "../../src/core/Options.js";
-import {
-  normalizeTimesheetData,
-  requireFiniteNumber,
-  validateChartData,
-} from "../../src/support/Normalize.js";
+import { requireFiniteNumber } from "../../src/support/data/InputValidation.js";
+import { validateChartData } from "../../src/support/data/SeriesData.js";
+import { normalizeTimesheetData } from "../../src/support/data/TimesheetData.js";
 
 const scene = {
   datasets: [
@@ -195,7 +193,7 @@ describe("internal boundary validation", () => {
     ]);
 
     const heatmap = createHeatmapModel("heatmap", { points: { "2026-01-01": 0 } }, {});
-    const selection = heatmap.selectionFor({ dataset: { pointIndex: "0" } });
+    const selection = heatmap.selectionFor({ kind: "cell", pointIndex: 0 });
     expect(selection.color).toBe("#E5E5EA");
   });
 });

@@ -1,4 +1,5 @@
-import { copyBuilderValue } from "./BuilderState.js";
+import { copyInput } from "../../support/data/Copy.js";
+
 import {
   validateBoolean,
   validateDash,
@@ -14,77 +15,6 @@ import {
 
 const records = new WeakMap();
 
-const ANNOTATION_PROPERTIES = new Set([
-  "color",
-  "opacity",
-  "labelPosition",
-  "labelColor",
-  "includeInDomain",
-  "formatLabel",
-  "width",
-  "lineStyle",
-  "dash",
-]);
-
-const TOOLTIP_PROPERTIES = new Set([
-  "formatDate",
-  "formatDuration",
-]);
-
-/**
- * Owns one callback scope's record and lifetime.
- */
-class ScopeState {
-  #record;
-  #name;
-  #active = true;
-
-  /**
-   * Creates active state for one callback scope.
-   *
-   * @param {object} definition - Scope record and public name.
-   * @param {object} definition.record - Detached record being configured.
-   * @param {string} definition.name - Public scope name used by expiry errors.
-   */
-  constructor({ record, name }) {
-    this.#record = record;
-    this.#name = name;
-  }
-
-  /**
-   * Writes a copied value while this scope remains active.
-   *
-   * @param {string} name - Record property being configured.
-   * @param {unknown} value - Caller-controlled property value.
-   * @returns {void} The record is updated in place.
-   */
-  write(name, value) {
-    this.#assertActive();
-    this.#record[name] = copyBuilderValue(value);
-  }
-
-  /**
-   * Prevents every subsequent write through this callback scope.
-   *
-   * @returns {void} The scope becomes permanently inactive.
-   */
-  expire() {
-    this.#active = false;
-  }
-
-  /**
-   * Rejects access after the callback has finished.
-   *
-   * @returns {void} Active scopes continue unchanged.
-   * @throws {TypeError} When the callback scope has expired.
-   */
-  #assertActive() {
-    if (!this.#active) {
-      throw new TypeError(`${this.#name} scope has expired`);
-    }
-  }
-}
-
 /**
  * Attaches fresh private state to a callback scope.
  *
@@ -93,22 +23,21 @@ class ScopeState {
  * @returns {void} The scope becomes active.
  */
 function initializeScope(scope, definition) {
-  records.set(scope, new ScopeState(definition));
+  records.set(scope, { ...definition, active: true });
 }
 
 /**
  * Reads callback state or reproduces the public expiry failure.
  *
  * @param {object} scope - Callback-only builder.
- * @param {string} fallbackName - Public name for invalid receivers.
- * @returns {ScopeState} Active private scope state.
+ * @returns {object} Active private scope state.
  * @throws {TypeError} When the receiver is not an active scope.
  */
-function scopeState(scope, fallbackName) {
+function scopeState(scope) {
   const state = records.get(scope);
 
-  if (!state) {
-    throw new TypeError(`${fallbackName} scope has expired`);
+  if (!state?.active) {
+    throw new TypeError(`${state?.name ?? "Builder"} scope has expired`);
   }
 
   return state;
@@ -123,17 +52,23 @@ function scopeState(scope, fallbackName) {
  * @returns {void} The callback value becomes the local override.
  */
 function writeScopeValue(scope, name, value) {
-  let fallbackName = "Builder";
+  const state = scopeState(scope);
+  state.record[name] = copyInput(value);
+}
 
-  if (ANNOTATION_PROPERTIES.has(name)) {
-    fallbackName = "Annotation";
-  }
+/**
+ * Applies one field rule before writing into the active callback scope.
+ *
+ * @param {object} scope - Public callback scope.
+ * @param {object} rule - Property name and shared validation function.
+ * @param {unknown} value - Caller value.
+ * @returns {object} The same scope for chaining.
+ */
+function validatedScopeValue(scope, rule, value) {
+  rule.validate(value, rule.name);
+  writeScopeValue(scope, rule.name, value);
 
-  if (TOOLTIP_PROPERTIES.has(name)) {
-    fallbackName = "Tooltip";
-  }
-
-  scopeState(scope, fallbackName).write(name, value);
+  return scope;
 }
 
 /**
@@ -156,10 +91,7 @@ class DatasetBuilder {
    * @returns {this} Active dataset scope.
    */
   color(value) {
-    validateText(value, "color");
-    scopeState(this, "Dataset").write("color", value);
-
-    return this;
+    return validatedScopeValue(this, { name: "color", validate: validateText }, value);
   }
 
   /**
@@ -169,10 +101,7 @@ class DatasetBuilder {
    * @returns {this} Active dataset scope.
    */
   opacity(value) {
-    validateOpacity(value, "opacity");
-    scopeState(this, "Dataset").write("opacity", value);
-
-    return this;
+    return validatedScopeValue(this, { name: "opacity", validate: validateOpacity }, value);
   }
 
   /**
@@ -182,10 +111,7 @@ class DatasetBuilder {
    * @returns {this} Active dataset scope.
    */
   formatValue(formatter) {
-    validateFunction(formatter, "formatValue");
-    writeScopeValue(this, "formatValue", formatter);
-
-    return this;
+    return validatedScopeValue(this, { name: "formatValue", validate: validateFunction }, formatter);
   }
 }
 
@@ -323,10 +249,7 @@ class SeriesTooltipBuilder {
    * @returns {this} Active tooltip scope.
    */
   formatLabel(formatter) {
-    validateFunction(formatter, "formatLabel");
-    scopeState(this, "Tooltip").write("formatLabel", formatter);
-
-    return this;
+    return validatedScopeValue(this, { name: "formatLabel", validate: validateFunction }, formatter);
   }
 
   /**
@@ -336,10 +259,7 @@ class SeriesTooltipBuilder {
    * @returns {this} Active tooltip scope.
    */
   formatValue(formatter) {
-    validateFunction(formatter, "tooltipValue");
-    writeScopeValue(this, "tooltipValue", formatter);
-
-    return this;
+    return validatedScopeValue(this, { name: "tooltipValue", validate: validateFunction }, formatter);
   }
 }
 
@@ -376,10 +296,7 @@ class AxisBuilder {
    * @returns {this} Active axis scope.
    */
   formatValue(formatter) {
-    validateFunction(formatter, "axisValue");
-    writeScopeValue(this, "axisValue", formatter);
-
-    return this;
+    return validatedScopeValue(this, { name: "axisValue", validate: validateFunction }, formatter);
   }
 }
 
@@ -404,10 +321,7 @@ class AnnotationBuilder {
    * @returns {this} Active annotation scope.
    */
   color(value) {
-    validateText(value, "color");
-    writeScopeValue(this, "color", value);
-
-    return this;
+    return validatedScopeValue(this, { name: "color", validate: validateText }, value);
   }
 
   /**
@@ -417,10 +331,7 @@ class AnnotationBuilder {
    * @returns {this} Active annotation scope.
    */
   opacity(value) {
-    validateOpacity(value, "opacity");
-    writeScopeValue(this, "opacity", value);
-
-    return this;
+    return validatedScopeValue(this, { name: "opacity", validate: validateOpacity }, value);
   }
 
   /**
@@ -443,10 +354,7 @@ class AnnotationBuilder {
    * @returns {this} Active annotation scope.
    */
   labelColor(value) {
-    validateText(value, "labelColor");
-    writeScopeValue(this, "labelColor", value);
-
-    return this;
+    return validatedScopeValue(this, { name: "labelColor", validate: validateText }, value);
   }
 
   /**
@@ -469,10 +377,7 @@ class AnnotationBuilder {
    * @returns {this} Active annotation scope.
    */
   formatLabel(formatter) {
-    validateFunction(formatter, "formatLabel");
-    writeScopeValue(this, "formatLabel", formatter);
-
-    return this;
+    return validatedScopeValue(this, { name: "formatLabel", validate: validateFunction }, formatter);
   }
 }
 
@@ -564,10 +469,7 @@ class DateTooltipBuilder {
    * @returns {this} Active temporal tooltip scope.
    */
   formatDate(formatter) {
-    validateFunction(formatter, "formatDate");
-    writeScopeValue(this, "formatDate", formatter);
-
-    return this;
+    return validatedScopeValue(this, { name: "formatDate", validate: validateFunction }, formatter);
   }
 }
 
@@ -591,10 +493,7 @@ class HeatmapTooltipBuilder extends DateTooltipBuilder {
    * @returns {this} Active heatmap tooltip scope.
    */
   formatValue(formatter) {
-    validateFunction(formatter, "formatValue");
-    scopeState(this, "Heatmap tooltip").write("formatValue", formatter);
-
-    return this;
+    return validatedScopeValue(this, { name: "formatValue", validate: validateFunction }, formatter);
   }
 }
 
@@ -618,10 +517,7 @@ class TimesheetTooltipBuilder extends DateTooltipBuilder {
    * @returns {this} Active timesheet tooltip scope.
    */
   formatDuration(formatter) {
-    validateFunction(formatter, "formatDuration");
-    writeScopeValue(this, "formatDuration", formatter);
-
-    return this;
+    return validatedScopeValue(this, { name: "formatDuration", validate: validateFunction }, formatter);
   }
 }
 
@@ -636,7 +532,7 @@ function runScope(scope, configure) {
   try {
     configure(scope);
   } finally {
-    scopeState(scope, "Builder").expire();
+    records.get(scope).active = false;
   }
 }
 

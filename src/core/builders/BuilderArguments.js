@@ -1,5 +1,6 @@
+import { copyInput } from "../../support/data/Copy.js";
+
 import { LineDatasetBuilder, MarkerBuilder, RegionBuilder, runScope } from "./BuilderScopes.js";
-import { copyBuilderValue } from "./BuilderState.js";
 
 /**
  * Resolves one named positional dataset call.
@@ -10,7 +11,7 @@ import { copyBuilderValue } from "./BuilderState.js";
  * @returns {{dataset: object, configure?: (scope: LineDatasetBuilder) => void}} Detached named dataset arguments.
  */
 function namedDatasetArguments(name, values, colorOrConfigure) {
-  const dataset = { name, values: copyBuilderValue(values) };
+  const dataset = { name, values: copyInput(values) };
 
   if (typeof colorOrConfigure === "string") {
     dataset.color = colorOrConfigure;
@@ -32,7 +33,7 @@ function namedDatasetArguments(name, values, colorOrConfigure) {
  * @returns {{dataset: object, configure?: (scope: LineDatasetBuilder) => void}} Detached unnamed dataset arguments.
  */
 function unnamedDatasetArguments(values, colorOrConfigure) {
-  const dataset = { values: copyBuilderValue(values) };
+  const dataset = { values: copyInput(values) };
 
   if (typeof colorOrConfigure === "string") {
     dataset.color = colorOrConfigure;
@@ -67,7 +68,7 @@ function datasetArguments(first, second, third) {
 
   if (!result) {
     result = {
-      dataset: copyBuilderValue(first),
+      dataset: copyInput(first),
       configure: typeof second === "function" ? second : undefined,
     };
   }
@@ -121,7 +122,7 @@ function lineDataset(first, second, third) {
  */
 function markerInput(first, second, third) {
   const isPositional = typeof first === "string";
-  const marker = isPositional ? { label: first, value: second } : copyBuilderValue(first);
+  const marker = isPositional ? { label: first, value: second } : copyInput(first);
   const callbackCandidate = isPositional ? third : second;
 
   if (isPositional && typeof third === "string") {
@@ -145,7 +146,7 @@ function markerInput(first, second, third) {
  */
 function regionInput(first, second, third) {
   const isPositional = typeof first === "string";
-  const region = isPositional ? { label: first, range: copyBuilderValue(second) } : copyBuilderValue(first);
+  const region = isPositional ? { label: first, range: copyInput(second) } : copyInput(first);
   const callbackCandidate = isPositional ? third : second;
 
   if (isPositional && typeof third === "string") {

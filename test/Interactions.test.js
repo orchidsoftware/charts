@@ -1,7 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+  BarChart,
+  BubbleChart,
+  DonutChart,
+  HeatmapChart,
+  LineChart,
+  MixedChart,
+  PercentageChart,
+  PieChart,
+  PolarAreaChart,
+  RadarChart,
+  ScatterChart,
+  TimesheetChart,
+} from "../src/index.js";
+
 import ChartScenario from "./support/ChartScenario.js";
-import createChart from "./support/MountChart.js";
+import "../src/styles.css";
 
 const tooltipFor = (chart) => chart.element.parentElement.querySelector(".charts2-tooltip");
 
@@ -16,28 +31,25 @@ beforeEach(() => {
 
 describe("shared chart interaction contract", () => {
   it("uses one tab stop, arrow navigation, persistent active state, and Escape", () => {
-    const scenario = ChartScenario.mount({
-      type: "bar",
-      orientation: "horizontal",
-      ariaLabel: "Regional response",
-      onSelect: vi.fn(),
-      data: {
-        labels: [
+    const scenario = new ChartScenario(
+      BarChart.make("#chart")
+        .horizontal()
+        .ariaLabel("Regional response")
+        .onSelect(vi.fn())
+        .labels([
           "EU",
           "US",
           "APAC",
-        ],
-        datasets: [
-          {
-            values: [
-              42,
-              68,
-              51,
-            ],
-          },
-        ],
-      },
-    });
+        ])
+        .dataset({
+          values: [
+            42,
+            68,
+            51,
+          ],
+        })
+        .render(),
+    );
     const marks = scenario.marks();
     expect(marks).toHaveLength(3);
     expect(marks.filter((mark) => mark.getAttribute("tabindex") === "0")).toHaveLength(1);
@@ -55,35 +67,30 @@ describe("shared chart interaction contract", () => {
   });
 
   it("dismisses a pinned tooltip when the person clicks any free area", () => {
-    const chart = createChart("#chart", {
-      type: "radar",
-      onSelect: vi.fn(),
-      data: {
-        labels: [
-          "Speed",
-          "Quality",
-          "Stability",
+    const chart = RadarChart.make("#chart")
+      .onSelect(vi.fn())
+      .labels([
+        "Speed",
+        "Quality",
+        "Stability",
+      ])
+      .dataset({
+        name: "Current",
+        values: [
+          72,
+          88,
+          81,
         ],
-        datasets: [
-          {
-            name: "Current",
-            values: [
-              72,
-              88,
-              81,
-            ],
-          },
-          {
-            name: "Previous",
-            values: [
-              64,
-              84,
-              76,
-            ],
-          },
+      })
+      .dataset({
+        name: "Previous",
+        values: [
+          64,
+          84,
+          76,
         ],
-      },
-    });
+      })
+      .render();
     const mark = chart.element.querySelector(".charts2-radar");
 
     mark.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
@@ -107,25 +114,22 @@ describe("shared chart interaction contract", () => {
   });
 
   it("applies the same model to aggregation charts", () => {
-    const scenario = ChartScenario.mount({
-      type: "pie",
-      ariaLabel: "Acquisition sources",
-      onSelect: vi.fn(),
-      data: {
-        labels: [
+    const scenario = new ChartScenario(
+      PieChart.make("#chart")
+        .ariaLabel("Acquisition sources")
+        .onSelect(vi.fn())
+        .labels([
           "Direct",
           "Search",
-        ],
-        datasets: [
-          {
-            values: [
-              60,
-              40,
-            ],
-          },
-        ],
-      },
-    });
+        ])
+        .dataset({
+          values: [
+            60,
+            40,
+          ],
+        })
+        .render(),
+    );
     const marks = scenario.marks();
     expect(scenario.chart().element.getAttribute("role")).toBe("group");
     expect(marks[0].getAttribute("aria-label")).toBe("Direct: 60 (60%)");
@@ -137,30 +141,37 @@ describe("shared chart interaction contract", () => {
   });
 
   it("keeps radial popovers outside their sectors and percentage popovers on segments", () => {
-    for (const type of [
-      "pie",
-      "donut",
-      "percentage",
+    for (const [
+      type,
+      Definition,
+    ] of [
+      [
+        "pie",
+        PieChart,
+      ],
+      [
+        "donut",
+        DonutChart,
+      ],
+      [
+        "percentage",
+        PercentageChart,
+      ],
     ]) {
-      const chart = createChart("#chart", {
-        type,
-        data: {
-          labels: [
-            "Direct",
-            "Search",
-            "Partners",
+      const chart = Definition.make("#chart")
+        .labels([
+          "Direct",
+          "Search",
+          "Partners",
+        ])
+        .dataset({
+          values: [
+            1,
+            1,
+            1,
           ],
-          datasets: [
-            {
-              values: [
-                1,
-                1,
-                1,
-              ],
-            },
-          ],
-        },
-      });
+        })
+        .render();
       const marks = [
         ...chart.element.querySelectorAll(".charts2-interactive-mark"),
       ];
@@ -202,21 +213,16 @@ describe("shared chart interaction contract", () => {
       chart.destroy();
     }
 
-    const whole = createChart("#chart", {
-      type: "pie",
-      data: {
-        labels: [
-          "Complete",
+    const whole = PieChart.make("#chart")
+      .labels([
+        "Complete",
+      ])
+      .dataset({
+        values: [
+          100,
         ],
-        datasets: [
-          {
-            values: [
-              100,
-            ],
-          },
-        ],
-      },
-    });
+      })
+      .render();
     const topMark = whole.element.querySelector(".charts2-interactive-mark");
 
     expect(topMark.dataset.tooltipPlacement).toBe("top");
@@ -226,9 +232,18 @@ describe("shared chart interaction contract", () => {
   });
 
   it("uses highlighted shared areas for easy scatter and bubble hover", () => {
-    for (const type of [
-      "scatter",
-      "bubble",
+    for (const [
+      type,
+      Definition,
+    ] of [
+      [
+        "scatter",
+        ScatterChart,
+      ],
+      [
+        "bubble",
+        BubbleChart,
+      ],
     ]) {
       const values =
         type === "bubble"
@@ -244,20 +259,15 @@ describe("shared chart interaction contract", () => {
               4,
               5,
             ];
-      const chart = createChart("#chart", {
-        type,
-        data: {
-          labels: [
-            "A",
-            "B",
-            "C",
-            "D",
-          ],
-          datasets: [
-            { values },
-          ],
-        },
-      });
+      const chart = Definition.make("#chart")
+        .labels([
+          "A",
+          "B",
+          "C",
+          "D",
+        ])
+        .dataset({ values })
+        .render();
       const hits = [
         ...chart.element.querySelectorAll(".charts2-x-hit"),
       ];
@@ -281,27 +291,22 @@ describe("shared chart interaction contract", () => {
       chart.destroy();
     }
 
-    const line = createChart("#chart", {
-      type: "line",
-      data: {
-        labels: [
-          "A",
-          "B",
-          "C",
-          "D",
+    const line = LineChart.make("#chart")
+      .labels([
+        "A",
+        "B",
+        "C",
+        "D",
+      ])
+      .dataset({
+        values: [
+          2,
+          3,
+          4,
+          5,
         ],
-        datasets: [
-          {
-            values: [
-              2,
-              3,
-              4,
-              5,
-            ],
-          },
-        ],
-      },
-    });
+      })
+      .render();
     const lineWidths = [
       ...line.element.querySelectorAll(".charts2-x-hit"),
     ].map((hit) => Number(hit.getAttribute("width")));
@@ -336,7 +341,25 @@ describe("shared chart interaction contract", () => {
         },
       ],
     };
-    const hoverChart = createChart("#chart", { type: "mixed", data });
+    const hoverChart = MixedChart.make("#chart")
+      .labels(data.labels)
+      .dataset({
+        name: "Actual",
+        chartType: "bar",
+        values: [
+          2,
+          3,
+        ],
+      })
+      .dataset({
+        name: "Plan",
+        chartType: "line",
+        values: [
+          3,
+          4,
+        ],
+      })
+      .render();
     const category = hoverChart.element.querySelector(".charts2-x-hit");
 
     expect(hoverChart.element.querySelectorAll(".charts2-interactive-mark")).toHaveLength(2);
@@ -346,7 +369,26 @@ describe("shared chart interaction contract", () => {
     expect(tooltipFor(hoverChart).textContent).toContain("Plan");
     hoverChart.destroy();
 
-    const selectable = createChart("#chart", { type: "mixed", data, onSelect: vi.fn() });
+    const selectable = MixedChart.make("#chart")
+      .onSelect(vi.fn())
+      .labels(data.labels)
+      .dataset({
+        name: "Actual",
+        chartType: "bar",
+        values: [
+          2,
+          3,
+        ],
+      })
+      .dataset({
+        name: "Plan",
+        chartType: "line",
+        values: [
+          3,
+          4,
+        ],
+      })
+      .render();
     expect(selectable.element.querySelector(".charts2-x-hit")).toBeNull();
     expect(selectable.element.querySelectorAll(".charts2-interactive-mark")).toHaveLength(4);
     selectable.destroy();
@@ -399,7 +441,40 @@ describe("shared chart interaction contract", () => {
       "left",
       "right",
     ]) {
-      const chart = createChart("#chart", { type: "mixed", yAxisPosition, data });
+      const chart = MixedChart.make("#chart")
+        .yAxis((axis) => axis.position(yAxisPosition))
+        .labels(data.labels)
+        .dataset({
+          name: "Daily change",
+          chartType: "bar",
+          values: [
+            -8,
+            4,
+            -3,
+            9,
+          ],
+        })
+        .dataset({
+          name: "Rolling trend",
+          chartType: "line",
+          values: [
+            -4,
+            -2,
+            2,
+            5,
+          ],
+        })
+        .dataset({
+          name: "Alert threshold",
+          chartType: "line",
+          values: [
+            3,
+            3,
+            3,
+            3,
+          ],
+        })
+        .render();
       const categories = [
         ...chart.element.querySelectorAll(".charts2-x-hit"),
       ];
@@ -427,25 +502,20 @@ describe("shared chart interaction contract", () => {
   });
 
   it("keeps tooltip width stable at the first and last chart positions", () => {
-    const percentage = createChart("#chart", {
-      type: "percentage",
-      data: {
-        labels: [
-          "Same",
-          "Same",
-          "Same",
+    const percentage = PercentageChart.make("#chart")
+      .labels([
+        "Same",
+        "Same",
+        "Same",
+      ])
+      .dataset({
+        values: [
+          10,
+          10,
+          10,
         ],
-        datasets: [
-          {
-            values: [
-              10,
-              10,
-              10,
-            ],
-          },
-        ],
-      },
-    });
+      })
+      .render();
     const percentageMarks = percentage.element.querySelectorAll(".charts2-interactive-mark");
     percentageMarks[0].focus();
     const firstPercentageWidth = tooltipFor(percentage).getBoundingClientRect().width;
@@ -453,34 +523,29 @@ describe("shared chart interaction contract", () => {
     expect(tooltipFor(percentage).getBoundingClientRect().width).toBe(firstPercentageWidth);
     percentage.destroy();
 
-    const fractions = createChart("#chart", {
-      type: "line",
-      data: {
-        labels: [
-          "Same measurement",
-          "Same measurement",
-          "Same measurement",
+    const fractions = LineChart.make("#chart")
+      .labels([
+        "Same measurement",
+        "Same measurement",
+        "Same measurement",
+      ])
+      .dataset({
+        name: "Sensor A — fractional precision",
+        values: [
+          0.00012,
+          0.00012,
+          0.00012,
         ],
-        datasets: [
-          {
-            name: "Sensor A — fractional precision",
-            values: [
-              0.00012,
-              0.00012,
-              0.00012,
-            ],
-          },
-          {
-            name: "Sensor B — comparison",
-            values: [
-              0.00009,
-              0.00009,
-              0.00009,
-            ],
-          },
+      })
+      .dataset({
+        name: "Sensor B — comparison",
+        values: [
+          0.00009,
+          0.00009,
+          0.00009,
         ],
-      },
-    });
+      })
+      .render();
     const fractionMarks = fractions.element.querySelectorAll(".charts2-x-hit");
     fractionMarks[0].focus();
     const firstFractionWidth = tooltipFor(fractions).getBoundingClientRect().width;
@@ -492,26 +557,23 @@ describe("shared chart interaction contract", () => {
 
   it("keeps the same tooltip anchor from hover through click selection", () => {
     const onSelect = vi.fn();
-    const scenario = ChartScenario.mount({
-      type: "percentage",
-      onSelect,
-      data: {
-        labels: [
+    const scenario = new ChartScenario(
+      PercentageChart.make("#chart")
+        .onSelect(onSelect)
+        .labels([
           "Photos",
           "Apps",
           "Free",
-        ],
-        datasets: [
-          {
-            values: [
-              72,
-              58,
-              64,
-            ],
-          },
-        ],
-      },
-    });
+        ])
+        .dataset({
+          values: [
+            72,
+            58,
+            64,
+          ],
+        })
+        .render(),
+    );
     const mark = scenario.mark();
 
     mark.hover({ x: 520, y: 120 });
@@ -528,99 +590,83 @@ describe("shared chart interaction contract", () => {
   it("uses one tooltip typography hierarchy across chart families", () => {
     const cases = [
       {
-        options: {
-          type: "percentage",
-          tooltipFormatValue: (value) => `${value} GB`,
-          data: {
-            labels: [
+        build: () =>
+          PercentageChart.make("#chart")
+            .tooltip((tooltip) => tooltip.formatValue((value) => `${value} GB`))
+            .labels([
               "Photos",
               "Free",
-            ],
-            datasets: [
-              {
-                values: [
-                  72,
-                  28,
-                ],
-              },
-            ],
-          },
-        },
+            ])
+            .dataset({
+              values: [
+                72,
+                28,
+              ],
+            })
+            .render(),
         heading: "Photos",
         value: "72 GB (72%)",
       },
       {
-        options: {
-          type: "pie",
-          data: {
-            labels: [
+        build: () =>
+          PieChart.make("#chart")
+            .labels([
               "Search",
               "Direct",
-            ],
-            datasets: [
-              {
-                values: [
-                  60,
-                  40,
-                ],
-              },
-            ],
-          },
-        },
+            ])
+            .dataset({
+              values: [
+                60,
+                40,
+              ],
+            })
+            .render(),
         heading: "Search",
         value: "60 (60%)",
       },
       {
-        options: {
-          type: "donut",
-          data: {
-            labels: [
+        build: () =>
+          DonutChart.make("#chart")
+            .labels([
               "Individual",
               "Family",
-            ],
-            datasets: [
-              {
-                values: [
-                  70,
-                  30,
-                ],
-              },
-            ],
-          },
-        },
+            ])
+            .dataset({
+              values: [
+                70,
+                30,
+              ],
+            })
+            .render(),
         heading: "Individual",
         value: "70 (70%)",
       },
       {
-        options: {
-          type: "polar-area",
-          data: {
-            labels: [
+        build: () =>
+          PolarAreaChart.make("#chart")
+            .labels([
               "Social",
               "Reading",
-            ],
-            datasets: [
-              {
-                values: [
-                  74,
-                  26,
-                ],
-              },
-            ],
-          },
-        },
+            ])
+            .dataset({
+              values: [
+                74,
+                26,
+              ],
+            })
+            .render(),
         heading: "Social",
         value: "74",
       },
       {
-        options: { type: "heatmap", countLabel: "events", data: { points: { "2026-01-01": 4 } } },
+        build: () => HeatmapChart.make("#chart").countLabel("events").points({ "2026-01-01": 4 }).render(),
         heading: "2026-01-01",
         value: "4 events",
       },
     ];
 
-    for (const { options, heading, value } of cases) {
-      const chart = createChart("#chart", options);
+    for (const { build, heading, value } of cases) {
+      const chart = build();
       chart.element.querySelector(".charts2-interactive-mark").focus();
       const tooltipHeading = tooltipFor(chart).querySelector(".charts2-tooltip-heading");
       const row = tooltipFor(chart).querySelector(".charts2-tooltip-row");
@@ -637,29 +683,24 @@ describe("shared chart interaction contract", () => {
       chart.destroy();
     }
 
-    const cartesian = createChart("#chart", {
-      type: "bar",
-      orientation: "horizontal",
-      data: {
-        labels: [
-          "Europe",
+    const cartesian = BarChart.make("#chart")
+      .horizontal()
+      .labels([
+        "Europe",
+      ])
+      .dataset({
+        name: "Standard",
+        values: [
+          36,
         ],
-        datasets: [
-          {
-            name: "Standard",
-            values: [
-              36,
-            ],
-          },
-          {
-            name: "Express",
-            values: [
-              16,
-            ],
-          },
+      })
+      .dataset({
+        name: "Express",
+        values: [
+          16,
         ],
-      },
-    });
+      })
+      .render();
     cartesian.element.querySelector(".charts2-x-hit").focus();
     expect(tooltipFor(cartesian).querySelector(".charts2-tooltip-heading").textContent).toBe("Europe");
     expect(
@@ -683,23 +724,18 @@ describe("shared chart interaction contract", () => {
   });
 
   it("keeps charts read-only unless an onSelect callback opts into selection", () => {
-    const chart = createChart("#chart", {
-      type: "line",
-      data: {
-        labels: [
-          "A",
-          "B",
+    const chart = LineChart.make("#chart")
+      .labels([
+        "A",
+        "B",
+      ])
+      .dataset({
+        values: [
+          1,
+          2,
         ],
-        datasets: [
-          {
-            values: [
-              1,
-              2,
-            ],
-          },
-        ],
-      },
-    });
+      })
+      .render();
     const mark = chart.element.querySelector(".charts2-interactive-mark");
 
     expect(mark.getAttribute("role")).toBe("img");
@@ -717,23 +753,18 @@ describe("shared chart interaction contract", () => {
   });
 
   it("keeps a tooltip-only touch preview pinned after the pointer leaves", () => {
-    const chart = createChart("#chart", {
-      type: "pie",
-      data: {
-        labels: [
-          "Direct",
-          "Search",
+    const chart = PieChart.make("#chart")
+      .labels([
+        "Direct",
+        "Search",
+      ])
+      .dataset({
+        values: [
+          60,
+          40,
         ],
-        datasets: [
-          {
-            values: [
-              60,
-              40,
-            ],
-          },
-        ],
-      },
-    });
+      })
+      .render();
     const [
       first,
       second,
@@ -771,31 +802,26 @@ describe("shared chart interaction contract", () => {
 
   it("balances wrapped tooltip headings without changing their accessible text", () => {
     const heading = "A deliberately long localized category heading for the final measurement";
-    const chart = createChart("#chart", {
-      type: "line",
-      data: {
-        labels: [
-          heading,
-          "Short",
+    const chart = LineChart.make("#chart")
+      .labels([
+        heading,
+        "Short",
+      ])
+      .dataset({
+        name: "Observed",
+        values: [
+          12,
+          18,
         ],
-        datasets: [
-          {
-            name: "Observed",
-            values: [
-              12,
-              18,
-            ],
-          },
-          {
-            name: "Baseline",
-            values: [
-              10,
-              15,
-            ],
-          },
+      })
+      .dataset({
+        name: "Baseline",
+        values: [
+          10,
+          15,
         ],
-      },
-    });
+      })
+      .render();
     chart.element.querySelector(".charts2-x-hit").focus();
     const tooltipHeading = tooltipFor(chart).querySelector(".charts2-tooltip-heading");
 
@@ -807,32 +833,27 @@ describe("shared chart interaction contract", () => {
 
   it("makes frameless charts inspectable without making every value a tab stop", () => {
     const onSelect = vi.fn();
-    const chart = createChart("#chart", {
-      type: "line",
-      axes: false,
-      grid: false,
-      valueLabels: false,
-      legend: false,
-      dots: false,
-      data: {
-        labels: [
-          "Value 1",
-          "Value 2",
-          "Value 3",
+    const chart = LineChart.make("#chart")
+      .axes(false)
+      .grid(false)
+      .valueLabels(false)
+      .legend(false)
+      .dots(false)
+      .ariaLabel("Revenue trend")
+      .onSelect(onSelect)
+      .labels([
+        "Value 1",
+        "Value 2",
+        "Value 3",
+      ])
+      .dataset({
+        values: [
+          12,
+          18,
+          16,
         ],
-        datasets: [
-          {
-            values: [
-              12,
-              18,
-              16,
-            ],
-          },
-        ],
-      },
-      ariaLabel: "Revenue trend",
-      onSelect,
-    });
+      })
+      .render();
     const marks = [
       ...chart.element.querySelectorAll(".charts2-interactive-mark"),
     ];
@@ -867,25 +888,20 @@ describe("shared chart interaction contract", () => {
   });
 
   it("removes hover and focus inspection when a tooltip is opted out", () => {
-    const chart = createChart("#chart", {
-      type: "line",
-      tooltip: false,
-      data: {
-        labels: [
-          "Mon",
-          "Tue",
+    const chart = LineChart.make("#chart")
+      .tooltip(false)
+      .labels([
+        "Mon",
+        "Tue",
+      ])
+      .dataset({
+        name: "Revenue",
+        values: [
+          12,
+          18,
         ],
-        datasets: [
-          {
-            name: "Revenue",
-            values: [
-              12,
-              18,
-            ],
-          },
-        ],
-      },
-    });
+      })
+      .render();
     const line = chart.element.querySelector(".charts2-line");
 
     expect(chart.element.querySelector(".charts2-x-hit")).toBeNull();
@@ -899,26 +915,21 @@ describe("shared chart interaction contract", () => {
 
   it("keeps selection without hover preview when tooltip is disabled", () => {
     const onSelect = vi.fn();
-    const chart = createChart("#chart", {
-      type: "line",
-      tooltip: false,
-      onSelect,
-      data: {
-        labels: [
-          "Mon",
-          "Tue",
+    const chart = LineChart.make("#chart")
+      .tooltip(false)
+      .onSelect(onSelect)
+      .labels([
+        "Mon",
+        "Tue",
+      ])
+      .dataset({
+        name: "Revenue",
+        values: [
+          12,
+          18,
         ],
-        datasets: [
-          {
-            name: "Revenue",
-            values: [
-              12,
-              18,
-            ],
-          },
-        ],
-      },
-    });
+      })
+      .render();
     const mark = chart.element.querySelector(".charts2-x-hit");
 
     expect(mark).toHaveClass("charts2-interactive-mark");
@@ -934,10 +945,7 @@ describe("shared chart interaction contract", () => {
   });
 
   it("applies the same model to heatmap cells", () => {
-    const chart = createChart("#chart", {
-      type: "heatmap",
-      data: { points: { "2026-01-01": 1, "2026-01-02": 4 } },
-    });
+    const chart = HeatmapChart.make("#chart").points({ "2026-01-01": 1, "2026-01-02": 4 }).render();
     const cells = chart.element.querySelectorAll(".charts2-interactive-mark");
     expect(cells).toHaveLength(2);
     expect(cells[0].getAttribute("aria-label")).toBe("2026-01-01: 1");
@@ -948,19 +956,13 @@ describe("shared chart interaction contract", () => {
 
   it("keeps a timesheet tooltip anchored while the whole row handles hover and click", () => {
     const onSelect = vi.fn();
-    const chart = createChart("#chart", {
-      type: "timesheet",
-      width: 400,
-      height: 220,
-      onSelect,
-      data: {
-        start: "2026-09-01",
-        end: "2026-09-07",
-        tasks: [
-          { label: "Implementation", start: "2026-09-02", end: "2026-09-04", group: "Engineering" },
-        ],
-      },
-    });
+    const chart = TimesheetChart.make("#chart")
+      .width(400)
+      .height(220)
+      .onSelect(onSelect)
+      .range("2026-09-01", "2026-09-07")
+      .task({ label: "Implementation", start: "2026-09-02", end: "2026-09-04", group: "Engineering" })
+      .render();
     const hit = chart.element.querySelector(".charts2-timesheet-hit");
     const bar = chart.element.querySelector(".charts2-timesheet-bar");
 

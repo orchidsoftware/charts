@@ -1,4 +1,5 @@
 import { renderChart } from "../renderers/ChartRendering.js";
+import { chartMark } from "../support/ChartMark.js";
 import { ChartOrientation, ChartType } from "../support/Constants.js";
 import { measureParentWidth, resolveParent, svg } from "../support/Dom.js";
 
@@ -51,7 +52,6 @@ export default class Chart {
   #host;
   #type;
   #implementation;
-  #hasCustomColors;
   #id;
   #autoWidth;
   #options;
@@ -59,12 +59,7 @@ export default class Chart {
   #element;
   #tooltip;
   #interactions = null;
-  #activeMarkIndex = -1;
-  #keyboardMarkIndex = -1;
   #selectionIdentity = null;
-  #boundPointerMove;
-  #boundPointerLeave;
-  #boundDocumentPointerDown;
   #boundResize = null;
   #resizeObserver = null;
   #resizeFrame = null;
@@ -91,7 +86,6 @@ export default class Chart {
     this.#type = chartConfig.options.type;
     this.#implementation = implementation;
     this.#id = nextChartId();
-    this.#hasCustomColors = chartConfig.hasCustomColors;
     this.#autoWidth = options.width === undefined;
     this.#options = chartConfig.options;
     this.#model = model;
@@ -99,7 +93,6 @@ export default class Chart {
     this.#tooltip = new ChartTooltip(this.#host, this.#element, this.#id);
     this.#renderInto(this.#element, this.#model);
     this.#commitHostPresentation(this.#element);
-    this.#bindLifecycle();
     this.#bindInteractions();
 
     if (this.#autoWidth) {
@@ -153,24 +146,6 @@ export default class Chart {
   }
 
   /**
-   * Registers browser listeners that remain stable across render passes.
-   *
-   * @returns {void} Pointer listeners are bound to their lifecycle owners.
-   */
-  #bindLifecycle() {
-    this.#boundPointerMove = this.#handlePointerMove.bind(this);
-    this.#boundPointerLeave = this.#tooltip.hide.bind(this.#tooltip);
-    this.#boundDocumentPointerDown = this.#handleDocumentPointerDown.bind(this);
-
-    if (this.#options.tooltip) {
-      this.#element.addEventListener("mousemove", this.#boundPointerMove);
-    }
-
-    this.#element.addEventListener("mouseleave", this.#boundPointerLeave);
-    document.addEventListener("pointerdown", this.#boundDocumentPointerDown);
-  }
-
-  /**
    * Exposes the owned SVG surface as the sole public DOM inspection boundary.
    *
    * @returns {SVGSVGElement} Current chart SVG element.
@@ -206,16 +181,13 @@ export default class Chart {
   /**
    * Reads one normalized point without exposing mutable model or renderer state.
    *
-   * @param {number} [index=Math.max(0, this.#activeMarkIndex)] - Requested point, cell, or task index.
+   * @param {number} [index] - Requested point, cell, or task index.
    * @returns {object | undefined} Type-appropriate normalized data at the requested index.
    */
   point(index) {
     this.#assertMounted();
 
-    const fallbackIndex =
-      this.#activeMarkIndex >= 0 ? this.#activeMarkIndex : Math.max(0, this.#keyboardMarkIndex);
-
-    const requestedIndex = index ?? fallbackIndex;
+    const requestedIndex = index ?? this.#interactions?.pointIndex ?? 0;
 
     if (!Number.isSafeInteger(requestedIndex) || requestedIndex < 0) {
       throw new TypeError("Chart point index must be a non-negative integer");
@@ -304,9 +276,7 @@ export default class Chart {
     }
 
     this.#destroyed = true;
-    this.#element.removeEventListener("mousemove", this.#boundPointerMove);
-    this.#element.removeEventListener("mouseleave", this.#boundPointerLeave);
-    document.removeEventListener("pointerdown", this.#boundDocumentPointerDown);
+    this.#interactions?.destroy();
     if (this.#boundResize) {
       window.removeEventListener("resize", this.#boundResize);
     }
@@ -343,8 +313,7 @@ export default class Chart {
     const activeIndex = this.#preservedIndex(staged, this.#model);
     this.#options = options;
     this.#replaceSurface(staged);
-    this.#activeMarkIndex = activeIndex;
-    this.#bindInteractions();
+    this.#bindInteractions(activeIndex);
   }
 
   /**
@@ -378,46 +347,10 @@ export default class Chart {
   }
 
   /**
-   * Resolves the mark under a mouse event and previews its tooltip.
-   *
-   * @param {MouseEvent} event - Mouse movement event dispatched within the chart SVG.
-   * @returns {void} Tooltip state is updated when an eligible mark is present.
-   */
-  #handlePointerMove(event) {
-    if (event.sourceCapabilities?.firesTouchEvents) {
-      return;
-    }
-
-    const mark = event.target.closest(MARK_SELECTOR);
-
-    if (!mark || !this.#element.contains(mark)) {
-      this.#tooltip.hide();
-
-      return;
-    }
-
-    this.#tooltip.show(mark, mark.dataset.tooltip, this.#options);
-  }
-
-  /**
-   * Clears persistent selection when a pointer press occurs outside chart marks.
-   *
-   * @param {PointerEvent} event - Document-level pointer event used for outside detection.
-   * @returns {void} Active interaction state is dismissed when appropriate.
-   */
-  #handleDocumentPointerDown(event) {
-    const mark = event.target.closest(MARK_SELECTOR);
-
-    if (!mark || !this.#element.contains(mark)) {
-      this.#interactions?.dismiss();
-    }
-  }
-
-  /**
    * Rebuilds SVG content through class-based renderer dispatch.
    *
    * @param {SVGSVGElement} element - Detached SVG receiving rendered content.
-   * @param {import("./ChartData.js").default} model - Fully normalized model exposed to the renderer snapshot.
+   * @param {object} model - Fully normalized model exposed to the renderer snapshot.
    * @param {object} [options=this.#options] - Candidate rendering options.
    * @returns {void} The detached SVG contains a complete candidate scene.
    */
@@ -441,7 +374,7 @@ export default class Chart {
         labels: model.labels,
         heatmap: model.heatmap,
         timesheet: model.timesheet,
-        hasCustomColors: this.#hasCustomColors,
+        palette: model.palette,
         id: this.#id,
       },
       this.#implementation.render,
@@ -451,7 +384,7 @@ export default class Chart {
   /**
    * Builds a concise accessible summary when no authored description exists.
    *
-   * @param {import("./ChartData.js").default} model - Fully normalized current model.
+   * @param {object} model - Fully normalized current model.
    * @returns {string} Plain-text chart description.
    */
   #generatedDescription(model) {
@@ -476,27 +409,26 @@ export default class Chart {
    * Commits a validated data model and completely rendered SVG together.
    *
    * @param {SVGSVGElement} staged - Detached rendered candidate.
-   * @param {import("./ChartData.js").default} model - Fully normalized replacement model.
+   * @param {object} model - Fully normalized replacement model.
    * @returns {void} Mounted data, SVG, and interactions advance together.
    */
   #commitUpdate(staged, model) {
     const activeIndex = this.#preservedIndex(staged, model);
     this.#replaceSurface(staged);
     this.#model = model;
-    this.#activeMarkIndex = activeIndex;
     if (activeIndex < 0) {
       this.#selectionIdentity = null;
     }
 
     this.#tooltip.hide();
-    this.#bindInteractions();
+    this.#bindInteractions(activeIndex);
   }
 
   /**
    * Finds the sole candidate mark matching the current logical selection.
    *
    * @param {SVGSVGElement} staged - Completely rendered candidate surface.
-   * @param {import("./ChartData.js").default} model - Candidate normalized data model.
+   * @param {object} model - Candidate normalized data model.
    * @returns {number} Matching mark index, or -1 for absent or ambiguous identity.
    */
   #preservedIndex(staged, model) {
@@ -507,7 +439,7 @@ export default class Chart {
     const marks = this.#orderedMarks(staged);
 
     const matches = marks.flatMap((mark, index) =>
-      model.identityFor(mark) === this.#selectionIdentity
+      model.identityFor(chartMark(mark)) === this.#selectionIdentity
         ? [
             index,
           ]
@@ -554,9 +486,11 @@ export default class Chart {
   /**
    * Rebinds accessible pointer, focus, keyboard, and selection behavior after render.
    *
+   * @param {number} [activeIndex=-1] - Preserved selection position after rendering.
    * @returns {void} Rendered marks receive a fresh interaction controller.
    */
-  #bindInteractions() {
+  #bindInteractions(activeIndex = -1) {
+    this.#interactions?.destroy();
     const marks = this.#orderedMarks(this.#element);
 
     for (const mark of marks) {
@@ -576,21 +510,17 @@ export default class Chart {
     }
 
     const interactionBehavior = {
-      activeIndex: this.#activeMarkIndex,
+      activeIndex,
+      root: this.#element,
       previewable: this.#options.tooltip,
       selectable: typeof this.#options.onSelect === "function",
     };
 
     const interactionCallbacks = {
-      labelFor: (mark) => mark.dataset.tooltip,
-      onShow: this.#options.tooltip
-        ? (mark, label) => this.#tooltip.show(mark, label, this.#options)
-        : () => {},
+      labelFor: (mark) => chartMark(mark).label,
+      onShow: this.#options.tooltip ? (mark) => this.#tooltip.show(mark, this.#options) : () => {},
       onHide: () => this.#tooltip.hide(),
       onActiveChange: (index, mark) => this.#handleActiveChange(index, mark),
-      onFocusChange: (index) => {
-        this.#keyboardMarkIndex = index;
-      },
     };
 
     this.#interactions = new InteractionController(marks, interactionBehavior, interactionCallbacks);
@@ -612,9 +542,9 @@ export default class Chart {
     }
 
     return marks.toSorted((left, right) => {
-      const dataset = Number(left.dataset.datasetIndex) - Number(right.dataset.datasetIndex);
+      const dataset = chartMark(left).datasetIndex - chartMark(right).datasetIndex;
 
-      return dataset || Number(left.dataset.pointIndex) - Number(right.dataset.pointIndex);
+      return dataset || chartMark(left).pointIndex - chartMark(right).pointIndex;
     });
   }
 
@@ -626,10 +556,9 @@ export default class Chart {
    * @returns {void} Internal identity is committed before user code runs.
    */
   #handleActiveChange(index, mark) {
-    this.#activeMarkIndex = index;
     if (index >= 0 && mark) {
-      const detail = this.#model.selectionFor(mark);
-      this.#selectionIdentity = this.#model.identityFor(mark);
+      const detail = this.#model.selectionFor(chartMark(mark));
+      this.#selectionIdentity = this.#model.identityFor(chartMark(mark));
       this.#host.dispatchEvent(new CustomEvent("data-select", { detail }));
       this.#options.onSelect?.(detail);
 

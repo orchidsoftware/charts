@@ -1,3 +1,5 @@
+import { chartMark } from "../support/ChartMark.js";
+
 const FORWARD_KEYS = new Set([
   "ArrowRight",
   "ArrowDown",
@@ -68,6 +70,8 @@ function focusIndexFor(key, index, itemCount) {
  */
 export default class InteractionController {
   #items;
+  #events = new AbortController();
+  #focusedIndex = 0;
   #selectedIndex;
   #labelFor;
   #onActiveChange;
@@ -78,7 +82,6 @@ export default class InteractionController {
   #selectable;
   #touchPendingItem = null;
   #touchPreviewItem = null;
-  #visualItems = new WeakMap();
 
   /**
    * Binds one roving-tabindex interaction model to ordered SVG marks.
@@ -113,6 +116,86 @@ export default class InteractionController {
       const selected = this.#items[this.#selectedIndex];
       this.#onShow(selected, this.#labelFor(selected, this.#selectedIndex), this.#selectedIndex);
     }
+
+    this.#bindRoot(behavior.root);
+  }
+
+  /**
+   * Returns the active selection or keyboard position for public point inspection.
+   *
+   * @returns {number} Current public navigation index.
+   */
+  get pointIndex() {
+    return this.#selectedIndex >= 0 ? this.#selectedIndex : this.#focusedIndex;
+  }
+
+  /**
+   * Releases every listener owned by this interaction session.
+   *
+   * @returns {void} Detached elements and document listeners stop reacting.
+   */
+  destroy() {
+    this.#events.abort();
+  }
+
+  /**
+   * Attaches a listener whose lifetime belongs to this controller.
+   *
+   * @param {EventTarget} target - Element or document receiving the event.
+   * @param {string} event - Browser event name.
+   * @param {(event: Event) => void} callback - Event reaction.
+   * @returns {void} The listener is removed on destruction.
+   */
+  #listen(target, event, callback) {
+    target.addEventListener(event, callback, { signal: this.#events.signal });
+  }
+
+  /**
+   * Owns chart-wide pointer preview and outside-click dismissal.
+   *
+   * @param {SVGElement | undefined} root - Mounted chart surface when available.
+   * @returns {void} The session owns all chart-wide pointer reactions.
+   */
+  #bindRoot(root) {
+    if (!root) {
+      return;
+    }
+
+    if (this.#previewable) {
+      this.#listen(root, "mousemove", (event) => this.#previewMove(event));
+      this.#listen(root, "mouseleave", () => this.#restoreSelection());
+    }
+
+    this.#listen(root.ownerDocument, "pointerdown", (event) => {
+      const mark = event.target.closest(".charts2-mark");
+
+      if (!this.#items.includes(mark)) {
+        this.dismiss();
+      }
+    });
+  }
+
+  /**
+   * Handles pointer movement through the same preview callbacks as keyboard focus.
+   *
+   * @param {MouseEvent} event - Pointer movement over the owned chart surface.
+   * @returns {void} The matching mark is previewed or its tooltip is hidden.
+   */
+  #previewMove(event) {
+    if (event.sourceCapabilities?.firesTouchEvents) {
+      return;
+    }
+
+    const mark = event.target.closest(".charts2-mark");
+    const index = this.#items.indexOf(mark);
+
+    if (index === -1) {
+      this.#restoreSelection();
+
+      return;
+    }
+
+    this.#showPreview(mark, index);
   }
 
   /**
@@ -175,22 +258,7 @@ export default class InteractionController {
    * @returns {Element} Visible presentation mark, or the item itself.
    */
   #visualItem(item) {
-    if (!item.classList.contains("charts2-point-hit")) {
-      return item;
-    }
-
-    let visual = this.#visualItems.get(item);
-
-    if (!visual) {
-      const datasetIndex = item.dataset.datasetIndex;
-      const pointIndex = item.dataset.pointIndex;
-      visual = item.ownerSVGElement.querySelector(
-        `.charts2-visual-mark[data-dataset-index="${CSS.escape(datasetIndex)}"][data-point-index="${CSS.escape(pointIndex)}"]`,
-      );
-      this.#visualItems.set(item, visual ?? item);
-    }
-
-    return visual ?? item;
+    return chartMark(item)?.visualElement ?? item;
   }
 
   /**
@@ -262,6 +330,16 @@ export default class InteractionController {
   #hidePreview(item) {
     this.#toggleVisualState(item, HOVERED_CLASS, false);
     this.#toggleVisualState(item, PRESSED_CLASS, false);
+    this.#restoreSelection(item);
+  }
+
+  /**
+   * Restores the persistent selection after a pointer or focus preview ends.
+   *
+   * @param {Element | undefined} [item] - Mark whose transient preview ended.
+   * @returns {void} A selected tooltip remains visible until explicit dismissal.
+   */
+  #restoreSelection(item) {
     if (this.#selectedIndex >= 0) {
       const selected = this.#items[this.#selectedIndex];
       this.#onShow(selected, this.#labelFor(selected, this.#selectedIndex), this.#selectedIndex);
@@ -296,7 +374,10 @@ export default class InteractionController {
    */
   #bindItem(item, index, initialFocusIndex) {
     this.#configureItem(item, index, initialFocusIndex);
-    item.addEventListener("focus", () => this.#onFocusChange(index, item));
+    this.#listen(item, "focus", () => {
+      this.#focusedIndex = index;
+      this.#onFocusChange?.(index, item);
+    });
     this.#bindPreview(item, index);
     this.#bindSelection(item, index);
     this.#bindKeyboard(item, index);
@@ -343,17 +424,17 @@ export default class InteractionController {
       return;
     }
 
-    item.addEventListener("pointerenter", (event) => this.#previewPointerEnter(event, item, index));
-    item.addEventListener("pointerleave", (event) => this.#previewPointerLeave(event, item));
-    item.addEventListener("pointerdown", (event) => this.#previewPointerDown(event, item, index));
-    item.addEventListener("pointerup", (event) => this.#previewPointerUp(event, item, index));
-    item.addEventListener("pointercancel", (event) => this.#previewPointerCancel(event, item));
-    item.addEventListener("focus", () => {
+    this.#listen(item, "pointerenter", (event) => this.#previewPointerEnter(event, item, index));
+    this.#listen(item, "pointerleave", (event) => this.#previewPointerLeave(event, item));
+    this.#listen(item, "pointerdown", (event) => this.#previewPointerDown(event, item, index));
+    this.#listen(item, "pointerup", (event) => this.#previewPointerUp(event, item, index));
+    this.#listen(item, "pointercancel", (event) => this.#previewPointerCancel(event, item));
+    this.#listen(item, "focus", () => {
       if (item !== this.#touchPendingItem) {
         this.#showPreview(item, index);
       }
     });
-    item.addEventListener("blur", () => {
+    this.#listen(item, "blur", () => {
       if (item !== this.#touchPendingItem && item !== this.#touchPreviewItem) {
         this.#hidePreview(item);
       }
@@ -457,10 +538,10 @@ export default class InteractionController {
    */
   #bindSelection(item, index) {
     if (this.#selectable) {
-      item.addEventListener("pointerdown", () => this.#toggleVisualState(item, PRESSED_CLASS, true));
-      item.addEventListener("pointerup", () => this.#toggleVisualState(item, PRESSED_CLASS, false));
-      item.addEventListener("pointercancel", () => this.#toggleVisualState(item, PRESSED_CLASS, false));
-      item.addEventListener("click", () => {
+      this.#listen(item, "pointerdown", () => this.#toggleVisualState(item, PRESSED_CLASS, true));
+      this.#listen(item, "pointerup", () => this.#toggleVisualState(item, PRESSED_CLASS, false));
+      this.#listen(item, "pointercancel", () => this.#toggleVisualState(item, PRESSED_CLASS, false));
+      this.#listen(item, "click", () => {
         this.#clearTouchPreview();
         this.#updateSelection(index);
       });
@@ -468,7 +549,7 @@ export default class InteractionController {
       return;
     }
 
-    item.addEventListener("pointerdown", (event) => {
+    this.#listen(item, "pointerdown", (event) => {
       if (event.pointerType !== TOUCH_POINTER) {
         event.preventDefault();
       }
@@ -483,8 +564,8 @@ export default class InteractionController {
    * @returns {void} Keyboard listeners are attached.
    */
   #bindKeyboard(item, index) {
-    item.addEventListener("keydown", (event) => this.#handleKeydown(event, index));
-    item.addEventListener("keyup", () => this.#toggleVisualState(item, PRESSED_CLASS, false));
+    this.#listen(item, "keydown", (event) => this.#handleKeydown(event, index));
+    this.#listen(item, "keyup", () => this.#toggleVisualState(item, PRESSED_CLASS, false));
   }
 
   /**

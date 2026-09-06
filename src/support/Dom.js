@@ -1,3 +1,4 @@
+import { markDescription, markTooltip } from "./ChartMark.js";
 import {
   SVG_NS,
   MULTILINE_LABEL_HEIGHT,
@@ -132,14 +133,21 @@ function svg(name, attributes = {}) {
  * Adds both a native SVG title and tooltip metadata to an element.
  *
  * @param {SVGElement} element - SVG node that should expose supplementary text.
- * @param {string} text - Complete accessible and tooltip description.
+ * @param {string | object} content - Accessible text or structured tooltip content.
  * @returns {SVGElement} The original element after enrichment.
  */
-function titled(element, text) {
+function titled(element, content) {
+  const text = typeof content === "string" ? content : content.text;
+
+  if (typeof content !== "string") {
+    markTooltip(element, content);
+  }
+
   const title = svg("title");
   title.textContent = text;
   element.append(title);
   Object.assign(element.dataset, { tooltip: text });
+  markDescription(element, text);
 
   return element;
 }
@@ -311,23 +319,6 @@ function wrappedLabelElement({ value, attributes, maxWidth, originalValue = valu
 }
 
 /**
- * Associates an SVG mark with its source series and point positions.
- *
- * @param {SVGElement} element - Rendered mark that receives dataset metadata.
- * @param {number} datasetIndex - Zero-based index of the source dataset.
- * @param {number} pointIndex - Zero-based index within the source dataset.
- * @returns {SVGElement} The original mark after metadata assignment.
- */
-function markMetadata(element, datasetIndex, pointIndex) {
-  Object.assign(element.dataset, {
-    datasetIndex: String(datasetIndex),
-    pointIndex: String(pointIndex),
-  });
-
-  return element;
-}
-
-/**
  * Resolves a caller-supplied selector or validates an existing host element.
  *
  * @param {string | Element} parent - CSS selector or concrete chart host.
@@ -386,7 +377,6 @@ export {
   measuredTextWidth,
   measuredLegendTextWidth,
   wrappedLabelElement,
-  markMetadata,
   resolveParent,
   measureParentWidth,
 };

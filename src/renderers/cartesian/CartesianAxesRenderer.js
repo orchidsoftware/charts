@@ -4,8 +4,8 @@ import {
   HORIZONTAL_LABEL_GAP,
   VALUE_LABEL_GAP,
 } from "../../support/Constants.js";
+import { requireFiniteNumber } from "../../support/data/InputValidation.js";
 import { labelElement, measuredTextWidth, wrappedLabelElement } from "../../support/Dom.js";
-import { requireFiniteNumber } from "../../support/Normalize.js";
 import { formatContext, formatterText, formatValue } from "../../support/presentation/Formatting.js";
 
 const ANNOTATION_EDGE_INSET = 8;

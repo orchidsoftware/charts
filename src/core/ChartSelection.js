@@ -197,32 +197,6 @@ function radarPayload(index, collections) {
 }
 
 /**
- * Resolves one heatmap cell color from the complete intensity scale.
- *
- * @param {number} index - Selected heatmap entry.
- * @param {object} collections - Normalized heatmap and colors.
- * @returns {string} Effective cell color.
- */
-function heatmapColor(index, collections) {
-  const values = collections.heatmap.map((point) => point.value);
-  const minimum = Math.min(...values);
-  const maximum = Math.max(...values);
-  const value = collections.heatmap[index].value;
-  const last = collections.colors.length - 1;
-
-  if (minimum === maximum) {
-    return collections.colors[value === 0 ? 0 : last];
-  }
-
-  const level = Math.min(
-    last,
-    Math.floor(((value - minimum) / (maximum - minimum)) * collections.colors.length),
-  );
-
-  return collections.colors[level];
-}
-
-/**
  * Translates mark metadata through one family-specific immutable policy.
  */
 export default class ChartSelection {
@@ -268,23 +242,22 @@ export default class ChartSelection {
 function createSeriesSelection(type, collections) {
   return new ChartSelection({
     from: (mark) => {
-      const pointIndex = Number(mark.dataset.pointIndex);
-      const datasetIndex = Number(mark.dataset.datasetIndex);
+      const pointIndex = mark.pointIndex;
 
-      if (datasetIndex === -1) {
+      if (mark.kind === "category") {
         return categoryPayload(type, pointIndex, collections);
       }
 
+      const datasetIndex = mark.datasetIndex;
       const dataset = collections.datasets[datasetIndex];
       const point = selectionPoint(type, collections, { dataset, datasetIndex, pointIndex });
 
       return seriesPayload(type, { dataset, datasetIndex, pointIndex }, point);
     },
     identityFor: (mark) => {
-      const pointIndex = Number(mark.dataset.pointIndex);
-      const datasetIndex = Number(mark.dataset.datasetIndex);
+      const pointIndex = mark.pointIndex;
 
-      if (datasetIndex === -1) {
+      if (mark.kind === "category") {
         const names = collections.datasets.map((dataset) => dataset.identityName);
 
         return identityKey("series-category", [
@@ -292,6 +265,8 @@ function createSeriesSelection(type, collections) {
           pointLabel(collections, 0, pointIndex),
         ]);
       }
+
+      const datasetIndex = mark.datasetIndex;
 
       return identityKey("series", [
         collections.datasets[datasetIndex]?.identityName,
@@ -311,16 +286,16 @@ function createSeriesSelection(type, collections) {
 function createCompositionSelection(type, collections) {
   return new ChartSelection({
     from: (mark) => {
-      const datasetIndex = Number(mark.dataset.datasetIndex);
-      const pointIndex = Number(mark.dataset.pointIndex);
+      const datasetIndex = mark.datasetIndex;
+      const pointIndex = mark.pointIndex;
 
       return type === ChartType.RADAR
         ? radarPayload(datasetIndex, collections)
         : compositionPayload(type, pointIndex, collections);
     },
     identityFor: (mark) => {
-      const datasetIndex = Number(mark.dataset.datasetIndex);
-      const pointIndex = Number(mark.dataset.pointIndex);
+      const datasetIndex = mark.datasetIndex;
+      const pointIndex = mark.pointIndex;
 
       return type === ChartType.RADAR
         ? identityKey("series", [
@@ -343,7 +318,7 @@ function createCompositionSelection(type, collections) {
 function createHeatmapSelection(collections) {
   return new ChartSelection({
     from: (mark) => {
-      const index = Number(mark.dataset.pointIndex);
+      const index = mark.pointIndex;
       const point = collections.heatmap[index];
 
       return {
@@ -352,12 +327,12 @@ function createHeatmapSelection(collections) {
         date: new Date(point.date),
         key: point.key,
         value: point.value,
-        color: heatmapColor(index, collections),
+        color: collections.palette.colorFor(point.value),
       };
     },
     identityFor: (mark) =>
       identityKey("heatmap", [
-        collections.heatmap[Number(mark.dataset.pointIndex)]?.key,
+        collections.heatmap[mark.pointIndex]?.key,
       ]),
   });
 }
@@ -371,7 +346,7 @@ function createHeatmapSelection(collections) {
 function createTimesheetSelection(collections) {
   return new ChartSelection({
     from: (mark) => {
-      const index = Number(mark.dataset.pointIndex);
+      const index = mark.pointIndex;
       const task = collections.timesheet.tasks[index];
 
       return Object.freeze({
@@ -387,7 +362,7 @@ function createTimesheetSelection(collections) {
       });
     },
     identityFor: (mark) => {
-      const task = collections.timesheet.tasks[Number(mark.dataset.pointIndex)];
+      const task = collections.timesheet.tasks[mark.pointIndex];
 
       return identityKey("timesheet", [
         task?.label,

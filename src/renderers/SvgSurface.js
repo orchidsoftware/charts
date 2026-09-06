@@ -1,10 +1,12 @@
-import { markMetadata, svg, titled } from "../support/Dom.js";
+import { chartMark, markMetadata } from "../support/ChartMark.js";
+import { svg, titled } from "../support/Dom.js";
 
 /**
  * Owns append-only access to the SVG root used during one rendering pass.
  */
 export default class SvgSurface {
   #root;
+  #visuals = new Map();
 
   /**
    * Captures the SVG element owned by the chart lifecycle.
@@ -24,9 +26,32 @@ export default class SvgSurface {
    */
   append(node, attributes = {}) {
     const element = typeof node === "string" ? svg(node, attributes) : node;
+    this.#linkMark(element);
     this.#root.append(element);
 
     return element;
+  }
+
+  /**
+   * Links hit targets to visual peers using renderer-provided model coordinates.
+   *
+   * @param {SVGElement} element - Newly appended data element.
+   * @returns {void} The explicit mark record receives its visual peer.
+   */
+  #linkMark(element) {
+    const record = chartMark(element);
+
+    if (!record) {
+      return;
+    }
+
+    const key = `${record.datasetIndex}:${record.pointIndex}`;
+
+    if (record.kind === "visual") {
+      this.#visuals.set(key, element);
+    }
+
+    record.visualElement = this.#visuals.get(key) ?? element;
   }
 
   /**
@@ -37,14 +62,17 @@ export default class SvgSurface {
    * @param {object} metadata - Source coordinates and accessible title.
    * @param {number} metadata.dataset - Zero-based dataset position.
    * @param {number} metadata.point - Zero-based point position.
-   * @param {string} metadata.title - Accessible description and tooltip fallback.
+   * @param {string | object} metadata.title - Accessible text and structured tooltip content.
+   * @param {string} [metadata.kind="point"] - Explicit model mark kind.
    * @returns {SVGElement} Appended interactive mark.
    */
-  mark(name, attributes, { dataset, point, title }) {
-    const element = titled(markMetadata(svg(name, attributes), dataset, point), title);
-    this.#root.append(element);
+  mark(name, attributes, { dataset, point, title, kind = "point" }) {
+    const element = titled(
+      markMetadata(svg(name, attributes), { kind, datasetIndex: dataset, pointIndex: point }),
+      title,
+    );
 
-    return element;
+    return this.append(element);
   }
 
   /**

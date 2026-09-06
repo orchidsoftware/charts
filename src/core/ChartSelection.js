@@ -1,4 +1,4 @@
-import { ChartType } from "../support/Constants.js";
+import { CHART_BUBBLE, CHART_HEATMAP, CHART_RADAR, CHART_TIMESHEET } from "../support/Constants.js";
 
 /**
  * Produces a collision-resistant key for primitive public identity parts.
@@ -71,7 +71,7 @@ function selectionPoint(type, collections, identity) {
     label: label ?? point.x,
     x: point.x,
     y: point.y,
-    ...(type === ChartType.BUBBLE && { r: point.r }),
+    ...(type === CHART_BUBBLE && { r: point.r }),
   });
 }
 
@@ -260,7 +260,7 @@ function seriesIdentity(collections, mark) {
  * @returns {ChartSelection} Family-specialized presenter.
  */
 function createCompositionSelection(type, collections) {
-  if (type === ChartType.RADAR) {
+  if (type === CHART_RADAR) {
     return createSeriesSelection(type, collections);
   }
 
@@ -286,7 +286,7 @@ function createHeatmapSelection(collections) {
       const point = collections.heatmap[index];
 
       return {
-        type: ChartType.HEATMAP,
+        type: CHART_HEATMAP,
         index,
         date: new Date(point.date),
         key: point.key,
@@ -314,7 +314,7 @@ function createTimesheetSelection(collections) {
       const task = collections.timesheet.tasks[index];
 
       return Object.freeze({
-        type: ChartType.TIMESHEET,
+        type: CHART_TIMESHEET,
         index,
         label: task.label,
         start: new Date(task.start),

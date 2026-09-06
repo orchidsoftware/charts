@@ -70,6 +70,9 @@ jobs:
         run: npx playwright install --with-deps ${{ matrix.browsers }}
       - name: Run the browser gate and record timings
         run: ${{ matrix.command }} -- --reporter=default --reporter=json --outputFile.json=.vitest-attachments/${{ matrix.suite }}-timings.json
+      - name: Verify native touch gestures
+        if: matrix.suite == 'compatibility'
+        run: npm run test:touch && npm run test:frameworks
       - name: Upload coverage report
         if: ${{ always() && matrix.suite == 'coverage' }}
         uses: actions/upload-artifact@v7

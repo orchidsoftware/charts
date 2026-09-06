@@ -1,4 +1,11 @@
-import { ChartType, DEFAULT_BAR_RADIUS } from "../../support/Constants.js";
+import {
+  CHART_AXIS_MIXED,
+  CHART_BAR,
+  CHART_BUBBLE,
+  CHART_LINE,
+  CHART_SCATTER,
+  DEFAULT_BAR_RADIUS,
+} from "../../support/Constants.js";
 import { svg } from "../../support/Dom.js";
 import { linePath, roundedBarPath } from "../../support/geometry/Math.js";
 import { formatLabel, formatValue, seriesContext } from "../../support/presentation/Formatting.js";
@@ -6,9 +13,9 @@ import { formatNumber } from "../../support/presentation/NumberFormatting.js";
 import { tooltipContent } from "../../support/presentation/Presentation.js";
 
 const CARTESIAN_LAYER = Object.freeze({
-  [ChartType.BAR]: 0,
-  [ChartType.LINE]: 1,
-  [ChartType.SCATTER]: 2,
+  [CHART_BAR]: 0,
+  [CHART_LINE]: 1,
+  [CHART_SCATTER]: 2,
 });
 
 const SERIES_CLASS_COUNT = 4;
@@ -310,7 +317,7 @@ function renderLine(rendering, source) {
     renderVisibleLinePoints(rendering, entry);
   }
 
-  if (layout.type === ChartType.AXIS_MIXED && !layout.usesInspector) {
+  if (layout.type === CHART_AXIS_MIXED && !layout.usesInspector) {
     renderLineHits(rendering, entry);
   }
 }
@@ -330,7 +337,7 @@ function pointTooltip(rendering, state) {
 
   const rawCategory = chart.labels[pointIndex] ?? source.x;
   const heading = formatLabel(chart.options, rawCategory, context);
-  const size = series.datasetType === ChartType.BUBBLE ? `, size ${formatNumber(source.r)}` : "";
+  const size = series.datasetType === CHART_BUBBLE ? `, size ${formatNumber(source.r)}` : "";
   const value = `${formatValue(chart.options, source.y, { ...context, label: rawCategory })}${size}`;
   const item = { name: series.dataset.name, value, color: series.dataset.color };
 
@@ -356,15 +363,20 @@ function renderPoints(rendering, series) {
     pointIndex,
     source,
   ] of series.dataset.points.entries()) {
-    const radius = series.datasetType === ChartType.BUBBLE ? source.r : DEFAULT_POINT_RADIUS;
+    const visibility = localValue(series.dataset.dots, rendering.chart.options.dots !== false)
+      ? "visible"
+      : "hidden";
+
+    const radius = series.datasetType === CHART_BUBBLE ? source.r : DEFAULT_POINT_RADIUS;
     const tooltip = pointTooltip(rendering, { series, source, pointIndex });
-    const isOutlined = series.datasetType === ChartType.SCATTER;
+    const isOutlined = series.datasetType === CHART_SCATTER;
     const coordinates = { cx: layout.xAt(source.x), cy: layout.yAt(source.y) };
 
     if (isOutlined) {
       surface.append("circle", {
         ...coordinates,
         r: radius,
+        visibility,
         class: "orchid-charts-point-halo",
         "aria-hidden": "true",
       });
@@ -376,6 +388,7 @@ function renderPoints(rendering, series) {
       {
         ...coordinates,
         r: radius,
+        visibility,
         fill: isOutlined ? "var(--orchid-charts-point-fill)" : series.dataset.color,
         stroke: isOutlined ? series.dataset.color : "none",
         opacity: series.dataset.opacity ?? (isOutlined ? 1 : BUBBLE_OPACITY),
@@ -581,7 +594,7 @@ function renderMixedSeries(rendering) {
     );
 
   for (const entry of entries) {
-    if (entry.dataset.chartType === ChartType.LINE) {
+    if (entry.dataset.chartType === CHART_LINE) {
       renderLine(rendering, entry);
 
       continue;
@@ -589,8 +602,8 @@ function renderMixedSeries(rendering) {
 
     if (
       [
-        ChartType.BUBBLE,
-        ChartType.SCATTER,
+        CHART_BUBBLE,
+        CHART_SCATTER,
       ].includes(entry.dataset.chartType)
     ) {
       renderPoints(rendering, { ...entry, datasetType: entry.dataset.chartType });

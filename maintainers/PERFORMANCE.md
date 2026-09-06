@@ -23,8 +23,8 @@ The budgets include input normalization, scale calculation, SVG path generation,
 The size gate creates twelve temporary consumer applications. Each imports one
 named definition from `@orchidsoftware/charts`, imports `@orchidsoftware/charts/style.css`, uses
 the definition, runs production Vite/Terser tree-shaking, and gzip-compresses JS
-and CSS separately at level 9. Combination builds additionally verify that the
-shared runtime is not duplicated. The complete-package aggregate remains a
+and CSS separately at level 9. Combination builds report the cost of importing several chart families together;
+they are diagnostics and do not enforce a separate duplication budget. The complete-package aggregate remains a
 reported diagnostic; it is not presented as a typical chart import.
 
 Production-source lines, bytes, files, and imports are reported as diagnostics;

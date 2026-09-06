@@ -1,34 +1,58 @@
+const Y_AXIS_LEFT = "left";
+const Y_AXIS_RIGHT = "right";
+const ORIENTATION_HORIZONTAL = "horizontal";
+const ORIENTATION_VERTICAL = "vertical";
+const CHART_LINE = "line";
+const CHART_BAR = "bar";
+const CHART_SCATTER = "scatter";
+const CHART_AXIS_MIXED = "mixed";
+const CHART_BUBBLE = "bubble";
+const CHART_PIE = "pie";
+const CHART_DONUT = "donut";
+const CHART_PERCENTAGE = "percentage";
+const CHART_RADAR = "radar";
+const CHART_POLAR_AREA = "polar-area";
+const CHART_HEATMAP = "heatmap";
+const CHART_TIMESHEET = "timesheet";
+
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-const ChartType = Object.freeze({
-  LINE: "line",
-  BAR: "bar",
-  SCATTER: "scatter",
-  AXIS_MIXED: "mixed",
-  BUBBLE: "bubble",
-  PIE: "pie",
-  DONUT: "donut",
-  PERCENTAGE: "percentage",
-  RADAR: "radar",
-  POLAR_AREA: "polar-area",
-  HEATMAP: "heatmap",
-  TIMESHEET: "timesheet",
+const ChartType = /*#__PURE__*/ Object.freeze({
+  LINE: CHART_LINE,
+  BAR: CHART_BAR,
+  SCATTER: CHART_SCATTER,
+  AXIS_MIXED: CHART_AXIS_MIXED,
+  BUBBLE: CHART_BUBBLE,
+  PIE: CHART_PIE,
+  DONUT: CHART_DONUT,
+  PERCENTAGE: CHART_PERCENTAGE,
+  RADAR: CHART_RADAR,
+  POLAR_AREA: CHART_POLAR_AREA,
+  HEATMAP: CHART_HEATMAP,
+  TIMESHEET: CHART_TIMESHEET,
 });
 
-const ChartOrientation = Object.freeze({
-  HORIZONTAL: "horizontal",
-  VERTICAL: "vertical",
+const ChartOrientation = /*#__PURE__*/ Object.freeze({
+  HORIZONTAL: ORIENTATION_HORIZONTAL,
+  VERTICAL: ORIENTATION_VERTICAL,
 });
 
-const YAxisPosition = Object.freeze({
-  LEFT: "left",
-  RIGHT: "right",
+const YAxisPosition = /*#__PURE__*/ Object.freeze({
+  LEFT: Y_AXIS_LEFT,
+  RIGHT: Y_AXIS_RIGHT,
 });
 
-const CHART_ORIENTATIONS = Object.freeze(Object.values(ChartOrientation));
-const Y_AXIS_POSITIONS = Object.freeze(Object.values(YAxisPosition));
+const CHART_ORIENTATIONS = /*#__PURE__*/ Object.freeze([
+  ORIENTATION_HORIZONTAL,
+  ORIENTATION_VERTICAL,
+]);
 
-const DEFAULT_COLORS = Object.freeze([
+const Y_AXIS_POSITIONS = /*#__PURE__*/ Object.freeze([
+  Y_AXIS_LEFT,
+  Y_AXIS_RIGHT,
+]);
+
+const DEFAULT_COLORS = /*#__PURE__*/ Object.freeze([
   "#007AFF",
   "#AF52DE",
   "#FF3B30",
@@ -38,7 +62,7 @@ const DEFAULT_COLORS = Object.freeze([
   "#008C95",
 ]);
 
-const HEATMAP_COLORS = Object.freeze([
+const HEATMAP_COLORS = /*#__PURE__*/ Object.freeze([
   "#E5E5EA",
   "#B7E4C7",
   "#74C69D",
@@ -46,27 +70,27 @@ const HEATMAP_COLORS = Object.freeze([
   "#1B6B47",
 ]);
 
-const CARTESIAN_TYPES = Object.freeze([
-  ChartType.LINE,
-  ChartType.BAR,
-  ChartType.SCATTER,
-  ChartType.AXIS_MIXED,
-  ChartType.BUBBLE,
+const CARTESIAN_TYPES = /*#__PURE__*/ Object.freeze([
+  CHART_LINE,
+  CHART_BAR,
+  CHART_SCATTER,
+  CHART_AXIS_MIXED,
+  CHART_BUBBLE,
 ]);
 
-const AGGREGATION_TYPES = Object.freeze([
-  ChartType.PIE,
-  ChartType.DONUT,
-  ChartType.PERCENTAGE,
+const AGGREGATION_TYPES = /*#__PURE__*/ Object.freeze([
+  CHART_PIE,
+  CHART_DONUT,
+  CHART_PERCENTAGE,
 ]);
 
-const TYPES = Object.freeze([
+const TYPES = /*#__PURE__*/ Object.freeze([
   ...CARTESIAN_TYPES,
   ...AGGREGATION_TYPES,
-  ChartType.RADAR,
-  ChartType.POLAR_AREA,
-  ChartType.HEATMAP,
-  ChartType.TIMESHEET,
+  CHART_RADAR,
+  CHART_POLAR_AREA,
+  CHART_HEATMAP,
+  CHART_TIMESHEET,
 ]);
 
 const MAJOR_GRID_DIVISIONS = 4;
@@ -94,7 +118,7 @@ const HEATMAP_MIN_CELL_WIDTH = 16;
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
 
-const TIME_TICK_STEPS = Object.freeze([
+const TIME_TICK_STEPS = /*#__PURE__*/ Object.freeze([
   HOUR,
   3 * HOUR,
   6 * HOUR,
@@ -108,13 +132,18 @@ const TIME_TICK_STEPS = Object.freeze([
   365 * DAY,
 ]);
 
-const COMPACT_NUMBER_FORMATTER = new Intl.NumberFormat(undefined, {
+const COMPACT_NUMBER_FORMATTER = /*#__PURE__*/ new Intl.NumberFormat(undefined, {
   notation: "compact",
   maximumFractionDigits: 1,
 });
 
-const SMALL_NUMBER_FORMATTER = new Intl.NumberFormat(undefined, { maximumSignificantDigits: 3 });
-const STANDARD_NUMBER_FORMATTER = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
+const SMALL_NUMBER_FORMATTER = /*#__PURE__*/ new Intl.NumberFormat(undefined, {
+  maximumSignificantDigits: 3,
+});
+
+const STANDARD_NUMBER_FORMATTER = /*#__PURE__*/ new Intl.NumberFormat(undefined, {
+  maximumFractionDigits: 2,
+});
 
 export {
   SVG_NS,
@@ -156,3 +185,22 @@ export {
   SMALL_NUMBER_FORMATTER,
   STANDARD_NUMBER_FORMATTER,
 };
+
+export {
+  CHART_LINE,
+  CHART_BAR,
+  CHART_SCATTER,
+  CHART_AXIS_MIXED,
+  CHART_BUBBLE,
+  CHART_PIE,
+  CHART_DONUT,
+  CHART_PERCENTAGE,
+  CHART_RADAR,
+  CHART_POLAR_AREA,
+  CHART_HEATMAP,
+  CHART_TIMESHEET,
+};
+
+export { ORIENTATION_HORIZONTAL, ORIENTATION_VERTICAL };
+
+export { Y_AXIS_LEFT, Y_AXIS_RIGHT };

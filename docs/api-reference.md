@@ -54,7 +54,7 @@ use `dataset()`:
 ```js
 chart
   .labels(["Jan", "Feb", "Mar"])
-  .dataset([42, 48, 57])
+  .dataset("Actual", [42, 48, 57])
   .dataset("Plan", [45, 50, 55])
   .dataset("Previous", [38, 41, 49], "#94a3b8");
 ```
@@ -84,7 +84,8 @@ A numeric dataset input has this shape:
 ```
 
 `labels()` is optional. When omitted, Orchid Charts generates positional labels.
-Named datasets are recommended when a legend or tooltip compares series.
+Multiple series require a unique, non-empty name for each dataset. A single
+series can omit its name.
 
 ## Cartesian Methods
 
@@ -332,3 +333,23 @@ Type declarations ship with the package. Each named definition returns a
 chart-specific builder, so autocomplete shows only methods that can affect that
 chart. Public input, update, point, and selection types can also be imported
 from `@orchidsoftware/charts`.
+
+## Compatibility and Stability
+
+The current 0.x API can change between releases. Starting with 1.0, semantic
+versioning covers documented builders and runtime methods, accepted data shapes,
+TypeScript declarations, selection and point payloads, and documented CSS
+variables. Incompatible changes to that surface require a major release.
+
+The generated SVG structure, internal classes, diagnostic data attributes, and
+exact pixel geometry are implementation details. Use the public lifecycle and
+CSS variables to integrate and theme charts.
+
+The browser runtime targets current evergreen Chromium, Firefox, and Safari
+with native ESM and modern SVG/CSS. Node.js 22.12 or later is the supported
+installation and build toolchain; rendering requires a browser DOM. Importing
+the module during SSR is supported, but call `render()` only after mounting.
+
+Numeric inputs must be finite numbers. Derived axis spans, tick steps, and
+composition totals must also be representable as finite JavaScript numbers;
+values outside that range raise an error before replacing a mounted chart.

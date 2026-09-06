@@ -54,6 +54,8 @@ function normalizedHeatmapEntries(source) {
           throw new TypeError(`Invalid heatmap date: ${key}`);
         }
 
+        date.setUTCHours(0, 0, 0, 0);
+
         return {
           date,
           key: date.toISOString().slice(0, ISO_DATE_LENGTH),

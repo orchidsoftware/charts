@@ -1,7 +1,9 @@
 import {
   AGGREGATION_TYPES,
-  ChartOrientation,
-  ChartType,
+  ORIENTATION_VERTICAL,
+  CHART_HEATMAP,
+  CHART_POLAR_AREA,
+  CHART_TIMESHEET,
   CHART_ORIENTATIONS,
   DEFAULT_PAD_ANGLE,
   TYPES,
@@ -174,7 +176,7 @@ function presentationOptions(options) {
     valueLabels: options.valueLabels ?? true,
     legend: shouldShowLegend(options),
     tooltip: options.tooltip ?? true,
-    orientation: options.orientation ?? ChartOrientation.VERTICAL,
+    orientation: options.orientation ?? ORIENTATION_VERTICAL,
     ariaLabel: options.ariaLabel ?? options.title ?? `${options.type} chart`,
   });
 }
@@ -186,7 +188,7 @@ function presentationOptions(options) {
  * @returns {boolean} Whether the selected chart family displays a legend.
  */
 function shouldShowLegend(options) {
-  if (options.type === ChartType.TIMESHEET) {
+  if (options.type === CHART_TIMESHEET) {
     return false;
   }
 
@@ -197,8 +199,8 @@ function shouldShowLegend(options) {
   if (
     [
       ...AGGREGATION_TYPES,
-      ChartType.POLAR_AREA,
-      ChartType.HEATMAP,
+      CHART_POLAR_AREA,
+      CHART_HEATMAP,
     ].includes(options.type)
   ) {
     return true;
@@ -222,7 +224,7 @@ function chartDimensions(host, options) {
     taskCount * TIMESHEET_ROW_HEIGHT + TIMESHEET_FRAME_HEIGHT,
   );
 
-  const defaultHeight = options.type === ChartType.TIMESHEET ? timesheetHeight : DEFAULT_CHART_HEIGHT;
+  const defaultHeight = options.type === CHART_TIMESHEET ? timesheetHeight : DEFAULT_CHART_HEIGHT;
 
   return {
     width: options.width ?? measureParentWidth(host),

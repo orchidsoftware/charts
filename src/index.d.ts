@@ -186,7 +186,7 @@ export interface SeriesSelection {
 export interface CompositionSelection {
   readonly type: "pie" | "donut" | "percentage" | "polar-area";
   readonly index: number;
-  readonly label: string;
+  readonly label: string | number;
   readonly value: number;
   readonly color: string;
 }

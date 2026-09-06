@@ -5,6 +5,24 @@ import { formatterText } from "./Formatting.js";
 const DAYS_PER_YEAR = 365;
 const QUARTER_YEAR_DAYS = 90;
 
+const defaultFormatters = { dates: new Map(), durations: new Map() };
+
+/**
+ * Reuses the bounded set of built-in date formats across redraws.
+ *
+ * @param {Intl.DateTimeFormatOptions} options - Built-in presentation fields.
+ * @returns {Intl.DateTimeFormat} Cached formatter for these fields.
+ */
+function dateFormatter(options) {
+  const key = JSON.stringify(options);
+
+  if (!defaultFormatters.dates.has(key)) {
+    defaultFormatters.dates.set(key, new Intl.DateTimeFormat(undefined, options));
+  }
+
+  return defaultFormatters.dates.get(key);
+}
+
 /**
  * Produces bounded timestamps while preserving the exact requested endpoints.
  *
@@ -51,7 +69,7 @@ function formatTimeTick(value, span, formatter) {
 
   const options = timeFormatOptions(span);
 
-  return new Intl.DateTimeFormat(undefined, options).format(date);
+  return dateFormatter(options).format(date);
 }
 
 /**
@@ -97,7 +115,7 @@ function formatTimesheetDate(date, formatter) {
     return formatterText(formatter(new Date(date)), "Timesheet tooltip date");
   }
 
-  return new Intl.DateTimeFormat(undefined, {
+  return dateFormatter({
     month: "short",
     day: "numeric",
     hour: "numeric",
@@ -121,12 +139,19 @@ function formatTimesheetDuration(milliseconds, formatter) {
   const value = milliseconds / (isMeasuredInDays ? DAY : HOUR);
   const unit = isMeasuredInDays ? "day" : "hour";
 
-  return new Intl.NumberFormat(undefined, {
-    style: "unit",
-    unit,
-    unitDisplay: "long",
-    maximumFractionDigits: 1,
-  }).format(value);
+  if (!defaultFormatters.durations.has(unit)) {
+    defaultFormatters.durations.set(
+      unit,
+      new Intl.NumberFormat(undefined, {
+        style: "unit",
+        unit,
+        unitDisplay: "long",
+        maximumFractionDigits: 1,
+      }),
+    );
+  }
+
+  return defaultFormatters.durations.get(unit).format(value);
 }
 
 export { timeTicks, formatTimeTick, formatTimesheetDate, formatTimesheetDuration };

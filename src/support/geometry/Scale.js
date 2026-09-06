@@ -6,6 +6,7 @@ const FIVE_STEP_THRESHOLD = 10;
 const TEN_STEP = 10;
 const TEN_STEP_THRESHOLD = 50;
 const TICK_PRECISION = 12;
+const DOMAIN_PADDING_ULPS = 4;
 
 /**
  * Finds a numeric extent and expands a degenerate single-value domain.
@@ -17,15 +18,24 @@ function extent(values) {
   const minimum = Math.min(...values);
   const maximum = Math.max(...values);
 
-  return minimum === maximum
-    ? [
-        minimum - 1,
-        maximum + 1,
-      ]
-    : [
-        minimum,
-        maximum,
-      ];
+  const padding = Math.max(1, Math.abs(minimum) * Number.EPSILON * DOMAIN_PADDING_ULPS);
+
+  const domain =
+    minimum === maximum
+      ? [
+          Math.max(-Number.MAX_VALUE, minimum - padding),
+          Math.min(Number.MAX_VALUE, maximum + padding),
+        ]
+      : [
+          minimum,
+          maximum,
+        ];
+
+  if (!Number.isFinite(domain[1] - domain[0])) {
+    throw new RangeError("Chart value range must have a finite span");
+  }
+
+  return domain;
 }
 
 /**
@@ -59,6 +69,11 @@ function niceFactor(error) {
  */
 function niceStep(span, integerValues) {
   const roughStep = span / MAJOR_GRID_DIVISIONS;
+
+  if (!Number.isFinite(span) || roughStep < Number.MIN_VALUE * DECIMAL_BASE) {
+    throw new RangeError("Chart value range is outside the supported numeric precision");
+  }
+
   const power = DECIMAL_BASE ** Math.floor(Math.log10(roughStep));
   const step = niceFactor(roughStep / power) * power;
 
@@ -79,6 +94,11 @@ function niceValueScale(values, integerValues) {
   const step = niceStep(maximum - minimum, integerValues);
   const niceMinimum = Math.floor(minimum / step) * step;
   const niceMaximum = Math.ceil(maximum / step) * step;
+
+  if (!Number.isFinite(niceMinimum) || !Number.isFinite(niceMaximum)) {
+    throw new RangeError("Chart domain must be finite");
+  }
+
   const intervals = Math.round((niceMaximum - niceMinimum) / step);
 
   const ticks = Array.from({ length: intervals + 1 }, (_, index) =>

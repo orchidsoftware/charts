@@ -1,9 +1,12 @@
 import {
-  ChartOrientation,
-  ChartType,
+  ORIENTATION_HORIZONTAL,
+  CHART_AXIS_MIXED,
+  CHART_BAR,
+  CHART_BUBBLE,
+  CHART_LINE,
   MAX_INDIVIDUAL_LINE_POINTS,
   MAX_X_INSPECTOR_POINTS,
-  YAxisPosition,
+  Y_AXIS_RIGHT,
 } from "../../support/Constants.js";
 import { extent, niceValueScale, scale } from "../../support/geometry/Math.js";
 import { formatValue } from "../../support/presentation/Formatting.js";
@@ -87,7 +90,6 @@ export default class CartesianLayout {
   #chart;
   #x;
   #y;
-  #pointX;
   #valuePosition;
 
   /**
@@ -118,12 +120,11 @@ export default class CartesianLayout {
    * Maps one normalized point to Cartesian screen coordinates.
    *
    * @param {{x: number, y: number}} point - Normalized Cartesian point.
-   * @param {number} index - Category position used by slot-based charts.
    * @returns {{x: number, y: number}} Screen-space point.
    */
-  pointAt(point, index) {
+  pointAt(point) {
     return {
-      x: this.#pointX(point, index),
+      x: this.#x(point.x),
       y: this.#y(point.y),
     };
   }
@@ -135,7 +136,7 @@ export default class CartesianLayout {
    * @returns {number} Screen-space category coordinate.
    */
   categoryAt(index) {
-    return this.#pointX(this.#chart.datasets[0].points[index], index);
+    return this.#x(this.#chart.datasets[0].points[index].x);
   }
 
   /**
@@ -179,8 +180,8 @@ export default class CartesianLayout {
    * @returns {{x: number, y: number, width: number, height: number, thickness: number}} Bar rectangle and visible thickness.
    */
   barFor(point, { category, series, base }) {
-    const { bottom, left, right, top } = this.frame;
-    const slot = (this.isHorizontal ? bottom - top : right - left) / this.categories.count;
+    const { bottom, top } = this.frame;
+    const slot = this.isHorizontal ? (bottom - top) / this.categories.count : this.xAt(1) - this.xAt(0);
     const groupCount = this.bars.isStacked ? 1 : Math.max(1, this.bars.datasets.length);
     const thickness = Math.max(2, (slot * BAR_SLOT_RATIO) / groupCount);
     const offset = (slot - thickness * groupCount) / 2 + (this.bars.isStacked ? 0 : series) * thickness;
@@ -189,7 +190,7 @@ export default class CartesianLayout {
     const value = this.#valuePosition(base + point.y);
 
     const rectangle = {
-      x: (this.isHorizontal ? top : left) + category * slot + offset,
+      x: (this.isHorizontal ? top + category * slot : this.xAt(point.x) - slot / 2) + offset,
       y: Math.min(zero, value),
       width: thickness,
       height: Math.abs(value - zero),
@@ -251,9 +252,9 @@ export default class CartesianLayout {
       this.#supportsInspector(type) &&
       (data.count <= MAX_X_INSPECTOR_POINTS ||
         [
-          ChartType.LINE,
-          ChartType.BAR,
-          ChartType.AXIS_MIXED,
+          CHART_LINE,
+          CHART_BAR,
+          CHART_AXIS_MIXED,
         ].includes(type));
 
     return {
@@ -278,9 +279,9 @@ export default class CartesianLayout {
     const isFrameless =
       !this.#chart.options.axes && !this.#chart.options.grid && !this.#chart.options.valueLabels;
 
-    const framelessPadding = type === ChartType.BAR ? 0 : Math.max(this.#chart.options.strokeWidth, 1);
+    const framelessPadding = type === CHART_BAR ? 0 : Math.max(this.#chart.options.strokeWidth, 1);
     const padding = isFrameless ? framelessPadding : STANDARD_FRAME_PADDING;
-    const isHorizontal = type === ChartType.BAR && orientation === ChartOrientation.HORIZONTAL;
+    const isHorizontal = type === CHART_BAR && orientation === ORIENTATION_HORIZONTAL;
 
     const hasVerticalLabels = this.#chart.options.valueLabels && !isHorizontal;
     const labelClearance = hasVerticalLabels ? VALUE_LABEL_TOP_CLEARANCE : 0;
@@ -296,7 +297,7 @@ export default class CartesianLayout {
       top,
       isHorizontal,
       labels,
-      isYAxisRight: this.#chart.options.yAxisPosition === YAxisPosition.RIGHT,
+      isYAxisRight: this.#chart.options.yAxisPosition === Y_AXIS_RIGHT,
     };
   }
 
@@ -312,8 +313,7 @@ export default class CartesianLayout {
 
     const barDatasets = this.#chart.datasets.filter(
       (dataset) =>
-        state.type === ChartType.BAR ||
-        (state.type === ChartType.AXIS_MIXED && dataset.chartType === ChartType.BAR),
+        state.type === CHART_BAR || (state.type === CHART_AXIS_MIXED && dataset.chartType === CHART_BAR),
     );
 
     const isStacked = Boolean(this.#chart.options.stacked);
@@ -344,13 +344,20 @@ export default class CartesianLayout {
    */
   // eslint-disable-next-line max-lines-per-function -- Axis tuples and scale ranges add layout lines.
   #bindScales(state) {
-    const { frame, points, values, count, isHorizontal, type, barDatasets } = state;
+    const { frame, points, values, isHorizontal, type, barDatasets } = state;
     const hasBars = barDatasets.length > 0;
     const xValues = points.map((point) => point.x);
-    const isKeepsEdgeDomain = hasBars || type === ChartType.LINE;
+    const isKeepsEdgeDomain = hasBars || type === CHART_LINE;
     let xDomain = isKeepsEdgeDomain ? extent(xValues) : this.#paddedXDomain(xValues);
 
-    if (type === ChartType.BUBBLE) {
+    if (hasBars) {
+      xDomain = [
+        Math.min(...xValues) - SLOT_MIDPOINT,
+        Math.max(...xValues) + SLOT_MIDPOINT,
+      ];
+    }
+
+    if (type === CHART_BUBBLE) {
       xDomain = bubbleDomain(xDomain, points, [
         "x",
         frame.right - frame.left,
@@ -378,11 +385,6 @@ export default class CartesianLayout {
             frame.right,
           ])
       : y;
-    const hasCategorySlots = !isHorizontal && hasBars;
-
-    this.#pointX = hasCategorySlots
-      ? (_point, index) => frame.left + (index + SLOT_MIDPOINT) * ((frame.right - frame.left) / count)
-      : (point) => x(point.x);
   }
 
   /**
@@ -424,7 +426,7 @@ export default class CartesianLayout {
    */
   #valueScale(points, barDatasets, presentation) {
     const data = points.map((point) => point.y);
-    const isFramelessLine = presentation.isFrameless && presentation.type === ChartType.LINE;
+    const isFramelessLine = presentation.isFrameless && presentation.type === CHART_LINE;
 
     if (!isFramelessLine) {
       const { yMarkers, yRegions } = this.#chart.source;
@@ -442,7 +444,7 @@ export default class CartesianLayout {
       presentation.height,
     ];
 
-    const hasBubbles = presentation.type === ChartType.BUBBLE;
+    const hasBubbles = presentation.type === CHART_BUBBLE;
     const bounds = extent(data);
     const domain = hasBubbles ? bubbleDomain(bounds, points, axis) : bounds;
 
@@ -494,8 +496,8 @@ export default class CartesianLayout {
   #supportsInspector(type) {
     if (
       [
-        ChartType.LINE,
-        ChartType.BAR,
+        CHART_LINE,
+        CHART_BAR,
       ].includes(type)
     ) {
       return true;
@@ -505,24 +507,29 @@ export default class CartesianLayout {
       return false;
     }
 
-    if (type === ChartType.AXIS_MIXED) {
+    if (type === CHART_AXIS_MIXED) {
       return this.#chart.datasets.every((dataset) =>
         [
-          ChartType.LINE,
-          ChartType.BAR,
+          CHART_LINE,
+          CHART_BAR,
         ].includes(dataset.chartType),
       );
     }
 
     const [
-      firstDataset,
-      ...otherDatasets
+      first,
+      ...others
     ] = this.#chart.datasets;
 
-    return otherDatasets.every(
-      (dataset) =>
-        dataset.points.length === firstDataset.points.length &&
-        dataset.points.every((point, index) => point.x === firstDataset.points[index].x),
+    const ordered = first.points.every((point, index) => index === 0 || point.x > first.points[index - 1].x);
+
+    return (
+      ordered &&
+      others.every(
+        (dataset) =>
+          dataset.points.length === first.points.length &&
+          dataset.points.every((point, index) => point.x === first.points[index].x),
+      )
     );
   }
 

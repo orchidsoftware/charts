@@ -122,3 +122,37 @@ This removes the owned SVG, tooltip, observers, and event listeners. Calling
 
 For method signatures and chart-specific data shapes, use the
 [API reference](./api-reference.md).
+
+## Empty Responses
+
+An empty dataset is rejected, so handle an empty API response as application
+state. Remove the previous chart before displaying “No data” for a new period:
+
+```js
+import { LineChart } from "@orchidsoftware/charts";
+import "@orchidsoftware/charts/style.css";
+
+const host = document.querySelector("#revenue");
+let chart;
+
+function showRevenue(rows) {
+  if (rows.length === 0) {
+    chart?.destroy();
+    chart = undefined;
+    host.textContent = "No data for this period.";
+    return;
+  }
+
+  const labels = rows.map((row) => row.month);
+  const values = rows.map((row) => row.revenue);
+  if (chart) {
+    chart.update({ labels, datasets: [{ name: "Revenue", values }] });
+  } else {
+    host.replaceChildren();
+    chart = LineChart.make(host).labels(labels).dataset("Revenue", values).render();
+  }
+}
+```
+
+Pass each successful API response to `showRevenue()`. Handle loading and request
+errors in the surrounding view, and call `chart?.destroy()` when it unmounts.

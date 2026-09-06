@@ -76,3 +76,14 @@ MixedChart.make("#mixed").dataset([1, 2]);
 BubbleChart.make("#bubble").dataset([{ x: 1, y: 2 }]);
 // @ts-expect-error A bar dataset callback does not expose gradient.
 BarChart.make("#bar").dataset([1], (dataset) => dataset.gradient());
+
+scatter.point()?.label satisfies string | number | undefined;
+PieChart.make("#pie")
+  .dataset([1, 2])
+  .onSelect((selection) => {
+    if (!selection) return;
+    selection.label satisfies string | number;
+    // @ts-expect-error Generated composition labels require narrowing before string methods.
+    selection.label.toUpperCase();
+    if (typeof selection.label === "string") selection.label.toUpperCase();
+  });

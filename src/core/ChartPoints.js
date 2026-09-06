@@ -1,4 +1,4 @@
-import { ChartType } from "../support/Constants.js";
+import { CHART_AXIS_MIXED, CHART_BUBBLE, CHART_SCATTER } from "../support/Constants.js";
 
 /**
  * Creates one immutable independently-positioned series mark snapshot.
@@ -74,8 +74,8 @@ function independentPointAt(type, collections, index) {
         point,
         pointIndex,
         index,
-        label: collections.labels[pointIndex],
-        chartType: type === ChartType.AXIS_MIXED ? dataset.chartType : undefined,
+        label: collections.labels[pointIndex] ?? point.x,
+        chartType: type === CHART_AXIS_MIXED ? dataset.chartType : undefined,
       });
     }
 
@@ -122,9 +122,9 @@ export { categoryPointAt, independentPointAt, heatmapPointAt, timesheetPointAt }
 function seriesPointFor(type, collections, mark) {
   if (
     [
-      ChartType.SCATTER,
-      ChartType.BUBBLE,
-      ChartType.AXIS_MIXED,
+      CHART_SCATTER,
+      CHART_BUBBLE,
+      CHART_AXIS_MIXED,
     ].includes(type)
   ) {
     const offset = collections.datasets

@@ -6,8 +6,28 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ## Unreleased
 
+## 0.0.5 - 2026-09-06
+
+### Fixed
+
+- Keep mixed chart X coordinates aligned, inspect independent points accurately,
+  and preserve all UTC heatmap days from Unix-second keys.
+- Preserve keyboard focus across data updates and resize, retain accessible
+  values without tooltips, and clear dense selection ARIA on dismissal.
+- Align point and selection declarations with generated labels; declare the
+  stylesheet subpath for TypeScript consumers of the npm archive.
+- Restore chart content after Turbo morphs in the documented Stimulus recipe.
+- Bound long-label layout work, reuse built-in date and duration formatters,
+  and reject unrepresentable numeric ranges before replacing a chart.
+
 ### Changed
 
+- Add a live chart constructor to the demo with editable numeric values and
+  framework examples; focus the README and demo on the product's own benefits.
+- Verify native touch scrolling, the browser accessibility tree, real Turbo
+  morphs, and TypeScript consumers of the packed JavaScript and CSS exports.
+- Document the public compatibility contract, empty-response handling, and the
+  active private vulnerability reporting channel.
 - Split fast test feedback from visual, site, input and performance projects while
   retaining the complete coverage and release gates. Simplified test scenarios,
   added ESLint readability checks and isolated timing benchmarks in CI.

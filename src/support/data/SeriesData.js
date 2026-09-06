@@ -1,4 +1,14 @@
-import { AGGREGATION_TYPES, ChartType, DEFAULT_COLORS } from "../Constants.js";
+import {
+  AGGREGATION_TYPES,
+  CHART_AXIS_MIXED,
+  CHART_BAR,
+  CHART_BUBBLE,
+  CHART_LINE,
+  CHART_POLAR_AREA,
+  CHART_RADAR,
+  CHART_SCATTER,
+  DEFAULT_COLORS,
+} from "../Constants.js";
 import { isBoolean, isChoice, isNonEmptyText, isNumberAtLeast, isOpacity, isRecord } from "../Validation.js";
 
 import { validateGradient } from "./Gradient.js";
@@ -31,11 +41,11 @@ const DATASET_BAR_KEYS = [
 ];
 
 const CARTESIAN_SERIES_TYPES = new Set([
-  ChartType.LINE,
-  ChartType.BAR,
-  ChartType.SCATTER,
-  ChartType.AXIS_MIXED,
-  ChartType.BUBBLE,
+  CHART_LINE,
+  CHART_BAR,
+  CHART_SCATTER,
+  CHART_AXIS_MIXED,
+  CHART_BUBBLE,
 ]);
 
 /**
@@ -158,14 +168,14 @@ function validateDatasetInput(dataset, type) {
     throw new TypeError("Each dataset must be an object");
   }
 
-  const subtype = type === ChartType.AXIS_MIXED ? dataset.chartType : type;
+  const subtype = type === CHART_AXIS_MIXED ? dataset.chartType : type;
 
   if (
-    type === ChartType.AXIS_MIXED &&
+    type === CHART_AXIS_MIXED &&
     !isChoice(subtype, [
-      ChartType.LINE,
-      ChartType.BAR,
-      ChartType.SCATTER,
+      CHART_LINE,
+      CHART_BAR,
+      CHART_SCATTER,
     ])
   ) {
     throw new TypeError("Mixed dataset chartType must be line, bar, or scatter");
@@ -174,7 +184,7 @@ function validateDatasetInput(dataset, type) {
   const localKeys = datasetKeysFor(subtype);
 
   const allowed =
-    type === ChartType.AXIS_MIXED
+    type === CHART_AXIS_MIXED
       ? [
           ...localKeys,
           "chartType",
@@ -192,11 +202,11 @@ function validateDatasetInput(dataset, type) {
  * @returns {string[]} Allowed dataset keys.
  */
 function datasetKeysFor(type) {
-  if (type === ChartType.LINE) {
+  if (type === CHART_LINE) {
     return DATASET_LINE_KEYS;
   }
 
-  if (type === ChartType.BAR) {
+  if (type === CHART_BAR) {
     return DATASET_BAR_KEYS;
   }
 
@@ -222,7 +232,11 @@ function validateDatasetProperties(dataset, type) {
       index,
       value,
     ] of dataset.values.entries()) {
-      validatePublicPoint(value, type, index);
+      try {
+        validatePublicPoint(value, type, index);
+      } catch (error) {
+        throw new TypeError(`${dataset.name ?? "Dataset"}: ${error.message}`, { cause: error });
+      }
     }
   }
 }
@@ -291,18 +305,18 @@ function validateDatasetPresentation(dataset) {
  * @returns {void} Point input can be normalized without ambiguity.
  */
 function validatePublicPoint(value, type, index) {
-  if (type === ChartType.SCATTER && Number.isFinite(value)) {
+  if (type === CHART_SCATTER && Number.isFinite(value)) {
     return;
   }
 
   const isPointSeries = isChoice(type, [
-    ChartType.SCATTER,
-    ChartType.BUBBLE,
+    CHART_SCATTER,
+    CHART_BUBBLE,
   ]);
 
   if (!isPointSeries) {
     if (!Number.isFinite(value)) {
-      throw new TypeError(`Dataset value ${index + 1} must be finite`);
+      throw new TypeError(`Dataset value ${index + 1} must be finite (a number)`);
     }
 
     return;
@@ -324,7 +338,7 @@ function validateCoordinatePoint(value, type) {
   }
 
   const pointKeys =
-    type === ChartType.BUBBLE
+    type === CHART_BUBBLE
       ? [
           "x",
           "y",
@@ -340,7 +354,7 @@ function validateCoordinatePoint(value, type) {
     throw new TypeError(`${type} points must provide finite x and y`);
   }
 
-  if (type === ChartType.BUBBLE && !isNumberAtLeast(value.r, 0)) {
+  if (type === CHART_BUBBLE && !isNumberAtLeast(value.r, 0)) {
     throw new TypeError("Bubble points must provide a finite non-negative r");
   }
 }
@@ -365,8 +379,8 @@ function validateChartData(type, datasets, labels) {
 
   const hasGeneratedIndependentLabels =
     [
-      ChartType.SCATTER,
-      ChartType.BUBBLE,
+      CHART_SCATTER,
+      CHART_BUBBLE,
     ].includes(type) && labels.every((label) => typeof label === "number");
 
   if (!hasGeneratedIndependentLabels && datasets.some((dataset) => dataset.points.length !== labels.length)) {
@@ -376,7 +390,7 @@ function validateChartData(type, datasets, labels) {
   if (
     [
       ...AGGREGATION_TYPES,
-      ChartType.POLAR_AREA,
+      CHART_POLAR_AREA,
     ].includes(type) &&
     datasets.length !== 1
   ) {
@@ -386,8 +400,8 @@ function validateChartData(type, datasets, labels) {
   if (
     [
       ...AGGREGATION_TYPES,
-      ChartType.POLAR_AREA,
-      ChartType.RADAR,
+      CHART_POLAR_AREA,
+      CHART_RADAR,
     ].includes(type)
   ) {
     validateNonNegativeData(type, datasets);
@@ -409,9 +423,16 @@ function validateNonNegativeData(type, datasets) {
   }
 
   if (
+    AGGREGATION_TYPES.includes(type) &&
+    !Number.isFinite(values.reduce((total, value) => total + value, 0))
+  ) {
+    throw new RangeError(`${type} total must be finite`);
+  }
+
+  if (
     [
       ...AGGREGATION_TYPES,
-      ChartType.POLAR_AREA,
+      CHART_POLAR_AREA,
     ].includes(type) &&
     values.every((value) => value === 0)
   ) {

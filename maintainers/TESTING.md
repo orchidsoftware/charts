@@ -32,6 +32,16 @@ viewport or suite fixture must not use `concurrent`. Performance is last in the
 full local run and has its own runner in CI. Do not run competing benchmarks on
 the same machine when comparing timings.
 
+The release gate also runs `npm run test:touch` in a touch-enabled Chromium
+context: real taps, chart-originated scrolling, and an accessibility-tree check
+for static data. Synthetic pointer tests remain useful cross-browser state
+contracts; they do not replace native gesture testing.
+
+`npm run test:frameworks` executes the Stimulus controller extracted from the
+public guide against real Turbo morphs, including unchanged data and cache
+cleanup. `npm run test:dist` compiles a clean consumer of the actual npm archive,
+including the CSS import, in Bundler, Node16, and NodeNext modes.
+
 ## Readability enforced by ESLint
 
 - Test files have at most 500 code lines; individual `it`/`test` callbacks have at

@@ -40,6 +40,7 @@ function browserProject(
         headless: true,
         provider: playwright(),
         commands: {
+          resizeBrowser: ({ page }, size) => page.setViewportSize(size),
           emulateAppearance: ({ page }, colorScheme) => page.emulateMedia({ colorScheme }),
         },
         instances: browsers.map((browser) => ({

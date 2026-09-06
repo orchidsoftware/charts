@@ -1,4 +1,4 @@
-import { ChartType, DEFAULT_PERCENTAGE_RADIUS } from "../../support/Constants.js";
+import { CHART_DONUT, CHART_PERCENTAGE, DEFAULT_PERCENTAGE_RADIUS } from "../../support/Constants.js";
 import { svg } from "../../support/Dom.js";
 import { formatLabel, formatValue, seriesContext } from "../../support/presentation/Formatting.js";
 import { chartContentLayout, tooltipContent } from "../../support/presentation/Presentation.js";
@@ -78,7 +78,7 @@ class AggregationRenderer {
 
     renderLegend({ chart: this.#chart, surface: this.#surface }, layout);
 
-    if (type === ChartType.PERCENTAGE) {
+    if (type === CHART_PERCENTAGE) {
       this.#renderPercentage(composition, { colors, layout, width });
 
       return;
@@ -205,7 +205,7 @@ class AggregationRenderer {
       this.#appendSector(composition, sector, type);
     }
 
-    if (type === ChartType.DONUT) {
+    if (type === CHART_DONUT) {
       this.#surface.text(
         formatValue(this.#chart.options, composition.total, { target: VALUE_LABEL_TARGET }),
         {

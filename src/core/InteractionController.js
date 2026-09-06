@@ -103,7 +103,8 @@ export default class InteractionController {
     this.#selectable = behavior.selectable ?? true;
     this.#selectedIndex = initialSelection(this.#items, behavior.activeIndex ?? -1, this.#selectable);
 
-    const initialFocusIndex = Math.max(this.#selectedIndex, 0);
+    const initialFocusIndex =
+      behavior.focusedIndex >= 0 ? behavior.focusedIndex : Math.max(this.#selectedIndex, 0);
 
     for (const [
       index,
@@ -118,6 +119,9 @@ export default class InteractionController {
     }
 
     this.#bindRoot(behavior.root);
+    if (behavior.focusedIndex >= 0) {
+      this.#items[behavior.focusedIndex].focus({ preventScroll: true });
+    }
   }
 
   /**

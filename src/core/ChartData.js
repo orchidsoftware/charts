@@ -1,4 +1,4 @@
-import { AGGREGATION_TYPES, ChartType } from "../support/Constants.js";
+import { AGGREGATION_TYPES, CHART_AXIS_MIXED, CHART_BUBBLE, CHART_SCATTER } from "../support/Constants.js";
 import { normalizeCartesianSource } from "../support/data/Annotations.js";
 import { normalizeHeatmapData } from "../support/data/HeatmapData.js";
 import { normalizeDatasets, validateChartData, validateSeriesScene } from "../support/data/SeriesData.js";
@@ -35,6 +35,7 @@ function chartModel(source, collections, behavior) {
     ...collections,
     renderData: Object.freeze({ source, ...collections }),
     pointAt: behavior.pointAt,
+    describe: behavior.describe,
     pointFor: behavior.pointFor ?? ((mark) => behavior.pointAt(mark.pointIndex)),
     selectionFor: (mark) => behavior.selection.from(mark),
     identityFor: (mark) => behavior.selection.identityFor(mark),
@@ -80,8 +81,8 @@ function normalizeSeries(type, data, colors) {
   const labels =
     data.labels?.slice() ??
     ([
-      ChartType.SCATTER,
-      ChartType.BUBBLE,
+      CHART_SCATTER,
+      CHART_BUBBLE,
     ].includes(type)
       ? []
       : Array.from({ length: pointCount }, (_value, index) => index + 1));
@@ -138,6 +139,22 @@ function aggregateComposition(collections, maximum) {
 }
 
 /**
+ * Describes every series value when visual tooltips are disabled.
+ *
+ * @param {object} collections - Normalized datasets and labels.
+ * @returns {string} Exact values in source order.
+ */
+function describeSeries(collections) {
+  return collections.datasets
+    .flatMap((dataset) =>
+      dataset.points.map(
+        (point, index) => `${collections.labels[index] ?? point.x} — ${dataset.name}: ${point.y}.`,
+      ),
+    )
+    .join(" ");
+}
+
+/**
  * Creates a normalized Cartesian series model.
  *
  * @param {string} type - Concrete Cartesian type.
@@ -152,9 +169,9 @@ function createSeriesModel(type, data, config) {
   const selection = createSeriesSelection(type, { ...collections, colors });
 
   const isIndependent = [
-    ChartType.SCATTER,
-    ChartType.BUBBLE,
-    ChartType.AXIS_MIXED,
+    CHART_SCATTER,
+    CHART_BUBBLE,
+    CHART_AXIS_MIXED,
   ].includes(type);
 
   const pointAt = isIndependent
@@ -165,6 +182,7 @@ function createSeriesModel(type, data, config) {
     selection,
     pointAt,
     pointFor: (mark) => seriesPointFor(type, collections, mark),
+    describe: () => describeSeries(collections),
   });
 }
 
@@ -191,6 +209,7 @@ function createCompositionModel(type, data, config) {
     selection,
     pointAt: (index) => categoryPointAt(collections, index),
     pointFor: (mark) => seriesPointFor(type, collections, mark),
+    describe: () => describeSeries(collections),
   });
 }
 
@@ -211,6 +230,7 @@ function createHeatmapModel(type, data, config) {
   return chartModel(undefined, collections, {
     selection,
     pointAt: (index) => heatmapPointAt(collections.heatmap, index),
+    describe: () => heatmap.map((point) => `${point.key}: ${point.value}.`).join(" "),
   });
 }
 
@@ -232,6 +252,10 @@ function createTimesheetModel(type, data, config) {
   return chartModel(undefined, collections, {
     selection,
     pointAt: (index) => timesheetPointAt(timesheet.tasks, index),
+    describe: () =>
+      timesheet.tasks
+        .map((task) => `${task.label}: ${task.start.toISOString()} – ${task.end.toISOString()}.`)
+        .join(" "),
   });
 }
 

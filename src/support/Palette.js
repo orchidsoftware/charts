@@ -1,4 +1,4 @@
-import { ChartType, DEFAULT_COLORS, HEATMAP_COLORS } from "./Constants.js";
+import { CHART_HEATMAP, DEFAULT_COLORS, HEATMAP_COLORS } from "./Constants.js";
 
 /**
  * Resolves the palette once using chart-family defaults.
@@ -8,7 +8,7 @@ import { ChartType, DEFAULT_COLORS, HEATMAP_COLORS } from "./Constants.js";
  * @returns {string[]} Effective ordered colors.
  */
 function chartColors(type, colors) {
-  return colors ?? (type === ChartType.HEATMAP ? HEATMAP_COLORS : DEFAULT_COLORS);
+  return colors ?? (type === CHART_HEATMAP ? HEATMAP_COLORS : DEFAULT_COLORS);
 }
 
 /**

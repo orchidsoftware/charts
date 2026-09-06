@@ -1,4 +1,4 @@
-import { ChartType, DEFAULT_SECTOR_CORNER_RADIUS } from "../../support/Constants.js";
+import { CHART_DONUT, CHART_PIE, DEFAULT_SECTOR_CORNER_RADIUS } from "../../support/Constants.js";
 import { paddedSector, roundedSectorPath } from "../../support/geometry/Math.js";
 
 const DEGREES_PER_HALF_CIRCLE = 180;
@@ -98,11 +98,11 @@ export default class Composition {
     const color = presentation.colors[identity.index % presentation.colors.length];
     const circle = { center: geometry.center, radius: geometry.radius, color };
 
-    if (presentation.type === ChartType.DONUT && this.parts.length === 1) {
+    if (presentation.type === CHART_DONUT && this.parts.length === 1) {
       return this.#donutCircle(identity, circle);
     }
 
-    if (presentation.type === ChartType.PIE && geometry.positiveCount === 1) {
+    if (presentation.type === CHART_PIE && geometry.positiveCount === 1) {
       return this.#pieCircle(identity, circle);
     }
 
@@ -118,8 +118,7 @@ export default class Composition {
    * @returns {object} SVG-independent path descriptor.
    */
   #pathSector(identity, geometry, presentation) {
-    const innerRadius =
-      presentation.type === ChartType.DONUT ? geometry.radius * DONUT_INNER_RADIUS_RATIO : 0;
+    const innerRadius = presentation.type === CHART_DONUT ? geometry.radius * DONUT_INNER_RADIUS_RATIO : 0;
 
     const radii = { outer: geometry.radius, inner: innerRadius };
 

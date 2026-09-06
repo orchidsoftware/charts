@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { page } from "vitest/browser";
+import { commands, page } from "vitest/browser";
 
 import demoMarkup from "../demo/index.html?raw";
 
@@ -123,9 +123,14 @@ async function settle() {
   });
 }
 
+async function setViewport(width, height) {
+  await commands.resizeBrowser({ width, height });
+  await page.viewport(width, height);
+}
+
 async function matchScreenshot(element, name) {
   if (element === document.body) {
-    await page.viewport(window.innerWidth, document.body.scrollHeight);
+    await setViewport(window.innerWidth, document.body.scrollHeight);
     window.scrollTo(0, 0);
   }
   await settle();
@@ -206,7 +211,7 @@ function applyState(name, variant) {
 }
 
 beforeAll(async () => {
-  await page.viewport(1280, 900);
+  await setViewport(1280, 900);
   const demo = new DOMParser().parseFromString(demoMarkup, "text/html");
   document.body.innerHTML = demo.querySelector("main").outerHTML;
   document.documentElement.lang = "en";
@@ -243,7 +248,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await page.viewport(1280, 900);
+  await setViewport(1280, 900);
   setTheme("light");
   resetInteractionState();
   await settle();
@@ -253,7 +258,7 @@ afterAll(async () => {
   for (const chart of charts) {
     chart.destroy();
   }
-  await page.viewport(1280, 720);
+  await setViewport(1280, 720);
 });
 
 // Existing pixel references capture an ordered viewport/scroll tour.
@@ -265,7 +270,7 @@ describe.sequential("visual regression baselines", { shuffle: false }, () => {
     ["light", 390],
     ["dark", 390],
   ])("keeps the radar comparison readable in %s at %ipx", async (theme, width) => {
-    await page.viewport(width, 900);
+    await setViewport(width, 900);
     setTheme(theme);
     const card = demoCard("#radar");
     const mark = card.querySelectorAll(".orchid-charts-radar-axis")[2];
@@ -285,7 +290,7 @@ describe.sequential("visual regression baselines", { shuffle: false }, () => {
   });
 
   it("keeps the complete mobile light demo stable", async () => {
-    await page.viewport(390, 900);
+    await setViewport(390, 900);
     await matchScreenshot(document.body, "demo-body-mobile-light");
   });
 
@@ -334,7 +339,7 @@ describe.sequential("visual regression baselines", { shuffle: false }, () => {
   for (const [name, selector] of demoSections) {
     it(`keeps the desktop ${name} section stable`, async () => {
       if (name === "composition-and-activity") {
-        await page.viewport(1280, 1200);
+        await setViewport(1280, 1200);
       }
       await matchScreenshot(document.querySelector(selector), `demo-section-light-${name}`);
     });
@@ -342,7 +347,7 @@ describe.sequential("visual regression baselines", { shuffle: false }, () => {
 
   for (const [name, selector] of responsiveCards) {
     it(`keeps the mobile ${name} card stable`, async () => {
-      await page.viewport(390, 900);
+      await setViewport(390, 900);
       await matchScreenshot(demoCard(selector), `demo-mobile-light-${name}`);
     });
 

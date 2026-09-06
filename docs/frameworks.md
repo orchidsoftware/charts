@@ -141,6 +141,17 @@ export default class extends Controller {
   updateQueued = false;
 
   connect() {
+    this.renderChart();
+    this.observer = new MutationObserver(() => {
+      if (this.chart && !this.element.contains(this.chart.element)) {
+        this.renderChart();
+      }
+    });
+    this.observer.observe(this.element, { childList: true });
+  }
+
+  renderChart() {
+    this.chart?.destroy();
     this.chart = LineChart.make(this.element)
       .labels(this.labelsValue)
       .dataset("Revenue", this.valuesValue)
@@ -161,6 +172,7 @@ export default class extends Controller {
   }
 
   destroy() {
+    this.observer?.disconnect();
     this.chart?.destroy();
     this.chart = null;
   }
@@ -181,7 +193,9 @@ export default class extends Controller {
 }
 ```
 
-The microtask combines adjacent label and value mutations into one update.
+The observer recreates the chart if a Turbo morph replaces its generated children,
+even when the data values stay the same. The microtask combines adjacent label
+and value mutations into one update.
 When Turbo replaces the controller element, Stimulus destroys the old chart
 and `connect()` renders the new one; no Turbo-specific global listener is
 needed.

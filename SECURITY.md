@@ -2,18 +2,15 @@
 
 ## Supported versions
 
-| Version | Supported |
-| ------- | --------- |
-| 1.0.x   | Yes       |
-| < 1.0   | No        |
+Security fixes are provided for the latest published release. During the 0.x
+phase, update to the latest 0.x release. The 1.x support policy will accompany
+the first stable release.
 
 ## Reporting a vulnerability
 
-Do not open a public issue or include an exploit in a pull request. Once the
-GitHub repository exists, enable private vulnerability reporting and use its
-security advisory form. Until that channel exists, report the problem privately
-to the maintainer through the contact method listed on the maintainer's GitHub
-profile.
+Report vulnerabilities privately through the repository's
+[security advisory form](https://github.com/orchidsoftware/charts/security/advisories/new).
+Please keep reproduction details in that private report while a fix is being coordinated.
 
 Include the affected version, impact, reproduction, and any suggested
 mitigation. Expect an acknowledgement within three business days and an initial

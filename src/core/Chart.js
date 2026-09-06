@@ -1,6 +1,12 @@
 import { renderChart } from "../renderers/ChartRendering.js";
 import { chartMark } from "../support/ChartMark.js";
-import { ChartOrientation, ChartType } from "../support/Constants.js";
+import {
+  ORIENTATION_HORIZONTAL,
+  CHART_AXIS_MIXED,
+  CHART_BAR,
+  CHART_HEATMAP,
+  CHART_TIMESHEET,
+} from "../support/Constants.js";
 import { measureParentWidth, resolveParent, svg } from "../support/Dom.js";
 
 import ChartTooltip from "./ChartTooltip.js";
@@ -21,6 +27,23 @@ function nextChartId() {
   chartIdSequence.latest += 1;
 
   return chartIdSequence.latest;
+}
+
+/**
+ * Identifies focus even when a single unnamed series cannot preserve selection.
+ *
+ * @param {object} model - Normalized chart model.
+ * @param {object} address - Logical mark address.
+ * @returns {string} Stable keyboard identity.
+ */
+function focusIdentity(model, address) {
+  return (
+    model.identityFor(address) ??
+    JSON.stringify([
+      address.datasetIndex,
+      model.pointFor(address).label,
+    ])
+  );
 }
 
 const EXPORT_STYLE_PROPERTIES = Object.freeze([
@@ -121,15 +144,15 @@ export default class Chart {
     });
 
     element.classList.add("orchid-charts-chart");
-    if (this.#type === ChartType.HEATMAP) {
+    if (this.#type === CHART_HEATMAP) {
       element.classList.add("orchid-charts-heatmap-chart");
     }
 
-    if (this.#type === ChartType.TIMESHEET) {
+    if (this.#type === CHART_TIMESHEET) {
       element.classList.add("orchid-charts-timesheet-chart");
     }
 
-    if (this.#type === ChartType.BAR && options.orientation === ChartOrientation.HORIZONTAL) {
+    if (this.#type === CHART_BAR && options.orientation === ORIENTATION_HORIZONTAL) {
       element.classList.add("orchid-charts-horizontal-bar");
     }
 
@@ -318,11 +341,8 @@ export default class Chart {
     const options = { ...this.#options, width };
     const staged = this.#createElement(options);
     const dimensions = this.#renderInto(staged, this.#model, options);
-    const activeIndex = this.#preservedIndex(staged, this.#model);
     this.#options = options;
-    this.#dimensions = dimensions;
-    this.#replaceSurface(staged);
-    this.#bindInteractions(activeIndex);
+    this.#commitUpdate(staged, this.#model, dimensions);
   }
 
   /**
@@ -349,7 +369,7 @@ export default class Chart {
   #bindResponsiveWidth() {
     window.addEventListener("resize", this.#boundResize);
     if (typeof ResizeObserver === "function") {
-      const resize = this.#type === ChartType.HEATMAP ? () => this.#scheduleResize() : this.#boundResize;
+      const resize = this.#type === CHART_HEATMAP ? () => this.#scheduleResize() : this.#boundResize;
       this.#resizeObserver = new ResizeObserver(resize);
       this.#resizeObserver.observe(this.#host, { box: "content-box" });
     }
@@ -366,6 +386,10 @@ export default class Chart {
   #renderInto(element, model, options = this.#options) {
     const description = svg("desc");
     description.textContent = options.description ?? this.#generatedDescription(model);
+    if (!options.tooltip && typeof options.onSelect !== "function") {
+      description.textContent += ` ${model.describe()}`;
+    }
+
     element.append(description);
     if (options.title) {
       const title = svg("text", { x: 16, y: 22, class: "orchid-charts-title" });
@@ -386,11 +410,11 @@ export default class Chart {
    * @returns {string} Plain-text chart description.
    */
   #generatedDescription(model) {
-    if (this.#type === ChartType.HEATMAP) {
+    if (this.#type === CHART_HEATMAP) {
       return `${this.#options.ariaLabel}. ${model.heatmap.length} heatmap cells.`;
     }
 
-    if (this.#type === ChartType.TIMESHEET) {
+    if (this.#type === CHART_TIMESHEET) {
       return `${this.#options.ariaLabel}. ${model.timesheet.tasks.length} tasks.`;
     }
 
@@ -413,6 +437,7 @@ export default class Chart {
    */
   #commitUpdate(staged, model, dimensions) {
     const activeIndex = this.#preservedIndex(staged, model);
+    const focusedIndex = this.#preservedFocus(staged, model);
     this.#replaceSurface(staged);
     this.#model = model;
     this.#dimensions = dimensions;
@@ -421,7 +446,7 @@ export default class Chart {
     }
 
     this.#tooltip.hide();
-    this.#bindInteractions(activeIndex);
+    this.#bindInteractions(activeIndex, focusedIndex);
   }
 
   /**
@@ -429,27 +454,16 @@ export default class Chart {
    *
    * @param {SVGSVGElement} staged - Completely rendered candidate surface.
    * @param {object} model - Candidate normalized data model.
+   * @param {string | null} [identity=this.#selectionIdentity] - Requested selection or keyboard identity.
    * @returns {number} Matching mark index, or -1 for absent or ambiguous identity.
    */
-  #preservedIndex(staged, model) {
-    if (!this.#selectionIdentity) {
+  #preservedIndex(staged, model, identity = this.#selectionIdentity) {
+    if (!identity) {
       return -1;
     }
 
-    const marks = this.#orderedMarks(staged);
-
-    const inspection = chartMark(marks[0])?.inspection;
-
-    const addresses = inspection
-      ? Array.from({ length: inspection.count }, (_, pointIndex) => ({
-          kind: "category",
-          datasetIndex: 0,
-          pointIndex,
-        }))
-      : marks.map((mark) => chartMark(mark));
-
-    const matches = addresses.flatMap((address, index) =>
-      model.identityFor(address) === this.#selectionIdentity
+    const matches = this.#markAddresses(staged).flatMap((address, index) =>
+      focusIdentity(model, address) === identity
         ? [
             index,
           ]
@@ -457,6 +471,60 @@ export default class Chart {
     );
 
     return matches.length === 1 ? matches[0] : -1;
+  }
+
+  /**
+   * Enumerates logical targets for ordinary and dense charts.
+   *
+   * @param {SVGSVGElement} surface - Rendered chart surface.
+   * @returns {object[]} Logical data addresses in navigation order.
+   */
+  #markAddresses(surface) {
+    const marks = this.#orderedMarks(surface);
+
+    const inspection = chartMark(marks[0])?.inspection;
+
+    return inspection
+      ? Array.from({ length: inspection.count }, (_, pointIndex) => ({
+          kind: "category",
+          datasetIndex: 0,
+          pointIndex,
+        }))
+      : marks.map((mark) => chartMark(mark));
+  }
+
+  /**
+   * Preserves keyboard position without moving focus from another part of the page.
+   *
+   * @param {SVGSVGElement} staged - Candidate surface.
+   * @param {object} model - Candidate data model.
+   * @returns {number} Matching or neighboring focus index, or -1 when focus is outside.
+   */
+  #preservedFocus(staged, model) {
+    const focused = this.#element.ownerDocument.activeElement;
+    const address = chartMark(focused);
+
+    if (!this.#element.contains(focused) || !address) {
+      return -1;
+    }
+
+    const identity = focusIdentity(this.#model, address);
+
+    const matches = this.#markAddresses(staged).flatMap((candidate, index) =>
+      focusIdentity(model, candidate) === identity
+        ? [
+            index,
+          ]
+        : [],
+    );
+
+    const matching = matches.length === 1 ? matches[0] : -1;
+    const marks = this.#orderedMarks(staged);
+    const count = chartMark(marks[0])?.inspection?.count ?? marks.length;
+    const oldMarks = this.#orderedMarks(this.#element);
+    const previous = address.inspection ? address.pointIndex : oldMarks.indexOf(focused);
+
+    return matching >= 0 ? matching : Math.min(Math.max(previous, 0), count - 1);
   }
 
   /**
@@ -497,9 +565,10 @@ export default class Chart {
    * Rebinds accessible pointer, focus, keyboard, and selection behavior after render.
    *
    * @param {number} [activeIndex=-1] - Preserved selection position after rendering.
+   * @param {number} [focusedIndex=-1] - Keyboard position to restore after rendering.
    * @returns {void} Rendered marks receive a fresh interaction controller.
    */
-  #bindInteractions(activeIndex = -1) {
+  #bindInteractions(activeIndex = -1, focusedIndex = -1) {
     this.#interactions?.destroy();
     const marks = this.#orderedMarks(this.#element);
 
@@ -523,6 +592,7 @@ export default class Chart {
 
     const interactionBehavior = {
       activeIndex,
+      focusedIndex,
       root: this.#element,
       previewable: this.#options.tooltip,
       selectable: typeof this.#options.onSelect === "function",
@@ -551,7 +621,7 @@ export default class Chart {
       ...element.querySelectorAll(MARK_SELECTOR),
     ];
 
-    if (this.#type !== ChartType.AXIS_MIXED) {
+    if (this.#type !== CHART_AXIS_MIXED) {
       return marks;
     }
 

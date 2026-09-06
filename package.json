@@ -1,6 +1,6 @@
 {
   "name": "@orchidsoftware/charts",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Clear, responsive SVG charts for product interfaces with one small JavaScript API",
   "type": "module",
   "packageManager": "npm@11.16.0",
@@ -13,7 +13,10 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./style.css": "./src/styles.css",
+    "./style.css": {
+      "types": "./src/styles.d.ts",
+      "default": "./src/styles.css"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
@@ -35,6 +38,7 @@
     "dist",
     "docs",
     "src/index.d.ts",
+    "src/styles.d.ts",
     "src/styles.css",
     "CHANGELOG.md",
     "README.md",
@@ -68,17 +72,19 @@
     "coverage": "vitest run --coverage --exclude test/Performance.test.js",
     "audit": "npm audit --audit-level=high",
     "pack:check": "npm pack --dry-run --ignore-scripts",
-    "check": "npm run format:check && npm run lint && npm run test:policies && npm run typecheck && npm run coverage && npm run test:performance && npm run test:compatibility && npm run build && npm run test:dist",
+    "check": "npm run format:check && npm run lint && npm run test:policies && npm run typecheck && npm run coverage && npm run test:performance && npm run test:compatibility && npm run test:touch && npm run test:frameworks && npm run build && npm run test:dist",
     "prepack": "npm run build",
     "prepublishOnly": "npm run check",
     "build:library": "vite build",
-    "test:dist": "node scripts/TestNoBuild.mjs && npm run test:ssr:built",
+    "test:dist": "node scripts/TestNoBuild.mjs && node scripts/TestPackage.mjs && npm run test:ssr:built",
     "test:ssr:built": "node --input-type=module --eval \"await import('./dist/index.js')\"",
     "test:policies": "node --test test-node/*.test.mjs",
     "test:all": "vitest run",
     "test:unit": "vitest run --project node",
     "test:site": "vitest run --project site-chromium",
-    "test:input": "vitest run --project input-chromium"
+    "test:input": "vitest run --project input-chromium",
+    "test:touch": "node scripts/TestTouch.mjs",
+    "test:frameworks": "node scripts/TestFrameworks.mjs"
   },
   "engines": {
     "node": ">=22.12"
@@ -121,6 +127,8 @@
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@hotwired/stimulus": "3.2.2",
+    "@hotwired/turbo": "8.0.23",
     "@vitest/browser-playwright": "^4.1.11",
     "@vitest/coverage-v8": "^4.1.11",
     "@vitest/eslint-plugin": "^1.6.27",

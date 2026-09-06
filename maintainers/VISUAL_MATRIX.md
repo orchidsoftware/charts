@@ -3,7 +3,10 @@
 The cases in `test/VisualRegression.test.js` and the named tables in
 `test/support/VisualFixtures.js` are the executable inventory. Every entry in a
 table inherits the risk below; its name identifies the chart family or example.
-Baselines remain platform-specific. Their ordered viewport/scroll capture tour
+Baselines remain platform-specific. The visual suite sizes both the browser
+and its test iframe so captures retain their natural pixel dimensions: 1280px
+for desktop pages and 390px for mobile pages. Whole-page captures must never be
+scaled thumbnails. Their ordered viewport/scroll capture tour
 is explicit (`shuffle: false`); independent selection-equivalence tests are in a
 separate suite. A screenshot of a container and one of its
 children are not automatically equivalent coverage.

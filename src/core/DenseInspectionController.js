@@ -29,6 +29,7 @@ export default class DenseInspectionController {
     this.#behavior = behavior;
     this.#callbacks = callbacks;
     this.#selectedIndex = behavior.activeIndex;
+    this.#focusedIndex = Math.max(behavior.focusedIndex, 0);
     mark.classList.add("orchid-charts-interactive-mark");
     mark.setAttribute("tabindex", "0");
     mark.setAttribute("focusable", "true");
@@ -37,6 +38,10 @@ export default class DenseInspectionController {
     this.#bind();
     if (this.#selectedIndex >= 0) {
       this.#show(this.#selectedIndex);
+    }
+
+    if (behavior.focusedIndex >= 0) {
+      mark.focus({ preventScroll: true });
     }
   }
 
@@ -186,7 +191,10 @@ export default class DenseInspectionController {
       return;
     }
 
-    chartMark(this.#mark).visualElement.setAttribute("visibility", "hidden");
+    this.#address(this.#index);
+    const highlight = chartMark(this.#mark).visualElement;
+    highlight.setAttribute("visibility", "hidden");
+    highlight.classList.remove("is-hovered");
     this.#callbacks.onHide();
   }
 

@@ -1,4 +1,4 @@
-import { MAX_X_INSPECTOR_POINTS } from "../../support/Constants.js";
+import { CHART_BUBBLE, MAX_X_INSPECTOR_POINTS } from "../../support/Constants.js";
 import { formatLabel, formatValue, seriesContext } from "../../support/presentation/Formatting.js";
 
 /**
@@ -111,7 +111,12 @@ export default class CartesianInspectorRenderer {
    * @returns {object} Renderer-owned metadata for tooltip and selection.
    */
   #addressAt(index, highlight) {
-    const label = formatLabel(this.#chart.options, this.#chart.labels[index], { target: "tooltip", index });
+    const label = formatLabel(
+      this.#chart.options,
+      this.#chart.labels[index] ?? this.#chart.datasets[0].points[index].x,
+      { target: "tooltip", index },
+    );
+
     const items = this.#itemsAt(index);
     const summary = items.map((item) => `${item.name}: ${item.value}`).join(" · ");
     const band = this.#layout.inspectorAt(index);
@@ -144,7 +149,7 @@ export default class CartesianInspectorRenderer {
         target: "tooltip",
       });
 
-      const size = point.r === undefined ? "" : `, size ${point.r}`;
+      const size = this.#layout.type === CHART_BUBBLE ? `, size ${point.r}` : "";
 
       return {
         name: dataset.name,

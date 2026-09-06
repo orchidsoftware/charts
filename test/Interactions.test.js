@@ -280,7 +280,9 @@ describe("Interactions", () => {
       ],
     });
     expect(chart.element.querySelector(".is-active")).toBeNull();
-    expect(tooltipFor(chart).hidden).toBe(true);
+    expect(tooltipFor(chart).hidden).toBe(false);
+    expect(chart.point().label).toBe("Value 1");
+    expect(chart.element.contains(document.activeElement)).toBe(true);
     expect(onSelect).toHaveBeenCalledTimes(1);
     chart.destroy();
   });

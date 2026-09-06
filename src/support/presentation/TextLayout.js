@@ -5,6 +5,7 @@ const DEFAULT_LABEL_FONT_SIZE = 11;
 const BALANCE_OVERFLOW_WEIGHT = 10_000;
 const MINIMUM_BALANCED_LABEL_LINES = 2;
 const MAXIMUM_BALANCED_LABEL_LINES = 3;
+const MAXIMUM_BALANCED_WORDS = 24;
 const measurementSurface = { context: null };
 
 /**
@@ -63,6 +64,34 @@ function balancedPartition(words, lineCount, maxWidth) {
 }
 
 /**
+ * Wraps long input with bounded measurement work and retains the tail for ellipsis.
+ *
+ * @param {string[]} words - Original words in reading order.
+ * @param {number} maxWidth - Available width per line.
+ * @returns {string[]} At most three lines containing the complete source text.
+ */
+function greedyTextLines(words, maxWidth) {
+  const lines = [];
+  let start = 0;
+  let end = 1;
+
+  while (end < words.length && lines.length < MAXIMUM_BALANCED_LABEL_LINES - 1) {
+    const candidate = words.slice(start, end + 1).join(" ");
+
+    if (measuredTextWidth(candidate) > maxWidth) {
+      lines.push(words.slice(start, end).join(" "));
+      start = end;
+    }
+
+    end += 1;
+  }
+
+  lines.push(words.slice(start).join(" "));
+
+  return lines;
+}
+
+/**
  * Balances an ordinary phrase into the fewest lines that fit its width budget.
  *
  * @param {string} value - Plain category label.
@@ -86,19 +115,25 @@ function balancedTextLines(value, maxWidth) {
     ];
   }
 
+  if (words.length > MAXIMUM_BALANCED_WORDS) {
+    return greedyTextLines(words, maxWidth);
+  }
+
+  let lines;
+
   for (
     let lineCount = MINIMUM_BALANCED_LABEL_LINES;
     lineCount <= Math.min(MAXIMUM_BALANCED_LABEL_LINES, words.length);
     lineCount += 1
   ) {
-    const lines = balancedPartition(words, lineCount, maxWidth);
+    lines = balancedPartition(words, lineCount, maxWidth);
 
     if (lines.every((line) => measuredTextWidth(line) <= maxWidth)) {
       return lines;
     }
   }
 
-  return balancedPartition(words, Math.min(MAXIMUM_BALANCED_LABEL_LINES, words.length), maxWidth);
+  return lines;
 }
 
 /**

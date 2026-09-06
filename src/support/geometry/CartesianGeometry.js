@@ -1,4 +1,4 @@
-import { ChartOrientation } from "../Constants.js";
+import { ORIENTATION_HORIZONTAL } from "../Constants.js";
 
 const CUBIC_CONTROL_DIVISOR = 3;
 
@@ -151,11 +151,11 @@ function roundedBarPath({ rectangle, direction, rounding }) {
   const right = x + width;
   const bottom = y + height;
 
-  if (direction.orientation === ChartOrientation.HORIZONTAL && direction.value >= 0) {
+  if (direction.orientation === ORIENTATION_HORIZONTAL && direction.value >= 0) {
     return `M${x},${y}H${right - appliedRadius}Q${right},${y} ${right},${y + appliedRadius}V${bottom - appliedRadius}Q${right},${bottom} ${right - appliedRadius},${bottom}H${x}Z`;
   }
 
-  if (direction.orientation === ChartOrientation.HORIZONTAL) {
+  if (direction.orientation === ORIENTATION_HORIZONTAL) {
     return `M${right},${y}H${x + appliedRadius}Q${x},${y} ${x},${y + appliedRadius}V${bottom - appliedRadius}Q${x},${bottom} ${x + appliedRadius},${bottom}H${right}Z`;
   }
 

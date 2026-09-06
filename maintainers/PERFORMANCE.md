@@ -9,7 +9,7 @@ Performance is part of the release gate. `npm run test:performance` runs in Vite
 
 Current budgets:
 
-- keep every single named chart import with CSS at or below 22.4 kB gzip;
+- keep every single named chart import with CSS at or below 23.0 kB gzip;
 - render a typical 90-day line chart in less than 50 ms;
 - render a 50,000-point SVG line in less than 1,000 ms;
 - perform 200 live updates of a 100-point line in less than 1,000 ms.

@@ -27,11 +27,11 @@
 .orchid-charts-title {
   font-size: 15px;
   font-weight: 600;
-  fill: var(--orchid-charts-label-color, #3a3a3c);
+  fill: var(--orchid-charts-label-color);
 }
 
 .orchid-charts-axis {
-  stroke: var(--orchid-charts-axis-line-color, #f4f5f6);
+  stroke: var(--orchid-charts-axis-line-color);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
@@ -44,7 +44,7 @@
 
 .orchid-charts-grid {
   fill: none;
-  stroke: var(--orchid-charts-axis-line-color, #f4f5f6);
+  stroke: var(--orchid-charts-axis-line-color);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
   shape-rendering: crispedges;
@@ -72,7 +72,7 @@
     "SF Pro Text",
     "Segoe UI",
     sans-serif;
-  fill: var(--orchid-charts-label-color, #313b44);
+  fill: var(--orchid-charts-label-color);
 }
 
 .orchid-charts-annotation {
@@ -281,11 +281,11 @@
     "Segoe UI",
     Roboto,
     sans-serif;
-  color: var(--orchid-charts-tooltip-value, #1d1d1f);
+  color: var(--orchid-charts-tooltip-value);
   overflow-wrap: anywhere;
   white-space: normal;
   pointer-events: none;
-  background: var(--orchid-charts-tooltip-bg, rgb(255 255 255 / 96%));
+  background: var(--orchid-charts-tooltip-bg);
   border: 1px solid rgb(0 0 0 / 8%);
   border-radius: 8px;
   box-shadow: 0 4px 14px rgb(0 0 0 / 12%);

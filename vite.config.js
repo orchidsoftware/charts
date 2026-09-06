@@ -43,6 +43,7 @@ export default defineConfig({
       ? [
           "test/Compatibility.test.js",
           "test/BubbleBounds.test.js",
+          "test/RadarInspection.test.js",
         ]
       : [
           "test/**/*.test.js",

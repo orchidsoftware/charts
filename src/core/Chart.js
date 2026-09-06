@@ -7,7 +7,7 @@ import ChartTooltip from "./ChartTooltip.js";
 import InteractionController from "./InteractionController.js";
 import { normalizeChartOptions, validateChartColors } from "./Options.js";
 
-const MARK_SELECTOR = ".charts2-mark";
+const MARK_SELECTOR = ".orchid-charts-mark";
 const SVG_EXTENSION = ".svg";
 const chartIdSequence = { latest: 0 };
 
@@ -119,17 +119,17 @@ export default class Chart {
       preserveAspectRatio: "xMidYMid meet",
     });
 
-    element.classList.add("charts2-chart");
+    element.classList.add("orchid-charts-chart");
     if (this.#type === ChartType.HEATMAP) {
-      element.classList.add("charts2-heatmap-chart");
+      element.classList.add("orchid-charts-heatmap-chart");
     }
 
     if (this.#type === ChartType.TIMESHEET) {
-      element.classList.add("charts2-timesheet-chart");
+      element.classList.add("orchid-charts-timesheet-chart");
     }
 
     if (this.#type === ChartType.BAR && options.orientation === ChartOrientation.HORIZONTAL) {
-      element.classList.add("charts2-horizontal-bar");
+      element.classList.add("orchid-charts-horizontal-bar");
     }
 
     return element;
@@ -142,7 +142,7 @@ export default class Chart {
    * @returns {void} Host-owned nodes and presentation classes commit together.
    */
   #commitHostPresentation(element) {
-    this.#host.classList.add("charts2-host");
+    this.#host.classList.add("orchid-charts-host");
     this.#host.replaceChildren(element, this.#tooltip.element);
   }
 
@@ -295,7 +295,7 @@ export default class Chart {
 
     this.#element.remove();
     this.#tooltip.destroy();
-    this.#host.classList.remove("charts2-host");
+    this.#host.classList.remove("orchid-charts-host");
   }
 
   /**
@@ -367,7 +367,7 @@ export default class Chart {
     description.textContent = options.description ?? this.#generatedDescription(model);
     element.append(description);
     if (options.title) {
-      const title = svg("text", { x: 16, y: 22, class: "charts2-title" });
+      const title = svg("text", { x: 16, y: 22, class: "orchid-charts-title" });
       title.textContent = options.title;
       element.append(title);
     }
@@ -497,7 +497,9 @@ export default class Chart {
     }
 
     if (!this.#options.tooltip && typeof this.#options.onSelect !== "function") {
-      const titles = this.#element.querySelectorAll(".charts2-visual-mark > title, .charts2-line > title");
+      const titles = this.#element.querySelectorAll(
+        ".orchid-charts-visual-mark > title, .orchid-charts-line > title",
+      );
 
       for (const title of titles) {
         title.remove();

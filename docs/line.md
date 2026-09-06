@@ -62,7 +62,10 @@ You may pass a boolean when the choice is conditional:
 ```js
 import { LineChart } from "@orchidsoftware/charts";
 
-LineChart.make("#signups").dataset(values).smooth(shouldSmooth).render();
+LineChart.make("#signups")
+  .dataset(values)
+  .smooth(shouldSmooth)
+  .render();
 ```
 
 ## Gradient and Area Fills
@@ -97,7 +100,11 @@ should appear without its line:
 ```js
 import { LineChart } from "@orchidsoftware/charts";
 
-LineChart.make("#usage").dataset([18, 24, 31, 39]).area().line(false).render();
+LineChart.make("#usage")
+  .dataset([18, 24, 31, 39])
+  .area()
+  .line(false)
+  .render();
 ```
 
 ## Points and Stroke
@@ -111,7 +118,12 @@ Use `dots(false)` to hide points, `dotSize()` to resize them, and
 ```js
 import { LineChart } from "@orchidsoftware/charts";
 
-LineChart.make("#latency").dataset([180, 210, 195, 205]).dots(false).dotSize(5).strokeWidth(3).render();
+LineChart.make("#latency")
+  .dataset([180, 210, 195, 205])
+  .dots(false)
+  .dotSize(5)
+  .strokeWidth(3)
+  .render();
 ```
 
 ## Compact Line Charts
@@ -123,7 +135,12 @@ inside a small metric card:
 ```js
 import { LineChart } from "@orchidsoftware/charts";
 
-LineChart.make("#revenue-trend").dataset([42, 48, 57, 63]).height(90).gradient().frameless().render();
+LineChart.make("#revenue-trend")
+  .dataset([42, 48, 57, 63])
+  .height(90)
+  .gradient()
+  .frameless()
+  .render();
 ```
 
 ## Customizing One Line
@@ -136,10 +153,17 @@ import { LineChart } from "@orchidsoftware/charts";
 
 LineChart.make("#revenue")
   .dataset("Actual", [42, 48, 57], (line) => {
-    line.color("#2563eb").smooth().gradient().strokeWidth(3);
+    line
+      .color("#2563eb")
+      .smooth()
+      .gradient()
+      .strokeWidth(3);
   })
   .dataset("Plan", [45, 50, 55], (line) => {
-    line.color("#94a3b8").dots(false).opacity(0.7);
+    line
+      .color("#94a3b8")
+      .dots(false)
+      .opacity(0.7);
   })
   .render();
 ```

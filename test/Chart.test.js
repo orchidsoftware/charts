@@ -13,11 +13,11 @@ import {
 } from "../src/index.js";
 import "../src/styles.css";
 
-const tooltipFor = (chart) => chart.element.parentElement.querySelector(".charts2-tooltip");
+const tooltipFor = (chart) => chart.element.parentElement.querySelector(".orchid-charts-tooltip");
 const widthOf = (chart) => chart.element.viewBox.baseVal.width;
 const tickText = (chart) =>
   [
-    ...chart.element.querySelectorAll(".charts2-value-label"),
+    ...chart.element.querySelectorAll(".orchid-charts-value-label"),
   ].map((label) => label.textContent);
 
 const data = {
@@ -68,10 +68,10 @@ describe("Chart", () => {
       })
       .render();
     const samples = [
-      ...chart.element.querySelectorAll(".charts2-legend-swatch"),
+      ...chart.element.querySelectorAll(".orchid-charts-legend-swatch"),
     ];
     const labels = [
-      ...chart.element.querySelectorAll(".charts2-legend"),
+      ...chart.element.querySelectorAll(".orchid-charts-legend"),
     ];
     expect(samples.map((sample) => sample.tagName)).toEqual([
       "circle",
@@ -82,7 +82,7 @@ describe("Chart", () => {
       sample,
     ] of samples.entries()) {
       expect(sample.getAttribute("fill")).toBe(
-        chart.element.querySelectorAll(".charts2-line")[index].getAttribute("stroke"),
+        chart.element.querySelectorAll(".orchid-charts-line")[index].getAttribute("stroke"),
       );
       expect(labels[index].getBBox().x - (sample.getBBox().x + sample.getBBox().width)).toBe(8);
       expect(sample.getBBox().y).toBeLessThan(labels[index].getBBox().y + labels[index].getBBox().height);
@@ -90,8 +90,8 @@ describe("Chart", () => {
       expect(sample.getAttribute("aria-hidden")).toBe("true");
       expect(sample.hasAttribute("tabindex")).toBe(false);
     }
-    const legendTop = chart.element.querySelector(".charts2-legend-group").getBBox().y;
-    for (const label of chart.element.querySelectorAll(".charts2-label")) {
+    const legendTop = chart.element.querySelector(".orchid-charts-legend-group").getBBox().y;
+    for (const label of chart.element.querySelectorAll(".orchid-charts-label")) {
       expect(label.getBBox().y + label.getBBox().height).toBeLessThan(legendTop);
     }
     chart.destroy();
@@ -120,7 +120,7 @@ describe("Chart", () => {
     }
     const chart = builder.render();
     const samples = [
-      ...chart.element.querySelectorAll(".charts2-legend-swatch"),
+      ...chart.element.querySelectorAll(".orchid-charts-legend-swatch"),
     ];
     expect(samples.map((sample) => sample.tagName)).toEqual([
       "circle",
@@ -156,9 +156,9 @@ describe("Chart", () => {
       .render();
     expect(chart.element.getAttribute("aria-label")).toBe("Growth");
     expect(chart.element.getAttribute("height")).toBe("200");
-    expect(chart.element.querySelectorAll(".charts2-line")).toHaveLength(2);
-    const firstGrid = chart.element.querySelector(".charts2-grid-horizontal");
-    expect(chart.element.querySelector(".charts2-line").getAttribute("d")).toContain(
+    expect(chart.element.querySelectorAll(".orchid-charts-line")).toHaveLength(2);
+    const firstGrid = chart.element.querySelector(".orchid-charts-grid-horizontal");
+    expect(chart.element.querySelector(".orchid-charts-line").getAttribute("d")).toContain(
       `M${firstGrid.getAttribute("x1")},`,
     );
     expect(
@@ -173,7 +173,7 @@ describe("Chart", () => {
         ],
       }),
     ).toBe(chart);
-    expect(chart.element.querySelectorAll(".charts2-line")).toHaveLength(1);
+    expect(chart.element.querySelectorAll(".orchid-charts-line")).toHaveLength(1);
     chart.update({
       datasets: [
         {
@@ -183,9 +183,9 @@ describe("Chart", () => {
         },
       ],
     });
-    const grid = chart.element.querySelector(".charts2-grid-horizontal");
+    const grid = chart.element.querySelector(".orchid-charts-grid-horizontal");
     const center = (Number(grid.getAttribute("x1")) + Number(grid.getAttribute("x2"))) / 2;
-    expect(chart.element.querySelector(".charts2-line").getAttribute("d")).toContain(
+    expect(chart.element.querySelector(".orchid-charts-line").getAttribute("d")).toContain(
       `M${center},${grid.getAttribute("y1")}`,
     );
     chart.destroy();
@@ -249,7 +249,7 @@ describe("Chart", () => {
       })
       .render();
     expect(widthOf(chart)).toBe(640);
-    const legend = chart.element.querySelector(".charts2-legend-group").getBBox();
+    const legend = chart.element.querySelector(".orchid-charts-legend-group").getBBox();
     expect(legend.x + legend.width).toBeLessThanOrEqual(widthOf(chart));
     chart.destroy();
   });
@@ -275,22 +275,23 @@ describe("Chart", () => {
         ],
       })
       .render();
-    const plotTop = () => Number(chart.element.querySelector(".charts2-grid-horizontal").getAttribute("y1"));
-    const originalBottom = Number(chart.element.querySelector(".charts2-x-axis").getAttribute("y1"));
+    const plotTop = () =>
+      Number(chart.element.querySelector(".orchid-charts-grid-horizontal").getAttribute("y1"));
+    const originalBottom = Number(chart.element.querySelector(".orchid-charts-x-axis").getAttribute("y1"));
     expect(plotTop()).toBe(8);
-    expect(chart.element.querySelector(".charts2-legend-group")).not.toBeNull();
+    expect(chart.element.querySelector(".orchid-charts-legend-group")).not.toBeNull();
 
     chart.update({
       datasets: [
         data.datasets[0],
       ],
     });
-    expect(chart.element.querySelector(".charts2-legend-group")).toBeNull();
-    expect(Number(chart.element.querySelector(".charts2-x-axis").getAttribute("y1"))).toBeGreaterThan(
+    expect(chart.element.querySelector(".orchid-charts-legend-group")).toBeNull();
+    expect(Number(chart.element.querySelector(".orchid-charts-x-axis").getAttribute("y1"))).toBeGreaterThan(
       originalBottom,
     );
     expect(plotTop()).toBe(8);
-    for (const label of chart.element.querySelectorAll(".charts2-value-label")) {
+    for (const label of chart.element.querySelectorAll(".orchid-charts-value-label")) {
       expect(label.getBBox().y).toBeGreaterThanOrEqual(0);
     }
 
@@ -318,8 +319,8 @@ describe("Chart", () => {
         ],
       })
       .render();
-    expect(hidden.element.querySelector(".charts2-legend-group")).toBeNull();
-    expect(Number(hidden.element.querySelector(".charts2-grid-horizontal").getAttribute("y1"))).toBe(8);
+    expect(hidden.element.querySelector(".orchid-charts-legend-group")).toBeNull();
+    expect(Number(hidden.element.querySelector(".orchid-charts-grid-horizontal").getAttribute("y1"))).toBe(8);
     hidden.destroy();
 
     const bare = LineChart.make("#chart")
@@ -343,7 +344,7 @@ describe("Chart", () => {
         ],
       })
       .render();
-    expect(Number(bare.element.querySelector(".charts2-grid-horizontal").getAttribute("y1"))).toBe(0);
+    expect(Number(bare.element.querySelector(".orchid-charts-grid-horizontal").getAttribute("y1"))).toBe(0);
   });
 
   it("renders a labelled gradient line with native hover titles", () => {
@@ -364,34 +365,40 @@ describe("Chart", () => {
       })
       .render();
     expect(chart.element.querySelectorAll("linearGradient stop")).toHaveLength(2);
-    expect(chart.element.querySelector(".charts2-area").getAttribute("fill")).toContain("charts2-gradient-");
-    expect(chart.element.querySelectorAll(".charts2-grid-horizontal")).toHaveLength(5);
-    expect(chart.element.querySelectorAll(".charts2-grid-vertical")).toHaveLength(0);
+    expect(chart.element.querySelector(".orchid-charts-area").getAttribute("fill")).toContain(
+      "orchid-charts-gradient-",
+    );
+    expect(chart.element.querySelectorAll(".orchid-charts-grid-horizontal")).toHaveLength(5);
+    expect(chart.element.querySelectorAll(".orchid-charts-grid-vertical")).toHaveLength(0);
     expect(
       [
-        ...chart.element.querySelectorAll(".charts2-grid"),
+        ...chart.element.querySelectorAll(".orchid-charts-grid"),
       ].map((line) => line.dataset.tick),
     ).toEqual(
       [
-        ...chart.element.querySelectorAll(".charts2-value-label"),
+        ...chart.element.querySelectorAll(".orchid-charts-value-label"),
       ].map((label) => label.textContent),
     );
-    expect(chart.element.querySelectorAll(".charts2-point title")).toHaveLength(3);
-    expect(chart.element.querySelector(".charts2-point title").textContent).toBe("Mon: 1");
-    expect(chart.element.querySelector(".charts2-point").getAttribute("fill")).toBe(
-      "var(--charts-point-fill)",
+    expect(chart.element.querySelectorAll(".orchid-charts-point title")).toHaveLength(3);
+    expect(chart.element.querySelector(".orchid-charts-point title").textContent).toBe("Mon: 1");
+    expect(chart.element.querySelector(".orchid-charts-point").getAttribute("fill")).toBe(
+      "var(--orchid-charts-point-fill)",
     );
-    expect(chart.element.querySelector(".charts2-point").getAttribute("stroke")).toBe("#007AFF");
-    expect(chart.element.querySelector(".charts2-point").getAttribute("r")).toBe("3");
-    expect(getComputedStyle(chart.element.querySelector(".charts2-point")).strokeWidth).toBe("2px");
-    const halo = chart.element.querySelector(".charts2-point-halo");
-    expect(halo.getAttribute("cx")).toBe(chart.element.querySelector(".charts2-point").getAttribute("cx"));
-    expect(halo.getAttribute("cy")).toBe(chart.element.querySelector(".charts2-point").getAttribute("cy"));
+    expect(chart.element.querySelector(".orchid-charts-point").getAttribute("stroke")).toBe("#007AFF");
+    expect(chart.element.querySelector(".orchid-charts-point").getAttribute("r")).toBe("3");
+    expect(getComputedStyle(chart.element.querySelector(".orchid-charts-point")).strokeWidth).toBe("2px");
+    const halo = chart.element.querySelector(".orchid-charts-point-halo");
+    expect(halo.getAttribute("cx")).toBe(
+      chart.element.querySelector(".orchid-charts-point").getAttribute("cx"),
+    );
+    expect(halo.getAttribute("cy")).toBe(
+      chart.element.querySelector(".orchid-charts-point").getAttribute("cy"),
+    );
     expect(getComputedStyle(halo).strokeWidth).toBe("3px");
     expect(halo.querySelector("title")).toBeNull();
     expect(
       [
-        ...chart.element.querySelectorAll(".charts2-label:not(.charts2-value-label)"),
+        ...chart.element.querySelectorAll(".orchid-charts-label:not(.orchid-charts-value-label)"),
       ].map((node) => node.textContent),
     ).toEqual([
       "Mon",
@@ -420,7 +427,7 @@ describe("Chart", () => {
       })
       .render();
     const nodes = [
-      ...chart.element.querySelectorAll(".charts2-label:not(.charts2-value-label)"),
+      ...chart.element.querySelectorAll(".orchid-charts-label:not(.orchid-charts-value-label)"),
     ];
     const boxes = nodes.map((node) => node.getBBox());
     expect(nodes.map((node) => node.textContent)).toEqual(labels);
@@ -458,7 +465,7 @@ describe("Chart", () => {
       })
       .render();
     const narrowNodes = [
-      ...narrow.element.querySelectorAll(".charts2-label:not(.charts2-value-label)"),
+      ...narrow.element.querySelectorAll(".orchid-charts-label:not(.orchid-charts-value-label)"),
     ];
     const narrowBoxes = narrowNodes.map((node) => node.getBBox());
     expect(narrowNodes.every((node) => node.firstChild.textContent.endsWith("…"))).toBe(true);
@@ -487,16 +494,16 @@ describe("Chart", () => {
       "1",
       "0",
     ]);
-    expect(integer.element.querySelectorAll(".charts2-grid-horizontal")).toHaveLength(6);
+    expect(integer.element.querySelectorAll(".orchid-charts-grid-horizontal")).toHaveLength(6);
     const integerLabels = [
-      ...integer.element.querySelectorAll(".charts2-value-label"),
+      ...integer.element.querySelectorAll(".orchid-charts-value-label"),
     ];
     for (const [
       index,
       label,
     ] of integerLabels.entries()) {
       expect(Number(label.getAttribute("y")) - 3).toBeCloseTo(
-        Number(integer.element.querySelectorAll(".charts2-grid-horizontal")[index].getAttribute("y1")),
+        Number(integer.element.querySelectorAll(".orchid-charts-grid-horizontal")[index].getAttribute("y1")),
         8,
       );
     }
@@ -522,7 +529,7 @@ describe("Chart", () => {
       "0",
     ]);
     const smallLabels = [
-      ...small.element.querySelectorAll(".charts2-value-label"),
+      ...small.element.querySelectorAll(".orchid-charts-value-label"),
     ];
     expect(Number(smallLabels[0].getAttribute("y"))).toBeLessThan(
       Number(smallLabels.at(-1).getAttribute("y")),
@@ -545,15 +552,15 @@ describe("Chart", () => {
       "2",
       "4",
     ]);
-    expect(negative.element.querySelectorAll(".charts2-grid-vertical")).toHaveLength(5);
+    expect(negative.element.querySelectorAll(".orchid-charts-grid-vertical")).toHaveLength(5);
     for (const [
       index,
       label,
     ] of [
-      ...negative.element.querySelectorAll(".charts2-value-label"),
+      ...negative.element.querySelectorAll(".orchid-charts-value-label"),
     ].entries()) {
       expect(Number(label.getAttribute("x"))).toBeCloseTo(
-        Number(negative.element.querySelectorAll(".charts2-grid-vertical")[index].getAttribute("x1")),
+        Number(negative.element.querySelectorAll(".orchid-charts-grid-vertical")[index].getAttribute("x1")),
         8,
       );
     }
@@ -592,10 +599,10 @@ describe("Chart", () => {
       "0",
     ]);
     const fractionLabels = [
-      ...fractions.element.querySelectorAll(".charts2-value-label"),
+      ...fractions.element.querySelectorAll(".orchid-charts-value-label"),
     ];
     const fractionPlotLeft = Number(
-      fractions.element.querySelector(".charts2-grid-horizontal").getAttribute("x1"),
+      fractions.element.querySelector(".orchid-charts-grid-horizontal").getAttribute("x1"),
     );
     expect(fractionPlotLeft).toBeGreaterThan(28);
     expect(fractionLabels.every((label) => label.getBBox().x >= 0)).toBe(true);
@@ -603,7 +610,11 @@ describe("Chart", () => {
       true,
     );
     expect(
-      Number(fractions.element.querySelector(".charts2-label:not(.charts2-value-label)").getAttribute("x")),
+      Number(
+        fractions.element
+          .querySelector(".orchid-charts-label:not(.orchid-charts-value-label)")
+          .getAttribute("x"),
+      ),
     ).toBe(fractionPlotLeft);
     fractions.destroy();
 
@@ -650,8 +661,8 @@ describe("Chart", () => {
         ],
       })
       .render();
-    expect(equalFractions.element.querySelector(".charts2-axis")).toBeNull();
-    expect(equalFractions.element.querySelector(".charts2-grid-horizontal")).not.toBeNull();
+    expect(equalFractions.element.querySelector(".orchid-charts-axis")).toBeNull();
+    expect(equalFractions.element.querySelector(".orchid-charts-grid-horizontal")).not.toBeNull();
     equalFractions.destroy();
   });
 
@@ -676,13 +687,13 @@ describe("Chart", () => {
       })
       .render();
     const bars = [
-      ...chart.element.querySelectorAll(".charts2-bar.charts2-visual-mark"),
+      ...chart.element.querySelectorAll(".orchid-charts-bar.orchid-charts-visual-mark"),
     ];
     expect(bars).toHaveLength(6);
     expect(bars[0].getBBox().height).toBeGreaterThan(0);
     expect(bars[1].getBBox().height).toBeGreaterThan(0);
 
-    const firstBand = chart.element.querySelector(".charts2-x-hit[data-point-index='0']");
+    const firstBand = chart.element.querySelector(".orchid-charts-x-hit[data-point-index='0']");
     const bandStart = Number(firstBand.getAttribute("x"));
     const bandEnd = bandStart + Number(firstBand.getAttribute("width"));
     const firstCategoryBars = bars.filter((bar) => bar.dataset.pointIndex === "0");
@@ -717,7 +728,7 @@ describe("Chart", () => {
         ],
       })
       .render();
-    const bars = chart.element.querySelectorAll(".charts2-bar.charts2-visual-mark");
+    const bars = chart.element.querySelectorAll(".orchid-charts-bar.orchid-charts-visual-mark");
     expect(bars).toHaveLength(6);
     expect(bars[0].getBBox().width).toBeGreaterThan(0);
     expect(bars[1].getBBox().width).toBeGreaterThan(0);
@@ -729,7 +740,7 @@ describe("Chart", () => {
       ),
     ).toBeLessThanOrEqual(292);
     const labels = [
-      ...chart.element.querySelectorAll(".charts2-label:not(.charts2-value-label)"),
+      ...chart.element.querySelectorAll(".orchid-charts-label:not(.orchid-charts-value-label)"),
     ];
     expect(labels.map((label) => label.textContent)).toEqual([
       "One",
@@ -737,27 +748,27 @@ describe("Chart", () => {
       "Three",
     ]);
     expect(labels.every((label) => label.getAttribute("text-anchor") === "end")).toBe(true);
-    const axisX = Number(chart.element.querySelector(".charts2-axis").getAttribute("x1"));
+    const axisX = Number(chart.element.querySelector(".orchid-charts-axis").getAttribute("x1"));
     expect(axisX).toBeLessThan(45);
     expect(labels.every((label) => Number(label.getAttribute("x")) === axisX - 4)).toBe(true);
-    expect(chart.element.classList.contains("charts2-horizontal-bar")).toBe(true);
-    expect(chart.element.querySelectorAll(".charts2-grid-horizontal")).toHaveLength(0);
-    expect(chart.element.querySelectorAll(".charts2-grid-vertical")).toHaveLength(6);
+    expect(chart.element.classList.contains("orchid-charts-horizontal-bar")).toBe(true);
+    expect(chart.element.querySelectorAll(".orchid-charts-grid-horizontal")).toHaveLength(0);
+    expect(chart.element.querySelectorAll(".orchid-charts-grid-vertical")).toHaveLength(6);
     chart.element
-      .querySelector(".charts2-x-hit")
+      .querySelector(".orchid-charts-x-hit")
       .dispatchEvent(new MouseEvent("mousemove", { bubbles: true, clientX: 90, clientY: 40 }));
     expect(tooltipFor(chart).hidden).toBe(false);
-    expect(tooltipFor(chart).querySelector(".charts2-tooltip-heading").textContent).toBe("One");
+    expect(tooltipFor(chart).querySelector(".orchid-charts-tooltip-heading").textContent).toBe("One");
     expect(
       [
-        ...tooltipFor(chart).querySelectorAll(".charts2-tooltip-row strong"),
+        ...tooltipFor(chart).querySelectorAll(".orchid-charts-tooltip-row strong"),
       ].map((node) => node.textContent),
     ).toEqual([
       "2",
       "1",
     ]);
     const tooltipSwatches = [
-      ...tooltipFor(chart).querySelectorAll(".charts2-series-swatch"),
+      ...tooltipFor(chart).querySelectorAll(".orchid-charts-series-swatch"),
     ];
     expect(tooltipSwatches).toHaveLength(2);
     expect(
@@ -793,7 +804,7 @@ describe("Chart", () => {
         ],
       })
       .render();
-    expect(unlabelled.element.querySelector(".charts2-bar title").textContent).toBe("Alpha, 1: 2");
+    expect(unlabelled.element.querySelector(".orchid-charts-bar title").textContent).toBe("Alpha, 1: 2");
     expect(widthOf(unlabelled)).toBe(500);
     document.querySelector("#chart").style.width = "560px";
     dispatchEvent(new Event("resize"));
@@ -821,17 +832,17 @@ describe("Chart", () => {
       })
       .render();
     const valueLabels = [
-      ...line.element.querySelectorAll(".charts2-value-label"),
+      ...line.element.querySelectorAll(".orchid-charts-value-label"),
     ];
-    const plotRight = Number(line.element.querySelector(".charts2-grid-horizontal").getAttribute("x2"));
+    const plotRight = Number(line.element.querySelector(".orchid-charts-grid-horizontal").getAttribute("x2"));
     expect(valueLabels.every((label) => label.getAttribute("text-anchor") === "start")).toBe(true);
     expect(valueLabels.every((label) => Number(label.getAttribute("x")) === plotRight + 5)).toBe(true);
     expect(
       Math.max(...valueLabels.map((label) => label.getBBox().x + label.getBBox().width)),
     ).toBeLessThanOrEqual(220);
-    expect(Number(line.element.querySelector(".charts2-grid-horizontal").getAttribute("x1"))).toBe(0);
+    expect(Number(line.element.querySelector(".orchid-charts-grid-horizontal").getAttribute("x1"))).toBe(0);
     const lastHit = [
-      ...line.element.querySelectorAll(".charts2-x-hit"),
+      ...line.element.querySelectorAll(".orchid-charts-x-hit"),
     ].at(-1);
     expect(Number(lastHit.getAttribute("x")) + Number(lastHit.getAttribute("width"))).toBe(plotRight);
     line.destroy();
@@ -854,9 +865,9 @@ describe("Chart", () => {
       })
       .render();
     const categoryLabels = [
-      ...horizontal.element.querySelectorAll(".charts2-label:not(.charts2-value-label)"),
+      ...horizontal.element.querySelectorAll(".orchid-charts-label:not(.orchid-charts-value-label)"),
     ];
-    const axisX = Number(horizontal.element.querySelector(".charts2-y-axis").getAttribute("x1"));
+    const axisX = Number(horizontal.element.querySelector(".orchid-charts-y-axis").getAttribute("x1"));
     expect(categoryLabels.every((label) => label.getAttribute("text-anchor") === "start")).toBe(true);
     expect(categoryLabels.every((label) => Number(label.getAttribute("x")) === axisX + 4)).toBe(true);
     expect(
@@ -885,15 +896,15 @@ describe("Chart", () => {
       })
       .render();
     const labels = [
-      ...chart.element.querySelectorAll(".charts2-multiline-label"),
+      ...chart.element.querySelectorAll(".orchid-charts-multiline-label"),
     ];
     expect(labels.map((label) => label.textContent)).toEqual(sourceLabels.map((label) => `Region: ${label}`));
     expect(labels.map((label) => label.getAttribute("aria-label"))).toEqual(sourceLabels);
     expect(chart.point(0).label).toBe(sourceLabels[0]);
     chart.element
-      .querySelector(".charts2-x-hit")
+      .querySelector(".orchid-charts-x-hit")
       .dispatchEvent(new MouseEvent("mousemove", { bubbles: true }));
-    expect(tooltipFor(chart).querySelector(".charts2-tooltip-heading").textContent).toBe(
+    expect(tooltipFor(chart).querySelector(".orchid-charts-tooltip-heading").textContent).toBe(
       `Region: ${sourceLabels[0]}`,
     );
     chart.destroy();
@@ -916,7 +927,7 @@ describe("Chart", () => {
         ],
       })
       .render();
-    const label = chart.element.querySelector(".charts2-multiline-label");
+    const label = chart.element.querySelector(".orchid-charts-multiline-label");
 
     expect(
       [
@@ -944,7 +955,7 @@ describe("Chart", () => {
       })
       .render();
     const lines = [
-      ...chart.element.querySelectorAll(".charts2-multiline-label tspan"),
+      ...chart.element.querySelectorAll(".orchid-charts-multiline-label tspan"),
     ];
 
     expect(lines.length).toBeGreaterThan(1);
@@ -985,11 +996,11 @@ describe("Chart", () => {
         ],
       })
       .render();
-    const bubbles = chart.element.querySelectorAll(".charts2-bubble.charts2-visual-mark");
+    const bubbles = chart.element.querySelectorAll(".orchid-charts-bubble.orchid-charts-visual-mark");
     expect(bubbles[0].getAttribute("r")).toBe("9");
     expect(bubbles[1].getAttribute("r")).toBe("5");
     expect(bubbles[0].getAttribute("opacity")).toBe("0.65");
-    expect(chart.element.querySelectorAll(".charts2-grid-vertical")).toHaveLength(0);
+    expect(chart.element.querySelectorAll(".orchid-charts-grid-vertical")).toHaveLength(0);
   });
 
   it("reserves legend space and renders a stable structured radar tooltip", () => {
@@ -1041,17 +1052,17 @@ describe("Chart", () => {
         ],
       })
       .render();
-    expect(chart.element.querySelectorAll("line")).toHaveLength(6);
-    expect(chart.element.querySelectorAll(".charts2-radar")).toHaveLength(3);
+    expect(chart.element.querySelectorAll("line.orchid-charts-grid")).toHaveLength(6);
+    expect(chart.element.querySelectorAll(".orchid-charts-radar")).toHaveLength(3);
     expect(chart.element.textContent).toContain("A11y");
-    const legendBox = chart.element.querySelector(".charts2-legend-group").getBBox();
-    const frameBox = chart.element.querySelector(".charts2-radar-frame").getBBox();
+    const legendBox = chart.element.querySelector(".orchid-charts-legend-group").getBBox();
+    const frameBox = chart.element.querySelector(".orchid-charts-radar-frame").getBBox();
     expect(frameBox.y + frameBox.height).toBeLessThan(legendBox.y);
     const legendLabels = [
-      ...chart.element.querySelectorAll(".charts2-legend"),
+      ...chart.element.querySelectorAll(".orchid-charts-legend"),
     ];
     const legendSwatches = [
-      ...chart.element.querySelectorAll(".charts2-legend-swatch"),
+      ...chart.element.querySelectorAll(".orchid-charts-legend-swatch"),
     ];
     expect(
       legendSwatches.every((swatch) => swatch.tagName === "circle" && swatch.getAttribute("r") === "4"),
@@ -1078,29 +1089,37 @@ describe("Chart", () => {
     ).toBeGreaterThanOrEqual(14);
 
     const polygons = [
-      ...chart.element.querySelectorAll(".charts2-radar"),
+      ...chart.element.querySelectorAll(".orchid-charts-radar"),
     ];
     expect(polygons.every((polygon) => polygon.getAttribute("stroke-linejoin") === "round")).toBe(true);
     expect(polygons.every((polygon) => polygon.getAttribute("stroke-linecap") === "round")).toBe(true);
-    polygons[0].focus();
-    expect(tooltipFor(chart).querySelector(".charts2-tooltip-heading").textContent).toBe("Current");
-    expect(tooltipFor(chart).querySelectorAll(".charts2-tooltip-row")).toHaveLength(6);
+    const axes = chart.element.querySelectorAll(".orchid-charts-radar-axis");
+    expect(axes).toHaveLength(6);
+    axes[0].focus();
+    expect(tooltipFor(chart).querySelector(".orchid-charts-tooltip-heading").textContent).toBe("Speed");
     expect(
       [
-        ...tooltipFor(chart).querySelectorAll(".charts2-tooltip-row strong"),
+        ...tooltipFor(chart).querySelectorAll(".orchid-charts-tooltip-row span"),
+      ].map((node) => node.textContent),
+    ).toEqual([
+      "Current",
+      "Previous",
+      "Target",
+    ]);
+    expect(tooltipFor(chart).querySelectorAll(".orchid-charts-tooltip-row")).toHaveLength(3);
+    expect(
+      [
+        ...tooltipFor(chart).querySelectorAll(".orchid-charts-tooltip-row strong"),
       ].map((node) => node.textContent),
     ).toEqual([
       "2",
-      "0",
-      "4",
-      "2",
-      "3",
       "1",
+      "4",
     ]);
-    const firstWidth = tooltipFor(chart).getBoundingClientRect().width;
-    polygons[1].focus();
-    expect(tooltipFor(chart).querySelector(".charts2-tooltip-heading").textContent).toBe("Previous");
-    expect(tooltipFor(chart).getBoundingClientRect().width).toBe(firstWidth);
+    axes[1].focus();
+    expect(tooltipFor(chart).querySelector(".orchid-charts-tooltip-heading").textContent).toBe("DX");
+    expect(tooltipFor(chart).querySelector(".orchid-charts-tooltip-row strong").textContent).toBe("0");
+    expect(tooltipFor(chart).getBoundingClientRect().width).toBeLessThanOrEqual(240);
     expect(polygons.every((polygon) => polygon.querySelector(":scope > title") === null)).toBe(true);
   });
 
@@ -1121,7 +1140,7 @@ describe("Chart", () => {
         ],
       })
       .render();
-    expect(chart.element.querySelectorAll(".charts2-polar-area")).toHaveLength(4);
+    expect(chart.element.querySelectorAll(".orchid-charts-polar-area")).toHaveLength(4);
     expect(chart.element.textContent).toContain("D");
     const single = PolarAreaChart.make("#chart")
       .labels([
@@ -1133,7 +1152,7 @@ describe("Chart", () => {
         ],
       })
       .render();
-    expect(single.element.querySelector("circle.charts2-polar-area")).not.toBeNull();
+    expect(single.element.querySelector("circle.orchid-charts-polar-area")).not.toBeNull();
   });
 
   it("keeps polar-area labels inside a narrow SVG", () => {
@@ -1160,7 +1179,7 @@ describe("Chart", () => {
       })
       .render();
     const labels = [
-      ...chart.element.querySelectorAll(".charts2-polar-label"),
+      ...chart.element.querySelectorAll(".orchid-charts-polar-label"),
     ];
     expect(labels).toHaveLength(6);
     for (const label of labels) {

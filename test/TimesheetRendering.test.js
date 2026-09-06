@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TimesheetChart } from "../src/index.js";
 import "../src/styles.css";
 
-const tooltipFor = (chart) => chart.element.parentElement.querySelector(".charts2-tooltip");
+const tooltipFor = (chart) => chart.element.parentElement.querySelector(".orchid-charts-tooltip");
 
 beforeEach(() => {
   document.body.innerHTML = '<div id="chart" style="width: 640px"></div>';
@@ -27,31 +27,31 @@ describe("Timesheet Rendering", () => {
       })
       .task({ label: "Build", start: "2026-09-02T00:00:00Z", end: "2026-09-04T00:00:00Z" })
       .render();
-    expect(chart.element).toHaveClass("charts2-timesheet-chart");
-    expect(chart.element.querySelectorAll(".charts2-timesheet-bar")).toHaveLength(2);
-    expect(chart.element.querySelector(".charts2-timesheet-task-label title").textContent).toContain(
+    expect(chart.element).toHaveClass("orchid-charts-timesheet-chart");
+    expect(chart.element.querySelectorAll(".orchid-charts-timesheet-bar")).toHaveLength(2);
+    expect(chart.element.querySelector(".orchid-charts-timesheet-task-label title").textContent).toContain(
       "deliberately long",
     );
-    expect(chart.element.querySelector(".charts2-timesheet-tick").textContent).toBe("T1");
-    const firstBar = chart.element.querySelector(".charts2-timesheet-bar");
-    const first = chart.element.querySelector(".charts2-timesheet-hit");
+    expect(chart.element.querySelector(".orchid-charts-timesheet-tick").textContent).toBe("T1");
+    const firstBar = chart.element.querySelector(".orchid-charts-timesheet-bar");
+    const first = chart.element.querySelector(".orchid-charts-timesheet-hit");
     expect(firstBar.getAttribute("rx")).toBe("3");
     expect(Number(first.getAttribute("width"))).toBeGreaterThan(Number(firstBar.getAttribute("width")));
     expect(first.dataset.tooltip).toBe(
       "Design review with a deliberately long label: D1 – D2, 24 hours, Design",
     );
     first.focus();
-    expect(tooltipFor(chart).querySelector(".charts2-tooltip-heading").textContent).toContain(
+    expect(tooltipFor(chart).querySelector(".orchid-charts-tooltip-heading").textContent).toContain(
       "Design review",
     );
     expect(
       [
-        ...tooltipFor(chart).querySelectorAll(".charts2-tooltip-row span"),
+        ...tooltipFor(chart).querySelectorAll(".orchid-charts-tooltip-row span"),
       ].map((node) => node.textContent),
     ).toEqual([
       "D1 – D2",
     ]);
-    expect(tooltipFor(chart).querySelector(".charts2-tooltip-row strong").textContent).toBe("24 hours");
+    expect(tooltipFor(chart).querySelector(".orchid-charts-tooltip-row strong").textContent).toBe("24 hours");
     first.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(chart.point()).toEqual(chart.point(0));
     expect(onSelect).toHaveBeenCalledWith(
@@ -72,14 +72,14 @@ describe("Timesheet Rendering", () => {
         ],
       }),
     ).toBe(chart);
-    expect(chart.element.querySelector(".charts2-timesheet-task-label").textContent).toBe("Task 1");
-    expect(chart.element.querySelector(".charts2-timesheet-hit").dataset.tooltip).toContain("4 hours");
+    expect(chart.element.querySelector(".orchid-charts-timesheet-task-label").textContent).toBe("Task 1");
+    expect(chart.element.querySelector(".orchid-charts-timesheet-hit").dataset.tooltip).toContain("4 hours");
 
     const square = TimesheetChart.make("#chart")
       .radius(0)
       .task({ label: "Task 1", start: "2026-10-01T08:00:00Z", end: "2026-10-01T12:00:00Z" })
       .render();
-    expect(square.element.querySelector(".charts2-timesheet-bar").getAttribute("rx")).toBe("0");
+    expect(square.element.querySelector(".orchid-charts-timesheet-bar").getAttribute("rx")).toBe("0");
   });
   it("validates timesheet dates, bounds, and task structure", () => {
     expect(() => TimesheetChart.make("#chart").render()).toThrow("non-empty tasks");
@@ -148,16 +148,16 @@ describe("Timesheet Rendering", () => {
         .valueLabels(index !== 4)
         .task({ label: `Task ${index + 1}`, start, end })
         .render();
-      expect(chart.element.querySelectorAll(".charts2-timesheet-bar")).toHaveLength(1);
+      expect(chart.element.querySelectorAll(".orchid-charts-timesheet-bar")).toHaveLength(1);
       if (index === 4) {
-        expect(chart.element.querySelector(".charts2-timesheet-tick")).toBeNull();
-        expect(chart.element.querySelector(".charts2-timesheet-task-label")).toBeNull();
+        expect(chart.element.querySelector(".orchid-charts-timesheet-tick")).toBeNull();
+        expect(chart.element.querySelector(".orchid-charts-timesheet-task-label")).toBeNull();
       }
 
       if (index !== 4) {
-        expect(chart.element.querySelector(".charts2-timesheet-tick")).not.toBeNull();
+        expect(chart.element.querySelector(".orchid-charts-timesheet-tick")).not.toBeNull();
       }
-      expect(chart.element.querySelector(".charts2-timesheet-hit").dataset.tooltip).toMatch(
+      expect(chart.element.querySelector(".orchid-charts-timesheet-hit").dataset.tooltip).toMatch(
         index === 0 ? /1 day/ : /days|year/,
       );
       chart.destroy();
@@ -166,7 +166,7 @@ describe("Timesheet Rendering", () => {
     const hours = TimesheetChart.make("#chart")
       .task({ label: "Task", start: "2026-01-01T08:00:00Z", end: "2026-01-01T12:00:00Z" })
       .render();
-    expect(hours.element.querySelector(".charts2-timesheet-hit").dataset.tooltip).toContain("4 hours");
+    expect(hours.element.querySelector(".orchid-charts-timesheet-hit").dataset.tooltip).toContain("4 hours");
 
     const bare = TimesheetChart.make("#chart")
       .width(240)
@@ -175,9 +175,9 @@ describe("Timesheet Rendering", () => {
       .valueLabels(false)
       .task({ label: "Task", start: "2026-01-01", end: "2026-01-02" })
       .render();
-    expect(bare.element.querySelector(".charts2-grid")).toBeNull();
-    expect(bare.element.querySelector(".charts2-axis")).toBeNull();
+    expect(bare.element.querySelector(".orchid-charts-grid")).toBeNull();
+    expect(bare.element.querySelector(".orchid-charts-axis")).toBeNull();
     expect(bare.element.querySelector("text")).toBeNull();
-    expect(bare.element.querySelector(".charts2-timesheet-hit").getAttribute("x")).toBe("0");
+    expect(bare.element.querySelector(".orchid-charts-timesheet-hit").getAttribute("x")).toBe("0");
   });
 });

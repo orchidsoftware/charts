@@ -25,7 +25,7 @@ function host() {
 
 function select(chart, index) {
   document.body.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
-  const mark = chart.element.querySelectorAll(".charts2-mark")[index];
+  const mark = chart.element.querySelectorAll(".orchid-charts-mark")[index];
   mark.dispatchEvent(new MouseEvent("click", { bubbles: true }));
   return mark;
 }
@@ -132,8 +132,8 @@ it.each([
       chart.update(seriesData);
     }
     select(chart, 0).dispatchEvent(new PointerEvent("pointerenter"));
-    expect(parent.querySelector(".charts2-tooltip-row strong").textContent).toMatch(/^Value: 10/);
-    expect(parent.querySelector(".charts2-tooltip-row span").textContent).not.toContain("Value:");
+    expect(parent.querySelector(".orchid-charts-tooltip-row strong").textContent).toMatch(/^Value: 10/);
+    expect(parent.querySelector(".orchid-charts-tooltip-row span").textContent).not.toContain("Value:");
   }
 });
 
@@ -178,7 +178,7 @@ it.each([
     .tooltip((tooltip) => tooltip.formatValue((value) => `Value: ${value}`))
     .render();
   select(chart, 0).dispatchEvent(new PointerEvent("pointerenter"));
-  expect(parent.querySelector(".charts2-tooltip-row strong").textContent).toContain("Value: 10");
+  expect(parent.querySelector(".orchid-charts-tooltip-row strong").textContent).toContain("Value: 10");
 });
 
 it("preserves heatmap formatter output after update and formats each value once", () => {
@@ -192,8 +192,8 @@ it("preserves heatmap formatter output after update and formats each value once"
   chart.update({ points: { "2026-09-01": 10 } });
   expect(formatter).toHaveBeenCalledTimes(2);
   select(chart, 0).dispatchEvent(new PointerEvent("pointerenter"));
-  expect(parent.querySelector(".charts2-tooltip-row strong").textContent).toBe("Value: 10");
-  expect(parent.querySelector(".charts2-tooltip-row span").textContent).toBe("2026-09-01");
+  expect(parent.querySelector(".orchid-charts-tooltip-row strong").textContent).toBe("Value: 10");
+  expect(parent.querySelector(".orchid-charts-tooltip-row span").textContent).toBe("2026-09-01");
 });
 
 it("preserves punctuation in a timesheet duration", () => {
@@ -203,7 +203,7 @@ it("preserves punctuation in a timesheet duration", () => {
     .tooltip((tooltip) => tooltip.formatDuration(() => "Duration: one day"))
     .render();
   select(chart, 0).dispatchEvent(new PointerEvent("pointerenter"));
-  expect(parent.querySelector(".charts2-tooltip").textContent).toContain("Duration: one day");
+  expect(parent.querySelector(".orchid-charts-tooltip").textContent).toContain("Duration: one day");
 });
 
 it.each([
@@ -232,9 +232,9 @@ it("keeps selection and visual feedback independent from diagnostic DOM attribut
     ])
     .onSelect(callback)
     .render();
-  const visual = chart.element.querySelector(".charts2-visual-mark");
-  const mark = chart.element.querySelector(".charts2-mark");
-  visual.classList.remove("charts2-visual-mark");
+  const visual = chart.element.querySelector(".orchid-charts-visual-mark");
+  const mark = chart.element.querySelector(".orchid-charts-mark");
+  visual.classList.remove("orchid-charts-visual-mark");
   visual.dataset.pointIndex = "999";
   mark.dataset.pointIndex = "999";
   mark.dataset.datasetIndex = "999";
@@ -243,7 +243,7 @@ it("keeps selection and visual feedback independent from diagnostic DOM attribut
   expect(visual.classList.contains("is-hovered")).toBe(true);
   mark.dispatchEvent(new MouseEvent("click", { bubbles: true }));
   expect(callback.mock.lastCall[0]).toMatchObject({ x: 1, y: 10, datasetIndex: 0 });
-  expect(parent.querySelector(".charts2-tooltip strong").textContent).toBe("10");
+  expect(parent.querySelector(".orchid-charts-tooltip strong").textContent).toBe("10");
 });
 
 it("stops detached mark reactions after update and destroy", () => {
@@ -255,7 +255,7 @@ it("stops detached mark reactions after update and destroy", () => {
     ])
     .onSelect(callback)
     .render();
-  const oldMark = chart.element.querySelector(".charts2-mark");
+  const oldMark = chart.element.querySelector(".orchid-charts-mark");
   chart.update({
     datasets: [
       {
@@ -268,7 +268,7 @@ it("stops detached mark reactions after update and destroy", () => {
   });
   oldMark.dispatchEvent(new MouseEvent("click", { bubbles: true }));
   expect(callback).not.toHaveBeenCalled();
-  const current = chart.element.querySelector(".charts2-mark");
+  const current = chart.element.querySelector(".orchid-charts-mark");
   current.dispatchEvent(new MouseEvent("click", { bubbles: true }));
   expect(callback).toHaveBeenCalledOnce();
   chart.destroy();
@@ -284,7 +284,7 @@ it("reads the current keyboard point without requiring selection", () => {
       2,
     ])
     .render();
-  const marks = chart.element.querySelectorAll(".charts2-mark");
+  const marks = chart.element.querySelectorAll(".orchid-charts-mark");
   marks[1].focus();
   expect(chart.point().values).toEqual([
     2,
@@ -331,7 +331,7 @@ it("keeps point() on the selected datum while keyboard focus previews another", 
     ])
     .onSelect(vi.fn())
     .render();
-  const marks = chart.element.querySelectorAll(".charts2-mark");
+  const marks = chart.element.querySelectorAll(".orchid-charts-mark");
   marks[1].dispatchEvent(new MouseEvent("click", { bubbles: true }));
   marks[0].focus();
   expect(chart.point().values).toEqual([
@@ -353,13 +353,13 @@ it("keeps selected tooltips visible when the pointer leaves the chart", () => {
     ])
     .onSelect(vi.fn())
     .render();
-  const mark = chart.element.querySelector(".charts2-mark");
+  const mark = chart.element.querySelector(".orchid-charts-mark");
   mark.focus();
   mark.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
   chart.element.dispatchEvent(new MouseEvent("mousemove", { bubbles: true }));
   chart.element.dispatchEvent(new MouseEvent("mouseleave"));
-  expect(parent.querySelector(".charts2-tooltip").hidden).toBe(false);
+  expect(parent.querySelector(".orchid-charts-tooltip").hidden).toBe(false);
   expect(mark.getAttribute("aria-pressed")).toBe("true");
   document.body.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
-  expect(parent.querySelector(".charts2-tooltip").hidden).toBe(true);
+  expect(parent.querySelector(".orchid-charts-tooltip").hidden).toBe(true);
 });

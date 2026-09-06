@@ -42,7 +42,7 @@ export default class CartesianInspectorRenderer {
         {
           ...this.#layout.inspectorAt(index),
           fill: "transparent",
-          class: "charts2-x-hit charts2-mark",
+          class: "orchid-charts-x-hit orchid-charts-mark",
         },
         {
           kind: "category",

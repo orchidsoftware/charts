@@ -37,7 +37,9 @@ it.each([
     ])
     .onSelect(callback)
     .render();
-  chart.element.querySelector(".charts2-mark").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  chart.element
+    .querySelector(".orchid-charts-mark")
+    .dispatchEvent(new MouseEvent("click", { bubbles: true }));
   expect(chart.point()).toEqual({
     index: 1,
     label: "Visible",
@@ -70,7 +72,7 @@ it.each([
   });
 });
 
-it("reads the selected radar dataset while explicit indices still address categories", () => {
+it("reads the same radar measure through selection and explicit indices", () => {
   const chart = RadarChart.make(host())
     .labels([
       "A",
@@ -96,15 +98,14 @@ it("reads the selected radar dataset while explicit indices still address catego
     .onSelect(vi.fn())
     .render();
   chart.element
-    .querySelectorAll(".charts2-mark")[1]
+    .querySelectorAll(".orchid-charts-mark")[1]
     .dispatchEvent(new MouseEvent("click", { bubbles: true }));
   expect(chart.point()).toEqual({
     index: 1,
-    label: "Second",
+    label: "B",
     values: [
-      4,
+      2,
       5,
-      6,
     ],
   });
   expect(chart.point(1)).toEqual({
@@ -140,7 +141,7 @@ it("resolves mixed marks by dataset address despite visual layer order", () => {
     .onSelect(vi.fn())
     .render();
   chart.element
-    .querySelector('.charts2-bar[data-point-index="1"]')
+    .querySelector('.orchid-charts-bar[data-point-index="1"]')
     .dispatchEvent(new MouseEvent("click", { bubbles: true }));
   expect(chart.point()).toMatchObject({ index: 3, datasetIndex: 1, pointIndex: 1, y: 4 });
 });
@@ -198,9 +199,9 @@ it.each([
         ],
       });
     }
-    const mark = chart.element.querySelector(".charts2-mark");
+    const mark = chart.element.querySelector(".orchid-charts-mark");
     mark.dispatchEvent(new PointerEvent("pointerenter"));
-    expect(document.querySelector(".charts2-tooltip strong").textContent).toContain("dataset:2");
+    expect(document.querySelector(".orchid-charts-tooltip strong").textContent).toContain("dataset:2");
     expect(
       callback.mock.calls.some(
         ([
@@ -268,7 +269,9 @@ it("owns update labels, points and annotation arrays across resize", () => {
   dispatchEvent(new Event("resize"));
   expect(chart.element.textContent).not.toContain("After");
   expect(chart.element.querySelector('[stroke-dasharray="4 3"], [stroke-dasharray="4,3"]')).not.toBeNull();
-  chart.element.querySelector(".charts2-mark").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  chart.element
+    .querySelector(".orchid-charts-mark")
+    .dispatchEvent(new MouseEvent("click", { bubbles: true }));
   expect(callback.mock.lastCall[0]).toMatchObject({ label: "Before", value: 2 });
 });
 
@@ -290,7 +293,9 @@ it.each([
     ])
     .strokeWidth(width)
     .render();
-  expect(getComputedStyle(chart.element.querySelector(".charts2-radar")).strokeWidth).toBe(`${width}px`);
+  expect(getComputedStyle(chart.element.querySelector(".orchid-charts-radar")).strokeWidth).toBe(
+    `${width}px`,
+  );
 });
 
 it("uses actual axis formatter labels for both measurement and drawing", () => {
@@ -302,7 +307,7 @@ it("uses actual axis formatter labels for both measurement and drawing", () => {
     ])
     .yAxis((axis) => axis.formatValue(formatter))
     .render();
-  const labels = chart.element.querySelectorAll(".charts2-value-label");
+  const labels = chart.element.querySelectorAll(".orchid-charts-value-label");
   expect(formatter).toHaveBeenCalledTimes(labels.length);
   for (const label of labels) {
     expect(label.textContent).toMatch(/^Revenue amount:/u);
@@ -331,7 +336,7 @@ it("applies chart and dataset line widths to computed style", () => {
     .render();
   expect(
     [
-      ...chart.element.querySelectorAll(".charts2-line"),
+      ...chart.element.querySelectorAll(".orchid-charts-line"),
     ].map((line) => getComputedStyle(line).strokeWidth),
   ).toEqual([
     "7px",
@@ -351,7 +356,7 @@ it("reads a dense line as a dataset instead of its first category", () => {
     .onSelect(callback)
     .render();
   chart.element
-    .querySelectorAll(".charts2-mark")[1]
+    .querySelectorAll(".orchid-charts-mark")[1]
     .dispatchEvent(new MouseEvent("click", { bubbles: true }));
   expect(chart.point().label).toBe("Second");
   expect(chart.point().values).toHaveLength(65);
@@ -403,5 +408,5 @@ it("applies radar dataset opacity to the visible polygon", () => {
       (s) => s.opacity(0.6),
     )
     .render();
-  expect(getComputedStyle(chart.element.querySelector(".charts2-radar")).opacity).toBe("0.6");
+  expect(getComputedStyle(chart.element.querySelector(".orchid-charts-radar")).opacity).toBe("0.6");
 });

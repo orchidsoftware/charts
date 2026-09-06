@@ -133,7 +133,7 @@ The resulting contract is explicit:
    under the task heading. Group remains available in accessible and selection
    data without creating a fourth visual value.
 4. Time ticks and the axis are at the bottom, matching the Cartesian x-axis.
-5. Vertical and horizontal guides use the standard `charts2-grid` tokens and
+5. Vertical and horizontal guides use the standard `orchid-charts-grid` tokens and
    respect `showGrid`; the baseline respects `showAxes`.
 6. Hover, pointer-down, click, focus, and keyboard selection reuse the interval
    midpoint as one tooltip anchor, preventing state-change jumps.

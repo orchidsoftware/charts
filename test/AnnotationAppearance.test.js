@@ -43,12 +43,12 @@ it("preserves auxiliary label themes and explicit colors in standalone SVG", () 
       "rgb(174, 174, 178)",
     ],
   ]) {
-    host.style.setProperty("--charts-mark-separator", surface);
-    host.style.setProperty("--charts-secondary-label-color", secondary);
-    const label = host.querySelector(".charts2-marker-label");
+    host.style.setProperty("--orchid-charts-mark-separator", surface);
+    host.style.setProperty("--orchid-charts-secondary-label-color", secondary);
+    const label = host.querySelector(".orchid-charts-marker-label");
     const appearance = getComputedStyle(label);
     const exported = new DOMParser().parseFromString(chart.toSvg(), "image/svg+xml");
-    const exportedLabel = exported.querySelector(".charts2-marker-label");
+    const exportedLabel = exported.querySelector(".orchid-charts-marker-label");
 
     expect(appearance.opacity).toBe("1");
     expect(appearance.fill).toBe(expectedText);
@@ -57,10 +57,10 @@ it("preserves auxiliary label themes and explicit colors in standalone SVG", () 
     expect(exportedLabel.style.fill).toBe(appearance.fill);
     expect(exportedLabel.style.paintOrder).toBe("stroke");
     expect(exportedLabel.style.opacity).toBe("1");
-    expect(getComputedStyle(host.querySelector(".charts2-region")).opacity).toBe("0.18");
+    expect(getComputedStyle(host.querySelector(".orchid-charts-region")).opacity).toBe("0.18");
   }
 
-  host.style.setProperty("--charts-annotation-halo", "#243844");
+  host.style.setProperty("--orchid-charts-annotation-halo", "#243844");
   host.style.setProperty("--reference-text", "#ffcc00");
   chart.update({
     datasets: [
@@ -77,7 +77,7 @@ it("preserves auxiliary label themes and explicit colors in standalone SVG", () 
       { label: "Average", value: 68, labelColor: "var(--reference-text)" },
     ],
   });
-  const appearance = getComputedStyle(host.querySelector(".charts2-marker-label"));
+  const appearance = getComputedStyle(host.querySelector(".orchid-charts-marker-label"));
   expect(appearance.fill).toBe("rgb(255, 204, 0)");
   expect(appearance.stroke).toBe("rgb(36, 56, 68)");
   chart.destroy();

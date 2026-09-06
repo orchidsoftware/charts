@@ -12,7 +12,7 @@ const TOOLTIP_EDGE_GAP = 4;
 function tooltipHeading(text) {
   const heading = document.createElement("div");
 
-  heading.className = "charts2-tooltip-heading";
+  heading.className = "orchid-charts-tooltip-heading";
   heading.textContent = text;
 
   return heading;
@@ -30,8 +30,8 @@ function tooltipRow(item) {
   const name = document.createElement("span");
   const value = document.createElement("strong");
 
-  row.className = "charts2-tooltip-row";
-  swatch.className = "charts2-series-swatch";
+  row.className = "orchid-charts-tooltip-row";
+  swatch.className = "orchid-charts-series-swatch";
   swatch.setAttribute("aria-hidden", "true");
   swatch.style.background = item.color;
   name.textContent = item.name;
@@ -61,10 +61,10 @@ export default class ChartTooltip {
     this.#host = host;
     this.#svg = svg;
     this.#element = document.createElement("div");
-    this.#element.className = "charts2-tooltip";
+    this.#element.className = "orchid-charts-tooltip";
     this.#element.hidden = true;
     this.#element.setAttribute("role", "status");
-    this.#element.id = `charts2-tooltip-${chartId}`;
+    this.#element.id = `orchid-charts-tooltip-${chartId}`;
   }
 
   /**
@@ -98,7 +98,7 @@ export default class ChartTooltip {
     };
 
     const anchor = this.#anchor(mark, dimensions, hostBox);
-    const position = this.#clampedOrigin(this.#besideOrigin(anchor, size), size, hostBox);
+    const position = this.#position(anchor, size, hostBox);
     this.#element.style.left = `${position.left}px`;
     this.#element.style.top = `${position.top}px`;
   }
@@ -119,10 +119,19 @@ export default class ChartTooltip {
     const top = box.top - hostBox.top + this.#host.scrollTop;
 
     if (anchor) {
+      const project = (point) => ({
+        left: left + (point.x / dimensions.width) * box.width,
+        top: top + (point.y / dimensions.height) * box.height,
+        placement: point.placement ?? "top",
+      });
+
       return {
-        left: left + (anchor.x / dimensions.width) * box.width,
-        top: top + (anchor.y / dimensions.height) * box.height,
-        placement: anchor.placement ?? "top",
+        ...project(anchor),
+        contentHeight:
+          anchor.contentHeight === undefined
+            ? hostBox.height
+            : (anchor.contentHeight / dimensions.height) * box.height,
+        fallback: anchor.fallback && project(anchor.fallback),
       };
     }
 
@@ -131,6 +140,26 @@ export default class ChartTooltip {
       top: record.kind === "category" ? top + box.height / 2 + TOOLTIP_ANCHOR_OFFSET : top,
       placement: "top",
     };
+  }
+
+  /**
+   * Keeps radial details off the active axis when the outward side has no room.
+   *
+   * @param {object} anchor - Projected anchor with optional fallback and content height.
+   * @param {object} size - Measured tooltip dimensions.
+   * @param {object} hostBox - Visible chart viewport.
+   * @returns {object} Clamped origin outside any reserved legend space.
+   */
+  #position(anchor, size, hostBox) {
+    const viewport = { width: hostBox.width, height: anchor.contentHeight ?? hostBox.height };
+    const preferred = this.#besideOrigin(anchor, size);
+    const clamped = this.#clampedOrigin(preferred, size, viewport);
+
+    if (anchor.fallback && (preferred.left !== clamped.left || preferred.top !== clamped.top)) {
+      return this.#clampedOrigin(this.#besideOrigin(anchor.fallback, size), size, viewport);
+    }
+
+    return clamped;
   }
 
   /**
@@ -228,6 +257,7 @@ export default class ChartTooltip {
    */
   #renderContent(mark) {
     const content = chartMark(mark).tooltip;
+    this.#element.classList.toggle("orchid-charts-tooltip-wrap", Boolean(content.wrapNames));
     const items = content.items;
     const headingText = content.heading;
     const children = items.map((item) => tooltipRow(item));

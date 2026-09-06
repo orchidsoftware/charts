@@ -7,30 +7,30 @@
   font-synthesis: none;
   color: #1c2226;
   color-scheme: light dark;
-  background: var(--charts2-demo-background);
+  background: var(--orchid-charts-demo-background);
 
-  --charts2-demo-blue: #4f5d69;
-  --charts2-demo-blue-hover: #1c2226;
-  --charts2-demo-blue-soft: #e0e6eb;
-  --charts2-demo-coral: #d9785e;
-  --charts2-demo-ink: #1c2226;
-  --charts2-demo-muted: #4f5d69;
-  --charts2-demo-purple: #8267aa;
-  --charts2-demo-purple-soft: #ece6f5;
-  --charts2-demo-border: #c6d0d8;
-  --charts2-demo-surface: #edf1f4;
-  --charts2-demo-background: #e0e6eb;
-  --charts2-demo-elevated: #fff;
-  --charts2-demo-shadow: 0 18px 50px rgb(28 34 38 / 11%), 0 2px 8px rgb(28 34 38 / 6%);
-  --charts2-demo-shadow-hover: 0 24px 60px rgb(28 34 38 / 15%), 0 3px 10px rgb(28 34 38 / 8%);
-  --charts-label-color: var(--charts2-demo-ink);
-  --charts-secondary-label-color: var(--charts2-demo-muted);
-  --charts-axis-line-color: #d3dce3;
-  --charts-tooltip-bg: rgb(255 255 255 / 96%);
-  --charts-tooltip-value: var(--charts2-demo-ink);
-  --charts-focus-ring: var(--charts2-demo-blue);
-  --charts-mark-separator: var(--charts2-demo-elevated);
-  --charts-point-fill: var(--charts2-demo-elevated);
+  --orchid-charts-demo-blue: #4f5d69;
+  --orchid-charts-demo-blue-hover: #1c2226;
+  --orchid-charts-demo-blue-soft: #e0e6eb;
+  --orchid-charts-demo-coral: #d9785e;
+  --orchid-charts-demo-ink: #1c2226;
+  --orchid-charts-demo-muted: #4f5d69;
+  --orchid-charts-demo-purple: #8267aa;
+  --orchid-charts-demo-purple-soft: #ece6f5;
+  --orchid-charts-demo-border: #c6d0d8;
+  --orchid-charts-demo-surface: #edf1f4;
+  --orchid-charts-demo-background: #e0e6eb;
+  --orchid-charts-demo-elevated: #fff;
+  --orchid-charts-demo-shadow: 0 18px 50px rgb(28 34 38 / 11%), 0 2px 8px rgb(28 34 38 / 6%);
+  --orchid-charts-demo-shadow-hover: 0 24px 60px rgb(28 34 38 / 15%), 0 3px 10px rgb(28 34 38 / 8%);
+  --orchid-charts-label-color: var(--orchid-charts-demo-ink);
+  --orchid-charts-secondary-label-color: var(--orchid-charts-demo-muted);
+  --orchid-charts-axis-line-color: #d3dce3;
+  --orchid-charts-tooltip-bg: rgb(255 255 255 / 96%);
+  --orchid-charts-tooltip-value: var(--orchid-charts-demo-ink);
+  --orchid-charts-focus-ring: var(--orchid-charts-demo-blue);
+  --orchid-charts-mark-separator: var(--orchid-charts-demo-elevated);
+  --orchid-charts-point-fill: var(--orchid-charts-demo-elevated);
   --site-code-keyword: #7443a0;
   --site-code-string: #35643d;
   --site-code-number: #8c4c20;
@@ -49,7 +49,7 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
-  background: var(--charts2-demo-background);
+  background: var(--orchid-charts-demo-background);
 }
 
 main {
@@ -97,12 +97,12 @@ h3 {
 
 .site-header a {
   font-size: 14px;
-  color: var(--charts2-demo-muted);
+  color: var(--orchid-charts-demo-muted);
   text-decoration: none;
 }
 
 .site-header a:hover {
-  color: var(--charts2-demo-blue);
+  color: var(--orchid-charts-demo-blue);
 }
 
 .brand {
@@ -111,14 +111,14 @@ h3 {
   align-items: center;
   font-size: 22px !important;
   font-weight: 750;
-  color: var(--charts2-demo-ink) !important;
+  color: var(--orchid-charts-demo-ink) !important;
   letter-spacing: -0.6px;
 }
 
 .brand-mark {
   width: 32px;
   height: 32px;
-  color: var(--charts2-demo-ink);
+  color: var(--orchid-charts-demo-ink);
   fill: currentcolor;
 }
 
@@ -127,14 +127,14 @@ h3 {
   padding: 10px 15px;
   font-weight: 650;
   color: #fff;
-  background: var(--charts2-demo-blue);
+  background: var(--orchid-charts-demo-blue);
   border-radius: 9px;
   box-shadow: 0 4px 12px rgb(28 34 38 / 16%);
 }
 
 .site-header .header-cta:hover {
   color: #fff;
-  background: var(--charts2-demo-blue-hover);
+  background: var(--orchid-charts-demo-blue-hover);
 }
 
 /* Footer */
@@ -147,8 +147,8 @@ h3 {
   padding: 24px 0 36px;
   margin: auto;
   font-size: 12px;
-  color: var(--charts2-demo-muted);
-  border-top: 1px solid var(--charts2-demo-border);
+  color: var(--orchid-charts-demo-muted);
+  border-top: 1px solid var(--orchid-charts-demo-border);
 }
 
 .site-footer nav {
@@ -163,11 +163,11 @@ h3 {
 }
 
 .site-footer a:hover {
-  color: var(--charts2-demo-blue);
+  color: var(--orchid-charts-demo-blue);
 }
 
 .site-footer a:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--charts2-demo-blue) 38%, transparent);
+  outline: 3px solid color-mix(in srgb, var(--orchid-charts-demo-blue) 38%, transparent);
   outline-offset: 2px;
 }
 
@@ -210,25 +210,25 @@ h3 {
   :root {
     color: #fff;
 
-    --charts2-demo-ink: #fff;
-    --charts2-demo-muted: #b8c2ca;
-    --charts2-demo-border: #4f5d69;
-    --charts2-demo-surface: #252c31;
-    --charts2-demo-background: #1c2226;
-    --charts2-demo-elevated: #252c31;
-    --charts2-demo-blue: #e0e6eb;
-    --charts2-demo-blue-hover: #fff;
-    --charts2-demo-blue-soft: #4f5d69;
-    --charts2-demo-purple: #b09ad1;
-    --charts2-demo-purple-soft: #443b50;
-    --charts2-demo-shadow: 0 18px 50px rgb(0 0 0 / 20%), 0 2px 8px rgb(0 0 0 / 18%);
-    --charts2-demo-shadow-hover: 0 24px 60px rgb(0 0 0 / 28%), 0 3px 10px rgb(0 0 0 / 22%);
-    --charts-axis-line-color: #4f5d69;
-    --charts-tooltip-bg: rgb(28 34 38 / 96%);
+    --orchid-charts-demo-ink: #fff;
+    --orchid-charts-demo-muted: #b8c2ca;
+    --orchid-charts-demo-border: #4f5d69;
+    --orchid-charts-demo-surface: #252c31;
+    --orchid-charts-demo-background: #1c2226;
+    --orchid-charts-demo-elevated: #252c31;
+    --orchid-charts-demo-blue: #e0e6eb;
+    --orchid-charts-demo-blue-hover: #fff;
+    --orchid-charts-demo-blue-soft: #4f5d69;
+    --orchid-charts-demo-purple: #b09ad1;
+    --orchid-charts-demo-purple-soft: #443b50;
+    --orchid-charts-demo-shadow: 0 18px 50px rgb(0 0 0 / 20%), 0 2px 8px rgb(0 0 0 / 18%);
+    --orchid-charts-demo-shadow-hover: 0 24px 60px rgb(0 0 0 / 28%), 0 3px 10px rgb(0 0 0 / 22%);
+    --orchid-charts-axis-line-color: #4f5d69;
+    --orchid-charts-tooltip-bg: rgb(28 34 38 / 96%);
   }
 
   body {
-    background: var(--charts2-demo-background);
+    background: var(--orchid-charts-demo-background);
   }
 
   .site-header .header-cta,
@@ -239,11 +239,11 @@ h3 {
 
 .site-header a[aria-current="page"] {
   font-weight: 650;
-  color: var(--charts2-demo-ink);
+  color: var(--orchid-charts-demo-ink);
 }
 
 .site-header a:focus-visible {
-  outline: 3px solid var(--charts2-demo-purple);
+  outline: 3px solid var(--orchid-charts-demo-purple);
   outline-offset: 4px;
 }
 
@@ -254,7 +254,7 @@ code {
   font-size: 0.94em;
   font-weight: 500;
   font-variant-ligatures: none;
-  color: var(--charts2-demo-ink);
+  color: var(--orchid-charts-demo-ink);
 }
 
 pre {
@@ -263,9 +263,9 @@ pre {
   padding: 24px;
   margin: 0;
   overflow-x: auto;
-  color: var(--charts2-demo-ink);
-  background: var(--charts2-demo-surface);
-  border: 1px solid var(--charts2-demo-border);
+  color: var(--orchid-charts-demo-ink);
+  background: var(--orchid-charts-demo-surface);
+  border: 1px solid var(--orchid-charts-demo-border);
   border-radius: 12px;
 }
 
@@ -331,55 +331,55 @@ pre code {
 /* The gallery and documentation share the same chart icon artwork. */
 :is(.support-types, .docs-nav-group) .support-guide {
   fill: none;
-  stroke: var(--charts2-demo-border);
+  stroke: var(--orchid-charts-demo-border);
   stroke-width: 1.25;
 }
 
 :is(.support-types, .docs-nav-group) .support-guide-fill {
-  fill: var(--charts2-demo-border);
+  fill: var(--orchid-charts-demo-border);
   stroke: none;
 }
 
 :is(.support-types, .docs-nav-group) .support-primary {
   fill: none;
-  stroke: var(--charts2-demo-blue);
+  stroke: var(--orchid-charts-demo-blue);
   stroke-width: 2;
 }
 
 :is(.support-types, .docs-nav-group) .support-secondary {
   fill: none;
-  stroke: var(--charts2-demo-purple);
+  stroke: var(--orchid-charts-demo-purple);
   stroke-width: 1.75;
 }
 
 :is(.support-types, .docs-nav-group) .support-primary-fill {
-  fill: var(--charts2-demo-blue-soft);
-  stroke: var(--charts2-demo-blue);
+  fill: var(--orchid-charts-demo-blue-soft);
+  stroke: var(--orchid-charts-demo-blue);
   stroke-width: 1.5;
 }
 
 :is(.support-types, .docs-nav-group) .support-primary-soft-fill {
   opacity: 0.62;
-  fill: var(--charts2-demo-blue-soft);
-  stroke: var(--charts2-demo-blue);
+  fill: var(--orchid-charts-demo-blue-soft);
+  stroke: var(--orchid-charts-demo-blue);
   stroke-width: 1;
 }
 
 :is(.support-types, .docs-nav-group) .support-secondary-fill {
-  fill: var(--charts2-demo-purple-soft);
-  stroke: var(--charts2-demo-purple);
+  fill: var(--orchid-charts-demo-purple-soft);
+  stroke: var(--orchid-charts-demo-purple);
   stroke-width: 1.5;
 }
 
 :is(.support-types, .docs-nav-group) .support-mark circle {
-  fill: var(--charts2-demo-elevated);
-  stroke: var(--charts2-demo-blue);
+  fill: var(--orchid-charts-demo-elevated);
+  stroke: var(--orchid-charts-demo-blue);
   stroke-width: 1.75;
 }
 
 :is(.support-types, .docs-nav-group) .support-secondary-mark circle {
-  fill: var(--charts2-demo-elevated);
-  stroke: var(--charts2-demo-purple);
+  fill: var(--orchid-charts-demo-elevated);
+  stroke: var(--orchid-charts-demo-purple);
   stroke-width: 1.5;
 }
 
@@ -392,18 +392,18 @@ pre code {
 }
 
 :is(.support-types, .docs-nav-group) .support-guide-ring {
-  stroke: var(--charts2-demo-border);
+  stroke: var(--orchid-charts-demo-border);
   stroke-width: 6;
 }
 
 :is(.support-types, .docs-nav-group) .support-primary-ring {
-  stroke: var(--charts2-demo-blue);
+  stroke: var(--orchid-charts-demo-blue);
   stroke-width: 6;
   stroke-dasharray: 56 44;
 }
 
 :is(.support-types, .docs-nav-group) .support-secondary-ring {
-  stroke: var(--charts2-demo-purple);
+  stroke: var(--orchid-charts-demo-purple);
   stroke-width: 6;
   stroke-dasharray: 23 77;
   stroke-dashoffset: -59;
@@ -414,7 +414,7 @@ pre code {
 }
 
 :is(.support-types, .docs-nav-group) .support-heatmap rect {
-  fill: var(--charts2-demo-blue);
+  fill: var(--orchid-charts-demo-blue);
   stroke: none;
 }
 

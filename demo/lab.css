@@ -3,7 +3,7 @@
 }
 
 .lab-header {
-  border-bottom: 1px solid var(--charts2-demo-border);
+  border-bottom: 1px solid var(--orchid-charts-demo-border);
 }
 
 .lab-intro {
@@ -21,7 +21,7 @@
     SFMono-Regular,
     Menlo,
     monospace;
-  color: var(--charts2-demo-muted);
+  color: var(--orchid-charts-demo-muted);
   text-transform: uppercase;
   letter-spacing: 0.8px;
 }
@@ -37,20 +37,20 @@
   margin: 0 0 22px;
   font-size: 16px;
   line-height: 1.65;
-  color: var(--charts2-demo-muted);
+  color: var(--orchid-charts-demo-muted);
 }
 
 .lab-intro-copy button {
   color: #fff;
   cursor: pointer;
-  background: var(--charts2-demo-blue);
+  background: var(--orchid-charts-demo-blue);
   border: 1px solid rgb(28 34 38 / 16%);
   border-radius: 10px;
   box-shadow: 0 4px 12px rgb(28 34 38 / 16%);
 }
 
 .lab-intro-copy button:hover {
-  background: var(--charts2-demo-blue-hover);
+  background: var(--orchid-charts-demo-blue-hover);
 }
 
 .lab-index {
@@ -58,8 +58,8 @@
   grid-template-columns: repeat(6, minmax(0, 1fr));
   margin-bottom: 88px;
   overflow: hidden;
-  background: var(--charts2-demo-elevated);
-  border: 1px solid var(--charts2-demo-border);
+  background: var(--orchid-charts-demo-elevated);
+  border: 1px solid var(--orchid-charts-demo-border);
   border-radius: 14px;
   box-shadow: 0 8px 30px rgb(28 34 38 / 5%);
 }
@@ -68,21 +68,21 @@
   display: block;
   min-width: 0;
   padding: 16px;
-  color: var(--charts2-demo-muted);
+  color: var(--orchid-charts-demo-muted);
   text-decoration: none;
 }
 
 .lab-index a + a {
-  border-left: 1px solid var(--charts2-demo-border);
+  border-left: 1px solid var(--orchid-charts-demo-border);
 }
 
 .lab-index a:hover {
-  color: var(--charts2-demo-ink);
-  background: var(--charts2-demo-blue-soft);
+  color: var(--orchid-charts-demo-ink);
+  background: var(--orchid-charts-demo-blue-soft);
 }
 
 .lab-index a:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--charts2-demo-blue) 38%, transparent);
+  outline: 3px solid color-mix(in srgb, var(--orchid-charts-demo-blue) 38%, transparent);
   outline-offset: -3px;
 }
 
@@ -98,7 +98,7 @@
     SFMono-Regular,
     Menlo,
     monospace;
-  color: var(--charts2-demo-ink);
+  color: var(--orchid-charts-demo-ink);
 }
 
 .lab-index span {
@@ -111,7 +111,7 @@
 .lab-group {
   padding: 72px 0 96px;
   scroll-margin-top: 24px;
-  border-top: 1px solid var(--charts2-demo-border);
+  border-top: 1px solid var(--orchid-charts-demo-border);
 }
 
 .lab-group-header {
@@ -133,7 +133,7 @@
   grid-column: 8 / 13;
   margin: 0;
   line-height: 1.55;
-  color: var(--charts2-demo-muted);
+  color: var(--orchid-charts-demo-muted);
 }
 
 .lab-grid {
@@ -165,9 +165,9 @@
   flex: 0 0 auto;
   padding: 4px 6px;
   font-size: 9px;
-  color: var(--charts2-demo-muted);
-  background: var(--charts2-demo-surface);
-  border: 1px solid var(--charts2-demo-border);
+  color: var(--orchid-charts-demo-muted);
+  background: var(--orchid-charts-demo-surface);
+  border: 1px solid var(--orchid-charts-demo-border);
   border-radius: 5px;
 }
 
@@ -181,14 +181,14 @@
 
 .lab-boundary {
   padding: 0;
-  background: var(--charts2-demo-background);
+  background: var(--orchid-charts-demo-background);
   border-radius: 4px;
 
-  --charts-label-color: #1c2226;
-  --charts-secondary-label-color: #4f5d69;
-  --charts-axis-line-color: #c6d0d8;
-  --charts-mark-separator: #e7e7e7;
-  --charts-point-fill: #e7e7e7;
+  --orchid-charts-label-color: #1c2226;
+  --orchid-charts-secondary-label-color: #4f5d69;
+  --orchid-charts-axis-line-color: #c6d0d8;
+  --orchid-charts-mark-separator: #e7e7e7;
+  --orchid-charts-point-fill: #e7e7e7;
 }
 
 .lab-footer {
@@ -211,7 +211,7 @@
   }
 
   .lab-index a:nth-child(n + 4) {
-    border-top: 1px solid var(--charts2-demo-border);
+    border-top: 1px solid var(--orchid-charts-demo-border);
   }
 }
 
@@ -245,11 +245,11 @@
   }
 
   .lab-index a:nth-child(even) {
-    border-left: 1px solid var(--charts2-demo-border);
+    border-left: 1px solid var(--orchid-charts-demo-border);
   }
 
   .lab-index a:nth-child(n + 3) {
-    border-top: 1px solid var(--charts2-demo-border);
+    border-top: 1px solid var(--orchid-charts-demo-border);
   }
 
   .lab-group {
@@ -288,15 +288,15 @@
 
 .lab-fixture-description {
   margin: 0 0 20px;
-  color: var(--charts2-demo-muted);
+  color: var(--orchid-charts-demo-muted);
 }
 
 .lab-fixture-error {
   min-height: 180px;
   padding: 20px;
   overflow-wrap: anywhere;
-  background: var(--charts2-demo-surface);
-  border: 1px dashed var(--charts2-demo-border);
+  background: var(--orchid-charts-demo-surface);
+  border: 1px dashed var(--orchid-charts-demo-border);
   border-radius: 8px;
 }
 

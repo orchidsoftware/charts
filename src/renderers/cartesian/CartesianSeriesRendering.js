@@ -119,7 +119,7 @@ function renderPointHit(rendering, series, target) {
       r: Math.max(MINIMUM_POINT_HIT_RADIUS, target.radius),
       fill: "transparent",
       stroke: "transparent",
-      class: `charts2-point-hit charts2-mark charts2-series-${series.datasetIndex % SERIES_CLASS_COUNT}`,
+      class: `orchid-charts-point-hit orchid-charts-mark orchid-charts-series-${series.datasetIndex % SERIES_CLASS_COUNT}`,
       style: `color:${series.dataset.color}`,
     },
     {
@@ -153,13 +153,13 @@ function renderArea(rendering, entry) {
       d: area,
       fill: dataset.color,
       opacity: dataset.opacity ?? DEFAULT_AREA_OPACITY,
-      class: "charts2-area",
+      class: "orchid-charts-area",
     });
 
     return;
   }
 
-  const gradientId = `charts2-gradient-${chart.id}-${datasetIndex}`;
+  const gradientId = `orchid-charts-gradient-${chart.id}-${datasetIndex}`;
   const definition = svg("linearGradient", { id: gradientId, x1: 0, y1: 0, x2: 0, y2: 1 });
   definition.append(
     svg("stop", {
@@ -176,7 +176,7 @@ function renderArea(rendering, entry) {
   const definitions = svg("defs");
   definitions.append(definition);
   surface.append(definitions);
-  surface.append("path", { d: area, fill: `url(#${gradientId})`, class: "charts2-area" });
+  surface.append("path", { d: area, fill: `url(#${gradientId})`, class: "orchid-charts-area" });
 }
 
 /**
@@ -198,9 +198,9 @@ function renderLineStroke(rendering, entry) {
       fill: "none",
       stroke: dataset.color,
       "stroke-width": presentation.strokeWidth,
-      style: `stroke-width:var(--charts-stroke-width, ${presentation.strokeWidth}px)`,
+      style: `stroke-width:var(--orchid-charts-stroke-width, ${presentation.strokeWidth}px)`,
       opacity: dataset.opacity ?? 1,
-      class: `${isDense ? "charts2-line charts2-mark" : "charts2-line"} charts2-series-${datasetIndex % SERIES_CLASS_COUNT}`,
+      class: `${isDense ? "orchid-charts-line orchid-charts-mark" : "orchid-charts-line"} orchid-charts-series-${datasetIndex % SERIES_CLASS_COUNT}`,
     },
     {
       kind: isDense ? "dataset" : "visual",
@@ -236,7 +236,7 @@ function renderVisibleLinePoints(rendering, entry) {
       cx: coordinates.x,
       cy: coordinates.y,
       r: presentation.dotSize,
-      class: "charts2-point-halo charts2-line-point-halo",
+      class: "orchid-charts-point-halo orchid-charts-line-point-halo",
       "aria-hidden": "true",
     });
     visuals[datasetIndex][pointIndex] = surface.mark(
@@ -245,10 +245,10 @@ function renderVisibleLinePoints(rendering, entry) {
         cx: coordinates.x,
         cy: coordinates.y,
         r: presentation.dotSize,
-        fill: "var(--charts-point-fill)",
+        fill: "var(--orchid-charts-point-fill)",
         stroke: dataset.color,
         opacity: dataset.opacity ?? 1,
-        class: `charts2-point charts2-visual-mark charts2-series-${datasetIndex % SERIES_CLASS_COUNT}`,
+        class: `orchid-charts-point orchid-charts-visual-mark orchid-charts-series-${datasetIndex % SERIES_CLASS_COUNT}`,
         "aria-hidden": "true",
       },
       {
@@ -375,7 +375,7 @@ function renderPoints(rendering, series) {
       surface.append("circle", {
         ...coordinates,
         r: radius,
-        class: "charts2-point-halo",
+        class: "orchid-charts-point-halo",
         "aria-hidden": "true",
       });
     }
@@ -386,10 +386,10 @@ function renderPoints(rendering, series) {
       {
         ...coordinates,
         r: radius,
-        fill: isOutlined ? "var(--charts-point-fill)" : series.dataset.color,
+        fill: isOutlined ? "var(--orchid-charts-point-fill)" : series.dataset.color,
         stroke: isOutlined ? series.dataset.color : "none",
         opacity: series.dataset.opacity ?? (isOutlined ? 1 : BUBBLE_OPACITY),
-        class: `charts2-${series.datasetType} charts2-visual-mark charts2-series-${series.datasetIndex % SERIES_CLASS_COUNT}`,
+        class: `orchid-charts-${series.datasetType} orchid-charts-visual-mark orchid-charts-series-${series.datasetIndex % SERIES_CLASS_COUNT}`,
         "aria-hidden": "true",
       },
       {
@@ -491,7 +491,7 @@ function renderBar(rendering, state) {
       opacity: dataset.opacity ?? 1,
       stroke: "transparent",
       "stroke-width": barHitStrokeWidth(layout, geometry),
-      class: `charts2-bar ${layout.usesInspector ? "charts2-visual-mark" : "charts2-mark"} charts2-series-${datasetIndex % SERIES_CLASS_COUNT}`,
+      class: `orchid-charts-bar ${layout.usesInspector ? "orchid-charts-visual-mark" : "orchid-charts-mark"} orchid-charts-series-${datasetIndex % SERIES_CLASS_COUNT}`,
     },
     {
       kind: layout.usesInspector ? "visual" : "point",

@@ -107,7 +107,12 @@ Line, bar, scatter, bubble, and mixed charts provide:
 ```js
 import { LineChart } from "@orchidsoftware/charts";
 
-LineChart.make(parent).labels(labels).dataset(name, values).smooth().gradient().render();
+LineChart.make(parent)
+  .labels(labels)
+  .dataset(name, values)
+  .smooth()
+  .gradient()
+  .render();
 ```
 
 Line-specific methods: `smooth(enabled?)`, `dots(visible)`, `dotSize(pixels)`,
@@ -123,7 +128,12 @@ See [Line charts](./line.md) for examples of every line method.
 ```js
 import { BarChart } from "@orchidsoftware/charts";
 
-BarChart.make(parent).labels(labels).dataset(name, values).horizontal().stacked().render();
+BarChart.make(parent)
+  .labels(labels)
+  .dataset(name, values)
+  .horizontal()
+  .stacked()
+  .render();
 ```
 
 Bar-specific methods: `horizontal(enabled?)`, `stacked(enabled?)`, and

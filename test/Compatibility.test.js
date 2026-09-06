@@ -196,9 +196,9 @@ const cases = [
         ],
       },
       selection: {
-        dataset: "Other",
+        label: labels[1],
         values: [
-          5,
+          4,
           6,
         ],
       },
@@ -244,7 +244,7 @@ describe("cross-browser public lifecycle", () => {
       const chart = builder.onSelect(onSelect).render();
       chart.update(data);
       expect(chart.point(0)).toMatchObject(point);
-      const marks = chart.element.querySelectorAll(".charts2-mark");
+      const marks = chart.element.querySelectorAll(".orchid-charts-mark");
       await (name === "radar" ? userEvent.tab() : page.elementLocator(marks[0]).click());
       expect(document.activeElement).toBe(marks[0]);
       await userEvent.keyboard("{ArrowRight}");
@@ -253,7 +253,7 @@ describe("cross-browser public lifecycle", () => {
       await userEvent.keyboard("{Enter}");
       expect(onSelect.mock.lastCall[0]).toMatchObject(selection);
       expect(marks[1].getAttribute("aria-pressed")).toBe("true");
-      expect(document.querySelector(".charts2-tooltip").hidden).toBe(false);
+      expect(document.querySelector(".orchid-charts-tooltip").hidden).toBe(false);
       const notifications = onSelect.mock.calls.length;
       document.querySelector("#chart").style.width = "520px";
       await expect.poll(() => chart.element.viewBox.baseVal.width).toBe(520);
@@ -261,7 +261,7 @@ describe("cross-browser public lifecycle", () => {
       expect(chart.element.querySelector(".is-active")).not.toBeNull();
       chart.destroy();
       expect(chart.element.isConnected).toBe(false);
-      expect(document.querySelector(".charts2-tooltip")).toBeNull();
+      expect(document.querySelector(".orchid-charts-tooltip")).toBeNull();
     },
   );
 });

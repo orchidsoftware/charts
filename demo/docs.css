@@ -4,7 +4,7 @@
 }
 
 .docs-page :is(a, summary, .docs-table, pre):focus-visible {
-  outline: 2px solid var(--charts2-demo-purple);
+  outline: 2px solid var(--orchid-charts-demo-purple);
   outline-offset: 4px;
 }
 
@@ -14,7 +14,7 @@
   left: 16px;
   z-index: 3;
   padding: 12px;
-  background: var(--charts2-demo-elevated);
+  background: var(--orchid-charts-demo-elevated);
   transform: translateY(-160%);
 }
 
@@ -32,7 +32,7 @@
   grid-template-columns: 224px minmax(0, 1fr);
   width: min(1200px, calc(100% - 56px));
   margin: auto;
-  border-top: 1px solid var(--charts2-demo-border);
+  border-top: 1px solid var(--orchid-charts-demo-border);
 }
 
 .docs-sidebar {
@@ -54,7 +54,7 @@
   font-family: inherit;
   font-size: 13px;
   font-weight: 650;
-  color: var(--charts2-demo-ink);
+  color: var(--orchid-charts-demo-ink);
 }
 
 .docs-nav-group a {
@@ -64,7 +64,7 @@
   padding: 7px 12px;
   font-size: 14px;
   line-height: 1.5;
-  color: var(--charts2-demo-muted);
+  color: var(--orchid-charts-demo-muted);
   text-decoration: none;
   border-inline-start: 2px solid transparent;
   border-radius: 0 6px 6px 0;
@@ -81,14 +81,14 @@
 }
 
 .docs-nav-group a:hover {
-  background: var(--charts2-demo-surface);
+  background: var(--orchid-charts-demo-surface);
 }
 
 .docs-nav-group a[aria-current="page"] {
   font-weight: 600;
-  color: var(--charts2-demo-ink);
-  background: var(--charts2-demo-elevated);
-  border-inline-start-color: var(--charts2-demo-purple);
+  color: var(--orchid-charts-demo-ink);
+  background: var(--orchid-charts-demo-elevated);
+  border-inline-start-color: var(--orchid-charts-demo-purple);
 }
 
 .docs-mobile-nav {
@@ -103,8 +103,8 @@
   font-size: 17px;
   line-height: 1.75;
   overflow-wrap: break-word;
-  background: var(--charts2-demo-elevated);
-  border-inline-start: 1px solid var(--charts2-demo-border);
+  background: var(--orchid-charts-demo-elevated);
+  border-inline-start: 1px solid var(--orchid-charts-demo-border);
 }
 
 .docs-content article {
@@ -150,7 +150,7 @@
   font-weight: inherit;
   line-height: inherit;
   color: inherit;
-  background: color-mix(in srgb, var(--charts2-demo-ink) 4%, transparent);
+  background: color-mix(in srgb, var(--orchid-charts-demo-ink) 4%, transparent);
   border-radius: 4px;
   box-decoration-break: clone;
 }
@@ -158,7 +158,7 @@
 .docs-content article > h1 + p {
   margin-bottom: 32px;
   font-size: 17px;
-  color: var(--charts2-demo-muted);
+  color: var(--orchid-charts-demo-muted);
 }
 
 .docs-content li + li {
@@ -173,8 +173,8 @@
 
 .docs-code {
   margin: 20px 0 24px;
-  background: var(--charts2-demo-surface);
-  border: 1px solid var(--charts2-demo-border);
+  background: var(--orchid-charts-demo-surface);
+  border: 1px solid var(--orchid-charts-demo-border);
   border-radius: 12px;
 }
 
@@ -182,7 +182,7 @@
   padding: 10px 18px 0;
   font-size: 12px;
   font-weight: 500;
-  color: var(--charts2-demo-muted);
+  color: var(--orchid-charts-demo-muted);
 }
 
 .docs-content pre {
@@ -191,7 +191,7 @@
   margin: 0;
   overflow-x: auto;
   line-height: 1.7;
-  color: var(--charts2-demo-ink);
+  color: var(--orchid-charts-demo-ink);
   background: transparent;
   border: 0;
   border-radius: 12px;
@@ -201,8 +201,8 @@
 .docs-content blockquote {
   padding-inline-start: 20px;
   margin-inline: 0;
-  color: var(--charts2-demo-muted);
-  border-inline-start: 3px solid var(--charts2-demo-border);
+  color: var(--orchid-charts-demo-muted);
+  border-inline-start: 3px solid var(--orchid-charts-demo-border);
 }
 
 .docs-content img {
@@ -229,20 +229,20 @@
   padding: 12px;
   vertical-align: top;
   text-align: start;
-  border-bottom: 1px solid var(--charts2-demo-border);
+  border-bottom: 1px solid var(--orchid-charts-demo-border);
 }
 
 .docs-table th {
   font-size: 14px;
   font-weight: 600;
-  background: var(--charts2-demo-surface);
+  background: var(--orchid-charts-demo-surface);
 }
 
 .docs-content .docs-source {
   max-width: 68ch;
   margin: 40px 0 0;
   font-size: 13px;
-  color: var(--charts2-demo-muted);
+  color: var(--orchid-charts-demo-muted);
 }
 
 @media (width <= 760px) {
@@ -259,7 +259,7 @@
     position: static;
     max-height: none;
     padding: 0 20px;
-    border-bottom: 1px solid var(--charts2-demo-border);
+    border-bottom: 1px solid var(--orchid-charts-demo-border);
   }
 
   .docs-desktop-nav {

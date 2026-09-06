@@ -78,7 +78,7 @@ JSDoc completeness, dependency cycles, and complexity budgets.
 | `support/Constants.js`                              | Keep                                                                                    | Frozen enums and immutable arrays form the closed runtime vocabulary                                        |
 | `support/Dom.js`                                    | Keep                                                                                    | Small names such as `svg` and `titled` make renderer call sites compact and readable                        |
 | `support/presentation/Time.js`                      | Keep                                                                                    | Tick and formatting names match the time domain without wrapper classes                                     |
-| `styles.css`                                        | Keep                                                                                    | Public `charts2-…` names form the stable visual/interaction namespace                                       |
+| `styles.css`                                        | Keep                                                                                    | Public `orchid-charts-…` names form the stable visual/interaction namespace                                 |
 
 ## Rejected mechanical renames
 

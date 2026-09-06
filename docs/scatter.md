@@ -50,7 +50,9 @@ A plain number is also accepted. In that form, its array index becomes the
 ```js
 import { ScatterChart } from "@orchidsoftware/charts";
 
-ScatterChart.make("#results").dataset([18, 31, 46]).render();
+ScatterChart.make("#results")
+  .dataset([18, 31, 46])
+  .render();
 ```
 
 ## Point Visibility
@@ -61,7 +63,10 @@ annotations:
 ```js
 import { ScatterChart } from "@orchidsoftware/charts";
 
-ScatterChart.make("#results").dataset(points).dots(false).render();
+ScatterChart.make("#results")
+  .dataset(points)
+  .dots(false)
+  .render();
 ```
 
 ## Dataset Appearance
@@ -74,7 +79,9 @@ import { ScatterChart } from "@orchidsoftware/charts";
 
 ScatterChart.make("#results")
   .dataset("Teams", points, (dataset) => {
-    dataset.color("#2563eb").opacity(0.75);
+    dataset
+      .color("#2563eb")
+      .opacity(0.75);
   })
   .render();
 ```

@@ -552,39 +552,39 @@ function setTheme(theme) {
   const isDark = theme === "dark";
   const tokens = isDark
     ? {
-        "--charts2-demo-ink": "#f2f2f7",
-        "--charts2-demo-muted": "#aeaeb2",
-        "--charts2-demo-border": "#38383a",
-        "--charts2-demo-surface": "#1c1c1e",
-        "--charts2-demo-background": "#000000",
-        "--charts2-demo-elevated": "#1c1c1e",
-        "--charts-label-color": "#f2f2f7",
-        "--charts-secondary-label-color": "#aeaeb2",
-        "--charts-axis-line-color": "#3a3a3c",
-        "--charts-tooltip-bg": "rgba(44, 44, 46, .96)",
-        "--charts-tooltip-value": "#ffffff",
-        "--charts-mark-separator": "#1c1c1e",
-        "--charts-point-fill": "#1c1c1e",
+        "--orchid-charts-demo-ink": "#f2f2f7",
+        "--orchid-charts-demo-muted": "#aeaeb2",
+        "--orchid-charts-demo-border": "#38383a",
+        "--orchid-charts-demo-surface": "#1c1c1e",
+        "--orchid-charts-demo-background": "#000000",
+        "--orchid-charts-demo-elevated": "#1c1c1e",
+        "--orchid-charts-label-color": "#f2f2f7",
+        "--orchid-charts-secondary-label-color": "#aeaeb2",
+        "--orchid-charts-axis-line-color": "#3a3a3c",
+        "--orchid-charts-tooltip-bg": "rgba(44, 44, 46, .96)",
+        "--orchid-charts-tooltip-value": "#ffffff",
+        "--orchid-charts-mark-separator": "#1c1c1e",
+        "--orchid-charts-point-fill": "#1c1c1e",
       }
     : {
-        "--charts2-demo-ink": "#192734",
-        "--charts2-demo-muted": "#6c7680",
-        "--charts2-demo-border": "#e2e6e9",
-        "--charts2-demo-surface": "#f8f9fa",
-        "--charts2-demo-background": "#ffffff",
-        "--charts2-demo-elevated": "#ffffff",
-        "--charts-label-color": "#3a3a3c",
-        "--charts-secondary-label-color": "#6e6e73",
-        "--charts-axis-line-color": "#e5e5ea",
-        "--charts-tooltip-bg": "rgba(255, 255, 255, .96)",
-        "--charts-tooltip-value": "#1d1d1f",
-        "--charts-mark-separator": "#ffffff",
-        "--charts-point-fill": "#ffffff",
+        "--orchid-charts-demo-ink": "#192734",
+        "--orchid-charts-demo-muted": "#6c7680",
+        "--orchid-charts-demo-border": "#e2e6e9",
+        "--orchid-charts-demo-surface": "#f8f9fa",
+        "--orchid-charts-demo-background": "#ffffff",
+        "--orchid-charts-demo-elevated": "#ffffff",
+        "--orchid-charts-label-color": "#3a3a3c",
+        "--orchid-charts-secondary-label-color": "#6e6e73",
+        "--orchid-charts-axis-line-color": "#e5e5ea",
+        "--orchid-charts-tooltip-bg": "rgba(255, 255, 255, .96)",
+        "--orchid-charts-tooltip-value": "#1d1d1f",
+        "--orchid-charts-mark-separator": "#ffffff",
+        "--orchid-charts-point-fill": "#ffffff",
       };
 
   document.documentElement.style.colorScheme = theme;
   document.documentElement.style.color = isDark ? "#f2f2f7" : "#192734";
-  document.documentElement.style.background = tokens["--charts2-demo-background"];
+  document.documentElement.style.background = tokens["--orchid-charts-demo-background"];
   for (const [
     name,
     value,
@@ -606,7 +606,7 @@ function resetInteractionState() {
   if (document.activeElement instanceof HTMLElement || document.activeElement instanceof SVGElement) {
     document.activeElement.blur();
   }
-  for (const mark of document.querySelectorAll(".charts2-interactive-mark")) {
+  for (const mark of document.querySelectorAll(".orchid-charts-interactive-mark")) {
     mark.dispatchEvent(new PointerEvent("pointerleave", { bubbles: true }));
     mark.classList.remove("is-hovered", "is-pressed");
   }
@@ -626,13 +626,17 @@ async function settle() {
 }
 
 async function matchScreenshot(element, name) {
+  if (element === document.body) {
+    await page.viewport(window.innerWidth, document.body.scrollHeight);
+    window.scrollTo(0, 0);
+  }
   await settle();
   await expect.element(page.elementLocator(element)).toMatchScreenshot(name, screenshotOptions);
 }
 
 function activeAppearance(name) {
   const card = stateCard(name);
-  const tooltip = card.querySelector(".charts2-tooltip");
+  const tooltip = card.querySelector(".orchid-charts-tooltip");
   const elements = [
     ...card.querySelectorAll("svg *"),
     tooltip,
@@ -668,7 +672,7 @@ function activeAppearance(name) {
 function applyState(name, variant) {
   const card = stateCard(name);
   const marks = [
-    ...card.querySelectorAll(".charts2-interactive-mark"),
+    ...card.querySelectorAll(".orchid-charts-interactive-mark"),
   ];
   const mark = marks[Math.min(1, marks.length - 1)];
 
@@ -706,7 +710,7 @@ function applyState(name, variant) {
   }
 
   expect(mark).toHaveClass("is-hovered");
-  expect(card.querySelector(".charts2-tooltip").hidden).toBe(false);
+  expect(card.querySelector(".orchid-charts-tooltip").hidden).toBe(false);
   if (variant === "pressed") {
     expect(mark).toHaveClass("is-pressed");
   }
@@ -773,6 +777,34 @@ afterAll(async () => {
 });
 
 describe.sequential("visual regression baselines", () => {
+  it.each([
+    [
+      "light",
+      1280,
+    ],
+    [
+      "dark",
+      1280,
+    ],
+    [
+      "light",
+      390,
+    ],
+    [
+      "dark",
+      390,
+    ],
+  ])("keeps the radar comparison readable in %s at %ipx", async (theme, width) => {
+    await page.viewport(width, 900);
+    setTheme(theme);
+    const card = demoCard("#radar");
+    const mark = card.querySelectorAll(".orchid-charts-radar-axis")[2];
+    mark.focus();
+    expect(card.querySelectorAll(".orchid-charts-tooltip-row")).toHaveLength(2);
+    expect(card.querySelector(".orchid-charts-tooltip-heading").textContent).toBe("Camera");
+    await matchScreenshot(card, `radar-comparison-${theme}-${width}`);
+  });
+
   it("keeps the complete desktop light demo stable", async () => {
     await matchScreenshot(document.body, "demo-body-desktop-light");
   });
@@ -802,11 +834,11 @@ describe.sequential("visual regression baselines", () => {
   ] of sharedMixedCards) {
     it(`keeps the ${name} popover stable`, async () => {
       const card = demoCard(selector);
-      const mark = card.querySelectorAll(".charts2-x-hit")[1];
+      const mark = card.querySelectorAll(".orchid-charts-x-hit")[1];
       mark.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
 
-      expect(card.querySelector(".charts2-tooltip-heading").textContent).not.toBe("");
-      expect(card.querySelectorAll(".charts2-tooltip-row")).toHaveLength(3);
+      expect(card.querySelector(".orchid-charts-tooltip-heading").textContent).not.toBe("");
+      expect(card.querySelectorAll(".orchid-charts-tooltip-row")).toHaveLength(3);
       await matchScreenshot(card, name);
     });
   }
@@ -819,11 +851,11 @@ describe.sequential("visual regression baselines", () => {
   ] of demoXYCards) {
     it(`keeps the ${name} popover stable`, async () => {
       const card = demoCard(selector);
-      const mark = card.querySelectorAll(".charts2-x-hit")[1];
+      const mark = card.querySelectorAll(".orchid-charts-x-hit")[1];
       mark.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
 
-      expect(card.querySelector(".charts2-tooltip-heading").textContent).toBe(heading);
-      expect(card.querySelectorAll(".charts2-tooltip-row")).toHaveLength(rowCount);
+      expect(card.querySelector(".orchid-charts-tooltip-heading").textContent).toBe(heading);
+      expect(card.querySelectorAll(".orchid-charts-tooltip-row")).toHaveLength(rowCount);
       await matchScreenshot(card, name);
     });
   }
@@ -834,11 +866,11 @@ describe.sequential("visual regression baselines", () => {
   ] of demoCompositionCards) {
     it(`keeps the ${name} popover stable`, async () => {
       const card = demoCard(selector);
-      const mark = card.querySelectorAll(".charts2-mark")[1];
+      const mark = card.querySelectorAll(".orchid-charts-mark")[1];
       mark.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
 
       expect(mark).toHaveClass("is-hovered");
-      expect(card.querySelectorAll(".charts2-tooltip-row")).toHaveLength(1);
+      expect(card.querySelectorAll(".orchid-charts-tooltip-row")).toHaveLength(1);
       await matchScreenshot(card, name);
     });
   }

@@ -134,7 +134,7 @@ describe("complete fluent authoring surface", () => {
     expect(chart.element.getAttribute("viewBox")).toBe("0 0 600 280");
     expect(
       [
-        ...chart.element.querySelectorAll(".charts2-annotation"),
+        ...chart.element.querySelectorAll(".orchid-charts-annotation"),
       ].map((node) => node.textContent),
     ).toEqual([
       "R:Band",
@@ -142,14 +142,14 @@ describe("complete fluent authoring surface", () => {
     ]);
     expect(
       [
-        ...chart.element.querySelectorAll(".charts2-annotation"),
+        ...chart.element.querySelectorAll(".orchid-charts-annotation"),
       ].every(
         (label) =>
           getComputedStyle(label).paintOrder === "stroke" && getComputedStyle(label).fontWeight === "500",
       ),
     ).toBe(true);
-    expect(chart.element.querySelectorAll(".charts2-annotation-background")).toHaveLength(0);
-    expect(chart.element.querySelectorAll(".charts2-annotation-sample")).toHaveLength(0);
+    expect(chart.element.querySelectorAll(".orchid-charts-annotation-background")).toHaveLength(0);
+    expect(chart.element.querySelectorAll(".orchid-charts-annotation-sample")).toHaveLength(0);
     expectFailure(() => tooltipScope.formatValue(String), "Tooltip scope has expired");
     expectFailure(() => axisScope.position("left"), "Y-axis scope has expired");
     expectFailure(() => markerScope.width(1), "Marker scope has expired");
@@ -176,7 +176,7 @@ describe("complete fluent authoring surface", () => {
         "#123456",
       )
       .render();
-    expect(bar.element.querySelectorAll(".charts2-bar")).toHaveLength(2);
+    expect(bar.element.querySelectorAll(".orchid-charts-bar")).toHaveLength(2);
     bar.destroy();
 
     resetHost();
@@ -249,7 +249,7 @@ describe("complete fluent authoring surface", () => {
         (dataset) => dataset.line(false),
       )
       .render();
-    expect(mixed.element.querySelectorAll(".charts2-mark").length).toBeGreaterThan(0);
+    expect(mixed.element.querySelectorAll(".orchid-charts-mark").length).toBeGreaterThan(0);
   });
 
   it("covers all composition and radial presentation methods", () => {
@@ -339,7 +339,7 @@ describe("complete fluent authoring surface", () => {
     for (const render of renderers) {
       resetHost();
       const chart = render();
-      expect(chart.element.querySelector(".charts2-mark")).not.toBeNull();
+      expect(chart.element.querySelector(".orchid-charts-mark")).not.toBeNull();
       chart.destroy();
     }
   });
@@ -356,7 +356,7 @@ describe("complete fluent authoring surface", () => {
         tooltip.formatDate(() => "date").formatValue((value) => `${value} commits`);
       })
       .render();
-    expect(heatmap.element.querySelectorAll(".charts2-mark")).toHaveLength(3);
+    expect(heatmap.element.querySelectorAll(".orchid-charts-mark")).toHaveLength(3);
     expect(heatmap.point(1)).toMatchObject({ key: "2026-01-02", value: 0 });
     expectFailure(() => heatmapScope.formatDate(String), "Heatmap tooltip scope has expired");
     expectFailure(() => heatmapScope.formatDate.call({}, String), "Builder scope has expired");
@@ -385,7 +385,7 @@ describe("complete fluent authoring surface", () => {
         tooltip.formatDate(() => "tooltip date").formatDuration(() => "tooltip duration");
       })
       .render();
-    expect(timesheet.element.querySelectorAll(".charts2-mark")).toHaveLength(2);
+    expect(timesheet.element.querySelectorAll(".orchid-charts-mark")).toHaveLength(2);
     expectFailure(() => timesheetScope.formatDuration(String), "Timesheet tooltip scope has expired");
   });
 
@@ -406,12 +406,12 @@ describe("complete fluent authoring surface", () => {
         "#00ff00",
       )
       .render();
-    expect(chart.element.querySelector(".charts2-marker").getAttribute("stroke")).toBe("#ff0000");
+    expect(chart.element.querySelector(".orchid-charts-marker").getAttribute("stroke")).toBe("#ff0000");
     chart.destroy();
 
     resetHost();
     const heatmap = HeatmapChart.make("#chart").points({ "2026-01-01": 1 }).tooltip(false).render();
-    expect(heatmap.element.querySelector(".charts2-mark")).not.toBeNull();
+    expect(heatmap.element.querySelector(".orchid-charts-mark")).not.toBeNull();
     heatmap.destroy();
 
     resetHost();
@@ -419,7 +419,7 @@ describe("complete fluent authoring surface", () => {
       .task("Task", "2026-01-01", "2026-01-02")
       .tooltip(false)
       .render();
-    expect(timesheet.element.querySelector(".charts2-mark")).not.toBeNull();
+    expect(timesheet.element.querySelector(".orchid-charts-mark")).not.toBeNull();
   });
 
   it("covers independently optional tooltip formatters and vertical multiline labels", () => {
@@ -438,7 +438,7 @@ describe("complete fluent authoring surface", () => {
       .render();
     expect(
       [
-        ...line.element.querySelectorAll(".charts2-label"),
+        ...line.element.querySelectorAll(".orchid-charts-label"),
       ].at(-1).textContent,
     ).toBe("First Second");
     line.destroy();
@@ -448,7 +448,7 @@ describe("complete fluent authoring surface", () => {
       .points({ "2026-01-01": 1 })
       .tooltip((tooltip) => tooltip.formatDate(() => "Only date"))
       .render();
-    expect(heatmap.element.querySelector(".charts2-mark")).not.toBeNull();
+    expect(heatmap.element.querySelector(".orchid-charts-mark")).not.toBeNull();
     heatmap.destroy();
 
     for (const configure of [
@@ -460,7 +460,7 @@ describe("complete fluent authoring surface", () => {
         .task("Task", "2026-01-01", "2026-01-02")
         .tooltip(configure)
         .render();
-      expect(timesheet.element.querySelector(".charts2-mark")).not.toBeNull();
+      expect(timesheet.element.querySelector(".orchid-charts-mark")).not.toBeNull();
       timesheet.destroy();
     }
   });
@@ -503,8 +503,8 @@ describe("complete fluent authoring surface", () => {
       )
       .gradient({ fromOpacity: 0.4 })
       .render();
-    expect(line.element.querySelector(".charts2-marker")).toBeNull();
-    expect(line.element.querySelector(".charts2-region")).toBeNull();
+    expect(line.element.querySelector(".orchid-charts-marker")).toBeNull();
+    expect(line.element.querySelector(".orchid-charts-region")).toBeNull();
     resizeCallback();
     line.destroy();
     resizeCallback();

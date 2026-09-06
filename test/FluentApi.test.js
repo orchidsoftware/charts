@@ -42,7 +42,7 @@ describe("LineChart fluent API", () => {
       .render();
 
     expect(chart.element.getAttribute("height")).toBe("300");
-    expect(chart.element.querySelector(".charts2-line").getAttribute("stroke")).toBe("#00bdff");
+    expect(chart.element.querySelector(".orchid-charts-line").getAttribute("stroke")).toBe("#00bdff");
     expect(chart.element.querySelectorAll("linearGradient")).toHaveLength(1);
     expect(chart.point(0)).toEqual({
       index: 0,
@@ -81,7 +81,7 @@ describe("LineChart fluent API", () => {
       ],
     });
     expect(chart.point(2)).toBeUndefined();
-    expect(chart.element.querySelector(".charts2-line").getAttribute("stroke")).toBe("#123456");
+    expect(chart.element.querySelector(".orchid-charts-line").getAttribute("stroke")).toBe("#123456");
   });
 
   it("consumes a builder only after successful rendering", () => {
@@ -118,7 +118,7 @@ describe("LineChart fluent API", () => {
       )
       .render();
 
-    expect(chart.element.querySelector(".charts2-line").getAttribute("stroke")).toBe("#654321");
+    expect(chart.element.querySelector(".orchid-charts-line").getAttribute("stroke")).toBe("#654321");
     expect(() => retained.color("#000000")).toThrow("Dataset scope has expired");
   });
 
@@ -151,9 +151,9 @@ describe("LineChart fluent API", () => {
       .frameless()
       .render();
 
-    expect(chart.element.querySelectorAll(".charts2-axis").length).toBeGreaterThan(0);
-    expect(chart.element.querySelectorAll(".charts2-point")).toHaveLength(3);
-    expect(chart.element.querySelector(".charts2-grid-horizontal")).toBeNull();
+    expect(chart.element.querySelectorAll(".orchid-charts-axis").length).toBeGreaterThan(0);
+    expect(chart.element.querySelectorAll(".orchid-charts-point")).toHaveLength(3);
+    expect(chart.element.querySelector(".orchid-charts-grid-horizontal")).toBeNull();
   });
 
   it("leaves existing host content untouched when initial rendering fails", () => {
@@ -242,7 +242,7 @@ describe("LineChart fluent API", () => {
       .render();
 
     chart.element
-      .querySelector('.charts2-mark[data-point-index="0"]')
+      .querySelector('.orchid-charts-mark[data-point-index="0"]')
       .dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(onSelect).toHaveBeenCalledTimes(1);
     chart.update({
@@ -282,7 +282,7 @@ describe("LineChart fluent API", () => {
       .render();
 
     named.element
-      .querySelector('.charts2-mark[data-point-index="0"]')
+      .querySelector('.orchid-charts-mark[data-point-index="0"]')
       .dispatchEvent(new MouseEvent("click", { bubbles: true }));
     named.update({
       labels: [
@@ -312,7 +312,9 @@ describe("LineChart fluent API", () => {
       ])
       .onSelect(vi.fn())
       .render();
-    unnamed.element.querySelector(".charts2-mark").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    unnamed.element
+      .querySelector(".orchid-charts-mark")
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
     unnamed.update({
       labels: [
         "Jan",
@@ -504,7 +506,7 @@ describe("named fluent chart definitions", () => {
     const chart = render();
 
     expect(chart.element).toBeInstanceOf(SVGSVGElement);
-    expect(chart.element.querySelector(".charts2-mark")).not.toBeNull();
+    expect(chart.element.querySelector(".orchid-charts-mark")).not.toBeNull();
     chart.destroy();
   });
 
@@ -592,9 +594,9 @@ describe("named fluent chart definitions", () => {
       )
       .render();
 
-    expect(line.element.querySelector(".charts2-line").getAttribute("stroke-width")).toBe("5");
-    expect(line.element.querySelector(".charts2-point").getAttribute("r")).toBe("7");
-    expect(line.element.querySelector(".charts2-area")).not.toBeNull();
+    expect(line.element.querySelector(".orchid-charts-line").getAttribute("stroke-width")).toBe("5");
+    expect(line.element.querySelector(".orchid-charts-point").getAttribute("r")).toBe("7");
+    expect(line.element.querySelector(".orchid-charts-area")).not.toBeNull();
     expect(line.element.querySelector("linearGradient")).toBeNull();
     line.destroy();
 
@@ -612,7 +614,7 @@ describe("named fluent chart definitions", () => {
         (dataset) => dataset.radius(9).opacity(0.4),
       )
       .render();
-    expect(bar.element.querySelector(".charts2-bar").getAttribute("opacity")).toBe("0.4");
+    expect(bar.element.querySelector(".orchid-charts-bar").getAttribute("opacity")).toBe("0.4");
   });
 
   it("normalizes maxSlices into point and selection identity data", () => {
@@ -653,7 +655,7 @@ describe("named fluent chart definitions", () => {
         3,
       ],
     });
-    expect(chart.element.querySelectorAll(".charts2-mark")).toHaveLength(3);
+    expect(chart.element.querySelectorAll(".orchid-charts-mark")).toHaveLength(3);
   });
 
   it("uses formatter precedence with a frozen public context", () => {
@@ -679,9 +681,9 @@ describe("named fluent chart definitions", () => {
       )
       .render();
 
-    expect(chart.element.querySelector(".charts2-interactive-mark").getAttribute("aria-label")).toContain(
-      "dataset",
-    );
+    expect(
+      chart.element.querySelector(".orchid-charts-interactive-mark").getAttribute("aria-label"),
+    ).toContain("dataset");
     expect(datasetFormatter).toHaveBeenCalled();
   });
 
@@ -695,7 +697,7 @@ describe("named fluent chart definitions", () => {
       .render();
 
     expect(chart.element.getAttribute("aria-label")).toBe("Revenue <strong>");
-    expect(chart.element.querySelector(".charts2-title").textContent).toBe("Revenue <strong>");
+    expect(chart.element.querySelector(".orchid-charts-title").textContent).toBe("Revenue <strong>");
     expect(chart.element.querySelector("strong")).toBeNull();
   });
 

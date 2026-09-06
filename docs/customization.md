@@ -5,40 +5,21 @@ the result you need.
 
 ## Set the Size
 
-Charts are responsive by default: they follow the content width of their host element,
-excluding CSS padding and borders. CSS transforms do not change the drawing coordinates.
-Set a fixed drawing width only when the chart should not follow its container.
-
-Cartesian plots, timesheets, percentage strips, and legends have no decorative
-horizontal padding inside the SVG. Axis labels still reserve the space they need;
-point spacing and vertical frameless stroke clearance remain part of the chart geometry.
-Bubble domains also reserve the space needed by the supplied circle radii.
-Add any surrounding space with CSS padding on the chart container.
-Legend space is reserved only when a legend is rendered; charts without a legend
-keep only the clearance needed by visible axis labels or frameless strokes.
-Percentage strips fill the available drawing area from its top edge. Without a
-legend they fill the entire SVG; with a legend, only its rows and the gap separating
-it from the strip are reserved. Pie and donut circles fit the available area without
-an extra inset, while keeping their circular proportions.
+Charts follow their container's content width by default. Use `height()` to set
+the height, or `width()` for a fixed width. Add surrounding space with CSS padding
+on the container.
 
 ```js
 import { LineChart } from "@orchidsoftware/charts";
 
-LineChart.make("#revenue").dataset([42, 48, 57]).height(280).render();
+LineChart.make("#revenue")
+  .dataset([42, 48, 57])
+  .height(280)
+  .render();
 ```
 
-- `height(pixels)` sets the chart height.
-- `width(pixels)` sets an explicit width.
-
-Heatmaps are the exception: their day cells stay square, calendar bands wrap at
-the available width, and the SVG derives its own height. Put optional outer
-space on the parent instead of inside the chart:
-
-```html
-<div style="padding: 10px">
-  <div id="activity"></div>
-</div>
-```
+Heatmaps calculate their height automatically to keep day cells square and do
+not support `height()`.
 
 ## Choose Chart Colors
 
@@ -77,14 +58,14 @@ card, or chart host:
 
 ```css
 .analytics-card {
-  --charts-label-color: #e2e8f0;
-  --charts-secondary-label-color: #94a3b8;
-  --charts-axis-line-color: #334155;
-  --charts-tooltip-bg: rgb(15 23 42 / 96%);
-  --charts-tooltip-value: #f8fafc;
-  --charts-focus-ring: #38bdf8;
-  --charts-mark-separator: #0f172a;
-  --charts-point-fill: #0f172a;
+  --orchid-charts-label-color: #e2e8f0;
+  --orchid-charts-secondary-label-color: #94a3b8;
+  --orchid-charts-axis-line-color: #334155;
+  --orchid-charts-tooltip-bg: rgb(15 23 42 / 96%);
+  --orchid-charts-tooltip-value: #f8fafc;
+  --orchid-charts-focus-ring: #38bdf8;
+  --orchid-charts-mark-separator: #0f172a;
+  --orchid-charts-point-fill: #0f172a;
 }
 ```
 
@@ -173,8 +154,8 @@ LineChart.make("#response-time")
 Line, bar, scatter, bubble, and mixed charts support markers and regions.
 Their labels use the secondary text color at full opacity, with a thin outline
 that separates letters from data. Region opacity affects the band, not its label.
-The outline follows `--charts-mark-separator`, so existing surface themes apply.
-Override `--charts-annotation-halo` on the host when annotation outlines need a
+The outline follows `--orchid-charts-mark-separator`, so existing surface themes apply.
+Override `--orchid-charts-annotation-halo` on the host when annotation outlines need a
 different surface color. Use the existing `labelColor()` scope method to override
 one annotation's text color.
 
@@ -187,10 +168,16 @@ import { LineChart } from "@orchidsoftware/charts";
 
 LineChart.make("#revenue")
   .dataset("Actual", [42, 48, 57], (dataset) => {
-    dataset.color("#2563eb").strokeWidth(3).dots(true);
+    dataset
+      .color("#2563eb")
+      .strokeWidth(3)
+      .dots(true);
   })
   .dataset("Plan", [45, 50, 55], (dataset) => {
-    dataset.color("#94a3b8").opacity(0.7).dots(false);
+    dataset
+      .color("#94a3b8")
+      .opacity(0.7)
+      .dots(false);
   })
   .render();
 ```

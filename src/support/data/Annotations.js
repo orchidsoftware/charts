@@ -31,7 +31,7 @@ const DASHED_LENGTH = 4;
 const DASHED_GAP = 3;
 const DOTTED_LENGTH = 1;
 const DEFAULT_REGION_OPACITY = 0.08;
-const SECONDARY_LABEL_COLOR = "var(--charts-secondary-label-color, #6e6e73)";
+const SECONDARY_LABEL_COLOR = "var(--orchid-charts-secondary-label-color, #6e6e73)";
 
 const DASH_PATTERNS = Object.freeze({
   solid: [],
@@ -79,7 +79,7 @@ function normalizedRegion(region) {
       Math.min(...region.range),
       Math.max(...region.range),
     ],
-    color: region.color ?? "var(--charts-focus-ring, #007aff)",
+    color: region.color ?? "var(--orchid-charts-focus-ring, #007aff)",
     opacity: region.opacity ?? DEFAULT_REGION_OPACITY,
     labelPosition: region.labelPosition ?? "end",
     labelColor: region.labelColor ?? SECONDARY_LABEL_COLOR,

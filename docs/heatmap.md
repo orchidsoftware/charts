@@ -2,17 +2,8 @@
 
 ## Introduction
 
-Calendar heatmaps show activity day by day. Color intensity makes recurring
-patterns, quiet periods, and unusually active days easy to find.
-Each day remains a square at every responsive size; long ranges continue in
-additional horizontal calendar bands instead of scrolling.
-The heatmap uses the available width and derives its height from the date
-range, number of bands, and current container width. Day cells grow to at most
-32 CSS pixels, so short ranges remain compact even in wide containers.
-It adds no month headings
-or decorative section gaps, so the data remains one continuous field.
-The SVG adds no outer inset, so apply any desired padding to the chart's host
-element.
+Calendar heatmaps show daily activity through color intensity. Day cells stay
+square, and long date ranges wrap into additional rows to fit the container.
 
 ## Creating a Calendar Heatmap
 
@@ -58,7 +49,10 @@ HeatmapChart.make("#activity")
 ```js
 import { HeatmapChart } from "@orchidsoftware/charts";
 
-HeatmapChart.make("#activity").points(activity).countLabel("contributions").render();
+HeatmapChart.make("#activity")
+  .points(activity)
+  .countLabel("contributions")
+  .render();
 ```
 
 ## Color Scale
@@ -82,7 +76,10 @@ Use `radius()` to round each day cell in CSS pixels:
 ```js
 import { HeatmapChart } from "@orchidsoftware/charts";
 
-HeatmapChart.make("#activity").points(activity).radius(2).render();
+HeatmapChart.make("#activity")
+  .points(activity)
+  .radius(2)
+  .render();
 ```
 
 ## Formatting the Tooltip
@@ -95,12 +92,14 @@ import { HeatmapChart } from "@orchidsoftware/charts";
 HeatmapChart.make("#activity")
   .points(activity)
   .tooltip((tooltip) => {
-    tooltip.formatDate((date) => date.toLocaleDateString()).formatValue((value) => `${value} contributions`);
+    tooltip
+      .formatDate((date) => date.toLocaleDateString())
+      .formatValue((value) => `${value} contributions`);
   })
   .render();
 ```
 
 Calendar heatmaps also support `title()`, `description()`, `ariaLabel()`,
-`width()`, `colors()`, `tooltip()`, and `onSelect()`. They deliberately don't
-support `height()`: a fixed height would either distort square days or recreate
-unused space. See [Customization](./customization.md) for details.
+`width()`, `colors()`, `tooltip()`, and `onSelect()`. Height is calculated
+automatically; `height()` is not supported. See [Customization](./customization.md)
+for details.

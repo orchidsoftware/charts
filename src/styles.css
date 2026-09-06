@@ -1,109 +1,109 @@
 /* Foundations */
 
-.charts2-host {
+.orchid-charts-host {
   position: relative;
 }
 
 :root {
-  --charts-label-color: #3a3a3c;
-  --charts-secondary-label-color: #6e6e73;
-  --charts-axis-line-color: #e5e5ea;
-  --charts-tooltip-bg: rgb(255 255 255 / 96%);
-  --charts-tooltip-value: #1d1d1f;
-  --charts-focus-ring: #007aff;
-  --charts-mark-separator: #fff;
-  --charts-point-fill: #fff;
+  --orchid-charts-label-color: #3a3a3c;
+  --orchid-charts-secondary-label-color: #6e6e73;
+  --orchid-charts-axis-line-color: #e5e5ea;
+  --orchid-charts-tooltip-bg: rgb(255 255 255 / 96%);
+  --orchid-charts-tooltip-value: #1d1d1f;
+  --orchid-charts-focus-ring: #007aff;
+  --orchid-charts-mark-separator: #fff;
+  --orchid-charts-point-fill: #fff;
 }
 
 /* Chart primitives */
 
-.charts2-chart {
+.orchid-charts-chart {
   display: block;
   max-width: 100%;
   overflow: visible;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.charts2-title {
+.orchid-charts-title {
   font-size: 15px;
   font-weight: 600;
-  fill: var(--charts-label-color, #3a3a3c);
+  fill: var(--orchid-charts-label-color, #3a3a3c);
 }
 
-.charts2-axis {
-  stroke: var(--charts-axis-line-color, #f4f5f6);
+.orchid-charts-axis {
+  stroke: var(--orchid-charts-axis-line-color, #f4f5f6);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
 
-.charts2-line {
+.orchid-charts-line {
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
 
-.charts2-grid {
+.orchid-charts-grid {
   fill: none;
-  stroke: var(--charts-axis-line-color, #f4f5f6);
+  stroke: var(--orchid-charts-axis-line-color, #f4f5f6);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
   shape-rendering: crispedges;
 }
 
-.charts2-radar {
+.orchid-charts-radar {
   vector-effect: non-scaling-stroke;
 }
 
-.charts2-polar-area,
-.charts2-pie-slice,
-.charts2-donut-slice,
-.charts2-percentage-segment {
-  stroke: var(--charts-mark-separator);
+.orchid-charts-polar-area,
+.orchid-charts-pie-slice,
+.orchid-charts-donut-slice,
+.orchid-charts-percentage-segment {
+  stroke: var(--orchid-charts-mark-separator);
   stroke-width: 1.5;
   vector-effect: non-scaling-stroke;
 }
 
-.charts2-label,
-.charts2-legend,
-.charts2-annotation {
+.orchid-charts-label,
+.orchid-charts-legend,
+.orchid-charts-annotation {
   font:
     11px/1.25 -apple-system,
     BlinkMacSystemFont,
     "SF Pro Text",
     "Segoe UI",
     sans-serif;
-  fill: var(--charts-label-color, #313b44);
+  fill: var(--orchid-charts-label-color, #313b44);
 }
 
-.charts2-annotation {
+.orchid-charts-annotation {
   font-size: 12px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   pointer-events: none;
   opacity: 1;
-  stroke: var(--charts-annotation-halo, var(--charts-mark-separator));
+  stroke: var(--orchid-charts-annotation-halo, var(--orchid-charts-mark-separator));
   stroke-width: 2px;
   stroke-linejoin: round;
   paint-order: stroke fill;
 }
 
-.charts2-direct-value {
+.orchid-charts-direct-value {
   font:
     600 15px/1 -apple-system,
     BlinkMacSystemFont,
     "SF Pro Display",
     sans-serif;
-  fill: var(--charts-label-color);
+  fill: var(--orchid-charts-label-color);
 }
 
-.charts2-marker {
-  stroke: var(--charts-secondary-label-color);
+.orchid-charts-marker {
+  stroke: var(--orchid-charts-secondary-label-color);
   stroke-width: 1;
   stroke-dasharray: 4 3;
   vector-effect: non-scaling-stroke;
 }
 
-.charts2-slice-label {
+.orchid-charts-slice-label {
   font:
     600 10px system-ui,
     sans-serif;
@@ -113,135 +113,160 @@
 
 /* Interaction states */
 
-.charts2-mark {
+.orchid-charts-mark {
   cursor: default;
   outline: none;
   transform-origin: center;
   transform-box: fill-box;
 }
 
-.charts2-selectable-mark {
+.orchid-charts-selectable-mark {
   cursor: pointer;
 }
 
-.charts2-x-hit {
+.orchid-charts-radar-hit {
+  fill: transparent;
+}
+
+.orchid-charts-radar-guide {
+  pointer-events: none;
+  opacity: 0;
+}
+
+.orchid-charts-radar-guide line {
+  stroke: var(--orchid-charts-secondary-label-color);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.orchid-charts-radar-guide circle {
+  fill: var(--orchid-charts-point-fill);
+  stroke-width: 2;
+}
+
+.orchid-charts-radar-axis:is(.is-hovered, .is-active, :focus-visible) .orchid-charts-radar-guide {
+  opacity: 1;
+}
+
+.orchid-charts-x-hit {
   fill: transparent;
   stroke: transparent;
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
 
-.charts2-x-hit.is-hovered,
-.charts2-x-hit.is-active {
-  fill: var(--charts-focus-ring);
+.orchid-charts-x-hit.is-hovered,
+.orchid-charts-x-hit.is-active {
+  fill: var(--orchid-charts-focus-ring);
   fill-opacity: 0.08;
 
   /*
-  stroke: var(--charts-focus-ring);
+  stroke: var(--orchid-charts-focus-ring);
   stroke-opacity: 0.4;
    */
 }
 
-.charts2-interactive-mark.is-hovered,
-.charts2-visual-mark.is-hovered {
+.orchid-charts-interactive-mark.is-hovered,
+.orchid-charts-visual-mark.is-hovered {
   filter: brightness(0.96) saturate(1.08);
 }
 
-.charts2-interactive-mark:focus-visible {
-  filter: drop-shadow(0 0 1px var(--charts-tooltip-bg)) drop-shadow(0 0 2px var(--charts-focus-ring));
+.orchid-charts-interactive-mark:focus-visible {
+  filter: drop-shadow(0 0 1px var(--orchid-charts-tooltip-bg))
+    drop-shadow(0 0 2px var(--orchid-charts-focus-ring));
 }
 
-.charts2-interactive-mark.is-active {
-  filter: brightness(0.92) saturate(1.12) drop-shadow(0 0 2px var(--charts-focus-ring));
+.orchid-charts-interactive-mark.is-active {
+  filter: brightness(0.92) saturate(1.12) drop-shadow(0 0 2px var(--orchid-charts-focus-ring));
 }
 
-.charts2-interactive-mark.is-pressed {
+.orchid-charts-interactive-mark.is-pressed {
   opacity: 0.72;
 }
 
-.charts2-point-hit {
+.orchid-charts-point-hit {
   stroke-width: 2;
   vector-effect: non-scaling-stroke;
 }
 
-.charts2-point-hit.is-hovered,
-.charts2-point-hit.is-active {
-  fill: var(--charts-focus-ring);
+.orchid-charts-point-hit.is-hovered,
+.orchid-charts-point-hit.is-active {
+  fill: var(--orchid-charts-focus-ring);
   fill-opacity: 0.08;
   stroke: currentcolor;
   stroke-opacity: 0.42;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .charts2-x-hit:hover {
-    fill: var(--charts-focus-ring);
+  .orchid-charts-x-hit:hover {
+    fill: var(--orchid-charts-focus-ring);
     fill-opacity: 0.08;
   }
 
-  .charts2-previewable-mark:hover {
+  .orchid-charts-previewable-mark:hover {
     filter: brightness(0.96) saturate(1.08);
   }
 
-  .charts2-point-hit:hover {
-    fill: var(--charts-focus-ring);
+  .orchid-charts-point-hit:hover {
+    fill: var(--orchid-charts-focus-ring);
     fill-opacity: 0.08;
     stroke: currentcolor;
     stroke-opacity: 0.42;
   }
 }
 
-.charts2-point-halo {
+.orchid-charts-point-halo {
   pointer-events: none;
-  fill: var(--charts-point-fill);
-  stroke: var(--charts-point-fill);
+  fill: var(--orchid-charts-point-fill);
+  stroke: var(--orchid-charts-point-fill);
   stroke-width: 5;
   vector-effect: non-scaling-stroke;
 }
 
-.charts2-line-point-halo {
+.orchid-charts-line-point-halo {
   stroke-width: 3;
 }
 
-.charts2-point,
-.charts2-scatter {
+.orchid-charts-point,
+.orchid-charts-scatter {
   stroke-width: 3;
   vector-effect: non-scaling-stroke;
 }
 
-.charts2-point {
+.orchid-charts-point {
   stroke-width: 2;
 }
 
 /* Series and family details */
 
-.charts2-legend-group {
+.orchid-charts-legend-group {
   pointer-events: none;
 }
 
-.charts2-line.charts2-series-1 {
+.orchid-charts-line.orchid-charts-series-1 {
   stroke-dasharray: 8 4;
 }
 
-.charts2-line.charts2-series-2 {
+.orchid-charts-line.orchid-charts-series-2 {
   stroke-dasharray: 2 3;
 }
 
-.charts2-line.charts2-series-3 {
+.orchid-charts-line.orchid-charts-series-3 {
   stroke-dasharray: 10 3 2 3;
 }
 
-.charts2-heat-cell {
-  stroke: var(--charts-mark-separator);
+.orchid-charts-heat-cell {
+  stroke: var(--orchid-charts-mark-separator);
   stroke-width: 1;
 }
 
-.charts2-timesheet-bar {
+.orchid-charts-timesheet-bar {
   vector-effect: non-scaling-stroke;
 }
 
 /* Tooltip */
 
-.charts2-tooltip {
+.orchid-charts-tooltip {
   position: absolute;
   z-index: 20;
   box-sizing: border-box;
@@ -256,28 +281,28 @@
     "Segoe UI",
     Roboto,
     sans-serif;
-  color: var(--charts-tooltip-value, #1d1d1f);
+  color: var(--orchid-charts-tooltip-value, #1d1d1f);
   overflow-wrap: anywhere;
   white-space: normal;
   pointer-events: none;
-  background: var(--charts-tooltip-bg, rgb(255 255 255 / 96%));
+  background: var(--orchid-charts-tooltip-bg, rgb(255 255 255 / 96%));
   border: 1px solid rgb(0 0 0 / 8%);
   border-radius: 8px;
   box-shadow: 0 4px 14px rgb(0 0 0 / 12%);
 }
 
-.charts2-tooltip[hidden] {
+.orchid-charts-tooltip[hidden] {
   display: none;
 }
 
-.charts2-tooltip-heading {
+.orchid-charts-tooltip-heading {
   margin-bottom: 6px;
   font-weight: 500;
-  color: var(--charts-secondary-label-color);
+  color: var(--orchid-charts-secondary-label-color);
   text-wrap: balance;
 }
 
-.charts2-tooltip-row {
+.orchid-charts-tooltip-row {
   display: grid;
   grid-template-columns: 8px minmax(0, 1fr) auto;
   gap: 7px;
@@ -285,32 +310,38 @@
   min-width: 160px;
 }
 
-.charts2-tooltip-row + .charts2-tooltip-row {
+.orchid-charts-tooltip-row + .orchid-charts-tooltip-row {
   margin-top: 4px;
 }
 
-.charts2-tooltip-row .charts2-series-swatch {
+.orchid-charts-tooltip-row .orchid-charts-series-swatch {
   width: 8px;
   height: 8px;
   border-radius: 50%;
 }
 
-.charts2-tooltip-row span {
+.orchid-charts-tooltip-row span {
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 500;
   white-space: nowrap;
 }
 
-.charts2-tooltip-row strong {
+.orchid-charts-tooltip-row strong {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+.orchid-charts-tooltip-wrap .orchid-charts-tooltip-row span {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
 }
 
 /* Motion and adaptive appearance */
 
 @media (prefers-reduced-motion: no-preference) {
-  .charts2-mark {
+  .orchid-charts-mark {
     transition:
       filter 160ms ease,
       opacity 160ms ease,
@@ -320,46 +351,46 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .charts2-mark {
+  .orchid-charts-mark {
     transition: none !important;
   }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --charts-label-color: #f2f2f7;
-    --charts-secondary-label-color: #aeaeb2;
-    --charts-axis-line-color: #3a3a3c;
-    --charts-tooltip-bg: rgb(44 44 46 / 96%);
-    --charts-tooltip-value: #fff;
-    --charts-mark-separator: #1c1c1e;
-    --charts-point-fill: #1c1c1e;
+    --orchid-charts-label-color: #f2f2f7;
+    --orchid-charts-secondary-label-color: #aeaeb2;
+    --orchid-charts-axis-line-color: #3a3a3c;
+    --orchid-charts-tooltip-bg: rgb(44 44 46 / 96%);
+    --orchid-charts-tooltip-value: #fff;
+    --orchid-charts-mark-separator: #1c1c1e;
+    --orchid-charts-point-fill: #1c1c1e;
   }
 }
 
 @media (prefers-contrast: more) {
   :root {
-    --charts-axis-line-color: #8e8e93;
+    --orchid-charts-axis-line-color: #8e8e93;
   }
 
-  .charts2-interactive-mark:focus-visible,
-  .charts2-interactive-mark.is-active {
-    filter: drop-shadow(0 0 3px var(--charts-focus-ring));
+  .orchid-charts-interactive-mark:focus-visible,
+  .orchid-charts-interactive-mark.is-active {
+    filter: drop-shadow(0 0 3px var(--orchid-charts-focus-ring));
   }
 
-  .charts2-annotation {
+  .orchid-charts-annotation {
     font-weight: 600;
   }
 }
 
 @media (forced-colors: active) {
-  .charts2-annotation {
+  .orchid-charts-annotation {
     fill: CanvasText !important;
     stroke: Canvas;
   }
 }
 
-.charts2-heatmap-chart {
+.orchid-charts-heatmap-chart {
   width: 100%;
   max-width: 100%;
 }

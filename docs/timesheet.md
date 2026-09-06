@@ -100,7 +100,10 @@ The `radius()` method rounds task bars in CSS pixels:
 ```js
 import { TimesheetChart } from "@orchidsoftware/charts";
 
-TimesheetChart.make("#release-plan").task("Design", "2026-09-01", "2026-09-03").radius(5).render();
+TimesheetChart.make("#release-plan")
+  .task("Design", "2026-09-01", "2026-09-03")
+  .radius(5)
+  .render();
 ```
 
 ## Formatting the Tooltip

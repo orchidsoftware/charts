@@ -118,28 +118,30 @@ describe("real-world demo", () => {
     expect(document.querySelector("#bundle-size-value").textContent).toMatch(/^\d+\.\d kB$/);
     expect(document.querySelector("#bundle-size-gzip").textContent).toMatch(/^\(\d+\.\d kB gzip\)$/);
     expect(document.querySelector("#line svg").getAttribute("height")).toBe("320");
-    expect(document.querySelectorAll("#line .charts2-grid-vertical")).toHaveLength(0);
-    expect(document.querySelectorAll("#line .charts2-grid-horizontal").length).toBeGreaterThan(0);
+    expect(document.querySelectorAll("#line .orchid-charts-grid-vertical")).toHaveLength(0);
+    expect(document.querySelectorAll("#line .orchid-charts-grid-horizontal").length).toBeGreaterThan(0);
     expect(document.querySelector("#percentage svg").getAttribute("height")).toBe("80");
     expect(document.querySelector("#radar svg").getAttribute("height")).toBe("320");
     expect(document.querySelector("#fractions svg").getAttribute("height")).toBe("280");
-    expect(document.querySelector("#line-region .charts2-region").getAttribute("fill")).toBe("#248a3d");
-    expect(document.querySelector("#line-marker .charts2-marker").getAttribute("stroke")).toBe("#ff3b30");
-    expect(document.querySelector("#line-marker .charts2-marker").getAttribute("stroke-dasharray")).not.toBe(
-      "",
+    expect(document.querySelector("#line-region .orchid-charts-region").getAttribute("fill")).toBe("#248a3d");
+    expect(document.querySelector("#line-marker .orchid-charts-marker").getAttribute("stroke")).toBe(
+      "#ff3b30",
     );
-    expect(document.querySelectorAll(".charts2-annotation-background")).toHaveLength(0);
-    expect(getComputedStyle(document.querySelector("#line-marker .charts2-annotation")).fontWeight).toBe(
-      "500",
-    );
-    expect(getComputedStyle(document.querySelector("#line-region .charts2-annotation")).fontSize).toBe(
+    expect(
+      document.querySelector("#line-marker .orchid-charts-marker").getAttribute("stroke-dasharray"),
+    ).not.toBe("");
+    expect(document.querySelectorAll(".orchid-charts-annotation-background")).toHaveLength(0);
+    expect(
+      getComputedStyle(document.querySelector("#line-marker .orchid-charts-annotation")).fontWeight,
+    ).toBe("500");
+    expect(getComputedStyle(document.querySelector("#line-region .orchid-charts-annotation")).fontSize).toBe(
       "12px",
     );
-    const region = document.querySelector("#line-region .charts2-region").getBBox();
-    const regionLabel = document.querySelector("#line-region .charts2-region-label");
+    const region = document.querySelector("#line-region .orchid-charts-region").getBBox();
+    const regionLabel = document.querySelector("#line-region .orchid-charts-region-label");
     const regionLabelBounds = regionLabel.getBBox();
-    const marker = document.querySelector("#line-marker .charts2-marker");
-    const markerLabel = document.querySelector("#line-marker .charts2-marker-label");
+    const marker = document.querySelector("#line-marker .orchid-charts-marker");
+    const markerLabel = document.querySelector("#line-marker .orchid-charts-marker-label");
 
     expect(regionLabelBounds.y).toBeGreaterThan(region.y);
     expect(regionLabelBounds.y + regionLabelBounds.height).toBeLessThan(region.y + region.height);
@@ -149,10 +151,10 @@ describe("real-world demo", () => {
     expect(getComputedStyle(regionLabel).opacity).toBe("1");
     expect(getComputedStyle(regionLabel).paintOrder).toBe("stroke");
     expect(getComputedStyle(markerLabel).fontVariantNumeric).toContain("tabular-nums");
-    expect(document.querySelectorAll(".charts2-annotation-sample")).toHaveLength(0);
+    expect(document.querySelectorAll(".orchid-charts-annotation-sample")).toHaveLength(0);
 
     const localizedLabels = [
-      ...document.querySelectorAll("#absurd-labels .charts2-multiline-label"),
+      ...document.querySelectorAll("#absurd-labels .orchid-charts-multiline-label"),
     ];
     expect(
       localizedLabels.map((label) =>
@@ -185,7 +187,7 @@ describe("real-world demo", () => {
     expect(localizedLabels.every((label) => !label.textContent.includes("…"))).toBe(true);
     expect(
       [
-        ...document.querySelectorAll("#large-values .charts2-multiline-label"),
+        ...document.querySelectorAll("#large-values .orchid-charts-multiline-label"),
       ].map((label) => label.querySelectorAll("tspan").length),
     ).toEqual([
       2,
@@ -237,20 +239,22 @@ describe("real-world demo", () => {
     }
     const timesheetSvg = document.querySelector("#timesheet svg");
     const timesheetBounds = timesheetSvg.getBoundingClientRect();
-    expect(timesheetSvg.querySelectorAll(".charts2-timesheet-bar")).toHaveLength(6);
+    expect(timesheetSvg.querySelectorAll(".orchid-charts-timesheet-bar")).toHaveLength(6);
     expect(
       Math.max(
         ...[
-          ...timesheetSvg.querySelectorAll(".charts2-timesheet-task-label, .charts2-timesheet-tick"),
+          ...timesheetSvg.querySelectorAll(
+            ".orchid-charts-timesheet-task-label, .orchid-charts-timesheet-tick",
+          ),
         ].map((label) => label.getBoundingClientRect().right),
       ),
     ).toBeLessThanOrEqual(timesheetBounds.right);
     expect(document.querySelector("#heatmap svg").style.minWidth).toBe("");
     const heatmapHost = document.querySelector("#heatmap");
     const heatmapCells = [
-      ...heatmapHost.querySelectorAll(".charts2-heat-cell"),
+      ...heatmapHost.querySelectorAll(".orchid-charts-heat-cell"),
     ];
-    expect(heatmapHost).not.toHaveClass("charts2-scrollable-heatmap");
+    expect(heatmapHost).not.toHaveClass("orchid-charts-scrollable-heatmap");
     expect(heatmapHost.scrollWidth).toBe(heatmapHost.clientWidth);
     expect(
       heatmapCells.every((cell) => {
@@ -258,28 +262,32 @@ describe("real-world demo", () => {
         return Math.abs(bounds.width - bounds.height) < 0.01;
       }),
     ).toBe(true);
-    expect(heatmapHost.querySelectorAll(".charts2-heat-cell.charts2-mark")).toHaveLength(heatmapCells.length);
+    expect(heatmapHost.querySelectorAll(".orchid-charts-heat-cell.orchid-charts-mark")).toHaveLength(
+      heatmapCells.length,
+    );
     heatmapCells.at(-1).focus();
     const heatmapHostBounds = heatmapHost.getBoundingClientRect();
-    const heatmapTooltipBounds = heatmapHost.querySelector(".charts2-tooltip").getBoundingClientRect();
+    const heatmapTooltipBounds = heatmapHost.querySelector(".orchid-charts-tooltip").getBoundingClientRect();
     expect(heatmapTooltipBounds.left).toBeGreaterThanOrEqual(heatmapHostBounds.left + 4);
     expect(heatmapTooltipBounds.right).toBeLessThanOrEqual(heatmapHostBounds.right - 4);
 
     const signedMixed = document.querySelector("#mixed-signed svg");
     const signedValueLabels = [
-      ...signedMixed.querySelectorAll(".charts2-value-label"),
+      ...signedMixed.querySelectorAll(".orchid-charts-value-label"),
     ];
     expect(signedValueLabels.every((label) => label.getAttribute("text-anchor") === "start")).toBe(true);
     expect(
       Math.max(...signedValueLabels.map((label) => label.getBoundingClientRect().right)),
     ).toBeLessThanOrEqual(signedMixed.getBoundingClientRect().right);
-    const signedLegend = signedMixed.querySelector(".charts2-legend-group").getBoundingClientRect();
-    const signedPlotBottom = signedMixed.querySelector(".charts2-x-axis").getBoundingClientRect().bottom;
+    const signedLegend = signedMixed.querySelector(".orchid-charts-legend-group").getBoundingClientRect();
+    const signedPlotBottom = signedMixed
+      .querySelector(".orchid-charts-x-axis")
+      .getBoundingClientRect().bottom;
     expect(signedPlotBottom).toBeLessThan(signedLegend.top);
 
     const polarSvg = document.querySelector("#polar svg");
     const polarBounds = polarSvg.getBoundingClientRect();
-    for (const label of polarSvg.querySelectorAll(".charts2-polar-label")) {
+    for (const label of polarSvg.querySelectorAll(".orchid-charts-polar-label")) {
       const bounds = label.getBoundingClientRect();
       expect(bounds.left).toBeGreaterThanOrEqual(polarBounds.left + 12);
       expect(bounds.right).toBeLessThanOrEqual(polarBounds.right - 12);
@@ -291,19 +299,19 @@ describe("real-world demo", () => {
       "spark-bar",
     ]) {
       const svg = document.querySelector(`#${id} svg`);
-      expect(svg).not.toHaveClass("charts2-compact-chart");
-      expect(svg.querySelector(".charts2-axis")).toBeNull();
-      expect(svg.querySelector(".charts2-grid")).toBeNull();
-      expect(svg.querySelector(".charts2-label")).toBeNull();
-      expect(svg.querySelector(".charts2-legend")).toBeNull();
-      expect(svg.querySelector(".charts2-x-hit")).toBeNull();
-      expect(svg.querySelector(".charts2-interactive-mark")).toBeNull();
+      expect(svg).not.toHaveClass("orchid-charts-compact-chart");
+      expect(svg.querySelector(".orchid-charts-axis")).toBeNull();
+      expect(svg.querySelector(".orchid-charts-grid")).toBeNull();
+      expect(svg.querySelector(".orchid-charts-label")).toBeNull();
+      expect(svg.querySelector(".orchid-charts-legend")).toBeNull();
+      expect(svg.querySelector(".orchid-charts-x-hit")).toBeNull();
+      expect(svg.querySelector(".orchid-charts-interactive-mark")).toBeNull();
       expect(svg.querySelector("title")).toBeNull();
-      expect(document.querySelector(`#${id} .charts2-tooltip`).hidden).toBe(true);
+      expect(document.querySelector(`#${id} .orchid-charts-tooltip`).hidden).toBe(true);
     }
 
     const storageSegments = [
-      ...document.querySelectorAll("#percentage .charts2-percentage-segment"),
+      ...document.querySelectorAll("#percentage .orchid-charts-percentage-segment"),
     ];
     expect(storageSegments).toHaveLength(6);
     expect(storageSegments.map((segment) => segment.dataset.tooltip)).toEqual([
@@ -337,22 +345,22 @@ describe("real-world demo", () => {
       value,
     ] of xyCases) {
       const host = document.querySelector(`#${id}`);
-      const hit = host.querySelectorAll(".charts2-x-hit")[1];
+      const hit = host.querySelectorAll(".orchid-charts-x-hit")[1];
 
       hit.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
-      expect(host.querySelector(".charts2-tooltip-heading").textContent).toBe(heading);
-      expect(host.querySelector(".charts2-tooltip-row span").textContent).toBe(name);
-      expect(host.querySelector(".charts2-tooltip-row strong").textContent).toBe(value);
-      expect(host.querySelector(".charts2-point-hit")).toBeNull();
+      expect(host.querySelector(".orchid-charts-tooltip-heading").textContent).toBe(heading);
+      expect(host.querySelector(".orchid-charts-tooltip-row span").textContent).toBe(name);
+      expect(host.querySelector(".orchid-charts-tooltip-row strong").textContent).toBe(value);
+      expect(host.querySelector(".orchid-charts-point-hit")).toBeNull();
       hit.dispatchEvent(new PointerEvent("pointerleave", { bubbles: true }));
     }
 
     const stressBefore = stressIds.map((id) => document.querySelector(`#${id} svg`).getHTML());
-    const showcaseBefore = document.querySelector("#line .charts2-line").getAttribute("d");
+    const showcaseBefore = document.querySelector("#line .orchid-charts-line").getAttribute("d");
     vi.spyOn(Math, "random").mockReturnValue(0);
     document.querySelector("#shuffle").click();
 
-    expect(document.querySelector("#line .charts2-line").getAttribute("d")).not.toBe(showcaseBefore);
+    expect(document.querySelector("#line .orchid-charts-line").getAttribute("d")).not.toBe(showcaseBefore);
     expect(stressIds.map((id) => document.querySelector(`#${id} svg`).getHTML())).toEqual(stressBefore);
     expect(
       [
@@ -427,7 +435,7 @@ describe("demo loading layout", () => {
       [
         ...status.querySelectorAll("dd"),
       ].map((value) => value.textContent);
-    const point = document.querySelector("#line .charts2-x-hit");
+    const point = document.querySelector("#line .orchid-charts-x-hit");
     expect(status).toHaveAttribute("role", "status");
     expect(status).toHaveAttribute("aria-atomic", "true");
     expect(status.textContent).toContain("Latest month");

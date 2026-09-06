@@ -143,7 +143,7 @@ class PolarAreaRenderer {
 
     const colors = this.#chart.options.colors;
     sectorElement.setAttribute("fill", colors[index % colors.length]);
-    sectorElement.classList.add("charts2-polar-area", "charts2-mark");
+    sectorElement.classList.add("orchid-charts-polar-area", "orchid-charts-mark");
     this.#surface.mark(
       sectorElement,
       {},
@@ -213,7 +213,7 @@ class PolarAreaRenderer {
         attributes: {
           x: labelX,
           y: labelY,
-          class: "charts2-label charts2-polar-label",
+          class: "orchid-charts-label orchid-charts-polar-label",
           "text-anchor": anchor,
         },
         measurement: { maxWidth: Math.max(1, polarLabelWidth({ labelX, anchor, width: layout.width })) },

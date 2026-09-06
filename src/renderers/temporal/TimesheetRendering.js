@@ -41,7 +41,7 @@ class TimesheetRenderer {
         y1: bottom,
         x2: right,
         y2: bottom,
-        class: "charts2-axis charts2-x-axis",
+        class: "orchid-charts-axis orchid-charts-x-axis",
         "aria-hidden": "true",
       });
     }
@@ -68,7 +68,7 @@ class TimesheetRenderer {
           y1: top,
           x2: tick.position,
           y2: bottom,
-          class: "charts2-grid charts2-grid-vertical",
+          class: "orchid-charts-grid orchid-charts-grid-vertical",
           "aria-hidden": "true",
         });
       }
@@ -81,7 +81,7 @@ class TimesheetRenderer {
               x: tick.labelX,
               y: height - AXIS_LABEL_OFFSET,
               "text-anchor": tick.anchor,
-              class: "charts2-label charts2-timesheet-tick",
+              class: "orchid-charts-label orchid-charts-timesheet-tick",
             },
             measurement: { maxWidth: tick.maxWidth },
           }),
@@ -143,7 +143,7 @@ class TimesheetRenderer {
       y1: row.rowTop,
       x2: frame.right,
       y2: row.rowTop,
-      class: "charts2-grid charts2-grid-horizontal",
+      class: "orchid-charts-grid orchid-charts-grid-horizontal",
       "aria-hidden": "true",
     });
   }
@@ -168,7 +168,7 @@ class TimesheetRenderer {
           x: frame.left - TASK_LABEL_GAP,
           y: row.centerY + TASK_LABEL_BASELINE_OFFSET,
           "text-anchor": "end",
-          class: "charts2-label charts2-timesheet-task-label",
+          class: "orchid-charts-label orchid-charts-timesheet-task-label",
         },
         measurement: { maxWidth: frame.labelWidth - TASK_LABEL_GAP },
       }),
@@ -191,7 +191,7 @@ class TimesheetRenderer {
       height: barHeight,
       rx: row.radius,
       fill: task.color,
-      class: "charts2-timesheet-bar charts2-visual-mark",
+      class: "orchid-charts-timesheet-bar orchid-charts-visual-mark",
       "aria-hidden": "true",
     });
   }
@@ -213,7 +213,7 @@ class TimesheetRenderer {
         width: frame.plotWidth,
         height: frame.rowHeight,
         fill: "transparent",
-        class: "charts2-x-hit charts2-timesheet-hit charts2-mark",
+        class: "orchid-charts-x-hit orchid-charts-timesheet-hit orchid-charts-mark",
         style: `color:${task.color}`,
       },
       {

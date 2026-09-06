@@ -90,7 +90,7 @@ describe("InteractionController", () => {
     const namespace = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(namespace, "svg");
     const hit = document.createElementNS(namespace, "circle");
-    hit.classList.add("charts2-point-hit");
+    hit.classList.add("orchid-charts-point-hit");
     hit.dataset.datasetIndex = "0";
     hit.dataset.pointIndex = "0";
     svg.append(hit);

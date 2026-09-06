@@ -100,7 +100,7 @@ class AggregationRenderer {
   #renderPercentage(composition, { colors, layout, width }) {
     const strip = percentageStrip(width, layout, {
       radius: this.#chart.options.radius ?? DEFAULT_PERCENTAGE_RADIUS,
-      id: `charts2-percentage-clip-${this.#chart.id}`,
+      id: `orchid-charts-percentage-clip-${this.#chart.id}`,
     });
 
     if (strip.radius > 0) {
@@ -135,7 +135,7 @@ class AggregationRenderer {
           width: segmentWidth,
           height: strip.height,
           fill: colors[index % colors.length],
-          class: "charts2-percentage-segment charts2-mark",
+          class: "orchid-charts-percentage-segment orchid-charts-mark",
           ...(strip.radius > 0 && { "clip-path": `url(#${strip.clipId})` }),
         },
         {
@@ -211,7 +211,7 @@ class AggregationRenderer {
         {
           x: cx,
           y: cy + DONUT_LABEL_OFFSET,
-          class: "charts2-direct-value",
+          class: "orchid-charts-direct-value",
           "text-anchor": "middle",
         },
       );
@@ -231,7 +231,7 @@ class AggregationRenderer {
       sector.name,
       {
         ...sector.attributes,
-        class: `charts2-${type}-slice charts2-mark`,
+        class: `orchid-charts-${type}-slice orchid-charts-mark`,
       },
       {
         dataset: 0,

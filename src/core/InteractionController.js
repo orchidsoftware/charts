@@ -176,7 +176,7 @@ export default class InteractionController {
     }
 
     this.#listen(root.ownerDocument, "pointerdown", (event) => {
-      const mark = event.target.closest(".charts2-mark");
+      const mark = event.target.closest(".orchid-charts-mark");
 
       if (!this.#items.includes(mark)) {
         this.dismiss();
@@ -195,7 +195,7 @@ export default class InteractionController {
       return;
     }
 
-    const mark = event.target.closest(".charts2-mark");
+    const mark = event.target.closest(".orchid-charts-mark");
     const index = this.#items.indexOf(mark);
 
     if (index === -1) {
@@ -403,9 +403,9 @@ export default class InteractionController {
   #configureItem(item, index, initialFocusIndex) {
     const label = this.#labelFor(item, index);
 
-    item.classList.add("charts2-interactive-mark");
-    item.classList.toggle("charts2-previewable-mark", this.#previewable);
-    item.classList.toggle("charts2-selectable-mark", this.#selectable);
+    item.classList.add("orchid-charts-interactive-mark");
+    item.classList.toggle("orchid-charts-previewable-mark", this.#previewable);
+    item.classList.toggle("orchid-charts-selectable-mark", this.#selectable);
     item.setAttribute("role", this.#selectable ? "button" : "img");
     item.setAttribute("focusable", "true");
     item.setAttribute("tabindex", index === initialFocusIndex ? "0" : "-1");
@@ -604,10 +604,7 @@ export default class InteractionController {
 
     if (event.key === "Escape") {
       event.preventDefault();
-
-      if (this.#selectedIndex >= 0) {
-        this.#updateSelection(-1);
-      }
+      this.dismiss();
     }
   }
 }

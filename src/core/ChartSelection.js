@@ -304,28 +304,16 @@ function seriesIdentity(collections, mark) {
  * @returns {ChartSelection} Family-specialized presenter.
  */
 function createCompositionSelection(type, collections) {
+  if (type === ChartType.RADAR) {
+    return createSeriesSelection(type, collections);
+  }
+
   return new ChartSelection({
-    from: (mark) => {
-      const datasetIndex = mark.datasetIndex;
-      const pointIndex = mark.pointIndex;
-
-      return type === ChartType.RADAR
-        ? datasetPayload(type, datasetIndex, collections)
-        : compositionPayload(type, pointIndex, collections);
-    },
-    identityFor: (mark) => {
-      const datasetIndex = mark.datasetIndex;
-      const pointIndex = mark.pointIndex;
-
-      return type === ChartType.RADAR
-        ? identityKey("series", [
-            collections.datasets[datasetIndex]?.identityName,
-            "dataset",
-          ])
-        : identityKey("composition", [
-            pointLabel(collections, 0, pointIndex),
-          ]);
-    },
+    from: (mark) => compositionPayload(type, mark.pointIndex, collections),
+    identityFor: (mark) =>
+      identityKey("composition", [
+        pointLabel(collections, 0, mark.pointIndex),
+      ]),
   });
 }
 

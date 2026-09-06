@@ -30,7 +30,11 @@ Use `maxSlices()` to keep the largest categories and combine the remainder:
 ```js
 import { PercentageChart } from "@orchidsoftware/charts";
 
-PercentageChart.make("#traffic").labels(sources).dataset(visits).maxSlices(5).render();
+PercentageChart.make("#traffic")
+  .labels(sources)
+  .dataset(visits)
+  .maxSlices(5)
+  .render();
 ```
 
 ## Rounded Segments
@@ -40,7 +44,11 @@ The `radius()` method rounds segment corners in CSS pixels:
 ```js
 import { PercentageChart } from "@orchidsoftware/charts";
 
-PercentageChart.make("#storage").labels(["Used", "Available"]).dataset([68, 32]).radius(6).render();
+PercentageChart.make("#storage")
+  .labels(["Used", "Available"])
+  .dataset([68, 32])
+  .radius(6)
+  .render();
 ```
 
 Percentage charts also support `formatLabel()`, `formatValue()`,

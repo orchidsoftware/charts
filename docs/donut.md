@@ -28,7 +28,11 @@ Donut values must be non-negative and at least one value must be positive.
 ```js
 import { DonutChart } from "@orchidsoftware/charts";
 
-DonutChart.make("#sources").labels(sources).dataset(visits).maxSlices(5).render();
+DonutChart.make("#sources")
+  .labels(sources)
+  .dataset(visits)
+  .maxSlices(5)
+  .render();
 ```
 
 ## Starting Angle
@@ -38,7 +42,11 @@ Use `startAngle()` to rotate the first slice to a deliberate position:
 ```js
 import { DonutChart } from "@orchidsoftware/charts";
 
-DonutChart.make("#plans").labels(plans).dataset(accounts).startAngle(-90).render();
+DonutChart.make("#plans")
+  .labels(plans)
+  .dataset(accounts)
+  .startAngle(-90)
+  .render();
 ```
 
 ## Slice Spacing and Corners
@@ -48,7 +56,12 @@ DonutChart.make("#plans").labels(plans).dataset(accounts).startAngle(-90).render
 ```js
 import { DonutChart } from "@orchidsoftware/charts";
 
-DonutChart.make("#plans").labels(plans).dataset(accounts).padAngle(2).cornerRadius(4).render();
+DonutChart.make("#plans")
+  .labels(plans)
+  .dataset(accounts)
+  .padAngle(2)
+  .cornerRadius(4)
+  .render();
 ```
 
 Donut charts also support `formatLabel()`, `formatValue()`, `legend(false)`, and

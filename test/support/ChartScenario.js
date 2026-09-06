@@ -16,10 +16,10 @@ export default class ChartScenario {
   /**
    * Finds every mark participating in the shared interaction contract.
    *
-   * @param {string} [selector=".charts2-interactive-mark"] - Mark selector for a specialized scenario.
+   * @param {string} [selector=".orchid-charts-interactive-mark"] - Mark selector for a specialized scenario.
    * @returns {Element[]} Ordered interactive marks.
    */
-  marks(selector = ".charts2-interactive-mark") {
+  marks(selector = ".orchid-charts-interactive-mark") {
     return [
       ...this.#chart.element.querySelectorAll(selector),
     ];
@@ -29,10 +29,10 @@ export default class ChartScenario {
    * Selects one interactive mark for fluent person-level actions.
    *
    * @param {number} [index=0] - Zero-based mark position.
-   * @param {string} [selector=".charts2-interactive-mark"] - Mark selector for a specialized scenario.
+   * @param {string} [selector=".orchid-charts-interactive-mark"] - Mark selector for a specialized scenario.
    * @returns {ChartMark} Action driver for the selected mark.
    */
-  mark(index = 0, selector = ".charts2-interactive-mark") {
+  mark(index = 0, selector = ".orchid-charts-interactive-mark") {
     return chartMark(this.marks(selector)[index]);
   }
 
@@ -42,7 +42,7 @@ export default class ChartScenario {
    * @returns {HTMLElement} Tooltip element used by visible feature assertions.
    */
   tooltip() {
-    return this.#chart.element.parentElement.querySelector(".charts2-tooltip");
+    return this.#chart.element.parentElement.querySelector(".orchid-charts-tooltip");
   }
 
   /**

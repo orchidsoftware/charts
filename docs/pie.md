@@ -30,7 +30,11 @@ remainder:
 ```js
 import { PieChart } from "@orchidsoftware/charts";
 
-PieChart.make("#sources").labels(sources).dataset(visits).maxSlices(5).render();
+PieChart.make("#sources")
+  .labels(sources)
+  .dataset(visits)
+  .maxSlices(5)
+  .render();
 ```
 
 ## Starting Angle
@@ -40,7 +44,11 @@ PieChart.make("#sources").labels(sources).dataset(visits).maxSlices(5).render();
 ```js
 import { PieChart } from "@orchidsoftware/charts";
 
-PieChart.make("#plans").labels(plans).dataset(accounts).startAngle(-90).render();
+PieChart.make("#plans")
+  .labels(plans)
+  .dataset(accounts)
+  .startAngle(-90)
+  .render();
 ```
 
 ## Slice Spacing and Corners
@@ -51,7 +59,12 @@ their corners:
 ```js
 import { PieChart } from "@orchidsoftware/charts";
 
-PieChart.make("#plans").labels(plans).dataset(accounts).padAngle(2).cornerRadius(4).render();
+PieChart.make("#plans")
+  .labels(plans)
+  .dataset(accounts)
+  .padAngle(2)
+  .cornerRadius(4)
+  .render();
 ```
 
 Pie charts also support `formatLabel()`, `formatValue()`, `legend(false)`, and

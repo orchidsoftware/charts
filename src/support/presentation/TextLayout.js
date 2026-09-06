@@ -215,7 +215,7 @@ function wrappedLabelElement({ value, attributes, maxWidth, originalValue = valu
   const text = lines.join(" ");
 
   const visibleLines = lines.map((line) => truncateText(line, maxWidth));
-  const element = svg("text", { ...attributes, class: `${attributes.class} charts2-multiline-label` });
+  const element = svg("text", { ...attributes, class: `${attributes.class} orchid-charts-multiline-label` });
 
   for (const [
     index,

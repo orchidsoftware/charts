@@ -6,7 +6,25 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ## Unreleased
 
+## 0.0.3 - 2026-09-06
+
 ### Changed
+
+- Renamed CSS classes and generated element IDs from `charts2-` to
+  `orchid-charts-`, including the demo theme variables. Custom CSS selectors
+  targeting the old classes must use the new prefix. Library theme variables
+  now use `--orchid-charts-*` instead of `--charts-*`.
+
+- Published static documentation alongside the demo,
+  with clearer sizing guidance and readable fluent examples.
+- Stabilized demo loading heights, linked documentation calls to action to the
+  guides, and clarified chart updates, destruction, and persistent selection.
+
+- Radar inspection now follows measures across every profile, using wide sectors
+  and the standard compact series tooltip. Arrow keys move between measures;
+  `onSelect` and `point()` now address the measure instead of an entire dataset.
+- Radar tooltips keep long series names readable and reserve space for the legend;
+  Escape also dismisses a tooltip without a selection callback.
 
 - Limited calendar heatmap cells to 32 CSS pixels so short date ranges remain
   compact, with space below the intensity legend for its text.

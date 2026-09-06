@@ -4,11 +4,11 @@ import { BubbleChart } from "../src/index.js";
 import "../src/styles.css";
 
 function expectContained(chart) {
-  const axis = chart.element.querySelector(".charts2-x-axis");
+  const axis = chart.element.querySelector(".orchid-charts-x-axis");
   const left = Number(axis.getAttribute("x1"));
   const right = Number(axis.getAttribute("x2"));
   const bottom = Number(axis.getAttribute("y1"));
-  for (const circle of chart.element.querySelectorAll(".charts2-bubble")) {
+  for (const circle of chart.element.querySelectorAll(".orchid-charts-bubble")) {
     const radius = circle.r.baseVal.value;
     const box = {
       x: circle.cx.baseVal.value - radius,
@@ -41,7 +41,7 @@ describe("Bubble bounds", () => {
     expectContained(chart);
     expect(
       [
-        ...chart.element.querySelectorAll(".charts2-bubble"),
+        ...chart.element.querySelectorAll(".orchid-charts-bubble"),
       ].map((circle) => Number(circle.getAttribute("r"))),
     ).toEqual([
       28,
@@ -83,7 +83,7 @@ describe("Bubble bounds", () => {
     const decimal = new Intl.NumberFormat().formatToParts(0.1).find((part) => part.type === "decimal").value;
     expect(
       [
-        ...chart.element.querySelectorAll(".charts2-value-label"),
+        ...chart.element.querySelectorAll(".orchid-charts-value-label"),
       ].map((label) => label.textContent),
     ).toContainEqual(expect.stringContaining(decimal));
     chart.destroy();
@@ -97,7 +97,7 @@ describe("Bubble bounds", () => {
         { x: 0, y: 0, r: 40 },
       ])
       .render();
-    const box = chart.element.querySelector(".charts2-bubble").getBBox();
+    const box = chart.element.querySelector(".orchid-charts-bubble").getBBox();
     expect(box.y).toBeGreaterThanOrEqual(0);
     expect(box.y + box.height).toBeLessThanOrEqual(120);
     chart.update({
@@ -109,7 +109,7 @@ describe("Bubble bounds", () => {
         },
       ],
     });
-    const circle = chart.element.querySelector(".charts2-bubble");
+    const circle = chart.element.querySelector(".orchid-charts-bubble");
     expect(circle.getAttribute("r")).toBe("200");
     expect(Number.isFinite(Number(circle.getAttribute("cy")))).toBe(true);
     expect(Number.isFinite(Number(circle.getAttribute("cx")))).toBe(true);

@@ -18,7 +18,7 @@ import {
 import ChartScenario from "./support/ChartScenario.js";
 import "../src/styles.css";
 
-const tooltipFor = (chart) => chart.element.parentElement.querySelector(".charts2-tooltip");
+const tooltipFor = (chart) => chart.element.parentElement.querySelector(".orchid-charts-tooltip");
 
 function press(element, key) {
   element.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key }));
@@ -91,7 +91,7 @@ describe("shared chart interaction contract", () => {
         ],
       })
       .render();
-    const mark = chart.element.querySelector(".charts2-radar");
+    const mark = chart.element.querySelector(".orchid-charts-radar-axis");
 
     mark.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
     mark.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -173,7 +173,7 @@ describe("shared chart interaction contract", () => {
         })
         .render();
       const marks = [
-        ...chart.element.querySelectorAll(".charts2-interactive-mark"),
+        ...chart.element.querySelectorAll(".orchid-charts-interactive-mark"),
       ];
 
       expect(marks).toHaveLength(3);
@@ -223,7 +223,7 @@ describe("shared chart interaction contract", () => {
         ],
       })
       .render();
-    const topMark = whole.element.querySelector(".charts2-interactive-mark");
+    const topMark = whole.element.querySelector(".orchid-charts-interactive-mark");
 
     expect(topMark.dataset.tooltipPlacement).toBe("top");
     topMark.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
@@ -269,15 +269,15 @@ describe("shared chart interaction contract", () => {
         .dataset({ values })
         .render();
       const hits = [
-        ...chart.element.querySelectorAll(".charts2-x-hit"),
+        ...chart.element.querySelectorAll(".orchid-charts-x-hit"),
       ];
       const visibleMarks = [
-        ...chart.element.querySelectorAll(".charts2-visual-mark"),
+        ...chart.element.querySelectorAll(".orchid-charts-visual-mark"),
       ];
       const widths = hits.map((hit) => Number(hit.getAttribute("width")));
 
       expect(hits).toHaveLength(visibleMarks.length);
-      expect(chart.element.querySelector(".charts2-point-hit")).toBeNull();
+      expect(chart.element.querySelector(".orchid-charts-point-hit")).toBeNull();
       expect(widths[0]).toBeCloseTo(widths[1], 8);
       expect(widths.at(-1)).toBeCloseTo(widths.at(-2), 8);
       expect(Number(visibleMarks[0].getAttribute("cx"))).toBeGreaterThan(Number(hits[0].getAttribute("x")));
@@ -308,7 +308,7 @@ describe("shared chart interaction contract", () => {
       })
       .render();
     const lineWidths = [
-      ...line.element.querySelectorAll(".charts2-x-hit"),
+      ...line.element.querySelectorAll(".orchid-charts-x-hit"),
     ].map((hit) => Number(hit.getAttribute("width")));
 
     expect(lineWidths[0] * 2).toBeCloseTo(lineWidths[1], 8);
@@ -360,11 +360,11 @@ describe("shared chart interaction contract", () => {
         ],
       })
       .render();
-    const category = hoverChart.element.querySelector(".charts2-x-hit");
+    const category = hoverChart.element.querySelector(".orchid-charts-x-hit");
 
-    expect(hoverChart.element.querySelectorAll(".charts2-interactive-mark")).toHaveLength(2);
+    expect(hoverChart.element.querySelectorAll(".orchid-charts-interactive-mark")).toHaveLength(2);
     category.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
-    expect(tooltipFor(hoverChart).querySelectorAll(".charts2-tooltip-row")).toHaveLength(2);
+    expect(tooltipFor(hoverChart).querySelectorAll(".orchid-charts-tooltip-row")).toHaveLength(2);
     expect(tooltipFor(hoverChart).textContent).toContain("Actual");
     expect(tooltipFor(hoverChart).textContent).toContain("Plan");
     hoverChart.destroy();
@@ -389,8 +389,8 @@ describe("shared chart interaction contract", () => {
         ],
       })
       .render();
-    expect(selectable.element.querySelector(".charts2-x-hit")).toBeNull();
-    expect(selectable.element.querySelectorAll(".charts2-interactive-mark")).toHaveLength(4);
+    expect(selectable.element.querySelector(".orchid-charts-x-hit")).toBeNull();
+    expect(selectable.element.querySelectorAll(".orchid-charts-interactive-mark")).toHaveLength(4);
     selectable.destroy();
   });
 
@@ -476,10 +476,10 @@ describe("shared chart interaction contract", () => {
         })
         .render();
       const categories = [
-        ...chart.element.querySelectorAll(".charts2-x-hit"),
+        ...chart.element.querySelectorAll(".orchid-charts-x-hit"),
       ];
       const categoryLabels = [
-        ...chart.element.querySelectorAll(".charts2-label"),
+        ...chart.element.querySelectorAll(".orchid-charts-label"),
       ].slice(-labels.length);
 
       expect(categories).toHaveLength(labels.length);
@@ -493,8 +493,10 @@ describe("shared chart interaction contract", () => {
           8,
         );
         category.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
-        expect(tooltipFor(chart).querySelector(".charts2-tooltip-heading").textContent).toBe(labels[index]);
-        expect(tooltipFor(chart).querySelectorAll(".charts2-tooltip-row")).toHaveLength(3);
+        expect(tooltipFor(chart).querySelector(".orchid-charts-tooltip-heading").textContent).toBe(
+          labels[index],
+        );
+        expect(tooltipFor(chart).querySelectorAll(".orchid-charts-tooltip-row")).toHaveLength(3);
         category.dispatchEvent(new PointerEvent("pointerleave", { bubbles: true }));
       }
       chart.destroy();
@@ -516,7 +518,7 @@ describe("shared chart interaction contract", () => {
         ],
       })
       .render();
-    const percentageMarks = percentage.element.querySelectorAll(".charts2-interactive-mark");
+    const percentageMarks = percentage.element.querySelectorAll(".orchid-charts-interactive-mark");
     percentageMarks[0].focus();
     const firstPercentageWidth = tooltipFor(percentage).getBoundingClientRect().width;
     percentageMarks[2].focus();
@@ -546,7 +548,7 @@ describe("shared chart interaction contract", () => {
         ],
       })
       .render();
-    const fractionMarks = fractions.element.querySelectorAll(".charts2-x-hit");
+    const fractionMarks = fractions.element.querySelectorAll(".orchid-charts-x-hit");
     fractionMarks[0].focus();
     const firstFractionWidth = tooltipFor(fractions).getBoundingClientRect().width;
     fractionMarks[2].focus();
@@ -667,9 +669,9 @@ describe("shared chart interaction contract", () => {
 
     for (const { build, heading, value } of cases) {
       const chart = build();
-      chart.element.querySelector(".charts2-interactive-mark").focus();
-      const tooltipHeading = tooltipFor(chart).querySelector(".charts2-tooltip-heading");
-      const row = tooltipFor(chart).querySelector(".charts2-tooltip-row");
+      chart.element.querySelector(".orchid-charts-interactive-mark").focus();
+      const tooltipHeading = tooltipFor(chart).querySelector(".orchid-charts-tooltip-heading");
+      const row = tooltipFor(chart).querySelector(".orchid-charts-tooltip-row");
       expect(tooltipHeading).toBeNull();
       expect(row.querySelector("span").textContent).toBe(heading);
       expect(row.querySelector("strong").textContent).toBe(value);
@@ -701,11 +703,11 @@ describe("shared chart interaction contract", () => {
         ],
       })
       .render();
-    cartesian.element.querySelector(".charts2-x-hit").focus();
-    expect(tooltipFor(cartesian).querySelector(".charts2-tooltip-heading").textContent).toBe("Europe");
+    cartesian.element.querySelector(".orchid-charts-x-hit").focus();
+    expect(tooltipFor(cartesian).querySelector(".orchid-charts-tooltip-heading").textContent).toBe("Europe");
     expect(
       [
-        ...tooltipFor(cartesian).querySelectorAll(".charts2-tooltip-row span"),
+        ...tooltipFor(cartesian).querySelectorAll(".orchid-charts-tooltip-row span"),
       ].map((node) => node.textContent),
     ).toEqual([
       "Standard",
@@ -713,7 +715,7 @@ describe("shared chart interaction contract", () => {
     ]);
     expect(
       [
-        ...tooltipFor(cartesian).querySelectorAll(".charts2-tooltip-row strong"),
+        ...tooltipFor(cartesian).querySelectorAll(".orchid-charts-tooltip-row strong"),
       ].map((node) => node.textContent),
     ).toEqual([
       "36",
@@ -736,11 +738,11 @@ describe("shared chart interaction contract", () => {
         ],
       })
       .render();
-    const mark = chart.element.querySelector(".charts2-interactive-mark");
+    const mark = chart.element.querySelector(".orchid-charts-interactive-mark");
 
     expect(mark.getAttribute("role")).toBe("img");
     expect(mark.hasAttribute("aria-pressed")).toBe(false);
-    expect(mark.classList.contains("charts2-selectable-mark")).toBe(false);
+    expect(mark.classList.contains("orchid-charts-selectable-mark")).toBe(false);
     const pointerDown = new PointerEvent("pointerdown", { bubbles: true, cancelable: true });
     mark.dispatchEvent(pointerDown);
     expect(pointerDown.defaultPrevented).toBe(true);
@@ -768,7 +770,7 @@ describe("shared chart interaction contract", () => {
     const [
       first,
       second,
-    ] = chart.element.querySelectorAll(".charts2-interactive-mark");
+    ] = chart.element.querySelectorAll(".orchid-charts-interactive-mark");
 
     first.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "touch" }));
     const emulatedMouseMove = new MouseEvent("mousemove", { bubbles: true });
@@ -822,12 +824,12 @@ describe("shared chart interaction contract", () => {
         ],
       })
       .render();
-    chart.element.querySelector(".charts2-x-hit").focus();
-    const tooltipHeading = tooltipFor(chart).querySelector(".charts2-tooltip-heading");
+    chart.element.querySelector(".orchid-charts-x-hit").focus();
+    const tooltipHeading = tooltipFor(chart).querySelector(".orchid-charts-tooltip-heading");
 
     expect(tooltipHeading.textContent).toBe(heading);
     expect(getComputedStyle(tooltipHeading).textWrap).toBe("balance");
-    expect(tooltipFor(chart).querySelectorAll(".charts2-tooltip-row")).toHaveLength(2);
+    expect(tooltipFor(chart).querySelectorAll(".orchid-charts-tooltip-row")).toHaveLength(2);
     chart.destroy();
   });
 
@@ -855,13 +857,13 @@ describe("shared chart interaction contract", () => {
       })
       .render();
     const marks = [
-      ...chart.element.querySelectorAll(".charts2-interactive-mark"),
+      ...chart.element.querySelectorAll(".orchid-charts-interactive-mark"),
     ];
     expect(marks).toHaveLength(3);
     expect(marks.filter((mark) => mark.getAttribute("tabindex") === "0")).toHaveLength(1);
     marks[0].focus();
-    expect(tooltipFor(chart).querySelector(".charts2-tooltip-heading").textContent).toBe("Value 1");
-    expect(tooltipFor(chart).querySelector(".charts2-tooltip-row strong").textContent).toBe("12");
+    expect(tooltipFor(chart).querySelector(".orchid-charts-tooltip-heading").textContent).toBe("Value 1");
+    expect(tooltipFor(chart).querySelector(".orchid-charts-tooltip-row strong").textContent).toBe("12");
     expect(tooltipFor(chart).hidden).toBe(false);
     marks[0].dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(marks[0]).toHaveClass("is-active");
@@ -902,10 +904,10 @@ describe("shared chart interaction contract", () => {
         ],
       })
       .render();
-    const line = chart.element.querySelector(".charts2-line");
+    const line = chart.element.querySelector(".orchid-charts-line");
 
-    expect(chart.element.querySelector(".charts2-x-hit")).toBeNull();
-    expect(chart.element.querySelector(".charts2-interactive-mark")).toBeNull();
+    expect(chart.element.querySelector(".orchid-charts-x-hit")).toBeNull();
+    expect(chart.element.querySelector(".orchid-charts-interactive-mark")).toBeNull();
     expect(chart.element.querySelector("title")).toBeNull();
     expect(tooltipFor(chart).hidden).toBe(true);
     line.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, clientX: 40, clientY: 40 }));
@@ -930,10 +932,10 @@ describe("shared chart interaction contract", () => {
         ],
       })
       .render();
-    const mark = chart.element.querySelector(".charts2-x-hit");
+    const mark = chart.element.querySelector(".orchid-charts-x-hit");
 
-    expect(mark).toHaveClass("charts2-interactive-mark");
-    expect(mark).not.toHaveClass("charts2-previewable-mark");
+    expect(mark).toHaveClass("orchid-charts-interactive-mark");
+    expect(mark).not.toHaveClass("orchid-charts-previewable-mark");
     mark.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
     expect(mark).not.toHaveClass("is-hovered");
     mark.focus();
@@ -946,7 +948,7 @@ describe("shared chart interaction contract", () => {
 
   it("applies the same model to heatmap cells", () => {
     const chart = HeatmapChart.make("#chart").points({ "2026-01-01": 1, "2026-01-02": 4 }).render();
-    const cells = chart.element.querySelectorAll(".charts2-interactive-mark");
+    const cells = chart.element.querySelectorAll(".orchid-charts-interactive-mark");
     expect(cells).toHaveLength(2);
     expect(cells[0].getAttribute("aria-label")).toBe("2026-01-01: 1");
     cells[0].focus();
@@ -963,8 +965,8 @@ describe("shared chart interaction contract", () => {
       .range("2026-09-01", "2026-09-07")
       .task({ label: "Implementation", start: "2026-09-02", end: "2026-09-04", group: "Engineering" })
       .render();
-    const hit = chart.element.querySelector(".charts2-timesheet-hit");
-    const bar = chart.element.querySelector(".charts2-timesheet-bar");
+    const hit = chart.element.querySelector(".orchid-charts-timesheet-hit");
+    const bar = chart.element.querySelector(".orchid-charts-timesheet-bar");
 
     expect(Number(hit.getAttribute("x"))).toBeLessThanOrEqual(Number(bar.getAttribute("x")));
     expect(Number(hit.getAttribute("width"))).toBeGreaterThan(Number(bar.getAttribute("width")));
@@ -978,7 +980,7 @@ describe("shared chart interaction contract", () => {
     expect(onSelect).toHaveBeenCalledWith(
       expect.objectContaining({ label: "Implementation", group: "Engineering" }),
     );
-    expect(tooltipFor(chart).querySelectorAll(".charts2-tooltip-row")).toHaveLength(1);
+    expect(tooltipFor(chart).querySelectorAll(".orchid-charts-tooltip-row")).toHaveLength(1);
     chart.destroy();
   });
 });

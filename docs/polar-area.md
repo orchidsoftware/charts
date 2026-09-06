@@ -28,7 +28,11 @@ Values must be non-negative and at least one value must be positive.
 ```js
 import { PolarAreaChart } from "@orchidsoftware/charts";
 
-PolarAreaChart.make("#sources").labels(sources).dataset(visits).padAngle(3).render();
+PolarAreaChart.make("#sources")
+  .labels(sources)
+  .dataset(visits)
+  .padAngle(3)
+  .render();
 ```
 
 ## Rounded Segments
@@ -38,7 +42,12 @@ Use `cornerRadius()` to round segment corners in CSS pixels:
 ```js
 import { PolarAreaChart } from "@orchidsoftware/charts";
 
-PolarAreaChart.make("#sources").labels(sources).dataset(visits).padAngle(3).cornerRadius(4).render();
+PolarAreaChart.make("#sources")
+  .labels(sources)
+  .dataset(visits)
+  .padAngle(3)
+  .cornerRadius(4)
+  .render();
 ```
 
 Polar area charts also support `formatLabel()`, `formatValue()`,

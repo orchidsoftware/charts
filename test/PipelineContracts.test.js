@@ -279,7 +279,9 @@ describe("Pipeline Contracts", () => {
     chart.element.parentElement.addEventListener("data-select", (event) => {
       selected.push(event.detail);
     });
-    chart.element.querySelector(".charts2-mark").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    chart.element
+      .querySelector(".orchid-charts-mark")
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(selected[0]).toMatchObject({
       type: "bar",
       index: 0,
@@ -309,7 +311,7 @@ describe("Pipeline Contracts", () => {
       })
       .render();
     bubble.element
-      .querySelector(".charts2-point-hit")
+      .querySelector(".orchid-charts-point-hit")
       .dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(bubbleSelect).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -348,7 +350,7 @@ describe("Pipeline Contracts", () => {
       })
       .render();
     sparse.element
-      .querySelectorAll(".charts2-x-hit")[1]
+      .querySelectorAll(".orchid-charts-x-hit")[1]
       .dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(sparseSelect).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -373,8 +375,10 @@ describe("Pipeline Contracts", () => {
         ],
       })
       .render();
-    expect(unlabeled.element.querySelector(".charts2-line title").textContent).toContain("1: 2");
-    expect(unlabeled.element.querySelector(".charts2-label:not(.charts2-value-label)").textContent).toBe("1");
+    expect(unlabeled.element.querySelector(".orchid-charts-line title").textContent).toContain("1: 2");
+    expect(
+      unlabeled.element.querySelector(".orchid-charts-label:not(.orchid-charts-value-label)").textContent,
+    ).toBe("1");
     unlabeled.destroy();
 
     const bubble = BubbleChart.make("#chart")
@@ -393,8 +397,8 @@ describe("Pipeline Contracts", () => {
         ],
       })
       .render();
-    expect(polar.element.querySelector(".charts2-mark").dataset.tooltip).toBe("1: 2");
-    expect(polar.element.querySelector(".charts2-label").textContent).toBe("1");
+    expect(polar.element.querySelector(".orchid-charts-mark").dataset.tooltip).toBe("1: 2");
+    expect(polar.element.querySelector(".orchid-charts-label").textContent).toBe("1");
     polar.destroy();
     const radar = RadarChart.make("#chart")
       .dataset({
@@ -404,7 +408,7 @@ describe("Pipeline Contracts", () => {
         ],
       })
       .render();
-    expect(radar.element.querySelectorAll(".charts2-label")).toHaveLength(2);
+    expect(radar.element.querySelectorAll(".orchid-charts-label")).toHaveLength(2);
     radar.destroy();
     const scatter = ScatterChart.make("#chart")
       .onSelect(() => {})
@@ -419,7 +423,9 @@ describe("Pipeline Contracts", () => {
     scatter.element.parentElement.addEventListener("data-select", (event) => {
       scatterSelection.push(event.detail);
     });
-    scatter.element.querySelector(".charts2-mark").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    scatter.element
+      .querySelector(".orchid-charts-mark")
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(scatterSelection[0].label).toBe(5);
     scatter.destroy();
     const bars = BarChart.make("#chart")
@@ -429,7 +435,7 @@ describe("Pipeline Contracts", () => {
         ],
       })
       .render();
-    expect(bars.element.querySelector(".charts2-x-hit").dataset.tooltip).toBe("1 — Series 1: 2");
+    expect(bars.element.querySelector(".orchid-charts-x-hit").dataset.tooltip).toBe("1 — Series 1: 2");
     bars.destroy();
     const mixedDefault = MixedChart.make("#chart")
       .dataset({
@@ -440,7 +446,7 @@ describe("Pipeline Contracts", () => {
         ],
       })
       .render();
-    expect(mixedDefault.element.querySelector(".charts2-line")).not.toBeNull();
+    expect(mixedDefault.element.querySelector(".orchid-charts-line")).not.toBeNull();
     mixedDefault.destroy();
     const multiBubble = BubbleChart.make("#chart")
       .dataset({
@@ -456,7 +462,7 @@ describe("Pipeline Contracts", () => {
         ],
       })
       .render();
-    expect(multiBubble.element.querySelector(".charts2-bubble title").textContent).toContain("First,");
+    expect(multiBubble.element.querySelector(".orchid-charts-bubble title").textContent).toContain("First,");
     multiBubble.destroy();
     const multiScatter = ScatterChart.make("#chart")
       .dataset({
@@ -472,7 +478,9 @@ describe("Pipeline Contracts", () => {
         ],
       })
       .render();
-    expect(multiScatter.element.querySelector(".charts2-scatter title").textContent).toContain("First,");
+    expect(multiScatter.element.querySelector(".orchid-charts-scatter title").textContent).toContain(
+      "First,",
+    );
   });
   it("covers lifecycle defaults after selection", () => {
     const chart = BarChart.make("#chart")
@@ -487,7 +495,9 @@ describe("Pipeline Contracts", () => {
       })
       .render();
     expect(chart.point()).toMatchObject({ index: 0, label: "A" });
-    chart.element.querySelector(".charts2-mark").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    chart.element
+      .querySelector(".orchid-charts-mark")
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(chart.point()).toMatchObject({ index: 0, label: "A" });
     const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
     expect(chart.toSvg()).toContain("<svg");
@@ -526,14 +536,14 @@ describe("Pipeline Contracts", () => {
       })
       .render();
     expect(chart.element.textContent).toContain("9.8M");
-    expect(chart.element.querySelector(".charts2-label title").textContent).toContain("cannot fit");
+    expect(chart.element.querySelector(".orchid-charts-label title").textContent).toContain("cannot fit");
     const legendRows = new Set(
       [
-        ...chart.element.querySelectorAll(".charts2-legend"),
+        ...chart.element.querySelectorAll(".orchid-charts-legend"),
       ].map((item) => item.getAttribute("y")),
     );
     expect(legendRows.size).toBeGreaterThan(1);
-    const tinyMark = chart.element.querySelector('.charts2-x-hit[data-point-index="1"]');
+    const tinyMark = chart.element.querySelector('.orchid-charts-x-hit[data-point-index="1"]');
     expect(tinyMark.dataset.tooltip).toContain("0.00012");
     tinyMark.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(onSelect).toHaveBeenCalledWith(
@@ -568,7 +578,7 @@ describe("Pipeline Contracts", () => {
       })
       .render();
     const compactLabels = [
-      ...compact.element.querySelectorAll(".charts2-label:not(.charts2-value-label)"),
+      ...compact.element.querySelectorAll(".orchid-charts-label:not(.orchid-charts-value-label)"),
     ];
     expect(compactLabels.map((node) => node.textContent)).toEqual([
       "A",

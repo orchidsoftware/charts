@@ -54,7 +54,10 @@ Passing `false` restores vertical bars, which is useful in conditional code:
 ```js
 import { BarChart } from "@orchidsoftware/charts";
 
-BarChart.make("#orders").dataset(values).horizontal(isCompact).render();
+BarChart.make("#orders")
+  .dataset(values)
+  .horizontal(isCompact)
+  .render();
 ```
 
 ## Stacked Bars
@@ -82,7 +85,11 @@ The `radius()` method rounds bar corners in CSS pixels:
 ```js
 import { BarChart } from "@orchidsoftware/charts";
 
-BarChart.make("#revenue").labels(regions).dataset(values).radius(6).render();
+BarChart.make("#revenue")
+  .labels(regions)
+  .dataset(values)
+  .radius(6)
+  .render();
 ```
 
 ## Customizing One Dataset
@@ -96,10 +103,14 @@ import { BarChart } from "@orchidsoftware/charts";
 BarChart.make("#orders")
   .labels(["Web", "Retail", "Partners"])
   .dataset("Actual", [124, 86, 43], (bars) => {
-    bars.color("#2563eb").radius(6);
+    bars
+      .color("#2563eb")
+      .radius(6);
   })
   .dataset("Previous", [108, 79, 39], (bars) => {
-    bars.color("#94a3b8").opacity(0.65);
+    bars
+      .color("#94a3b8")
+      .opacity(0.65);
   })
   .render();
 ```

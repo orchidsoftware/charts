@@ -191,7 +191,7 @@ class HeatmapRenderer {
         height: layout.cellSize,
         rx: Math.min(this.#chart.options.radius ?? 2, layout.cellSize / 2),
         fill: layout.colorFor(item.value),
-        class: "charts2-heat-cell charts2-mark",
+        class: "orchid-charts-heat-cell orchid-charts-mark",
       });
 
       const content = this.#cellContent(item, index);
@@ -231,14 +231,14 @@ class HeatmapRenderer {
     const geometry = this.#legendGeometry(layout);
 
     const legend = svg("g", {
-      class: "charts2-heat-legend",
+      class: "orchid-charts-heat-legend",
       "aria-label": "Heatmap intensity: Less to More",
     });
 
     const less = svg("text", {
       x: 0,
       y: geometry.baseline,
-      class: "charts2-legend charts2-heat-legend-less",
+      class: "orchid-charts-legend orchid-charts-heat-legend-less",
     });
 
     less.textContent = "Less";
@@ -249,7 +249,7 @@ class HeatmapRenderer {
     const more = svg("text", {
       x: geometry.scaleX + geometry.scaleWidth + LEGEND_LABEL_GAP,
       y: geometry.baseline,
-      class: "charts2-legend charts2-heat-legend-more",
+      class: "orchid-charts-legend orchid-charts-heat-legend-more",
     });
 
     more.textContent = "More";
@@ -328,7 +328,7 @@ class HeatmapRenderer {
           height: LEGEND_HEIGHT,
           rx: Math.min(2, geometry.swatchWidth / 2),
           fill: color,
-          class: "charts2-heat-legend-swatch",
+          class: "orchid-charts-heat-legend-swatch",
         }),
       );
     }

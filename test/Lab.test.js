@@ -128,7 +128,7 @@ describe("QA chart laboratory", () => {
   it("keeps million-value bubbles visible, separate, and proportional in area", () => {
     const host = document.querySelector("#extreme-bubble-million");
     const circles = [
-      ...host.querySelectorAll(".charts2-bubble.charts2-visual-mark"),
+      ...host.querySelectorAll(".orchid-charts-bubble.orchid-charts-visual-mark"),
     ];
     const frame = host.querySelector("svg").getBoundingClientRect();
     expect(circles).toHaveLength(4);
@@ -159,12 +159,12 @@ describe("QA chart laboratory", () => {
       "mixed",
     ]) {
       const host = document.querySelector(`#extreme-${type}-many`);
-      const mark = host.querySelector(".charts2-x-hit");
+      const mark = host.querySelector(".orchid-charts-x-hit");
       mark.dispatchEvent(new MouseEvent("mousemove", { bubbles: true }));
-      const tooltip = host.querySelector(".charts2-tooltip");
+      const tooltip = host.querySelector(".orchid-charts-tooltip");
       expect(tooltip.hidden).toBe(false);
       const rows = [
-        ...tooltip.querySelectorAll(".charts2-tooltip-row"),
+        ...tooltip.querySelectorAll(".orchid-charts-tooltip-row"),
       ];
       expect(rows).toHaveLength(12);
       expect(tooltip.scrollHeight).toBeLessThanOrEqual(tooltip.clientHeight);
@@ -187,7 +187,7 @@ describe("QA chart laboratory", () => {
         continue;
       }
       const selector =
-        id === "extreme-heatmap-many" ? ".charts2-heat-legend-swatch" : ".charts2-legend-swatch";
+        id === "extreme-heatmap-many" ? ".orchid-charts-heat-legend-swatch" : ".orchid-charts-legend-swatch";
       expect(fixture.querySelectorAll(selector), id).toHaveLength(12);
     }
   });
@@ -195,7 +195,7 @@ describe("QA chart laboratory", () => {
   it("renders a square-cell heatmap for the three-month fixture", () => {
     const fixture = document.querySelector('[data-fixture="heatmap-quarter"]');
     const cells = [
-      ...fixture.querySelectorAll(".charts2-heat-cell"),
+      ...fixture.querySelectorAll(".orchid-charts-heat-cell"),
     ];
 
     expect(cells).toHaveLength(91);
@@ -208,18 +208,18 @@ describe("QA chart laboratory", () => {
   it("keeps annotation labels readable when points and bars deliberately cross them", () => {
     const fixture = document.querySelector('[data-fixture="annotation-collision"]');
     const labels = [
-      ...fixture.querySelectorAll(".charts2-annotation"),
+      ...fixture.querySelectorAll(".orchid-charts-annotation"),
     ];
     const points = [
-      ...fixture.querySelectorAll(".charts2-point"),
+      ...fixture.querySelectorAll(".orchid-charts-point"),
     ];
     const bars = [
-      ...fixture.querySelectorAll(".charts2-bar"),
+      ...fixture.querySelectorAll(".orchid-charts-bar"),
     ];
     expect(labels).toHaveLength(2);
     expect(labels.every((label) => points.some((point) => intersects(label, point)))).toBe(true);
     expect(labels.every((label) => bars.some((bar) => intersects(label, bar)))).toBe(true);
-    for (const label of fixture.querySelectorAll(".charts2-annotation")) {
+    for (const label of fixture.querySelectorAll(".orchid-charts-annotation")) {
       const style = getComputedStyle(label);
 
       expect(style.fillOpacity).toBe("1");
@@ -228,7 +228,7 @@ describe("QA chart laboratory", () => {
       expect(style.paintOrder).toBe("stroke");
       expect(style.fontWeight).toBe("500");
     }
-    expect(fixture.querySelectorAll(".charts2-annotation-sample")).toHaveLength(0);
+    expect(fixture.querySelectorAll(".orchid-charts-annotation-sample")).toHaveLength(0);
   });
 
   it("covers fixed annotations across both bar orientations and a full region partition", () => {
@@ -241,23 +241,23 @@ describe("QA chart laboratory", () => {
       horizontal,
     ]) {
       const labels = [
-        ...fixture.querySelectorAll(".charts2-annotation"),
+        ...fixture.querySelectorAll(".orchid-charts-annotation"),
       ];
       const bars = [
-        ...fixture.querySelectorAll(".charts2-bar"),
+        ...fixture.querySelectorAll(".orchid-charts-bar"),
       ];
 
       expect(labels).toHaveLength(2);
       expect(labels.every((label) => bars.some((bar) => intersects(label, bar)))).toBe(true);
     }
 
-    expect(experimental.querySelectorAll(".charts2-region-label")).toHaveLength(3);
-    expect(experimental.querySelectorAll(".charts2-marker-label")).toHaveLength(2);
-    expect(experimental.querySelectorAll(".charts2-annotation-background")).toHaveLength(0);
-    expect(experimental.querySelectorAll(".charts2-annotation-sample")).toHaveLength(0);
+    expect(experimental.querySelectorAll(".orchid-charts-region-label")).toHaveLength(3);
+    expect(experimental.querySelectorAll(".orchid-charts-marker-label")).toHaveLength(2);
+    expect(experimental.querySelectorAll(".orchid-charts-annotation-background")).toHaveLength(0);
+    expect(experimental.querySelectorAll(".orchid-charts-annotation-sample")).toHaveLength(0);
     expect(
       [
-        ...experimental.querySelectorAll(".charts2-region"),
+        ...experimental.querySelectorAll(".orchid-charts-region"),
       ].map((region) => getComputedStyle(region).fill),
     ).toEqual([
       "rgb(52, 199, 89)",
@@ -310,8 +310,8 @@ describe("QA chart laboratory", () => {
     for (const host of document.querySelectorAll(".lab-boundary")) {
       const svg = host.querySelector("svg");
       const width = svg.viewBox.baseVal.width;
-      const grid = svg.querySelector(".charts2-grid-horizontal");
-      const swatch = svg.querySelector(".charts2-legend-swatch");
+      const grid = svg.querySelector(".orchid-charts-grid-horizontal");
+      const swatch = svg.querySelector(".orchid-charts-legend-swatch");
 
       if (grid) {
         expect(Number(grid.getAttribute("x2")), host.id).toBe(width);

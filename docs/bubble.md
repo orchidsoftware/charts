@@ -66,7 +66,10 @@ annotations:
 ```js
 import { BubbleChart } from "@orchidsoftware/charts";
 
-BubbleChart.make("#accounts").dataset(bubbles).dots(false).render();
+BubbleChart.make("#accounts")
+  .dataset(bubbles)
+  .dots(false)
+  .render();
 ```
 
 ## Dataset Appearance
@@ -79,7 +82,9 @@ import { BubbleChart } from "@orchidsoftware/charts";
 
 BubbleChart.make("#accounts")
   .dataset("Accounts", bubbles, (dataset) => {
-    dataset.color("#2563eb").opacity(0.75);
+    dataset
+      .color("#2563eb")
+      .opacity(0.75);
   })
   .render();
 ```

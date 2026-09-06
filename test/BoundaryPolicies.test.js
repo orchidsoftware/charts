@@ -32,7 +32,7 @@ describe("Boundary Policies", () => {
         "red",
       )
       .render();
-    expect(chart.element.querySelector(".charts2-line").getAttribute("stroke")).toBe("red");
+    expect(chart.element.querySelector(".orchid-charts-line").getAttribute("stroke")).toBe("red");
     expectFailure(
       () =>
         chart.update({

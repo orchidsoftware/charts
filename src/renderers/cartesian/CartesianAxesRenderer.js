@@ -109,13 +109,13 @@ export default class CartesianAxesRenderer {
         ? {
             x: position,
             y: bottom + this.#layout.frame.padding - VALUE_LABEL_BASELINE_OFFSET,
-            class: "charts2-label charts2-value-label",
+            class: "orchid-charts-label orchid-charts-value-label",
             "text-anchor": this.#valueLabelAnchor(position),
           }
         : {
             x: this.#layout.isYAxisRight ? right + VALUE_LABEL_GAP : left - VALUE_LABEL_GAP,
             y: position + VALUE_LABEL_CENTER_OFFSET,
-            class: "charts2-label charts2-value-label",
+            class: "orchid-charts-label orchid-charts-value-label",
             "text-anchor": this.#layout.isYAxisRight ? "start" : "end",
           };
 
@@ -139,8 +139,20 @@ export default class CartesianAxesRenderer {
       const position = this.#layout.valueAt(value);
 
       const attributes = this.#layout.isHorizontal
-        ? { x1: position, y1: top, x2: position, y2: bottom, class: "charts2-grid charts2-grid-vertical" }
-        : { x1: left, y1: position, x2: right, y2: position, class: "charts2-grid charts2-grid-horizontal" };
+        ? {
+            x1: position,
+            y1: top,
+            x2: position,
+            y2: bottom,
+            class: "orchid-charts-grid orchid-charts-grid-vertical",
+          }
+        : {
+            x1: left,
+            y1: position,
+            x2: right,
+            y2: position,
+            class: "orchid-charts-grid orchid-charts-grid-horizontal",
+          };
 
       this.#surface.append("line", {
         ...attributes,
@@ -164,8 +176,8 @@ export default class CartesianAxesRenderer {
     const axisX = this.#layout.isYAxisRight ? right : left;
 
     const attributes = this.#layout.isHorizontal
-      ? { x1: axisX, y1: top, x2: axisX, y2: bottom, class: "charts2-axis charts2-y-axis" }
-      : { x1: left, y1: bottom, x2: right, y2: bottom, class: "charts2-axis charts2-x-axis" };
+      ? { x1: axisX, y1: top, x2: axisX, y2: bottom, class: "orchid-charts-axis orchid-charts-y-axis" }
+      : { x1: left, y1: bottom, x2: right, y2: bottom, class: "orchid-charts-axis orchid-charts-x-axis" };
 
     this.#surface.append("line", attributes);
   }
@@ -207,7 +219,7 @@ export default class CartesianAxesRenderer {
         attributes: {
           x: this.#layout.isYAxisRight ? right + HORIZONTAL_LABEL_GAP : left - HORIZONTAL_LABEL_GAP,
           y: top + (index + CATEGORY_MIDPOINT) * step + CATEGORY_LABEL_BASELINE_OFFSET,
-          class: "charts2-label",
+          class: "orchid-charts-label",
           "text-anchor": this.#layout.isYAxisRight ? "start" : "end",
         },
         maxWidth: this.#layout.categories.gutter - HORIZONTAL_LABEL_EDGE_INSET - HORIZONTAL_LABEL_GAP,
@@ -259,7 +271,7 @@ export default class CartesianAxesRenderer {
         attributes: {
           x: placement.x,
           y: bottom + padding - CATEGORY_LABEL_BOTTOM_OFFSET,
-          class: "charts2-label",
+          class: "orchid-charts-label",
           "text-anchor": placement.anchor,
         },
         measurement: { maxWidth: placement.width },

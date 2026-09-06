@@ -92,7 +92,7 @@ export default class CartesianAnnotationsRenderer {
         ...attributes,
         fill: region.color,
         opacity: region.opacity,
-        class: "charts2-region",
+        class: "orchid-charts-region",
         "aria-hidden": "true",
       });
     }
@@ -125,7 +125,7 @@ export default class CartesianAnnotationsRenderer {
         "stroke-width": marker.width,
         "stroke-dasharray": marker.dash.join(" "),
         "vector-effect": "non-scaling-stroke",
-        class: "charts2-marker",
+        class: "orchid-charts-marker",
       });
     }
   }
@@ -224,7 +224,7 @@ export default class CartesianAnnotationsRenderer {
       "text-anchor": "start",
       "dominant-baseline": "middle",
       style: `fill: ${annotation.labelColor}`,
-      class: `charts2-annotation charts2-${kind}-label`,
+      class: `orchid-charts-annotation orchid-charts-${kind}-label`,
     });
   }
 

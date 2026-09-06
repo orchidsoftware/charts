@@ -35,6 +35,20 @@ RadarChart.make("#quality")
   .render();
 ```
 
+Hover or tap the broad sector around a measure to compare all profiles for that
+measure. The tooltip uses the same heading and series rows as a line chart;
+the active axis and each profile's value receive a subtle highlight. There is
+no need to target a polygon edge or a small point.
+
+On touch screens, tap to keep the comparison open and tap outside to dismiss it.
+Keyboard focus opens the same comparison; arrow keys move between measures and
+Escape closes it. The small neutral area at the center avoids accidental changes
+between axes.
+
+With `onSelect()`, clicking or pressing Enter selects a measure across all
+profiles. The callback's `values` and `points` follow dataset order, and
+`chart.point()` reads the selected measure just like `chart.point(index)`.
+
 ## Stroke Width
 
 Use `strokeWidth()` to change the outline of every profile:
@@ -42,7 +56,11 @@ Use `strokeWidth()` to change the outline of every profile:
 ```js
 import { RadarChart } from "@orchidsoftware/charts";
 
-RadarChart.make("#quality").labels(metrics).dataset(scores).strokeWidth(3).render();
+RadarChart.make("#quality")
+  .labels(metrics)
+  .dataset(scores)
+  .strokeWidth(3)
+  .render();
 ```
 
 Radar charts also support `formatLabel()`, `formatValue()`, `legend(false)`,

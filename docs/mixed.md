@@ -32,7 +32,11 @@ import { MixedChart } from "@orchidsoftware/charts";
 MixedChart.make("#plan")
   .labels(["Jan", "Feb", "Mar"])
   .line("Plan", [45, 50, 55], (line) => {
-    line.color("#2563eb").smooth().dots(false).strokeWidth(3);
+    line
+      .color("#2563eb")
+      .smooth()
+      .dots(false)
+      .strokeWidth(3);
   })
   .render();
 ```
@@ -51,7 +55,9 @@ import { MixedChart } from "@orchidsoftware/charts";
 MixedChart.make("#plan")
   .labels(["Jan", "Feb", "Mar"])
   .bar("Actual", [42, 48, 57], (bars) => {
-    bars.color("#8b5cf6").radius(5);
+    bars
+      .color("#8b5cf6")
+      .radius(5);
   })
   .render();
 ```

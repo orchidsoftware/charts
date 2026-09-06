@@ -112,8 +112,8 @@ function pageMarkup(origin) {
           definitionKeys: Object.keys(charts.LineChart),
           display: getComputedStyle(svg).display,
           exportCount: Object.keys(charts).length,
-          marks: svg.querySelectorAll(".charts2-mark").length,
-          rendered: svg.matches("svg.charts2-chart"),
+          marks: svg.querySelectorAll(".orchid-charts-mark").length,
+          rendered: svg.matches("svg.orchid-charts-chart"),
         };
         chart.destroy();
         globalThis.__charts2NoBuild = { ...result, destroyed: !svg.isConnected };

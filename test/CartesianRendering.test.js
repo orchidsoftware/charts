@@ -36,14 +36,14 @@ describe("Cartesian Rendering", () => {
         ],
       })
       .render();
-    expect(scatter.element.querySelectorAll(".charts2-scatter")).toHaveLength(3);
-    expect(scatter.element.querySelector(".charts2-scatter").getAttribute("fill")).toBe(
-      "var(--charts-point-fill)",
+    expect(scatter.element.querySelectorAll(".orchid-charts-scatter")).toHaveLength(3);
+    expect(scatter.element.querySelector(".orchid-charts-scatter").getAttribute("fill")).toBe(
+      "var(--orchid-charts-point-fill)",
     );
-    expect(scatter.element.querySelector(".charts2-scatter").getAttribute("stroke")).toBe("#007AFF");
-    expect(scatter.element.querySelector(".charts2-scatter").getAttribute("opacity")).toBe("1");
-    expect(getComputedStyle(scatter.element.querySelector(".charts2-scatter")).strokeWidth).toBe("3px");
-    expect(scatter.element.querySelectorAll(".charts2-point-halo")).toHaveLength(3);
+    expect(scatter.element.querySelector(".orchid-charts-scatter").getAttribute("stroke")).toBe("#007AFF");
+    expect(scatter.element.querySelector(".orchid-charts-scatter").getAttribute("opacity")).toBe("1");
+    expect(getComputedStyle(scatter.element.querySelector(".orchid-charts-scatter")).strokeWidth).toBe("3px");
+    expect(scatter.element.querySelectorAll(".orchid-charts-point-halo")).toHaveLength(3);
     scatter.destroy();
 
     const mixed = MixedChart.make("#chart")
@@ -86,13 +86,13 @@ describe("Cartesian Rendering", () => {
         ],
       })
       .render();
-    expect(mixed.element.querySelectorAll(".charts2-region")).toHaveLength(1);
-    expect(mixed.element.querySelectorAll(".charts2-marker")).toHaveLength(1);
+    expect(mixed.element.querySelectorAll(".orchid-charts-region")).toHaveLength(1);
+    expect(mixed.element.querySelectorAll(".orchid-charts-marker")).toHaveLength(1);
     expect(mixed.element.textContent).toContain("Target");
     expect(mixed.point(0)).toMatchObject({ dataset: "Line", label: "A", y: 1 });
-    const mixedBar = mixed.element.querySelector(".charts2-bar");
-    const mixedHalo = mixed.element.querySelector(".charts2-point-halo");
-    const mixedPoint = mixed.element.querySelector(".charts2-point");
+    const mixedBar = mixed.element.querySelector(".orchid-charts-bar");
+    const mixedHalo = mixed.element.querySelector(".orchid-charts-point-halo");
+    const mixedPoint = mixed.element.querySelector(".orchid-charts-point");
     expect(mixedBar.compareDocumentPosition(mixedHalo) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(mixedHalo.compareDocumentPosition(mixedPoint) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(getComputedStyle(mixedHalo).stroke).toBe(getComputedStyle(mixedPoint).fill);
@@ -122,9 +122,9 @@ describe("Cartesian Rendering", () => {
         ],
       })
       .render();
-    expect(horizontal.element.querySelector(".charts2-region").getAttribute("x")).not.toBeNull();
-    expect(horizontal.element.querySelector(".charts2-marker").getAttribute("x1")).toBe(
-      horizontal.element.querySelector(".charts2-marker").getAttribute("x2"),
+    expect(horizontal.element.querySelector(".orchid-charts-region").getAttribute("x")).not.toBeNull();
+    expect(horizontal.element.querySelector(".orchid-charts-marker").getAttribute("x1")).toBe(
+      horizontal.element.querySelector(".orchid-charts-marker").getAttribute("x2"),
     );
     horizontal.destroy();
 
@@ -141,22 +141,24 @@ describe("Cartesian Rendering", () => {
         ],
       })
       .render();
-    expect(filled.element.querySelector(".charts2-area")).not.toBeNull();
-    expect(filled.element.querySelector(".charts2-point")).toBeNull();
+    expect(filled.element.querySelector(".orchid-charts-area")).not.toBeNull();
+    expect(filled.element.querySelector(".orchid-charts-point")).toBeNull();
     filled.destroy();
     const points = Array.from({ length: 201 }, (_, index) => index);
     const long = LineChart.make("#chart").dataset({ values: points }).render();
-    expect(long.element.querySelectorAll(".charts2-mark")).toHaveLength(1);
-    expect(long.element.querySelector(".charts2-mark").dataset.tooltip).toContain("201 points");
-    expect(long.element.querySelector(".charts2-mark").dataset.tooltip).toContain("range 0–200");
-    expect(long.element.querySelector(".charts2-mark").dataset.tooltip.length).toBeLessThan(100);
+    expect(long.element.querySelectorAll(".orchid-charts-mark")).toHaveLength(1);
+    expect(long.element.querySelector(".orchid-charts-mark").dataset.tooltip).toContain("201 points");
+    expect(long.element.querySelector(".orchid-charts-mark").dataset.tooltip).toContain("range 0–200");
+    expect(long.element.querySelector(".orchid-charts-mark").dataset.tooltip.length).toBeLessThan(100);
     long.destroy();
     const denseHorizontal = BarChart.make("#chart")
       .horizontal()
       .dataset({ values: Array.from({ length: 65 }, (_, index) => index) })
       .render();
-    expect(denseHorizontal.element.querySelectorAll(".charts2-bar.charts2-mark")).toHaveLength(65);
-    expect(denseHorizontal.element.querySelector(".charts2-x-hit")).toBeNull();
+    expect(denseHorizontal.element.querySelectorAll(".orchid-charts-bar.orchid-charts-mark")).toHaveLength(
+      65,
+    );
+    expect(denseHorizontal.element.querySelector(".orchid-charts-x-hit")).toBeNull();
     denseHorizontal.destroy();
     const hidden = LineChart.make("#chart")
       .line(false)
@@ -171,8 +173,8 @@ describe("Cartesian Rendering", () => {
         ],
       })
       .render();
-    expect(hidden.element.querySelector(".charts2-line")).toBeNull();
-    expect(hidden.element.querySelector(".charts2-point").getAttribute("r")).toBe("6");
+    expect(hidden.element.querySelector(".orchid-charts-line")).toBeNull();
+    expect(hidden.element.querySelector(".orchid-charts-point").getAttribute("r")).toBe("6");
   });
   it("smooths line geometry without overshooting and allows straight segments", () => {
     const smooth = LineChart.make("#chart")
@@ -189,7 +191,7 @@ describe("Cartesian Rendering", () => {
         ],
       })
       .render();
-    const path = smooth.element.querySelector(".charts2-line").getAttribute("d");
+    const path = smooth.element.querySelector(".orchid-charts-line").getAttribute("d");
     expect(path).toContain("C");
     const coordinates = path
       .split(/[MC, ]+/)
@@ -222,8 +224,8 @@ describe("Cartesian Rendering", () => {
         ],
       })
       .render();
-    expect(straight.element.querySelector(".charts2-line").getAttribute("d")).toContain("L");
-    expect(straight.element.querySelector(".charts2-line").getAttribute("d")).not.toContain("C");
+    expect(straight.element.querySelector(".orchid-charts-line").getAttribute("d")).toContain("L");
+    expect(straight.element.querySelector(".orchid-charts-line").getAttribute("d")).not.toContain("C");
   });
   it("rounds only the value-facing outer end of signed and stacked bars", () => {
     const signed = BarChart.make("#chart")
@@ -242,7 +244,7 @@ describe("Cartesian Rendering", () => {
       })
       .render();
     const signedBars = [
-      ...signed.element.querySelectorAll(".charts2-bar"),
+      ...signed.element.querySelectorAll(".orchid-charts-bar"),
     ];
     expect(signedBars[0].getAttribute("d")).toContain("Q");
     expect(signedBars[1].getAttribute("d")).not.toContain("Q");
@@ -281,7 +283,7 @@ describe("Cartesian Rendering", () => {
       })
       .render();
     const stackedBars = [
-      ...stacked.element.querySelectorAll(".charts2-bar"),
+      ...stacked.element.querySelectorAll(".orchid-charts-bar"),
     ];
     expect(stackedBars.map((bar) => bar.getAttribute("d").includes("Q"))).toEqual([
       false,
@@ -312,7 +314,7 @@ describe("Cartesian Rendering", () => {
         ],
       })
       .render();
-    expect(sparseStack.element.querySelectorAll(".charts2-bar")).toHaveLength(4);
+    expect(sparseStack.element.querySelectorAll(".orchid-charts-bar")).toHaveLength(4);
     sparseStack.destroy();
 
     const square = BarChart.make("#chart")
@@ -329,7 +331,7 @@ describe("Cartesian Rendering", () => {
       .render();
     expect(
       [
-        ...square.element.querySelectorAll(".charts2-bar"),
+        ...square.element.querySelectorAll(".orchid-charts-bar"),
       ].every((bar) => !bar.getAttribute("d").includes("Q")),
     ).toBe(true);
     square.destroy();
@@ -342,7 +344,7 @@ describe("Cartesian Rendering", () => {
         ],
       })
       .render();
-    expect(horizontalLoss.element.querySelector(".charts2-bar").getAttribute("d")).toContain("Q");
+    expect(horizontalLoss.element.querySelector(".orchid-charts-bar").getAttribute("d")).toContain("Q");
   });
   it("renders the demo stress matrix through the shared Cartesian pipeline", () => {
     const labels = [
@@ -383,8 +385,8 @@ describe("Cartesian Rendering", () => {
       })
       .render();
     expect(gradient.element.querySelectorAll("linearGradient")).toHaveLength(3);
-    expect(gradient.element.querySelectorAll(".charts2-area")).toHaveLength(3);
-    expect(gradient.element.querySelectorAll(".charts2-line")).toHaveLength(3);
+    expect(gradient.element.querySelectorAll(".orchid-charts-area")).toHaveLength(3);
+    expect(gradient.element.querySelectorAll(".orchid-charts-line")).toHaveLength(3);
     gradient.destroy();
 
     const mixed = MixedChart.make("#chart")
@@ -420,9 +422,9 @@ describe("Cartesian Rendering", () => {
         ],
       })
       .render();
-    expect(mixed.element.querySelectorAll(".charts2-bar")).toHaveLength(4);
-    expect(mixed.element.querySelectorAll(".charts2-line")).toHaveLength(2);
-    expect(mixed.element.querySelectorAll(".charts2-x-hit")).toHaveLength(4);
+    expect(mixed.element.querySelectorAll(".orchid-charts-bar")).toHaveLength(4);
+    expect(mixed.element.querySelectorAll(".orchid-charts-line")).toHaveLength(2);
+    expect(mixed.element.querySelectorAll(".orchid-charts-x-hit")).toHaveLength(4);
     expect(mixed.point(0)).toMatchObject({ dataset: "Actual", chartType: "bar", y: -3 });
     expect(mixed.point(4)).toMatchObject({ dataset: "Target", chartType: "line", y: 2 });
     mixed.destroy();
@@ -464,14 +466,16 @@ describe("Cartesian Rendering", () => {
       .render();
     const narrowLegendRows = new Set(
       [
-        ...narrowMixed.element.querySelectorAll(".charts2-legend"),
+        ...narrowMixed.element.querySelectorAll(".orchid-charts-legend"),
       ].map((item) => item.getAttribute("y")),
     );
-    const narrowLegend = narrowMixed.element.querySelector(".charts2-legend-group").getBBox();
-    const narrowPlotBottom = Number(narrowMixed.element.querySelector(".charts2-x-axis").getAttribute("y1"));
+    const narrowLegend = narrowMixed.element.querySelector(".orchid-charts-legend-group").getBBox();
+    const narrowPlotBottom = Number(
+      narrowMixed.element.querySelector(".orchid-charts-x-axis").getAttribute("y1"),
+    );
     expect(narrowLegendRows.size).toBeGreaterThan(1);
     expect(narrowPlotBottom).toBeLessThan(narrowLegend.y);
-    expect(narrowMixed.element.querySelectorAll(".charts2-x-hit")).toHaveLength(4);
+    expect(narrowMixed.element.querySelectorAll(".orchid-charts-x-hit")).toHaveLength(4);
     narrowMixed.destroy();
 
     const grouped = BarChart.make("#chart")
@@ -502,8 +506,8 @@ describe("Cartesian Rendering", () => {
         ],
       })
       .render();
-    expect(grouped.element.querySelectorAll(".charts2-bar.charts2-visual-mark")).toHaveLength(9);
-    expect(grouped.element.querySelectorAll(".charts2-legend")).toHaveLength(3);
+    expect(grouped.element.querySelectorAll(".orchid-charts-bar.orchid-charts-visual-mark")).toHaveLength(9);
+    expect(grouped.element.querySelectorAll(".orchid-charts-legend")).toHaveLength(3);
     grouped.destroy();
 
     const stacked = BarChart.make("#chart")
@@ -528,7 +532,7 @@ describe("Cartesian Rendering", () => {
       })
       .render();
     const stackedBars = [
-      ...stacked.element.querySelectorAll(".charts2-bar.charts2-visual-mark"),
+      ...stacked.element.querySelectorAll(".orchid-charts-bar.orchid-charts-visual-mark"),
     ];
     expect(stackedBars).toHaveLength(6);
     expect(stackedBars[0].getBBox().y).toBe(stackedBars[3].getBBox().y);
@@ -543,10 +547,12 @@ describe("Cartesian Rendering", () => {
       .dataset({ name: "Observed", values: denseLabels.map((_, index) => index % 9) })
       .dataset({ name: "Baseline", values: denseLabels.map((_, index) => (index + 3) % 7) })
       .render();
-    expect(dense.element.querySelector(".charts2-line.charts2-mark")).toBeNull();
-    expect(dense.element.querySelector(".charts2-point")).toBeNull();
-    expect(dense.element.querySelectorAll(".charts2-x-hit")).toHaveLength(48);
-    expect(JSON.parse(dense.element.querySelector(".charts2-x-hit").dataset.tooltipItems)).toHaveLength(2);
+    expect(dense.element.querySelector(".orchid-charts-line.orchid-charts-mark")).toBeNull();
+    expect(dense.element.querySelector(".orchid-charts-point")).toBeNull();
+    expect(dense.element.querySelectorAll(".orchid-charts-x-hit")).toHaveLength(48);
+    expect(JSON.parse(dense.element.querySelector(".orchid-charts-x-hit").dataset.tooltipItems)).toHaveLength(
+      2,
+    );
     dense.destroy();
   });
   it("covers sparse stacking, fallback labels, and horizontal marker labels", () => {
@@ -577,10 +583,10 @@ describe("Cartesian Rendering", () => {
       .marker({ value: 2, label: "Goal" })
       .render();
     expect(chart.element.textContent).toContain("Goal");
-    expect(chart.element.querySelector(".charts2-x-hit").dataset.tooltip).toBe(
+    expect(chart.element.querySelector(".orchid-charts-x-hit").dataset.tooltip).toBe(
       "1 — Series 1: 2 · Series 2: 3 · Series 3: 4",
     );
-    expect(chart.element.querySelectorAll(".charts2-x-hit")).toHaveLength(2);
+    expect(chart.element.querySelectorAll(".orchid-charts-x-hit")).toHaveLength(2);
 
     const defaultLayerMixed = MixedChart.make("#chart")
       .dataset({
@@ -600,7 +606,7 @@ describe("Cartesian Rendering", () => {
         ],
       })
       .render();
-    expect(defaultLayerMixed.element.querySelector(".charts2-line")).not.toBeNull();
+    expect(defaultLayerMixed.element.querySelector(".orchid-charts-line")).not.toBeNull();
     defaultLayerMixed.destroy();
 
     const lineOnlyMixed = MixedChart.make("#chart")
@@ -612,7 +618,7 @@ describe("Cartesian Rendering", () => {
         ],
       })
       .render();
-    expect(lineOnlyMixed.element.querySelector(".charts2-bar")).toBeNull();
+    expect(lineOnlyMixed.element.querySelector(".orchid-charts-bar")).toBeNull();
     lineOnlyMixed.destroy();
   });
   it("falls back to individual marks for dense Cartesian data", () => {
@@ -622,24 +628,24 @@ describe("Cartesian Rendering", () => {
       .labels([])
       .dataset({ name: "Dense", values })
       .render();
-    expect(scatter.element.querySelector(".charts2-x-hit")).toBeNull();
-    expect(scatter.element.querySelectorAll(".charts2-point-hit")).toHaveLength(41);
+    expect(scatter.element.querySelector(".orchid-charts-x-hit")).toBeNull();
+    expect(scatter.element.querySelectorAll(".orchid-charts-point-hit")).toHaveLength(41);
     const selected = [];
     scatter.element.parentElement.addEventListener("data-select", (event) => {
       selected.push(event.detail);
     });
     scatter.element
-      .querySelector(".charts2-point-hit")
+      .querySelector(".orchid-charts-point-hit")
       .dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(selected[0]).toMatchObject({ dataset: "Dense", label: 0.5, value: 0 });
     scatter.destroy();
 
     const denseBars = Array.from({ length: 41 }, (_, index) => index + 1);
     const vertical = BarChart.make("#chart").dataset({ values: denseBars }).render();
-    expect(vertical.element.querySelector(".charts2-x-hit").getAttribute("fill")).toBe("transparent");
+    expect(vertical.element.querySelector(".orchid-charts-x-hit").getAttribute("fill")).toBe("transparent");
     vertical.destroy();
     const horizontal = BarChart.make("#chart").horizontal().dataset({ values: denseBars }).render();
-    expect(horizontal.element.querySelector(".charts2-x-hit").getAttribute("fill")).toBe("transparent");
+    expect(horizontal.element.querySelector(".orchid-charts-x-hit").getAttribute("fill")).toBe("transparent");
     horizontal.destroy();
 
     const sparse = LineChart.make("#chart")
@@ -658,7 +664,7 @@ describe("Cartesian Rendering", () => {
         ],
       })
       .render();
-    expect(sparse.element.querySelectorAll(".charts2-x-hit")).toHaveLength(2);
+    expect(sparse.element.querySelectorAll(".orchid-charts-x-hit")).toHaveLength(2);
     sparse.destroy();
 
     const polar = PolarAreaChart.make("#chart")
@@ -676,7 +682,9 @@ describe("Cartesian Rendering", () => {
     polar.element.parentElement.addEventListener("data-select", (event) => {
       polarSelected.push(event.detail);
     });
-    polar.element.querySelector(".charts2-mark").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    polar.element
+      .querySelector(".orchid-charts-mark")
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(polarSelected[0]).toMatchObject({
       type: "polar-area",
       index: 0,

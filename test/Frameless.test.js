@@ -23,7 +23,7 @@ describe("explicit frameless charts", () => {
       })
       .render();
     expect(chart.element.getAttribute("aria-label")).toBe("Data trend");
-    expect(chart.element.querySelector(".charts2-line").getAttribute("d")).toContain("M0,");
+    expect(chart.element.querySelector(".orchid-charts-line").getAttribute("d")).toContain("M0,");
     expect(
       chart.update({
         datasets: [
@@ -35,7 +35,7 @@ describe("explicit frameless charts", () => {
         ],
       }),
     ).toBe(chart);
-    expect(chart.element.querySelector(".charts2-line").getAttribute("d")).toMatch(/^M[\d.]+,45$/);
+    expect(chart.element.querySelector(".orchid-charts-line").getAttribute("d")).toMatch(/^M[\d.]+,45$/);
     chart.destroy();
     expect(document.querySelector("svg")).toBeNull();
   });
@@ -58,11 +58,11 @@ describe("explicit frameless charts", () => {
       .render();
     expect(chart.element.querySelectorAll("path")).toHaveLength(2);
     expect(chart.element.querySelector("linearGradient")).toBeNull();
-    expect(chart.element.querySelector(".charts2-area").getAttribute("fill")).toBe("red");
-    const bounds = chart.element.querySelector(".charts2-area").getBBox();
+    expect(chart.element.querySelector(".orchid-charts-area").getAttribute("fill")).toBe("red");
+    const bounds = chart.element.querySelector(".orchid-charts-area").getBBox();
     expect(bounds.x).toBe(0);
     expect(bounds.width).toBe(100);
-    const lineBounds = chart.element.querySelector(".charts2-line").getBBox();
+    const lineBounds = chart.element.querySelector(".orchid-charts-line").getBBox();
     expect(lineBounds.y).toBe(2);
     expect(lineBounds.height).toBe(36);
   });
@@ -90,7 +90,7 @@ describe("explicit frameless charts", () => {
       })
       .render();
     const bounds = [
-      ...chart.element.querySelectorAll(".charts2-bar"),
+      ...chart.element.querySelectorAll(".orchid-charts-bar"),
     ].map((bar) => bar.getBBox());
 
     expect(Math.min(...bounds.map((box) => box.y))).toBe(0);
@@ -103,8 +103,8 @@ describe("explicit frameless charts", () => {
       .width(10)
       .dataset({ values: Array.from({ length: 200 }, () => 2) })
       .render();
-    expect(chart.element.querySelectorAll(".charts2-bar")).toHaveLength(200);
-    expect(chart.element.querySelector(".charts2-bar").getBBox().width).toBeCloseTo(2);
+    expect(chart.element.querySelectorAll(".orchid-charts-bar")).toHaveLength(200);
+    expect(chart.element.querySelector(".orchid-charts-bar").getBBox().width).toBeCloseTo(2);
   });
 
   it.each([

@@ -94,7 +94,7 @@ async function sourceMetrics() {
  * @returns {Promise<{gzipBytes: number, rawBytes: number}>} Combined JavaScript and CSS size.
  */
 async function consumerSize(definitions) {
-  const temporaryDirectory = await mkdtemp(path.join(tmpdir(), "charts2-size-"));
+  const temporaryDirectory = await mkdtemp(path.join(tmpdir(), "orchid-charts-size-"));
   const entry = path.join(temporaryDirectory, "entry.js");
   const bindings = definitions.join(", ");
   const values = definitions.join(", ");

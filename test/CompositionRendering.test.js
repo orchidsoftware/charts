@@ -64,8 +64,8 @@ describe("Composition Rendering", () => {
         ],
       })
       .render();
-    expect(pie.element.querySelectorAll(".charts2-pie-slice")).toHaveLength(3);
-    expect(pie.element.querySelector(".charts2-legend")).toBeNull();
+    expect(pie.element.querySelectorAll(".orchid-charts-pie-slice")).toHaveLength(3);
+    expect(pie.element.querySelector(".orchid-charts-legend")).toBeNull();
     pie.destroy();
     const donut = DonutChart.make("#chart")
       .labels(many.labels)
@@ -78,8 +78,8 @@ describe("Composition Rendering", () => {
         ],
       })
       .render();
-    expect(donut.element.querySelectorAll(".charts2-donut-slice")).toHaveLength(4);
-    expect(donut.element.querySelector(".charts2-direct-value").textContent).toBe("100");
+    expect(donut.element.querySelectorAll(".orchid-charts-donut-slice")).toHaveLength(4);
+    expect(donut.element.querySelector(".orchid-charts-direct-value").textContent).toBe("100");
     donut.destroy();
     const single = DonutChart.make("#chart")
       .labels([
@@ -91,7 +91,7 @@ describe("Composition Rendering", () => {
         ],
       })
       .render();
-    expect(single.element.querySelector("circle.charts2-donut-slice")).not.toBeNull();
+    expect(single.element.querySelector("circle.orchid-charts-donut-slice")).not.toBeNull();
     single.destroy();
     const percentage = PercentageChart.make("#chart")
       .labels(many.labels)
@@ -104,9 +104,11 @@ describe("Composition Rendering", () => {
         ],
       })
       .render();
-    expect(percentage.element.querySelectorAll(".charts2-percentage-segment")).toHaveLength(4);
+    expect(percentage.element.querySelectorAll(".orchid-charts-percentage-segment")).toHaveLength(4);
     expect(percentage.element.querySelector("clipPath rect").getAttribute("rx")).toBe("6");
-    expect(percentage.element.querySelectorAll(".charts2-percentage-segment[clip-path]")).toHaveLength(4);
+    expect(percentage.element.querySelectorAll(".orchid-charts-percentage-segment[clip-path]")).toHaveLength(
+      4,
+    );
     percentage.destroy();
     const squarePercentage = PercentageChart.make("#chart")
       .radius(0)
@@ -162,7 +164,9 @@ describe("Composition Rendering", () => {
         ],
       })
       .render();
-    expect(pie.element.querySelector(".charts2-pie-slice").getAttribute("d").match(/Q/g)).toHaveLength(2);
+    expect(pie.element.querySelector(".orchid-charts-pie-slice").getAttribute("d").match(/Q/g)).toHaveLength(
+      2,
+    );
     pie.destroy();
 
     const donut = DonutChart.make("#chart")
@@ -176,7 +180,9 @@ describe("Composition Rendering", () => {
         ],
       })
       .render();
-    expect(donut.element.querySelector(".charts2-donut-slice").getAttribute("d").match(/Q/g)).toHaveLength(4);
+    expect(
+      donut.element.querySelector(".orchid-charts-donut-slice").getAttribute("d").match(/Q/g),
+    ).toHaveLength(4);
     donut.destroy();
 
     const polar = PolarAreaChart.make("#chart")
@@ -190,7 +196,9 @@ describe("Composition Rendering", () => {
         ],
       })
       .render();
-    expect(polar.element.querySelector(".charts2-polar-area").getAttribute("d").match(/Q/g)).toHaveLength(2);
+    expect(
+      polar.element.querySelector(".orchid-charts-polar-area").getAttribute("d").match(/Q/g),
+    ).toHaveLength(2);
     polar.destroy();
 
     const sharp = DonutChart.make("#chart")
@@ -205,7 +213,7 @@ describe("Composition Rendering", () => {
         ],
       })
       .render();
-    expect(sharp.element.querySelector(".charts2-donut-slice").getAttribute("d")).not.toContain("Q");
+    expect(sharp.element.querySelector(".orchid-charts-donut-slice").getAttribute("d")).not.toContain("Q");
   });
   it("uses radius-aware pad geometry without distorting sector proportions", () => {
     const radialData = {
@@ -236,19 +244,19 @@ describe("Composition Rendering", () => {
     ] of [
       [
         "pie",
-        ".charts2-pie-slice",
+        ".orchid-charts-pie-slice",
         false,
         PieChart,
       ],
       [
         "donut",
-        ".charts2-donut-slice",
+        ".orchid-charts-donut-slice",
         true,
         DonutChart,
       ],
       [
         "polar-area",
-        ".charts2-polar-area",
+        ".orchid-charts-polar-area",
         false,
         PolarAreaChart,
       ],
@@ -313,7 +321,9 @@ describe("Composition Rendering", () => {
         ],
       })
       .render();
-    expect(startX(custom, ".charts2-pie-slice")).toBeGreaterThan(startX(standard, ".charts2-pie-slice"));
+    expect(startX(custom, ".orchid-charts-pie-slice")).toBeGreaterThan(
+      startX(standard, ".orchid-charts-pie-slice"),
+    );
 
     const tiny = PieChart.make("#chart")
       .padAngle(359)
@@ -330,7 +340,7 @@ describe("Composition Rendering", () => {
       .render();
     expect(
       [
-        ...tiny.element.querySelectorAll(".charts2-pie-slice"),
+        ...tiny.element.querySelectorAll(".orchid-charts-pie-slice"),
       ].every((slice) => !slice.getAttribute("d").includes("NaN")),
     ).toBe(true);
     const zero = PieChart.make("#chart")
@@ -345,8 +355,8 @@ describe("Composition Rendering", () => {
         ],
       })
       .render();
-    expect(zero.element.querySelectorAll(".charts2-pie-slice")).toHaveLength(1);
-    expect(zero.element.querySelector("circle.charts2-pie-slice")).not.toBeNull();
+    expect(zero.element.querySelectorAll(".orchid-charts-pie-slice")).toHaveLength(1);
+    expect(zero.element.querySelector("circle.orchid-charts-pie-slice")).not.toBeNull();
 
     const donut = DonutChart.make("#chart")
       .width(240)
@@ -363,7 +373,7 @@ describe("Composition Rendering", () => {
       })
       .render();
     const numbers = donut.element
-      .querySelector(".charts2-donut-slice")
+      .querySelector(".orchid-charts-donut-slice")
       .getAttribute("d")
       .split(/[A-Za-z, ]+/)
       .filter(Boolean)
@@ -403,9 +413,9 @@ describe("Composition Rendering", () => {
         ],
       })
       .render();
-    const segment = percentage.element.querySelector(".charts2-percentage-segment");
+    const segment = percentage.element.querySelector(".orchid-charts-percentage-segment");
     const legendLabels = [
-      ...percentage.element.querySelectorAll(".charts2-legend"),
+      ...percentage.element.querySelectorAll(".orchid-charts-legend"),
     ];
     expect(Number(segment.getAttribute("height"))).toBe(257);
     expect(Number(segment.getAttribute("y"))).toBe(0);
@@ -429,10 +439,10 @@ describe("Composition Rendering", () => {
       })
       .render();
     expect(
-      Number(hiddenLegend.element.querySelector(".charts2-percentage-segment").getAttribute("height")),
+      Number(hiddenLegend.element.querySelector(".orchid-charts-percentage-segment").getAttribute("height")),
     ).toBe(280);
-    expect(hiddenLegend.element.querySelector(".charts2-percentage-segment")).toHaveAttribute("y", "0");
-    expect(hiddenLegend.element.querySelector(".charts2-legend-group")).toBeNull();
+    expect(hiddenLegend.element.querySelector(".orchid-charts-percentage-segment")).toHaveAttribute("y", "0");
+    expect(hiddenLegend.element.querySelector(".orchid-charts-legend-group")).toBeNull();
     hiddenLegend.destroy();
 
     const wrappedData = {
@@ -467,9 +477,9 @@ describe("Composition Rendering", () => {
       })
       .render();
     const wrappedLegendY = [
-      ...wrapped.element.querySelectorAll(".charts2-legend"),
+      ...wrapped.element.querySelectorAll(".orchid-charts-legend"),
     ].map((label) => Number(label.getAttribute("y")));
-    const wrappedSegment = wrapped.element.querySelector(".charts2-percentage-segment");
+    const wrappedSegment = wrapped.element.querySelector(".orchid-charts-percentage-segment");
     expect(wrappedLegendY).toEqual([
       217,
       237,
@@ -507,7 +517,7 @@ describe("Composition Rendering", () => {
         })
         .render();
       const slices = [
-        ...radial.element.querySelectorAll(`.charts2-${type}-slice`),
+        ...radial.element.querySelectorAll(`.orchid-charts-${type}-slice`),
       ].map((slice) => slice.getBBox());
       const top = Math.min(...slices.map((bounds) => bounds.y));
       const bottom = Math.max(...slices.map((bounds) => bounds.y + bounds.height));
@@ -544,7 +554,7 @@ describe("Composition Rendering", () => {
         ],
       })
       .render();
-    expect(frameless.element.querySelector(".charts2-area")).not.toBeNull();
+    expect(frameless.element.querySelector(".orchid-charts-area")).not.toBeNull();
     frameless.destroy();
     expect(() => HeatmapChart.make("#chart").points({}).render()).toThrow("at least one entry");
     const heatmap = HeatmapChart.make("#chart").points({ "2026-01-01": 0 }).render();

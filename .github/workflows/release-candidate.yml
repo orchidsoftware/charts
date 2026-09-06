@@ -6,7 +6,7 @@ on:
       version:
         description: Version from package.json without the v prefix
         required: true
-        default: 0.0.2
+        default: 0.0.3
         type: string
 
 permissions:
@@ -48,7 +48,7 @@ jobs:
       - name: Upload the release candidate
         uses: actions/upload-artifact@v7
         with:
-          name: charts2-v${{ inputs.version }}
+          name: orchid-charts-v${{ inputs.version }}
           path: "*.tgz"
           if-no-files-found: error
           retention-days: 30

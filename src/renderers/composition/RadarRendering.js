@@ -1,14 +1,15 @@
 import { polarPoint } from "../../support/geometry/Math.js";
-import { formatLabel, formatValue, seriesContext } from "../../support/presentation/Formatting.js";
-import { datasetSummary, seriesContentLayout } from "../../support/presentation/Presentation.js";
+import { formatLabel } from "../../support/presentation/Formatting.js";
+import { seriesContentLayout } from "../../support/presentation/Presentation.js";
 import { labelElement } from "../../support/presentation/TextLayout.js";
 import { renderLegend } from "../LegendRendering.js";
+
+import RadarInspectorRenderer from "./RadarInspectorRenderer.js";
 
 const DEFAULT_RADAR_OPACITY = 0.28;
 const RADAR_RADIUS_RATIO = 0.38;
 const LABEL_OFFSET = 12;
-const MINIMUM_LABEL_WIDTH = 54;
-const LABEL_WIDTH_RATIO = 0.16;
+const LABEL_EDGE_GAP = 4;
 
 /**
  * Resolves the text anchor for one radar label direction.
@@ -22,6 +23,23 @@ function radarAnchor(directionX) {
   }
 
   return directionX < 0 ? "end" : "start";
+}
+
+/**
+ * Keeps labels within the viewport without needlessly shortening centered text.
+ *
+ * @param {object} position - Label x coordinate, alignment and chart width.
+ * @param {number} position.x - Label horizontal coordinate.
+ * @param {string} position.anchor - SVG text alignment.
+ * @param {number} position.width - Available chart width.
+ * @returns {number} Available horizontal label space.
+ */
+function radarLabelWidth({ x, anchor, width }) {
+  if (anchor === "middle") {
+    return Math.max(1, 2 * Math.min(x, width - x) - LABEL_EDGE_GAP);
+  }
+
+  return Math.max(1, (anchor === "start" ? width - x : x) - LABEL_EDGE_GAP);
 }
 
 /**
@@ -74,6 +92,7 @@ class RadarRenderer {
     this.#renderFrame({ frame, centerX: center.x, centerY: center.y });
     this.#renderDatasets(center, scale);
     this.#renderLabels({ frame, centerX: center.x, centerY: center.y, width });
+    new RadarInspectorRenderer({ chart: this.#chart, surface: this.#surface }).render(center, scale);
   }
 
   /**
@@ -88,7 +107,7 @@ class RadarRenderer {
   #renderFrame({ frame, centerX, centerY }) {
     this.#surface.append("polygon", {
       points: frame.map((point) => `${point.x},${point.y}`).join(" "),
-      class: "charts2-grid charts2-radar-frame",
+      class: "orchid-charts-grid orchid-charts-radar-frame",
     });
     for (const point of frame) {
       this.#surface.append("line", {
@@ -96,23 +115,20 @@ class RadarRenderer {
         y1: centerY,
         x2: point.x,
         y2: point.y,
-        class: "charts2-grid",
+        class: "orchid-charts-grid",
       });
     }
   }
 
   /**
-   * Draws every normalized dataset as one interactive radar polygon.
+   * Draws every normalized dataset as a non-interactive radar profile.
    *
    * @param {{x: number, y: number}} center - Shared radial center.
    * @param {object} scale - Radius, maximum value, and axis count.
-   * @returns {void} Dataset polygons and tooltip metadata are appended.
+   * @returns {void} Dataset polygons are appended beneath the category inspection targets.
    */
   #renderDatasets(center, scale) {
-    for (const [
-      datasetIndex,
-      dataset,
-    ] of this.#chart.datasets.entries()) {
+    for (const dataset of this.#chart.datasets) {
       const shape = dataset.points.map((point, index) =>
         polarPoint({
           cx: center.x,
@@ -122,47 +138,17 @@ class RadarRenderer {
         }),
       );
 
-      this.#surface.mark(
-        "polygon",
-        {
-          points: shape.map((point) => `${point.x},${point.y}`).join(" "),
-          fill: dataset.color,
-          stroke: dataset.color,
-          "stroke-width": this.#chart.options.strokeWidth,
-          "stroke-linejoin": "round",
-          "stroke-linecap": "round",
-          opacity: dataset.opacity ?? DEFAULT_RADAR_OPACITY,
-          class: "charts2-radar charts2-mark",
-        },
-        {
-          kind: "dataset",
-          dataset: datasetIndex,
-          point: 0,
-          title: datasetSummary(dataset, this.#chart.labels, { options: this.#chart.options, datasetIndex }),
-          tooltip: { heading: dataset.name, items: this.#tooltipItems(dataset) },
-        },
-      );
+      this.#surface.append("polygon", {
+        points: shape.map((point) => `${point.x},${point.y}`).join(" "),
+        fill: dataset.color,
+        stroke: dataset.color,
+        "stroke-width": this.#chart.options.strokeWidth,
+        "stroke-linejoin": "round",
+        "stroke-linecap": "round",
+        opacity: dataset.opacity ?? DEFAULT_RADAR_OPACITY,
+        class: "orchid-charts-radar",
+      });
     }
-  }
-
-  /**
-   * Formats the category values exposed by a radar dataset tooltip.
-   *
-   * @param {object} dataset - Normalized radar dataset.
-   * @returns {Array<object>} Display-ready tooltip rows.
-   */
-  #tooltipItems(dataset) {
-    const datasetIndex = this.#chart.datasets.indexOf(dataset);
-
-    return dataset.points.map((point, index) => {
-      const context = { ...seriesContext(this.#chart, datasetIndex, index), target: "tooltip" };
-
-      return {
-        name: formatLabel(this.#chart.options, context.label, context),
-        value: formatValue(this.#chart.options, point.y, context),
-        color: dataset.color,
-      };
-    });
   }
 
   /**
@@ -183,6 +169,8 @@ class RadarRenderer {
       const directionX = point.x - centerX;
       const directionY = point.y - centerY;
       const length = Math.hypot(directionX, directionY);
+      const x = point.x + (directionX / length) * LABEL_OFFSET;
+      const anchor = radarAnchor(directionX);
       this.#surface.append(
         labelElement({
           value: formatLabel(this.#chart.options, this.#chart.labels[index], {
@@ -190,12 +178,12 @@ class RadarRenderer {
             index,
           }),
           attributes: {
-            x: point.x + (directionX / length) * LABEL_OFFSET,
+            x,
             y: point.y + (directionY / length) * LABEL_OFFSET,
-            class: "charts2-label",
-            "text-anchor": radarAnchor(directionX),
+            class: "orchid-charts-label",
+            "text-anchor": anchor,
           },
-          measurement: { maxWidth: Math.max(MINIMUM_LABEL_WIDTH, width * LABEL_WIDTH_RATIO) },
+          measurement: { maxWidth: radarLabelWidth({ x, anchor, width }) },
         }),
       );
     }

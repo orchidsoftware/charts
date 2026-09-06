@@ -18,7 +18,7 @@ function renderLegend({ chart, surface }, layout = seriesContentLayout(chart)) {
   }
 
   const { items, legendBaseline } = layout;
-  const group = svg("g", { class: "charts2-legend-group", "aria-label": "Legend" });
+  const group = svg("g", { class: "orchid-charts-legend-group", "aria-label": "Legend" });
 
   for (const item of items) {
     const { labelMaxWidth, x, yOffset } = item;
@@ -29,12 +29,12 @@ function renderLegend({ chart, surface }, layout = seriesContentLayout(chart)) {
         cy: y - SERIES_SWATCH_DIAMETER / 2,
         r: SERIES_SWATCH_DIAMETER / 2,
         fill: item.color,
-        class: "charts2-legend-swatch charts2-series-swatch",
+        class: "orchid-charts-legend-swatch orchid-charts-series-swatch",
         "aria-hidden": "true",
       }),
       labelElement({
         value: item.label,
-        attributes: { x: x + LEGEND_LABEL_OFFSET, y, class: "charts2-legend" },
+        attributes: { x: x + LEGEND_LABEL_OFFSET, y, class: "orchid-charts-legend" },
         measurement: { maxWidth: labelMaxWidth },
       }),
     );

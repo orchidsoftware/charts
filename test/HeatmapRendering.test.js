@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HeatmapChart, LineChart } from "../src/index.js";
 import "../src/styles.css";
 
-const tooltipFor = (chart) => chart.element.parentElement.querySelector(".charts2-tooltip");
+const tooltipFor = (chart) => chart.element.parentElement.querySelector(".orchid-charts-tooltip");
 const widthOf = (chart) => chart.element.viewBox.baseVal.width;
 const heightOf = (chart) => chart.element.viewBox.baseVal.height;
 const series = {
@@ -34,7 +34,7 @@ describe("Heatmap Rendering", () => {
       .render();
     const expectCompact = () => {
       const cells = [
-        ...chart.element.querySelectorAll(".charts2-heat-cell"),
+        ...chart.element.querySelectorAll(".orchid-charts-heat-cell"),
       ];
       expect(cells).toHaveLength(4);
       for (const cell of cells) {
@@ -42,7 +42,7 @@ describe("Heatmap Rendering", () => {
         expect(cell.getAttribute("width")).toBe(cell.getAttribute("height"));
       }
       expect(heightOf(chart)).toBeLessThan(200);
-      const legend = chart.element.querySelector(".charts2-heat-legend").getBBox();
+      const legend = chart.element.querySelector(".orchid-charts-heat-legend").getBBox();
       expect(legend.y + legend.height).toBeLessThanOrEqual(heightOf(chart));
     };
     expectCompact();
@@ -77,13 +77,15 @@ describe("Heatmap Rendering", () => {
       .colors(palette)
       .points({ [stamp]: 5, "2026-01-01": 1 })
       .render();
-    expect(heatmap.element.querySelector(".charts2-heat-cell").dataset.tooltip).toBe("2026-01-01: 1 events");
-    expect(heatmap.element.querySelector(".charts2-heat-cell title")).toBeNull();
+    expect(heatmap.element.querySelector(".orchid-charts-heat-cell").dataset.tooltip).toBe(
+      "2026-01-01: 1 events",
+    );
+    expect(heatmap.element.querySelector(".orchid-charts-heat-cell title")).toBeNull();
     const cells = [
-      ...heatmap.element.querySelectorAll(".charts2-heat-cell"),
+      ...heatmap.element.querySelectorAll(".orchid-charts-heat-cell"),
     ];
     const swatches = [
-      ...heatmap.element.querySelectorAll(".charts2-heat-legend-swatch"),
+      ...heatmap.element.querySelectorAll(".orchid-charts-heat-legend-swatch"),
     ];
     expect(cells.every((cell) => cell.getAttribute("width") === cell.getAttribute("height"))).toBe(true);
     const cellSize = Number(cells[0].getAttribute("width"));
@@ -99,8 +101,8 @@ describe("Heatmap Rendering", () => {
     );
     expect(Number(swatches[0].getAttribute("y")) - gridBottom).toBe(12);
     expect(
-      heatmap.element.querySelector(".charts2-heat-legend-more").getBBox().x +
-        heatmap.element.querySelector(".charts2-heat-legend-more").getBBox().width,
+      heatmap.element.querySelector(".orchid-charts-heat-legend-more").getBBox().x +
+        heatmap.element.querySelector(".orchid-charts-heat-legend-more").getBBox().width,
     ).toBeLessThanOrEqual(widthOf(heatmap));
     expect(
       Number(swatches[0].getAttribute("y")) + Number(swatches[0].getAttribute("height")),
@@ -111,7 +113,7 @@ describe("Heatmap Rendering", () => {
     expect(widthOf(heatmap)).toBe(180);
     expect(heatmap.element.style.minWidth).toBe("");
     const resizedCells = [
-      ...heatmap.element.querySelectorAll(".charts2-heat-cell"),
+      ...heatmap.element.querySelectorAll(".orchid-charts-heat-cell"),
     ];
     expect(resizedCells.every((cell) => cell.getAttribute("width") === cell.getAttribute("height"))).toBe(
       true,
@@ -122,11 +124,11 @@ describe("Heatmap Rendering", () => {
       ),
     ).toBeLessThanOrEqual(widthOf(heatmap));
     expect(() => heatmap.update({ points: {} })).toThrow("at least one entry");
-    expect(heatmap.element.querySelector(".charts2-heat-cell")).not.toBeNull();
-    expect(heatmap.element.querySelectorAll(".charts2-heat-legend-swatch")).toHaveLength(10);
+    expect(heatmap.element.querySelector(".orchid-charts-heat-cell")).not.toBeNull();
+    expect(heatmap.element.querySelectorAll(".orchid-charts-heat-legend-swatch")).toHaveLength(10);
     heatmap.destroy();
     const singleDay = HeatmapChart.make("#chart").points({ "2026-01-01": 2 }).render();
-    expect(singleDay.element.querySelector(".charts2-heat-legend")).not.toBeNull();
+    expect(singleDay.element.querySelector(".orchid-charts-heat-legend")).not.toBeNull();
     singleDay.destroy();
 
     const year = Object.fromEntries(
@@ -143,15 +145,15 @@ describe("Heatmap Rendering", () => {
       .points(year)
       .render();
     const narrowCells = [
-      ...narrow.element.querySelectorAll(".charts2-heat-cell"),
+      ...narrow.element.querySelectorAll(".orchid-charts-heat-cell"),
     ];
     const narrowSwatches = [
-      ...narrow.element.querySelectorAll(".charts2-heat-legend-swatch"),
+      ...narrow.element.querySelectorAll(".orchid-charts-heat-legend-swatch"),
     ];
     const weekHits = [
-      ...narrow.element.querySelectorAll(".charts2-heat-week-hit"),
+      ...narrow.element.querySelectorAll(".orchid-charts-heat-week-hit"),
     ];
-    expect(narrow.element.parentElement).not.toHaveClass("charts2-scrollable-heatmap");
+    expect(narrow.element.parentElement).not.toHaveClass("orchid-charts-scrollable-heatmap");
     expect(narrow.element.getBoundingClientRect().width).toBe(
       narrow.element.parentElement.getBoundingClientRect().width,
     );
@@ -159,7 +161,7 @@ describe("Heatmap Rendering", () => {
     expect(narrowCells.every((cell) => cell.getAttribute("width") === cell.getAttribute("height"))).toBe(
       true,
     );
-    expect(narrowCells.every((cell) => cell.classList.contains("charts2-mark"))).toBe(true);
+    expect(narrowCells.every((cell) => cell.classList.contains("orchid-charts-mark"))).toBe(true);
     expect(weekHits).toHaveLength(0);
     expect(
       Number(narrowSwatches[1].getAttribute("x")) -
@@ -184,9 +186,9 @@ describe("Heatmap Rendering", () => {
       .points({ "2026-01-01": 1 })
       .render();
     const compactSwatches = [
-      ...compactLegend.element.querySelectorAll(".charts2-heat-legend-swatch"),
+      ...compactLegend.element.querySelectorAll(".orchid-charts-heat-legend-swatch"),
     ];
-    expect(compactLegend.element.parentElement).not.toHaveClass("charts2-scrollable-heatmap");
+    expect(compactLegend.element.parentElement).not.toHaveClass("orchid-charts-scrollable-heatmap");
     expect(
       Number(compactSwatches[1].getAttribute("x")) -
         Number(compactSwatches[0].getAttribute("x")) -
@@ -195,14 +197,15 @@ describe("Heatmap Rendering", () => {
     compactLegend.destroy();
     const tall = HeatmapChart.make("#chart").points(year).render();
     const tallCells = [
-      ...tall.element.querySelectorAll(".charts2-heat-cell"),
+      ...tall.element.querySelectorAll(".orchid-charts-heat-cell"),
     ];
     const tallGridBottom = Math.max(
       ...tallCells.map((cell) => Number(cell.getAttribute("y")) + Number(cell.getAttribute("height"))),
     );
     expect(tallCells.every((cell) => cell.getAttribute("width") === cell.getAttribute("height"))).toBe(true);
     expect(
-      Number(tall.element.querySelector(".charts2-heat-legend-swatch").getAttribute("y")) - tallGridBottom,
+      Number(tall.element.querySelector(".orchid-charts-heat-legend-swatch").getAttribute("y")) -
+        tallGridBottom,
     ).toBe(12);
     expect(heightOf(tall)).toBeGreaterThan(280);
     tall.destroy();
@@ -238,7 +241,7 @@ describe("Heatmap Rendering", () => {
     chart.element.parentElement.addEventListener("data-select", (event) => {
       selected.push(event.detail);
     });
-    const cell = chart.element.querySelector(".charts2-heat-cell");
+    const cell = chart.element.querySelector(".orchid-charts-heat-cell");
     cell.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(selected[0]).toMatchObject({ key: "2026-01-01", value: 4 });
     vi.spyOn(chart.element.parentElement, "getBoundingClientRect").mockReturnValue({

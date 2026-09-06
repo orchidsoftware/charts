@@ -45,7 +45,7 @@ if (heroRevenueHost) {
     datasets: [
       {
         name: "Revenue",
-        color: "var(--charts2-demo-blue)",
+        color: "var(--orchid-charts-demo-blue)",
         values: [
           44,
           48,
@@ -63,7 +63,7 @@ if (heroRevenueHost) {
       },
       {
         name: "Plan",
-        color: "var(--charts2-demo-coral)",
+        color: "var(--orchid-charts-demo-coral)",
         values: [
           32,
           35,

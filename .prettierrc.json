@@ -9,6 +9,12 @@
   "useTabs": false,
   "overrides": [
     {
+      "files": ["docs/**/*.md", "README.md"],
+      "options": {
+        "embeddedLanguageFormatting": "off"
+      }
+    },
+    {
       "files": "*.{js,mjs,cjs}",
       "options": {
         "multilineArraysLinePattern": "1",

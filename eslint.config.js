@@ -131,7 +131,7 @@ const multilineReturnObjectRule = {
   },
 };
 
-const charts2Plugin = {
+const orchidChartsPlugin = {
   rules: {
     "multiline-array": multilineArrayRule,
     "multiline-return-object": multilineReturnObjectRule,
@@ -242,8 +242,8 @@ const correctnessRules = {
   "prefer-template": "error",
   "require-atomic-updates": "error",
   "require-await": "error",
-  "charts2/multiline-array": "error",
-  "charts2/multiline-return-object": "error",
+  "orchid-charts/multiline-array": "error",
+  "orchid-charts/multiline-return-object": "error",
   "import-x/first": "error",
   "import-x/newline-after-import": "error",
   "import-x/no-cycle": [
@@ -482,7 +482,7 @@ export default [
     },
     linterOptions: { reportUnusedDisableDirectives: "error" },
     plugins: {
-      charts2: charts2Plugin,
+      "orchid-charts": orchidChartsPlugin,
       "import-x": importX,
       n: node,
       promise,

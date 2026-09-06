@@ -31,7 +31,7 @@ jobs:
       - name: Generate Linux baselines
         run: |
           npx vitest run test/VisualRegression.test.js test/Lab.test.js test/RadarInspection.test.js --update
-          CHARTS2_COMPATIBILITY=1 npx vitest run test/RadarInspection.test.js --update
+          ORCHID_CHARTS_COMPATIBILITY=1 npx vitest run test/RadarInspection.test.js --update
 
       - name: Upload Linux baselines
         uses: actions/upload-artifact@v7

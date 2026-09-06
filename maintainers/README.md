@@ -1,32 +1,18 @@
 # Maintainer notes
 
-This directory contains internal specifications, audits, decision records, and
-release evidence. These files explain how Orchid Charts is built and maintained; they
-are not part of the user documentation published with `@orchidsoftware/charts`.
+Current internal references for Orchid Charts:
 
-User-facing documentation lives in [`docs`](../docs/readme.md). Contributor
-instructions live in [`CONTRIBUTING.md`](../CONTRIBUTING.md).
+- [Architecture](./ARCHITECTURE.md): ownership and dependency boundaries.
+- [Naming policy](./NAMING.md): source, CSS, and tooling vocabulary.
+- [Performance](./PERFORMANCE.md): runtime and bundle budgets.
+- [Visual testing](./VISUAL_MATRIX.md): browser baselines and review workflow.
+- [Release process](./RELEASING.md): verification and npm publication.
+- [Positioning](./POSITIONING.md): product audience and messaging.
 
-## Current references
+The public API is documented in [docs](../docs/readme.md) and typed in
+[src/index.d.ts](../src/index.d.ts). Development checks are defined in
+[CONTRIBUTING.md](../CONTRIBUTING.md) and package scripts.
 
-- [Positioning](./POSITIONING.md)
-- [Documentation design matrix](./DOCUMENTATION_DESIGN_MATRIX.md)
-- [Launch readiness audit](./LAUNCH_AUDIT.md)
-- [Fluent API specification](./FLUENT_API.md)
-- [Architecture](./ARCHITECTURE.md)
-- [Naming policy](./NAMING.md)
-- [Performance budgets](./PERFORMANCE.md)
-- [Release process](./RELEASING.md)
-
-## Historical evidence
-
-- [Architecture refactoring decisions](./REFACTORING.md)
-- [Design audit](./DESIGN_AUDIT.md)
-- [Code map review](./CODE_MAP_REVIEW.md)
-- [Fluent API review](./FLUENT_API_REVIEW.md)
-- [Harmony matrix](./HARMONY_MATRIX.md)
-- [Pie/donut tooltip review](./PIE_DONUT_TOOLTIP_REVIEW.md)
-
-Historical files preserve the evidence and context behind accepted decisions;
-they are not descriptions of the current public API. No file in this directory
-is shipped in the npm package.
+Completed audits, opinion matrices, and superseded design proposals are available
+in Git history. They are no longer maintained as parallel specifications.
+Nothing in this directory is included in the npm package.

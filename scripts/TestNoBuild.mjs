@@ -116,9 +116,9 @@ function pageMarkup(origin) {
           rendered: svg.matches("svg.orchid-charts-chart"),
         };
         chart.destroy();
-        globalThis.__charts2NoBuild = { ...result, destroyed: !svg.isConnected };
+        globalThis.__orchidChartsNoBuild = { ...result, destroyed: !svg.isConnected };
       } catch (error) {
-        globalThis.__charts2NoBuild = { error: error instanceof Error ? error.stack : String(error) };
+        globalThis.__orchidChartsNoBuild = { error: error instanceof Error ? error.stack : String(error) };
       }
     </script>
   </body>
@@ -139,8 +139,8 @@ async function testBrowser(name, browserType, origin) {
   try {
     const page = await browser.newPage();
     await page.goto(origin, { waitUntil: "load" });
-    await page.waitForFunction(() => globalThis.__charts2NoBuild !== undefined);
-    const result = await page.evaluate(() => globalThis.__charts2NoBuild);
+    await page.waitForFunction(() => globalThis.__orchidChartsNoBuild !== undefined);
+    const result = await page.evaluate(() => globalThis.__orchidChartsNoBuild);
 
     if (result.error) {
       throw new Error(`${name} failed to import Orchid Charts through an import map:\n${result.error}`);

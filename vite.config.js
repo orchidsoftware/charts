@@ -3,7 +3,7 @@ import { defineConfig } from "vite";
 
 import { documentationPlugin } from "./scripts/Documentation.mjs";
 
-const isCompatibility = process.env.CHARTS2_COMPATIBILITY === "1";
+const isCompatibility = process.env.ORCHID_CHARTS_COMPATIBILITY === "1";
 
 export default defineConfig({
   plugins: [

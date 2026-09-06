@@ -27,9 +27,8 @@ and CSS separately at level 9. Combination builds additionally verify that the
 shared runtime is not duplicated. The complete-package aggregate remains a
 reported diagnostic; it is not presented as a typical chart import.
 
-The same gate rejects production-source growth above 12,850 lines, 379,000
-bytes, 44 files, or 122 static imports. Bundle and maintainability budgets must
-pass together.
+Production-source lines, bytes, files, and imports are reported as diagnostics;
+the enforced size limit is defined in `scripts/WriteBuildSize.mjs`.
 
 The 90-day scenario runs first, without an explicit warm-up, and verifies all 89
 smooth segments. Its 50 ms budget therefore protects the ordinary first-chart

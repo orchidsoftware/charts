@@ -62,7 +62,7 @@
     "test:visual": "vitest run test/VisualRegression.test.js",
     "test:visual:update": "vitest run test/VisualRegression.test.js --update",
     "test:performance": "vitest run test/Performance.test.js",
-    "test:compatibility": "CHARTS2_COMPATIBILITY=1 vitest run",
+    "test:compatibility": "ORCHID_CHARTS_COMPATIBILITY=1 vitest run",
     "test:no-build": "npm run build:library && node scripts/TestNoBuild.mjs",
     "test:ssr": "npm run build:library && npm run test:ssr:built",
     "coverage": "vitest run --coverage --exclude test/Performance.test.js",

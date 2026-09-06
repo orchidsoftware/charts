@@ -1,64 +1,37 @@
 # Releasing Orchid Charts
 
-Version 0.0.1 is published as `@orchidsoftware/charts`, tagged as `v0.0.1`, and
-mirrored by the matching GitHub Release. The `orchidsoftware` npm organization
-owns the package.
+The npm package is `@orchidsoftware/charts`. GitHub Releases use tags of the form
+`vX.Y.Z`; publishing a release triggers `.github/workflows/publish.yml` and npm
+trusted publishing. The tag must match `package.json` exactly.
 
-## First-publication decisions
+## Prepare
 
-Before publishing, verify these external release settings:
+1. Update `package.json`, the root package entry in `package-lock.json`, the demo
+   footer, CDN examples, and the release-candidate workflow default.
+2. Move completed changelog entries into a dated release section. Document changes
+   to public interaction payloads, CSS selectors, and theme variables.
+3. Install the locked dependencies and Chromium, Firefox, and WebKit.
+4. Run `npm run check`, `npm audit --audit-level=high`, `npm run build:demo`,
+   and `npm run pack:check`.
+5. Review visual changes on macOS and Linux. See [Visual testing](./VISUAL_MATRIX.md).
+6. Inspect the archive for the ESM build, source maps, types, stylesheet, docs,
+   changelog, and license. It must exclude tests, demo source, credentials,
+   coverage, and local artifacts.
 
-1. Enable branch protection, private vulnerability reporting, Dependabot, and
-   GitHub Actions in the repository settings.
-2. Publish the first public version interactively, then configure npm trusted
-   publishing for `@orchidsoftware/charts` and `.github/workflows/publish.yml`.
-   Do not store an npm token in `.npmrc` or the repository.
+`npm run build` records measured bundle sizes in `demo/BuildSize.js`; include the
+updated metrics before reviewing demo screenshots. The complete quality gate
+builds once and reuses the result for native import-map and server-side tests.
 
-## Release gate
+## Publish
 
-Run the complete release gate from a clean checkout:
+Commit and push the reviewed changes. Wait for CI on the exact release commit.
+Create an annotated `vX.Y.Z` tag on that commit, push the tag, and publish a GitHub
+Release with the matching changelog notes.
 
-```bash
-npm ci
-npx playwright install chromium firefox webkit
-npm run check
-npm audit --audit-level=high
-npm run pack:check
-```
+The publish workflow verifies the tag, runs the complete gate, packs the verified
+build, and publishes through npm trusted publishing. Confirm workflow success and
+that the expected version is available from the registry before calling the
+release complete. Do not store npm tokens in the repository.
 
-The gate includes a native no-build smoke test in Chromium, Firefox, and WebKit.
-It serves `dist` as static files, resolves `@orchidsoftware/charts` through an import map,
-loads CSS through `<link>`, and exercises render, update, and destroy without a
-bundler transform.
-
-Inspect the archive listing. It must contain the module-preserving ESM build,
-source maps, CSS, TypeScript declarations, documentation, license, notice,
-changelog, and package manifest. It must not contain CommonJS, authored
-JavaScript, tests, demo code, credentials, coverage, or local artifacts.
-
-`npm run pack:check` uses `npm pack --ignore-scripts` so archive inspection does
-not recurse through `prepack → build → size → pack`.
-
-The CI and release-candidate workflows must install all three Playwright
-browsers before `npm run check`; the no-build contract launches Chromium,
-Firefox, and WebKit. A Chromium-only workflow setup is not equivalent to this
-release gate.
-
-## Version workflow
-
-1. Move completed entries from `Unreleased` into a dated release in
-   `CHANGELOG.md`.
-2. Set the exact same version in `package.json` and `package-lock.json`.
-3. Run the release gate and review all visual diffs.
-4. Commit the release as one focused change.
-5. Tag the commit as `vX.Y.Z` and create release notes from
-   the matching changelog entry.
-6. Publish the already-reviewed archive. For the first release, verify the
-   package name and access level interactively rather than automating an
-   irreversible publication.
-
-The manual **Release candidate** workflow performs the gate and uploads a `.tgz`
-artifact. It does not create a tag, GitHub Release, or npm publication. Publishing
-a GitHub Release triggers `.github/workflows/publish.yml`; after the first package
-version exists, connect that workflow through npm trusted publishing before using
-it for subsequent versions.
+The manual **Release candidate** workflow only builds and uploads an archive;
+it does not create tags or publish the package.

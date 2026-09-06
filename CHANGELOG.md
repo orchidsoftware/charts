@@ -10,6 +10,12 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ### Changed
 
+- Removed completed maintainer audits and superseded proposals; refreshed the
+  remaining architecture, naming, testing, performance, and release guidance.
+
+- Renamed internal environment flags to `ORCHID_CHARTS_*` and aligned ESLint
+  rule names and test globals with Orchid Charts.
+
 - Renamed CSS classes and generated element IDs from `charts2-` to
   `orchid-charts-`, including the demo theme variables. Custom CSS selectors
   targeting the old classes must use the new prefix. Library theme variables

@@ -38,7 +38,7 @@ const COMBINATIONS = Object.freeze({
   "All definitions": DEFINITIONS,
 });
 const root = process.cwd();
-const isReportOnly = process.env.CHARTS2_REPORT_ONLY === "1";
+const isReportOnly = process.env.ORCHID_CHARTS_REPORT_ONLY === "1";
 
 /**
  * Lists production JavaScript and CSS files without relying on shell-specific tools.
@@ -101,7 +101,7 @@ async function consumerSize(definitions) {
 
   await writeFile(
     entry,
-    `import { ${bindings} } from "@orchidsoftware/charts";\nimport "@orchidsoftware/charts/style.css";\nglobalThis.__charts2Definitions = [${values}];\n`,
+    `import { ${bindings} } from "@orchidsoftware/charts";\nimport "@orchidsoftware/charts/style.css";\nglobalThis.__orchidCharts = [${values}];\n`,
   );
 
   try {

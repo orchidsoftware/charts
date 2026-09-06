@@ -182,7 +182,7 @@ function textMeasurementContext() {
  */
 function measuredTextWidth(value, fontSize = 11) {
   const context = textMeasurementContext();
-  context.font = `${fontSize}px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif`;
+  context.font = `${fontSize}px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`;
 
   return context.measureText(String(value)).width;
 }

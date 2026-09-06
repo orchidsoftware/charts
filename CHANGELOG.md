@@ -10,6 +10,9 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ### Changed
 
+- Prefer `system-ui` throughout the library, demo, and documentation, with the
+  same font stack used for canvas label measurement.
+
 - Removed completed maintainer audits and superseded proposals; refreshed the
   remaining architecture, naming, testing, performance, and release guidance.
 

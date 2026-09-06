@@ -731,7 +731,7 @@ beforeAll(async () => {
     *, *::before, *::after { animation: none !important; caret-color: transparent !important; transition: none !important; }
     html { scroll-behavior: auto !important; }
     .visual-state-lab { width: min(1120px, calc(100% - 40px)); margin: 0 auto 80px; }
-    .visual-state-lab > h2 { margin: 0 0 20px; font: 650 28px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .visual-state-lab > h2 { margin: 0 0 20px; font: 650 28px/1.2 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
     .visual-state-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
     .visual-state-grid article { min-height: 390px; }
     @media (max-width: 760px) { .visual-state-grid { grid-template-columns: 1fr; } }

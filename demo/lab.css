@@ -55,7 +55,7 @@
 
 .lab-index {
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   margin-bottom: 88px;
   overflow: hidden;
   background: var(--charts2-demo-elevated);
@@ -284,4 +284,22 @@
   .lab-intro-copy button {
     color: #1c2226;
   }
+}
+
+.lab-fixture-description {
+  margin: 0 0 20px;
+  color: var(--charts2-demo-muted);
+}
+
+.lab-fixture-error {
+  min-height: 180px;
+  padding: 20px;
+  overflow-wrap: anywhere;
+  background: var(--charts2-demo-surface);
+  border: 1px dashed var(--charts2-demo-border);
+  border-radius: 8px;
+}
+
+#extreme-fixtures .lab-fixture > [id] {
+  overflow: hidden;
 }

@@ -131,12 +131,13 @@ function copyButton(code, selector) {
 /**
  * Adds a copy button for the exact rendering source to every chart card header.
  *
- * @param {Array<[string, () => object]>} examples - Selectors and fluent example functions.
+ * @param {Array<[string, () => object, string?]>} examples - Selectors and fluent example functions.
  */
 export function showExampleCode(examples) {
   for (const [
     selector,
     renderExample,
+    suppliedCode,
   ] of examples) {
     const host = document.querySelector(selector);
     const card = host?.closest("article");
@@ -145,7 +146,7 @@ export function showExampleCode(examples) {
       continue;
     }
 
-    const code = exampleCode(selector, renderExample);
+    const code = suppliedCode ?? exampleCode(selector, renderExample);
     const actions = document.createElement("div");
     actions.className = "example-code-actions";
     const reference = header.querySelector(":scope > code");

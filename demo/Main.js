@@ -9,6 +9,7 @@ import {
   showcaseExamples,
   sparkExamples,
 } from "./Examples.js";
+import { mountExtremeExamples } from "./ExtremeExamples.js";
 
 function formatBundleSize(bytes) {
   return `${(bytes / 1000).toFixed(1)} kB`;
@@ -21,6 +22,7 @@ if (bundleSizeValue && bundleSizeGzip) {
   bundleSizeGzip.textContent = `(${formatBundleSize(buildSize.gzipBytes)} gzip)`;
 }
 
+const extremeExamples = mountExtremeExamples();
 const updatableCharts = [];
 const heroRevenueHost = document.querySelector("#hero-revenue");
 
@@ -104,6 +106,7 @@ for (const [
 
 for (const examples of [
   qualityExamples,
+  extremeExamples,
   backgroundExamples,
   heatmapExamples,
 ]) {
@@ -130,6 +133,7 @@ for (const [
 showExampleCode([
   ...showcaseExamples,
   ...qualityExamples,
+  ...extremeExamples,
   ...backgroundExamples,
   ...heatmapExamples,
   ...sparkExamples,

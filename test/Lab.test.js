@@ -14,6 +14,10 @@ const expectedGroups = {
   radial: 5,
   time: 3,
   background: 12,
+  "extreme-zero": 12,
+  "extreme-million": 12,
+  "extreme-empty": 12,
+  "extreme-many": 12,
 };
 const screenshotOptions = {
   comparatorName: "pixelmatch",
@@ -72,7 +76,7 @@ describe("QA chart laboratory", () => {
         ]),
       ),
     ).toEqual(expectedGroups);
-    expect(fixtures).toHaveLength(45);
+    expect(fixtures).toHaveLength(93);
     expect(new Set(fixtureNames).size).toBe(fixtures.length);
     expect(document.querySelectorAll(".lab-index a")).toHaveLength(groups.length);
     expect(document.querySelectorAll(".example-code-copy")).toHaveLength(fixtures.length);
@@ -83,8 +87,108 @@ describe("QA chart laboratory", () => {
       const host = fixture.querySelector(`#${CSS.escape(fixture.dataset.fixture)}`);
       const button = fixture.querySelector(":scope > header .example-code-copy");
       expect(host, fixture.dataset.fixture).not.toBeNull();
-      expect(host.querySelector("svg"), fixture.dataset.fixture).not.toBeNull();
+      if (host.dataset.result === "rejected") {
+        expect(host.querySelector(".lab-fixture-error").textContent).toContain("TypeError:");
+      }
+      if (host.dataset.result !== "rejected") {
+        expect(host.querySelector("svg"), fixture.dataset.fixture).not.toBeNull();
+      }
       expect(button).toHaveAttribute("aria-label", `Copy code for #${fixture.dataset.fixture}`);
+    }
+  });
+
+  it("renders supported extremes and exposes rejected inputs without stopping the matrix", () => {
+    const rejectedZeros = new Set([
+      "pie",
+      "donut",
+      "percentage",
+      "polar-area",
+      "timesheet",
+    ]);
+    for (const scenario of [
+      "zero",
+      "million",
+      "empty",
+      "many",
+    ]) {
+      const group = document.querySelector(`[data-fixture-group="extreme-${CSS.escape(scenario)}"]`);
+      for (const fixture of group.querySelectorAll("[data-fixture]")) {
+        const id = fixture.dataset.fixture;
+        const type = id.slice("extreme-".length, -(scenario.length + 1));
+        const host = document.querySelector(`#${CSS.escape(id)}`);
+        const isRejected = scenario === "empty" || (scenario === "zero" && rejectedZeros.has(type));
+        expect(host.dataset.result, id).toBe(isRejected ? "rejected" : "rendered");
+        if (!isRejected) {
+          expect(host.querySelector("svg").outerHTML, id).not.toMatch(/NaN|Infinity/);
+        }
+      }
+    }
+  });
+
+  it("keeps million-value bubbles visible, separate, and proportional in area", () => {
+    const host = document.querySelector("#extreme-bubble-million");
+    const circles = [
+      ...host.querySelectorAll(".charts2-bubble.charts2-visual-mark"),
+    ];
+    const frame = host.querySelector("svg").getBoundingClientRect();
+    expect(circles).toHaveLength(4);
+    const boxes = circles.map((circle) => circle.getBoundingClientRect());
+    for (const [
+      index,
+      circle,
+    ] of circles.entries()) {
+      const box = boxes[index];
+      expect(box.width).toBeGreaterThan(0);
+      expect(box.left).toBeGreaterThanOrEqual(frame.left);
+      expect(box.right).toBeLessThanOrEqual(frame.right);
+      expect(box.top).toBeGreaterThanOrEqual(frame.top);
+      expect(box.bottom).toBeLessThanOrEqual(frame.bottom);
+      expect((circle.r.baseVal.value / circles[0].r.baseVal.value) ** 2).toBeCloseTo(
+        (1_250_000 + index * 375_000) / 1_250_000,
+      );
+      if (index > 0) {
+        expect(intersects(circles[index - 1], circle)).toBe(false);
+      }
+    }
+  });
+
+  it("shows every tooltip row in the twelve-series Cartesian fixtures", () => {
+    for (const type of [
+      "bar",
+      "line",
+      "mixed",
+    ]) {
+      const host = document.querySelector(`#extreme-${type}-many`);
+      const mark = host.querySelector(".charts2-x-hit");
+      mark.dispatchEvent(new MouseEvent("mousemove", { bubbles: true }));
+      const tooltip = host.querySelector(".charts2-tooltip");
+      expect(tooltip.hidden).toBe(false);
+      const rows = [
+        ...tooltip.querySelectorAll(".charts2-tooltip-row"),
+      ];
+      expect(rows).toHaveLength(12);
+      expect(tooltip.scrollHeight).toBeLessThanOrEqual(tooltip.clientHeight);
+      const bounds = tooltip.getBoundingClientRect();
+      for (const row of rows) {
+        const box = row.getBoundingClientRect();
+        expect(box.top).toBeGreaterThanOrEqual(bounds.top);
+        expect(box.bottom).toBeLessThanOrEqual(bounds.bottom);
+      }
+      host.querySelector("svg").dispatchEvent(new MouseEvent("mouseleave"));
+    }
+  });
+
+  it("shows twelve legend entries in the many-parameter fixtures", () => {
+    const group = document.querySelector('[data-fixture-group="extreme-many"]');
+    for (const fixture of group.querySelectorAll("[data-fixture]")) {
+      const id = fixture.dataset.fixture;
+      if (id === "extreme-timesheet-many" || id === "extreme-polar-area-many") {
+        expect(fixture.textContent).toContain("no legend");
+        continue;
+      }
+      const selector =
+        id === "extreme-heatmap-many" ? ".charts2-heat-legend-swatch" : ".charts2-legend-swatch";
+      expect(fixture.querySelectorAll(selector), id).toHaveLength(12);
     }
   });
 

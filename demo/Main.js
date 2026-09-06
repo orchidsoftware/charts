@@ -10,6 +10,9 @@ import {
   sparkExamples,
 } from "./Examples.js";
 import { mountExtremeExamples } from "./ExtremeExamples.js";
+import { mountTryChart } from "./TryChart.js";
+
+mountTryChart(document.querySelector("#try"));
 
 function formatBundleSize(bytes) {
   return `${(bytes / 1000).toFixed(1)} kB`;

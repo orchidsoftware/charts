@@ -8,6 +8,8 @@ plans—without turning chart configuration into a project.
 
 **[Explore the live demo →](https://charts.orchid.software)**
 
+[Try your data](https://charts.orchid.software/#try) · [Browse chart types](#choose-a-chart) · [Documentation](#documentation)
+
 ![Orchid Charts rendering a revenue chart inside a product dashboard](https://raw.githubusercontent.com/orchidsoftware/charts/master/.github/assets/orchid-charts-hero.png)
 
 ```bash
@@ -27,28 +29,29 @@ import { LineChart } from "@orchidsoftware/charts";
 import "@orchidsoftware/charts/style.css";
 
 const revenue = LineChart.make("#revenue")
-  .labels(["Jan", "Feb", "Mar", "Apr"])
-  .dataset("Revenue", [42, 48, 57, 63])
-  .colors(["#2563eb"])
-  .height(300)
-  .gradient()
+  .labels(["Jan", "Feb", "Mar", "Apr", "May", "Jun"])
+  .dataset("Revenue", [42, 48, 57, 63, 68, 76])
+  .colors(["#8267aa"])
+  .height(260)
   .render();
 ```
 
 The result is responsive and already includes axes, labels, a tooltip,
 keyboard navigation, and accessible SVG text.
-Bubble charts also account for their circle sizes when fitting the coordinate domains.
 
-## Product-ready by default
+## From your data to your interface
 
-- **One fluent language.** Every chart starts with `make()`, accepts domain data,
-  and returns the same update, selection, export, and cleanup lifecycle.
-- **Twelve focused chart types.** Trends, comparisons, composition, activity,
-  and planning use named definitions instead of a generic configuration maze.
-- **Made for interfaces.** Responsive SVG, tooltips, keyboard navigation,
-  reduced motion, and dark product surfaces work together.
-- **Small and typed.** Orchid Charts has zero runtime dependencies, tree-shakeable
-  ESM, explicit CSS, source maps, and TypeScript declarations.
+**Get a finished chart from a short example.** Axes, tooltips, keyboard navigation,
+and container resizing are included. [Try your own values in the demo](https://charts.orchid.software/#try)
+and see the code change with the chart.
+
+**Carry one API across your product.** Use line and bar charts for revenue,
+a donut for expenses, a calendar heatmap for activity, and a timeline for a
+release plan. Every type shares `update()`, selection, SVG export, and `destroy()`.
+
+**Bring your own theme.** CSS variables control labels, grids, tooltips, and focus
+colors. Data colors stay explicit in your code. Try the light and dark surfaces
+in the demo, then copy the [theme recipe](./docs/customization.md#match-the-surrounding-interface).
 
 ## Shape the result
 
@@ -99,13 +102,28 @@ state changes:
 
 ```js
 revenue.update({
-  labels: ["Jan", "Feb", "Mar", "Apr"],
-  datasets: [{ name: "Revenue", values: [45, 52, 61, 70] }],
+  labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+  datasets: [{ name: "Revenue", values: [45, 52, 61, 70, 74, 82] }],
 });
 ```
 
-The same chart can also respond to selection, export its SVG, and clean up when
-its view is removed.
+Export the current chart, including its computed styles, and release its resources
+when the view is removed:
+
+```js
+revenue.download("monthly-revenue");
+revenue.destroy();
+```
+
+## Where it fits
+
+Orchid Charts focuses on dashboards, reports, activity views, and release plans.
+Its twelve SVG chart types are built for everyday product data in current browsers.
+For very large datasets, aggregate or window the data before rendering individual marks.
+
+The package includes tree-shakeable ESM, TypeScript declarations, explicit CSS, and
+zero runtime dependencies. It works with plain JavaScript and component lifecycles;
+see the [React, Vue, and Hotwire examples](./docs/frameworks.md).
 
 ## Documentation
 

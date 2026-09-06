@@ -466,6 +466,199 @@ button:focus-visible {
   background: var(--orchid-charts-demo-coral);
 }
 
+/* Try the same public API with your own data. */
+
+.try-section {
+  padding-bottom: 88px;
+  scroll-margin-top: 24px;
+}
+
+.try-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  overflow: hidden;
+  background: var(--orchid-charts-demo-elevated);
+  border: 1px solid var(--orchid-charts-demo-border);
+  border-radius: 16px;
+}
+
+.try-result,
+.try-code {
+  min-width: 0;
+  padding: 28px;
+}
+
+.try-code {
+  background: var(--orchid-charts-demo-surface);
+  border-left: 1px solid var(--orchid-charts-demo-border);
+}
+
+.try-section fieldset {
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+.try-label,
+.try-options label {
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.try-options {
+  display: flex;
+  gap: 16px;
+  margin: 18px 0;
+}
+
+.try-options label {
+  display: grid;
+  flex: 1;
+  gap: 6px;
+}
+
+.try-section input,
+.try-section select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px;
+  font: inherit;
+  font-size: 16px;
+  color: var(--orchid-charts-demo-ink);
+  background: var(--orchid-charts-demo-elevated);
+  border: 1px solid var(--orchid-charts-demo-border);
+  border-radius: 8px;
+}
+
+.try-section p,
+.try-result-actions {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--orchid-charts-demo-muted);
+}
+
+.try-data {
+  display: flex;
+  gap: 8px;
+}
+
+.try-data button {
+  flex-shrink: 0;
+  color: var(--orchid-charts-demo-elevated);
+  cursor: pointer;
+  background: var(--orchid-charts-demo-ink);
+  border: 0;
+  border-radius: 8px;
+}
+
+#try-error {
+  margin: 8px 0 0;
+  color: var(--orchid-charts-demo-ink);
+}
+
+#try-error:empty {
+  display: none;
+}
+
+.try-surface {
+  margin-top: 24px;
+  overflow: hidden;
+  border: 1px solid var(--orchid-charts-demo-border);
+  border-radius: 10px;
+}
+
+#your-chart {
+  min-height: 308px;
+  padding: 24px 12px;
+}
+
+.try-result-actions,
+.try-code-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.try-code-header {
+  min-height: 44px;
+}
+
+.try-code pre {
+  padding: 16px 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.try-code pre code {
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.try-theme-code {
+  padding: 16px 0;
+  border-top: 1px solid var(--orchid-charts-demo-border);
+  border-bottom: 1px solid var(--orchid-charts-demo-border);
+}
+
+.try-theme-code summary {
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.try-code .try-note {
+  margin-top: 18px;
+}
+
+#try-status {
+  min-height: 42px;
+}
+
+.try-takeaways {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+  padding-top: 16px;
+}
+
+.try-takeaways strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 15px;
+  color: var(--orchid-charts-demo-ink);
+}
+
+.try-section :is(input, select, summary, pre):focus-visible {
+  outline: 3px solid var(--orchid-charts-demo-purple);
+  outline-offset: 3px;
+}
+
+.choosing-note {
+  max-width: 760px;
+  padding-bottom: 64px;
+}
+
+.choosing-note h2 {
+  font-size: 24px;
+  letter-spacing: -0.5px;
+}
+
+.choosing-note p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--orchid-charts-demo-muted);
+}
+
+.choosing-note a {
+  color: var(--orchid-charts-demo-ink);
+  text-underline-offset: 4px;
+}
+
 /* Supported chart families */
 
 .support-overview {
@@ -978,41 +1171,7 @@ article header strong {
   padding: 10px;
 }
 
-/* Usage snippet */
-
-.snippet {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 20px;
-  align-items: center;
-  padding: 96px 0 120px;
-  border-top: 1px solid var(--orchid-charts-demo-border);
-}
-
-.snippet > * {
-  min-width: 0;
-}
-
-.snippet > div {
-  grid-column: 1 / 5;
-}
-
-.snippet > pre {
-  grid-column: 5 / 13;
-}
-
-.snippet h2 {
-  margin: 0 0 18px;
-  font-size: 42px;
-  line-height: 1.1;
-  letter-spacing: -1.3px;
-}
-
-.snippet > div > p {
-  max-width: 420px;
-  line-height: 1.65;
-  color: var(--orchid-charts-demo-muted);
-}
+/* Next steps after trying the chart. */
 
 .snippet-actions {
   display: flex;
@@ -1079,6 +1238,33 @@ article header strong {
 }
 
 @media (width <= 760px) {
+  .try-section {
+    padding-bottom: 56px;
+  }
+
+  .try-workspace,
+  .try-takeaways {
+    grid-template-columns: 1fr;
+  }
+
+  .try-takeaways {
+    gap: 0;
+  }
+
+  .try-result,
+  .try-code {
+    padding: 18px;
+  }
+
+  .try-code {
+    border-top: 1px solid var(--orchid-charts-demo-border);
+    border-left: 0;
+  }
+
+  .try-data {
+    flex-direction: column;
+  }
+
   main {
     width: min(calc(100% - 28px), 1180px);
   }
@@ -1099,8 +1285,7 @@ article header strong {
 
   .gallery,
   .spark-section,
-  .spark-grid,
-  .snippet {
+  .spark-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1111,8 +1296,6 @@ article header strong {
   .showcase-group-compose .gallery > article:nth-child(n),
   .spark-section > .section-copy,
   .spark-grid,
-  .snippet > div,
-  .snippet > pre,
   .support-overview-header > div,
   .support-overview-header > p {
     grid-column: auto;

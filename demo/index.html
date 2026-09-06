@@ -45,7 +45,7 @@
             </p>
             <div class="actions">
               <a class="primary-action" href="/docs/getting-started.html">Start building</a>
-              <button id="shuffle" class="text-action">Refresh the demo ↻</button>
+              <a class="text-action" href="#try">Try your data ↓</a>
             </div>
           </div>
         </div>
@@ -100,8 +100,8 @@
                 <span><b>0</b> dependencies</span>
                 <span><b>1</b> consistent API</span>
                 <span class="preview-library-bundle">
-                  <b id="bundle-size-value">49.9 kB</b><small id="bundle-size-gzip">(14.2 kB gzip)</small>
-                  <i>ESM + CSS bundle</i>
+                  <b id="bundle-size-value">74.3 kB</b><small id="bundle-size-gzip">(22.8 kB gzip)</small>
+                  <i>Largest single chart + CSS</i>
                 </span>
               </div>
             </div>
@@ -117,7 +117,7 @@
           </div>
           <p>
             Choose the shape that makes the answer obvious. Every type below keeps the same responsive
-            lifecycle, tooltip, selection, update, and export contract.
+            behavior for tooltips, selection, updates, and SVG export.
           </p>
         </header>
         <div class="support-families">
@@ -532,25 +532,119 @@
         </div>
       </section>
 
-      <!-- Public API -->
-      <section id="install" class="snippet">
-        <div>
-          <h2>Learn It Once.<br />Use It Everywhere.</h2>
-          <p>Choose the chart type, add your data, and render. The same API works across chart types.</p>
-          <div class="snippet-actions">
-            <a class="primary-action" href="/docs/getting-started.html">Read the quick start</a>
-            <a href="https://github.com/orchidsoftware/charts">View on GitHub ↗</a>
+      <!-- A working example connects the product promise to the public API. -->
+      <section id="try" class="try-section" aria-labelledby="try-title">
+        <header id="install" class="support-overview-header">
+          <div>
+            <h2 id="try-title">Learn It Once.<br />Use It Everywhere.</h2>
           </div>
-        </div>
-        <pre><code>import { BarChart } from "@orchidsoftware/charts";
+          <p>
+            Change the numbers, switch the chart, or try a dark surface. The code follows your changes. Axes,
+            tooltips, and keyboard navigation are already included.
+          </p>
+        </header>
+        <div class="try-workspace">
+          <div class="try-result">
+            <form id="try-form" novalidate>
+              <fieldset id="try-controls" disabled>
+                <legend class="try-label">Make it yours</legend>
+                <div class="try-options">
+                  <label
+                    >Chart<select id="try-type">
+                      <option value="line">Line</option>
+                      <option value="bar">Bar</option>
+                    </select></label
+                  >
+                  <label
+                    >Surface<select id="try-theme">
+                      <option value="light">Light</option>
+                      <option value="dark">Dark</option>
+                    </select></label
+                  >
+                </div>
+                <label class="try-label" for="try-values">Monthly revenue</label>
+                <p id="try-help">Values in USD thousands, separated by commas. Labels adapt to your data.</p>
+                <div class="try-data">
+                  <input
+                    id="try-values"
+                    type="text"
+                    value="4, 8, 15, 16, 23, 42, 108"
+                    aria-describedby="try-help try-error"
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                  <button type="submit">Update chart</button>
+                </div>
+                <p id="try-error" role="alert"></p>
+              </fieldset>
+            </form>
+            <div class="try-surface">
+              <div id="your-chart"></div>
+            </div>
+            <div class="try-result-actions">
+              <span>Hover a value, or focus the chart and use ← →.</span>
+              <button id="try-download" class="text-action" type="button" disabled>Download SVG ↓</button>
+            </div>
+            <noscript>Enable JavaScript to edit this example, or use the code in the quick start.</noscript>
+          </div>
+          <div class="try-code">
+            <div class="try-code-header">
+              <span class="try-label">The code behind this chart</span>
+              <button id="try-copy" class="text-action" type="button" disabled>Copy JavaScript</button>
+            </div>
+            <p>Add <code>&lt;div id="your-chart"&gt;&lt;/div&gt;</code> to your page, then:</p>
+            <pre
+              tabindex="0"
+              aria-label="Chart JavaScript"
+            ><code id="try-source">import { LineChart } from "@orchidsoftware/charts";
 import "@orchidsoftware/charts/style.css";
 
-const chart = BarChart.make("#revenue")
-  .labels(["Europe", "Americas", "Asia-Pacific"])
-  .dataset("Revenue", [18, 31, 44])
-  .horizontal()
-  .height(300)
+const chart = LineChart.make("#your-chart")
+  .labels(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"])
+  .dataset("Revenue", [4, 8, 15, 16, 23, 42, 108])
+  .colors(["#8267aa"])
+  .height(260)
   .render();</code></pre>
+            <details class="try-theme-code">
+              <summary>CSS for this surface</summary>
+              <pre tabindex="0" aria-label="Chart theme CSS"><code id="try-css"></code></pre>
+            </details>
+            <p class="try-note">
+              The controls and card belong to this demo. Orchid renders the chart inside.
+            </p>
+            <p id="try-status" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+        <div class="try-takeaways">
+          <p>
+            <strong>One familiar API.</strong> Change the type. Keep the data and the methods you already
+            know.
+          </p>
+          <p>
+            <strong>Your product’s theme.</strong> Set surface colors with CSS variables. Keep data colors
+            explicit.
+          </p>
+          <p>
+            <strong>Ready to share.</strong> Export the current SVG with its styles, straight from the chart.
+          </p>
+        </div>
+        <div class="snippet-actions">
+          <a class="primary-action" href="/docs/getting-started.html">Read the quick start</a>
+          <a href="https://github.com/orchidsoftware/charts">View on GitHub ↗</a>
+        </div>
+      </section>
+
+      <section class="choosing-note" aria-labelledby="choosing-title">
+        <h2 id="choosing-title">A small library for everyday product work.</h2>
+        <p>
+          Choose Orchid for dashboards, reports, activity calendars, and release plans that share one visual
+          language. You get twelve SVG chart types, a fluent API, and product defaults in one dependency-free,
+          MIT-licensed package.
+        </p>
+        <p>
+          Start with one screen and the data you already have.
+          <a href="/docs/frameworks.html">Connect it to React, Vue, or Hotwire ↗</a>
+        </p>
       </section>
     </main>
 

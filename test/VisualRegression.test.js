@@ -263,7 +263,7 @@ afterAll(async () => {
 
 // Existing pixel references capture an ordered viewport/scroll tour.
 // Keep that framing stable; independent state equivalence is tested separately.
-describe.sequential("visual regression baselines", { shuffle: false }, () => {
+describe("visual regression baselines", { concurrent: false, shuffle: false }, () => {
   it.each([
     ["light", 1280],
     ["dark", 1280],
@@ -363,7 +363,7 @@ describe.sequential("visual regression baselines", { shuffle: false }, () => {
   });
 });
 
-describe.sequential("selection appearance equivalence", () => {
+describe("selection appearance equivalence", { concurrent: false }, () => {
   it.each(equivalentStates)(
     "keeps $name keyboard-active equivalent to pointer selection",
     async ({ name }) => {

@@ -8,7 +8,7 @@ afterEach(async () => {
     frame.remove();
   }
   frames.clear();
-  await commands.emulateAppearance(null);
+  await commands.emulateAppearance({ colorScheme: null });
 });
 
 it.each([
@@ -37,7 +37,7 @@ it.each([
 });
 
 async function openDocumentation(scenario) {
-  await commands.emulateAppearance(scenario.theme);
+  await commands.emulateAppearance({ colorScheme: scenario.theme });
   const frame = document.createElement("iframe");
   frames.add(frame);
   frame.style.cssText = `width: ${scenario.width}px; height: 844px; border: 0; color-scheme: ${scenario.theme}`;

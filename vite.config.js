@@ -36,6 +36,7 @@ export default defineConfig({
     },
   },
   test: {
+    attachmentsDir: ".vitest-attachments",
     maxWorkers: 2,
     projects: testProjects(isCompatibility),
     coverage: {

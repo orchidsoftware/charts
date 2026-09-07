@@ -6,6 +6,21 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ## Unreleased
 
+## 0.0.6 - 2026-09-07
+
+### Fixed
+
+- Restore browser test compatibility with Vitest 5, including sequential visual
+  suites, color-scheme cleanup, and uploaded browser diagnostics.
+- Wait for responsive chart layout before capturing full-page screenshots so
+  the final mobile chart cards are included.
+
+### Changed
+
+- Update development dependencies, including Vitest 5 and ESLint Unicorn 74.
+- Update the GitHub Pages configuration, artifact upload, and deployment actions.
+- Refresh reviewed laboratory screenshots at native CSS-pixel dimensions.
+
 ## 0.0.5 - 2026-09-07
 
 ### Fixed

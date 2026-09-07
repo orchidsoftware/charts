@@ -9,9 +9,8 @@ import {
   Y_AXIS_RIGHT,
 } from "../../support/Constants.js";
 import { extent, niceValueScale, scale } from "../../support/geometry/Math.js";
-import { formatValue } from "../../support/presentation/Formatting.js";
+import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
 import {
-  formatCategoryLabel,
   horizontalCategoryPadding,
   seriesContentLayout,
   verticalValuePadding,
@@ -30,7 +29,7 @@ const SLOT_MIDPOINT = 0.5;
  * @returns {number[]} Signed stack totals across every category.
  */
 function stackedBarValues(datasets) {
-  const pointCount = Math.max(...datasets.map((dataset) => dataset.points.length));
+  const pointCount = datasets[0].points.length;
   const totals = [];
 
   for (let pointIndex = 0; pointIndex < pointCount; pointIndex += 1) {
@@ -69,7 +68,12 @@ function bubbleDomain(
   ],
 ) {
   const fittingPoints = points.filter((point) => 2 * point.r < size);
-  const maximumRadius = Math.max(0, ...fittingPoints.map((point) => point.r));
+  let maximumRadius = 0;
+
+  for (const point of fittingPoints) {
+    maximumRadius = Math.max(maximumRadius, point.r);
+  }
+
   const unitsPerPixel = (domain[1] - domain[0]) / (size - 2 * maximumRadius);
 
   return extent([
@@ -182,7 +186,7 @@ export default class CartesianLayout {
   barFor(point, { category, series, base }) {
     const { bottom, top } = this.frame;
     const slot = this.isHorizontal ? (bottom - top) / this.categories.count : this.xAt(1) - this.xAt(0);
-    const groupCount = this.bars.isStacked ? 1 : Math.max(1, this.bars.datasets.length);
+    const groupCount = this.bars.isStacked ? 1 : this.bars.datasets.length;
     const thickness = Math.max(2, (slot * BAR_SLOT_RATIO) / groupCount);
     const offset = (slot - thickness * groupCount) / 2 + (this.bars.isStacked ? 0 : series) * thickness;
 
@@ -197,9 +201,15 @@ export default class CartesianLayout {
       thickness,
     };
 
-    return this.isHorizontal
-      ? { x: rectangle.y, y: rectangle.x, width: rectangle.height, height: thickness, thickness }
-      : rectangle;
+    if (this.isHorizontal) {
+      const categoryStart = rectangle.x;
+      rectangle.x = rectangle.y;
+      rectangle.y = categoryStart;
+      rectangle.width = rectangle.height;
+      rectangle.height = thickness;
+    }
+
+    return rectangle;
   }
 
   /**
@@ -232,15 +242,13 @@ export default class CartesianLayout {
    * @returns {object} Internal Cartesian layout state.
    */
   #resolveState() {
-    const { height, orientation, type, width } = this.#chart.options;
+    const { orientation, type, width } = this.#chart.options;
     const presentation = this.#presentationState(this.#chart.options);
     const content = seriesContentLayout(this.#chart);
     const plotHeight = content.contentHeight - presentation.padding - presentation.top;
     const data = this.#dataState({ ...presentation, type, width, height: plotHeight });
 
     const frame = {
-      width,
-      height,
       padding: presentation.padding,
       top: presentation.top,
       right: width - (presentation.isYAxisRight ? data.gutter : 0),
@@ -288,7 +296,7 @@ export default class CartesianLayout {
     const top = Math.max(isFrameless ? padding : 0, labelClearance);
 
     const labels = this.#chart.labels.map((label, index) =>
-      formatCategoryLabel(this.#chart.options, label, index),
+      formatLabel(this.#chart.options, label, { target: "axis", index }),
     );
 
     return {
@@ -348,12 +356,12 @@ export default class CartesianLayout {
     const hasBars = barDatasets.length > 0;
     const xValues = points.map((point) => point.x);
     const isKeepsEdgeDomain = hasBars || type === CHART_LINE;
-    let xDomain = isKeepsEdgeDomain ? extent(xValues) : this.#paddedXDomain(xValues);
+    let xDomain = isKeepsEdgeDomain ? extent(xValues, !hasBars) : this.#paddedXDomain(xValues);
 
     if (hasBars) {
       xDomain = [
-        Math.min(...xValues) - SLOT_MIDPOINT,
-        Math.max(...xValues) + SLOT_MIDPOINT,
+        xDomain[0] - SLOT_MIDPOINT,
+        xDomain[1] + SLOT_MIDPOINT,
       ];
     }
 
@@ -425,18 +433,20 @@ export default class CartesianLayout {
    * @returns {{domain: [number, number], ticks: number[]}} Numeric domain and visible ticks.
    */
   #valueScale(points, barDatasets, presentation) {
-    const data = points.map((point) => point.y);
+    let data = points.map((point) => point.y);
     const isFramelessLine = presentation.isFrameless && presentation.type === CHART_LINE;
 
     if (!isFramelessLine) {
       const { yMarkers, yRegions } = this.#chart.source;
       const stackValues = this.#chart.options.stacked ? stackedBarValues(barDatasets) : [];
-      data.push(
+
+      data = [
+        ...data,
         ...stackValues,
         ...yMarkers.filter((marker) => marker.includeInDomain).map((marker) => marker.value),
         ...yRegions.filter((region) => region.includeInDomain).flatMap((region) => region.range),
         0,
-      );
+      ];
     }
 
     const axis = [
@@ -475,16 +485,13 @@ export default class CartesianLayout {
       return 0;
     }
 
-    if (presentation.isHorizontal && this.#chart.labels.length > 0) {
+    if (presentation.isHorizontal) {
       return horizontalCategoryPadding(labels, presentation.width);
     }
 
-    return verticalValuePadding(
-      [
-        ...values.labels.values(),
-      ],
-      0,
-    );
+    return verticalValuePadding([
+      ...values.labels.values(),
+    ]);
   }
 
   /**

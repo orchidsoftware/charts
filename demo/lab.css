@@ -291,6 +291,22 @@
   color: var(--orchid-charts-demo-muted);
 }
 
+.lab-stress-run {
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  font: inherit;
+  color: var(--orchid-charts-demo-ink);
+  cursor: pointer;
+  background: var(--orchid-charts-demo-surface);
+  border: 1px solid var(--orchid-charts-demo-border);
+  border-radius: 8px;
+}
+
+.lab-stress-run:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .lab-fixture-error {
   min-height: 180px;
   padding: 20px;

@@ -198,17 +198,6 @@ function labelElement({ value, attributes, measurement, originalValue = value })
 }
 
 /**
- * Lazily creates the process-local canvas context shared by text measurements.
- *
- * @returns {CanvasRenderingContext2D} Detached measurement context.
- */
-function textMeasurementContext() {
-  measurementSurface.context ??= document.createElement("canvas").getContext("2d");
-
-  return measurementSurface.context;
-}
-
-/**
  * Measures text using the same platform font stack as chart labels.
  *
  * @param {unknown} value - Value converted to text before measurement.
@@ -216,20 +205,11 @@ function textMeasurementContext() {
  * @returns {number} Measured text width in CSS pixels.
  */
 function measuredTextWidth(value, fontSize = 11) {
-  const context = textMeasurementContext();
+  measurementSurface.context ??= document.createElement("canvas").getContext("2d");
+  const context = measurementSurface.context;
   context.font = `${fontSize}px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`;
 
   return context.measureText(String(value)).width;
-}
-
-/**
- * Measures legend text with the legend's default typography.
- *
- * @param {unknown} value - Legend label converted to text before measurement.
- * @returns {number} Measured legend-label width in CSS pixels.
- */
-function measuredLegendTextWidth(value) {
-  return measuredTextWidth(value);
 }
 
 /**
@@ -282,4 +262,4 @@ function wrappedLabelElement({ value, attributes, maxWidth, originalValue = valu
   return element;
 }
 
-export { truncateText, labelElement, measuredTextWidth, measuredLegendTextWidth, wrappedLabelElement };
+export { truncateText, labelElement, measuredTextWidth, wrappedLabelElement };

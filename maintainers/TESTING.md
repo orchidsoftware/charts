@@ -12,7 +12,7 @@ and browser mechanism tests may import the implementation they exercise.
 | `npm test` / `npm run test:watch` | Node policies and compact Chromium contracts; the ordinary edit loop                                                                         |
 | `npm run test:unit`               | Pure policies in `test/policies`; no DOM, browser setup or chart tracking                                                                    |
 | `npm run test:policies`           | Native Node tests for documentation, browser-free models and the test lint rule                                                              |
-| `npm run test:site`               | Demo, documentation and the 93-fixture laboratory                                                                                            |
+| `npm run test:site`               | Demo, documentation and the 95-fixture laboratory                                                                                            |
 | `npm run test:visual`             | Screenshot baselines and equivalent pointer/keyboard appearances                                                                             |
 | `npm run test:input`              | Real pointer, keyboard, touch and hit testing in Chromium                                                                                    |
 | `npm run test:performance`        | Warmed-up mount and update budgets, without coverage                                                                                         |

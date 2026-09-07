@@ -9,33 +9,35 @@ const TICK_PRECISION = 12;
 const DOMAIN_PADDING_ULPS = 4;
 
 /**
- * Finds a numeric extent and expands a degenerate single-value domain.
+ * Finds a numeric extent without expanding the input into function arguments.
  *
  * @param {number[]} values - Non-empty numeric sample used to derive the domain.
+ * @param {boolean} [shouldExpand=true] - Pads a constant domain when needed for scaling.
  * @returns {[number, number]} Ascending minimum and maximum suitable for scaling.
  */
-function extent(values) {
-  const minimum = Math.min(...values);
-  const maximum = Math.max(...values);
+function extent(values, shouldExpand = true) {
+  let minimum = Infinity;
+  let maximum = -Infinity;
 
-  const padding = Math.max(1, Math.abs(minimum) * Number.EPSILON * DOMAIN_PADDING_ULPS);
+  for (const value of values) {
+    minimum = Math.min(minimum, value);
+    maximum = Math.max(maximum, value);
+  }
 
-  const domain =
-    minimum === maximum
-      ? [
-          Math.max(-Number.MAX_VALUE, minimum - padding),
-          Math.min(Number.MAX_VALUE, maximum + padding),
-        ]
-      : [
-          minimum,
-          maximum,
-        ];
+  if (shouldExpand && minimum === maximum) {
+    const padding = Math.max(1, Math.abs(minimum) * Number.EPSILON * DOMAIN_PADDING_ULPS);
+    minimum = Math.max(-Number.MAX_VALUE, minimum - padding);
+    maximum = Math.min(Number.MAX_VALUE, maximum + padding);
+  }
 
-  if (!Number.isFinite(domain[1] - domain[0])) {
+  if (!Number.isFinite(maximum - minimum)) {
     throw new RangeError("Chart value range must have a finite span");
   }
 
-  return domain;
+  return [
+    minimum,
+    maximum,
+  ];
 }
 
 /**
@@ -88,8 +90,10 @@ function niceStep(span, integerValues) {
  * @returns {{domain: [number, number], ticks: number[]}} Rounded domain and inclusive tick sequence.
  */
 function niceValueScale(values, integerValues) {
-  const minimum = Math.min(...values);
-  const maximum = Math.max(...values);
+  const [
+    minimum,
+    maximum,
+  ] = values;
 
   const step = niceStep(maximum - minimum, integerValues);
   const niceMinimum = Math.floor(minimum / step) * step;

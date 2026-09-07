@@ -120,6 +120,7 @@ revenue.destroy();
 Orchid Charts focuses on dashboards, reports, activity views, and release plans.
 Its twelve SVG chart types are built for everyday product data in current browsers.
 For very large datasets, aggregate or window the data before rendering individual marks.
+See [Large data](./docs/large-data.md) for daily totals and a selected-range example.
 
 The package includes tree-shakeable ESM, TypeScript declarations, explicit CSS, and
 zero runtime dependencies. It works with plain JavaScript and component lifecycles;

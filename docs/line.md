@@ -173,3 +173,6 @@ A line dataset supports `color()`, `opacity()`, `formatValue()`, `smooth()`,
 
 Line charts also support the shared [cartesian presentation, formatting, and
 annotation methods](./customization.md).
+
+For a long history, see [Large data](./large-data.md) to display a selected range
+without changing its values.

@@ -38,7 +38,7 @@ function formatHelper() {
  * There is no second configuration representation to keep in sync.
  *
  * @param {string} selector - Chart host selector.
- * @param {() => object} renderExample - Canonical fluent example.
+ * @param {(() => object) | string} renderExample - Canonical fluent example or its authored source.
  * @returns {string} Standalone JavaScript ready to copy.
  */
 export function exampleCode(selector, renderExample) {

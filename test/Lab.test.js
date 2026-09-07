@@ -18,6 +18,7 @@ const expectedGroups = {
   "extreme-million": 12,
   "extreme-empty": 12,
   "extreme-many": 12,
+  "large-data": 2,
 };
 const families = [
   "line",
@@ -115,7 +116,7 @@ describe("QA chart laboratory", () => {
         groups.map((group) => [group.dataset.fixtureGroup, group.querySelectorAll("[data-fixture]").length]),
       ),
     ).toEqual(expectedGroups);
-    expect(fixtures).toHaveLength(93);
+    expect(fixtures).toHaveLength(95);
     expect(new Set(fixtureNames).size).toBe(fixtures.length);
     expect(document.querySelectorAll(".lab-index a")).toHaveLength(groups.length);
     expect(document.querySelectorAll(".example-code-copy")).toHaveLength(fixtures.length);
@@ -127,7 +128,8 @@ describe("QA chart laboratory", () => {
       const button = fixture.querySelector(":scope > header .example-code-copy");
       expect(host, fixture.dataset.fixture).not.toBeNull();
       expect(Boolean(host.querySelector("svg")), fixture.dataset.fixture).toBe(
-        rejectedExtremes.every(({ id }) => id !== fixture.dataset.fixture),
+        host.dataset.result !== "pending" &&
+          rejectedExtremes.every(({ id }) => id !== fixture.dataset.fixture),
       );
       expect(button).toHaveAttribute("aria-label", `Copy code for #${fixture.dataset.fixture}`);
     }

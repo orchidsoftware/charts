@@ -11,6 +11,7 @@ const guideNames = [
   "customization",
   "frameworks",
   "updates-and-interaction",
+  "large-data",
   "exporting",
   "api-reference",
 ];

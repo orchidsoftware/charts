@@ -16,6 +16,8 @@ it.each([
   { width: 1280, theme: "dark", document: "api-reference" },
   { width: 390, theme: "light", document: "api-reference" },
   { width: 390, theme: "dark", document: "frameworks" },
+  { width: 1280, theme: "light", document: "large-data" },
+  { width: 390, theme: "dark", document: "large-data" },
 ])("keeps $document readable at $width px in $theme appearance", async (scenario) => {
   const { content, view } = await openDocumentation(scenario);
   expect(view.matchMedia("(prefers-color-scheme: dark)").matches).toBe(scenario.theme === "dark");

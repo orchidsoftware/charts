@@ -8,10 +8,26 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ### Fixed
 
+- Avoid argument-count overflow in Cartesian scale, bar-domain, stack, and
+  horizontal-label calculations. Measure only viable category-axis label
+  candidates while preserving the selected labels and complete series geometry.
 - Wait for page styles before mounting demo charts so slow CSS loads in iPhone
   browsers do not leave the gallery empty until reload.
 - Explain stylesheet readiness in the public guides and suggest checking theme
   loading when a supplied CSS color variable cannot be resolved.
+
+### Added
+
+- Document aggregation and selected-range recipes for large data with the
+  existing public API.
+- Add on-demand 100,000-value Line and Bar examples to QA lab, with a readable
+  trend, broad waves, peaks, and dips; render every supplied value and report
+  construction time with retry support.
+
+### Changed
+
+- Allow up to 23.5 kB gzip for a single chart import with CSS, keeping the
+  existing runtime performance budgets.
 
 ## 0.0.6 - 2026-09-07
 

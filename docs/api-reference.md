@@ -359,3 +359,7 @@ the module during SSR is supported, but call `render()` only after mounting.
 Numeric inputs must be finite numbers. Derived axis spans, tick steps, and
 composition totals must also be representable as finite JavaScript numbers;
 values outside that range raise an error before replacing a mounted chart.
+
+Line and Bar preserve the supplied values without automatic aggregation or
+downsampling. There is no universal point-count or rendering-time guarantee.
+Prepare large inputs using the [aggregation and windowing recipes](./large-data.md).

@@ -9,7 +9,7 @@ import {
 } from "../Constants.js";
 
 import { formatLabel, formatValue } from "./Formatting.js";
-import { truncateText, measuredTextWidth, measuredLegendTextWidth } from "./TextLayout.js";
+import { truncateText, measuredTextWidth } from "./TextLayout.js";
 
 const MINIMUM_CONTENT_HEIGHT = 8;
 const HORIZONTAL_LABEL_MAXIMUM_PADDING = 176;
@@ -18,19 +18,6 @@ const HORIZONTAL_LABEL_WIDTH_RATIO = 0.42;
 const HORIZONTAL_MULTILINE_LABEL_WIDTH_RATIO = 0.55;
 const LEGEND_ITEM_GAP = 16;
 const LEGEND_MAXIMUM_LABEL_WIDTH = 160;
-
-/**
- * Applies the optional category formatter and validates its display contract.
- *
- * @param {object} options - Chart options containing axis orientation and formatter hooks.
- * @param {unknown} label - Original category value supplied by the dataset.
- * @param {number} index - Zero-based category position.
- * @returns {string | string[]} Validated single-line or multi-line category label.
- * @throws {TypeError} When a formatter returns an unsupported value.
- */
-function formatCategoryLabel(options, label, index) {
-  return formatLabel(options, label, { target: "axis", index });
-}
 
 /**
  * Reserves enough left-side space for bounded horizontal category labels.
@@ -51,22 +38,23 @@ function horizontalCategoryPadding(labels, width) {
 
   const maximumLabelWidth = maximum - HORIZONTAL_LABEL_EDGE_INSET - HORIZONTAL_LABEL_GAP;
 
-  const displayedWidths = labels.map((label) => {
+  let widest = 0;
+
+  for (const label of labels) {
     const lines = Array.isArray(label)
       ? label
       : [
           String(label),
         ];
 
-    return Math.min(
-      maximumLabelWidth,
-      Math.ceil(Math.max(...lines.map((line) => measuredTextWidth(line.trim())))),
-    );
-  });
+    for (const line of lines) {
+      widest = Math.max(widest, Math.min(maximumLabelWidth, Math.ceil(measuredTextWidth(line.trim()))));
+    }
+  }
 
   return Math.max(
     HORIZONTAL_LABEL_MINIMUM_PADDING,
-    Math.min(maximum, HORIZONTAL_LABEL_EDGE_INSET + Math.max(0, ...displayedWidths) + HORIZONTAL_LABEL_GAP),
+    Math.min(maximum, HORIZONTAL_LABEL_EDGE_INSET + widest + HORIZONTAL_LABEL_GAP),
   );
 }
 
@@ -74,13 +62,12 @@ function horizontalCategoryPadding(labels, width) {
  * Expands value-axis padding to prevent formatted ticks from clipping.
  *
  * @param {string[]} labels - Values rendered along the vertical axis.
- * @param {number} basePadding - Minimum padding required by the chart layout.
  * @returns {number} Pixel padding large enough for the widest tick label.
  */
-function verticalValuePadding(labels, basePadding) {
+function verticalValuePadding(labels) {
   const maximumLabelWidth = Math.max(0, ...labels.map((label) => measuredTextWidth(label)));
 
-  return Math.max(basePadding, Math.ceil(maximumLabelWidth + VALUE_LABEL_GAP));
+  return Math.ceil(maximumLabelWidth + VALUE_LABEL_GAP);
 }
 
 /**
@@ -101,7 +88,7 @@ function chartContentLayout({ width, height, items, legend }) {
   const entries = items.map((item) => {
     const label = item.label ?? item.name;
     const visibleLabel = truncateText(label, labelMaxWidth);
-    const itemWidth = LEGEND_LABEL_OFFSET + measuredLegendTextWidth(visibleLabel);
+    const itemWidth = LEGEND_LABEL_OFFSET + measuredTextWidth(visibleLabel);
 
     if (x + itemWidth > width && x > 0) {
       x = 0;
@@ -170,7 +157,6 @@ function tooltipContent(content) {
 }
 
 export {
-  formatCategoryLabel,
   horizontalCategoryPadding,
   verticalValuePadding,
   chartContentLayout,

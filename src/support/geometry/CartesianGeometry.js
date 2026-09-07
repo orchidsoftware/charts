@@ -84,25 +84,11 @@ function smoothLinePath(points, intervals, tangents) {
  * @param {boolean} [isSmooth=true] - Enables smoothing when x coordinates are strictly increasing.
  * @returns {string} SVG path data that passes through every supplied point.
  */
-// eslint-disable-next-line max-statements
 function linePath(points, isSmooth = true) {
-  if (points.length === 1) {
-    return `M${points[0].x},${points[0].y}`;
-  }
+  const hasIncreasingX =
+    isSmooth && points.every((point, index) => index === 0 || point.x > points[index - 1].x);
 
-  let hasIncreasingX = true;
-  let pointIndex = 1;
-
-  while (pointIndex < points.length) {
-    if (points[pointIndex].x <= points[pointIndex - 1].x) {
-      hasIncreasingX = false;
-      break;
-    }
-
-    pointIndex += 1;
-  }
-
-  if (!isSmooth || !hasIncreasingX) {
+  if (!hasIncreasingX || points.length === 1) {
     let path = `M${points[0].x},${points[0].y}`;
     let pathIndex = 1;
 

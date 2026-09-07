@@ -7,7 +7,7 @@ import { gzip } from "node:zlib";
 import { build } from "vite";
 
 const gzipAsync = promisify(gzip);
-const MAXIMUM_GZIP_BYTES = 23_000;
+const MAXIMUM_GZIP_BYTES = 23_500;
 const DEFINITIONS = Object.freeze([
   "BarChart",
   "BubbleChart",

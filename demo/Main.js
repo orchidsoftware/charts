@@ -10,6 +10,7 @@ import {
   sparkExamples,
 } from "./Examples.js";
 import { mountExtremeExamples } from "./ExtremeExamples.js";
+import { mountLargeDataExamples } from "./LargeDataExamples.js";
 import { mountTryChart } from "./TryChart.js";
 
 function formatBundleSize(bytes) {
@@ -32,6 +33,7 @@ function mountDemo() {
   }
 
   const extremeExamples = mountExtremeExamples();
+  const largeDataExamples = mountLargeDataExamples();
   const updatableCharts = [];
   const heroRevenueHost = document.querySelector("#hero-revenue");
 
@@ -140,6 +142,7 @@ function mountDemo() {
   }
 
   showExampleCode([
+    ...largeDataExamples,
     ...showcaseExamples,
     ...qualityExamples,
     ...extremeExamples,

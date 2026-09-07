@@ -151,8 +151,8 @@ function renderArea(rendering, entry) {
   const { chart, layout, surface } = rendering;
   const { dataset, datasetIndex, path, presentation } = entry;
   const baseline = layout.yAt(0);
-  const lastX = layout.pointAt(dataset.points.at(-1), dataset.points.length - 1).x;
-  const firstX = layout.pointAt(dataset.points[0], 0).x;
+  const lastX = layout.xAt(dataset.points.at(-1).x);
+  const firstX = layout.xAt(dataset.points[0].x);
   const area = `${path} L${lastX},${baseline} L${firstX},${baseline} Z`;
 
   if (!presentation.gradient) {
@@ -226,7 +226,7 @@ function renderVisibleLinePoints(rendering, entry) {
     pointIndex,
     point,
   ] of dataset.points.entries()) {
-    const coordinates = layout.pointAt(point, pointIndex);
+    const coordinates = layout.pointAt(point);
     const label = seriesPointContent(rendering, { dataset, datasetIndex, pointIndex, point }).text;
 
     surface.append("circle", {
@@ -273,7 +273,7 @@ function renderLineHits(rendering, entry) {
     pointIndex,
     point,
   ] of dataset.points.entries()) {
-    const { x, y } = layout.pointAt(point, pointIndex);
+    const { x, y } = layout.pointAt(point);
     const content = seriesPointContent(rendering, { dataset, datasetIndex, pointIndex, point });
 
     renderPointHit(
@@ -300,7 +300,7 @@ function renderLineHits(rendering, entry) {
 function renderLine(rendering, source) {
   const { chart, layout, visuals } = rendering;
   const { dataset } = source;
-  const geometry = dataset.points.map((point, index) => layout.pointAt(point, index));
+  const geometry = dataset.points.map((point) => layout.pointAt(point));
   const presentation = new LinePresentation(dataset, chart.options);
   visuals[source.datasetIndex] = [];
   const entry = { ...source, path: linePath(geometry, presentation.isSmooth), presentation };
@@ -446,14 +446,11 @@ function stackedBase(layout, state) {
 function hasLaterStackedSegment(layout, state) {
   const { point, pointIndex, barDatasetIndex } = state;
 
-  return (
-    layout.bars.isStacked &&
-    layout.bars.datasets.slice(barDatasetIndex + 1).some((dataset) => {
-      const value = dataset.points[pointIndex].y;
+  return layout.bars.datasets.slice(barDatasetIndex + 1).some((dataset) => {
+    const value = dataset.points[pointIndex].y;
 
-      return value !== 0 && Math.sign(value) === Math.sign(point.y);
-    })
-  );
+    return value !== 0 && Math.sign(value) === Math.sign(point.y);
+  });
 }
 
 /**
@@ -515,7 +512,7 @@ function renderBar(rendering, state) {
 function renderBars(rendering, entry) {
   const { layout } = rendering;
   const { dataset, datasetIndex } = entry;
-  const barDatasetIndex = Math.max(0, layout.bars.datasets.indexOf(dataset));
+  const barDatasetIndex = layout.bars.datasets.indexOf(dataset);
 
   for (const [
     pointIndex,
@@ -600,12 +597,7 @@ function renderMixedSeries(rendering) {
       continue;
     }
 
-    if (
-      [
-        CHART_BUBBLE,
-        CHART_SCATTER,
-      ].includes(entry.dataset.chartType)
-    ) {
+    if (entry.dataset.chartType === CHART_SCATTER) {
       renderPoints(rendering, { ...entry, datasetType: entry.dataset.chartType });
 
       continue;

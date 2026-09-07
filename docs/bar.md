@@ -119,3 +119,6 @@ A bar dataset supports `color()`, `opacity()`, `formatValue()`, and `radius()`.
 
 Bar charts also support the shared [cartesian presentation, formatting, and
 annotation methods](./customization.md).
+
+For numerous records, see [Large data](./large-data.md) to prepare meaningful
+totals before rendering individual bars.

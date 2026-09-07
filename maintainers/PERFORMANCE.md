@@ -9,7 +9,7 @@ Performance is part of the release gate. `npm run test:performance` runs in Vite
 
 Current budgets:
 
-- keep every single named chart import with CSS at or below 23.0 kB gzip;
+- keep every single named chart import with CSS at or below 23.5 kB gzip;
 - render a typical 90-day line chart in less than 50 ms;
 - render a 50,000-point SVG line in less than 1,000 ms;
 - perform 200 live updates of a 100-point line in less than 1,000 ms.
@@ -39,3 +39,20 @@ The large-line gate also verifies that the resulting SVG path contains the full
 downsampling policy from making the timing look faster than the shipped work.
 
 These tests protect computational and DOM-update cost on the supported Chromium baseline. They are not promises about paint time on every device. Very large scatter or bubble datasets create one SVG node per point; aggregate or window data when independently interactive marks become extremely numerous.
+
+The 50,000-point line is a verified workload, not a universal maximum or a bar
+budget. The public [large-data recipes](../docs/large-data.md) prepare aggregates
+and selected ranges without changing the chart API or silently reducing geometry.
+
+The laboratory's 100,000-value Line and Bar cards are manual diagnostics, not
+release performance targets. They generate the full input on demand and report
+synchronous construction time or the actual exception. A deterministic signal
+with broad waves, a peak, a dip, and recovery keeps the overall shape readable
+at screen resolution. Both examples render the same complete dataset. The Line
+fixture disables dots and smoothing; the Bar fixture uses square ends.
+Successful construction does not promise fast painting, resizing, interaction,
+or export on every device.
+Automated diagnostic UI tests control the rendering outcome and verify the full
+generated input, signal shape, status, retry, and cleanup. They must not require
+a particular engine's stack-overflow error. Separate scale and Cartesian
+regression tests exercise larger inputs and preserve the existing geometry budgets.

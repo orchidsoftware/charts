@@ -15,6 +15,7 @@ You will install the package and render a useful line chart in a few minutes.
 - [Updates and interaction](./updates-and-interaction.md) — update data, react
   to selections, inspect points, and clean up.
 - [Exporting SVG](./exporting.md) — serialize or download the current chart.
+- [Large data](./large-data.md) — aggregate records for an overview or window a series for detail.
 - [React, Vue, and Hotwire](./frameworks.md) — mount, update, and destroy charts with component lifecycles.
 - [API reference](./api-reference.md) — look up chart definitions and public methods.
 

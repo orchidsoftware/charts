@@ -4,6 +4,7 @@
 /pages-dist/
 /coverage/
 /.vitest-attachments/
+/.vitest/
 *.tgz
 
 # Local configuration and secrets
@@ -26,7 +27,6 @@ Thumbs.db
 .vscode/
 
 # Visual baselines in test/__screenshots__ are intentionally committed.
-/.vitest/
 
 # Vitest failure screenshots are diagnostics, not visual reference images.
 /test/**/__screenshots__/**/*-[0-9].png

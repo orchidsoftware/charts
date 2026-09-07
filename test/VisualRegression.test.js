@@ -130,8 +130,11 @@ async function setViewport(width, height) {
 
 async function matchScreenshot(element, name) {
   if (element === document.body) {
+    await settle();
     await setViewport(window.innerWidth, document.body.scrollHeight);
     window.scrollTo(0, 0);
+    await settle();
+    expect(document.body.scrollHeight).toBeLessThanOrEqual(window.innerHeight);
   }
   await settle();
   await expect.element(page.elementLocator(element)).toMatchScreenshot(name, screenshotOptions);

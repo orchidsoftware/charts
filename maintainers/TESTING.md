@@ -93,8 +93,11 @@ references; it is not an excuse to update images automatically.
 
 Vitest 5 resizes the native browser alongside `page.viewport()`. The four
 laboratory annotation references therefore use native CSS-pixel dimensions,
-instead of the former scaled iframe captures. The visual tour keeps its existing
-references and uses `concurrent: false` to preserve suite ordering. Custom browser
+instead of the former scaled iframe captures. Full-page captures wait for chart
+resizing before measuring the body and assert that the viewport contains its
+complete height, preventing the last cards from being clipped. The mobile
+full-page references include the complete final heatmap card. The visual tour
+uses `concurrent: false` to preserve suite ordering. Custom browser
 commands pass media options as an object so resetting the color scheme does not
 send a bare `null` through locator serialization. `attachmentsDir` remains
 `.vitest-attachments` so CI continues to upload browser diagnostics.

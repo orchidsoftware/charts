@@ -6,6 +6,8 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ## Unreleased
 
+## 0.0.7 - 2026-09-07
+
 ### Fixed
 
 - Avoid argument-count overflow in Cartesian scale, bar-domain, stack, and

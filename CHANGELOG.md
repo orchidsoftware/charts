@@ -10,6 +10,8 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 - Wait for page styles before mounting demo charts so slow CSS loads in iPhone
   browsers do not leave the gallery empty until reload.
+- Explain stylesheet readiness in the public guides and suggest checking theme
+  loading when a supplied CSS color variable cannot be resolved.
 
 ## 0.0.6 - 2026-09-07
 

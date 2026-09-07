@@ -117,6 +117,9 @@ For a plain HTML page, use an import map and load the stylesheet with a
 Native browsers load CSS through `<link>`; a JavaScript `import` cannot load the
 stylesheet without a bundler.
 
+When loading CSS separately, wait for it before rendering. See
+[Stylesheet readiness](./customization.md#stylesheet-readiness) for details.
+
 ## Where to Go Next
 
 - Explore [line charts](./line.md) for trends or [bar charts](./bar.md) for comparisons.

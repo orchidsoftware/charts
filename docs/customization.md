@@ -51,6 +51,45 @@ LineChart.make("#revenue")
   .render();
 ```
 
+### CSS Color Variables
+
+Data colors can reference a CSS variable defined on the chart host or an ancestor:
+
+```css
+#revenue {
+  --revenue-color: #2563eb;
+}
+```
+
+```js
+LineChart.make("#revenue")
+  .dataset("Revenue", [42, 48, 57], "var(--revenue-color)")
+  .render();
+```
+
+The variable must resolve to a supported color when `render()` or `update()` is
+called. A missing variable without a fallback throws a `TypeError` before
+replacing the host content or the current chart. Follow the
+[stylesheet readiness guidance](#stylesheet-readiness) when
+loading theme CSS separately. For an intentionally optional variable, provide
+a fallback such as `var(--revenue-color, #2563eb)`.
+
+### Stylesheet Readiness
+
+`render()` and `update()` are synchronous. The application supplies the host and
+loads the chart stylesheet and any theme styles before calling them. Importing
+the JavaScript module does not guarantee that a separately loaded stylesheet is
+ready; this ordering can leave CSS color variables unresolved in WebKit on a
+cold page load.
+
+For an initial page load, render after the window's `load` event, or immediately
+if `document.readyState` is already `"complete"`. `DOMContentLoaded` alone does
+not guarantee stylesheet readiness. The page `load` event also waits for other
+resources. For dynamically loaded themes, use the stylesheet's `load`/`error`
+events or the framework's asset-loading lifecycle instead. Handle a failed
+stylesheet request in the application; after the styles are ready, retry
+`render()` or `update()`.
+
 ## Match the Surrounding Interface
 
 Orchid Charts uses CSS variables for shared surface colors. Override them on a page,

@@ -393,7 +393,9 @@ function resolvedColor(host, value) {
   const candidate = resolved || fallback;
 
   if (!candidate) {
-    throw new TypeError(`Unresolved CSS color variable: ${name.trim()}`);
+    throw new TypeError(
+      `Unresolved CSS color variable: ${name.trim()}. Define it on the chart host or an ancestor and wait for its stylesheet to load before calling render() or update().`,
+    );
   }
 
   return candidate;

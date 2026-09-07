@@ -26,7 +26,8 @@ import "@orchidsoftware/charts/style.css";
 
 Each definition exposes `make(parent)`, where `parent` is a CSS selector or an
 `Element`. Configuration methods return the same builder, and `render()` mounts
-the chart.
+the chart synchronously. The host and its chart/theme styles must be ready;
+see [Stylesheet readiness](./customization.md#stylesheet-readiness).
 
 ## Common Chart Methods
 
@@ -323,6 +324,11 @@ objects for later use.
 | `toSvg()`             | Returns the current SVG source.                       |
 | `download(filename?)` | Downloads the current chart as SVG.                   |
 | `destroy()`           | Releases the DOM, observers, and listeners.           |
+
+`render()` and `update()` validate supplied CSS colors in the host's current
+style context. An unresolved `var(--name)` without a fallback throws a `TypeError`
+before changing the host content or mounted chart. After the styles are ready,
+the caller can retry the same method; the library does not schedule a retry.
 
 See [Updates and interaction](./updates-and-interaction.md) for the mounted
 lifecycle and [Exporting SVG](./exporting.md) for serialization and download.

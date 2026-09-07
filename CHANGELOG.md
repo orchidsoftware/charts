@@ -6,6 +6,11 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ## Unreleased
 
+### Fixed
+
+- Wait for page styles before mounting demo charts so slow CSS loads in iPhone
+  browsers do not leave the gallery empty until reload.
+
 ## 0.0.6 - 2026-09-07
 
 ### Fixed

@@ -42,6 +42,12 @@ public guide against real Turbo morphs, including unchanged data and cache
 cleanup. `npm run test:dist` compiles a clean consumer of the actual npm archive,
 including the CSS import, in Bundler, Node16, and NodeNext modes.
 
+`npm run test:demo-loading` builds and serves the production demo, then opens it
+in mobile Chromium and WebKit with delayed CSS. It verifies all 23 charts, data
+editing, and a normal reload. This catches WebKit executing the module before
+the stylesheet has supplied the chart color variables. CI runs it with the
+compatibility gate.
+
 ## Readability enforced by ESLint
 
 - Test files have at most 500 code lines; individual `it`/`test` callbacks have at

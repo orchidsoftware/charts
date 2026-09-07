@@ -73,6 +73,9 @@ jobs:
       - name: Verify native touch gestures
         if: matrix.suite == 'compatibility'
         run: npm run test:touch && npm run test:frameworks
+      - name: Verify mobile demo loading
+        if: matrix.suite == 'compatibility'
+        run: npm run test:demo-loading
       - name: Upload coverage report
         if: ${{ always() && matrix.suite == 'coverage' }}
         uses: actions/upload-artifact@v7

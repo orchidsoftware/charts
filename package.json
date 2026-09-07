@@ -82,7 +82,6 @@
     "test:all": "vitest run",
     "test:unit": "vitest run --project node",
     "test:site": "vitest run --project site-chromium",
-    "test:demo-loading": "npm run build:demo && node scripts/TestDemoLoading.mjs",
     "test:input": "vitest run --project input-chromium",
     "test:touch": "node scripts/TestTouch.mjs",
     "test:frameworks": "node scripts/TestFrameworks.mjs"

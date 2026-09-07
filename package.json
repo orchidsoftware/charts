@@ -125,6 +125,12 @@
     "name": "Alexander Chernyaev",
     "url": "https://github.com/tabuna"
   },
+  "contributors": [
+    {
+      "name": "GPT-6 Astra (AI-assisted development)",
+      "url": "https://openai.com/"
+    }
+  ],
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^10.0.1",

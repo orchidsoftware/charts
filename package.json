@@ -129,8 +129,8 @@
     "@eslint/js": "^10.0.1",
     "@hotwired/stimulus": "3.2.2",
     "@hotwired/turbo": "8.0.23",
-    "@vitest/browser-playwright": "^4.1.11",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/browser-playwright": "^5.0.0",
+    "@vitest/coverage-v8": "^5.0.0",
     "@vitest/eslint-plugin": "^1.6.27",
     "eslint": "^10.9.1",
     "eslint-plugin-import-x": "^4.17.1",
@@ -139,7 +139,7 @@
     "eslint-plugin-promise": "^7.3.0",
     "eslint-plugin-security": "^4.0.1",
     "eslint-plugin-sonarjs": "^4.2.0",
-    "eslint-plugin-unicorn": "^73.0.0",
+    "eslint-plugin-unicorn": "^74.0.0",
     "globals": "^17.11.0",
     "highlight.js": "^11.12.0",
     "markdown-it": "^15.0.1",
@@ -153,6 +153,6 @@
     "terser": "^5.51.2",
     "typescript": "^7.0.2",
     "vite": "^8.2.2",
-    "vitest": "^4.1.11"
+    "vitest": "^5.0.0"
   }
 }

@@ -130,8 +130,11 @@ async function setViewport(width, height) {
 
 async function matchScreenshot(element, name) {
   if (element === document.body) {
+    await settle();
     await setViewport(window.innerWidth, document.body.scrollHeight);
     window.scrollTo(0, 0);
+    await settle();
+    expect(document.body.scrollHeight).toBeLessThanOrEqual(window.innerHeight);
   }
   await settle();
   await expect.element(page.elementLocator(element)).toMatchScreenshot(name, screenshotOptions);
@@ -263,7 +266,7 @@ afterAll(async () => {
 
 // Existing pixel references capture an ordered viewport/scroll tour.
 // Keep that framing stable; independent state equivalence is tested separately.
-describe.sequential("visual regression baselines", { shuffle: false }, () => {
+describe("visual regression baselines", { concurrent: false, shuffle: false }, () => {
   it.each([
     ["light", 1280],
     ["dark", 1280],
@@ -363,7 +366,7 @@ describe.sequential("visual regression baselines", { shuffle: false }, () => {
   });
 });
 
-describe.sequential("selection appearance equivalence", () => {
+describe("selection appearance equivalence", { concurrent: false }, () => {
   it.each(equivalentStates)(
     "keeps $name keyboard-active equivalent to pointer selection",
     async ({ name }) => {

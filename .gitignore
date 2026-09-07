@@ -4,6 +4,7 @@
 /pages-dist/
 /coverage/
 /.vitest-attachments/
+/.vitest/
 *.tgz
 
 # Local configuration and secrets

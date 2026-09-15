@@ -6,6 +6,13 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ## Unreleased
 
+## 0.0.8 - 2026-09-16
+
+### Security
+
+- Update the development-only `js-yaml` dependency to 4.3.2 to address
+  GHSA-2883-xcg3-v3hh. The published package still has no runtime dependencies.
+
 ### Fixed
 
 - Reuse tooltip content while the pointer stays within the same category instead

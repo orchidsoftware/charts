@@ -49,6 +49,7 @@ export default class ChartTooltip {
   #host;
   #svg;
   #element;
+  #content;
 
   /**
    * Creates the detached status element associated with one chart SVG.
@@ -63,6 +64,7 @@ export default class ChartTooltip {
     this.#element = document.createElement("div");
     this.#element.className = "orchid-charts-tooltip";
     this.#element.hidden = true;
+    this.#element.style.transform = "none";
     this.#element.setAttribute("role", "status");
     this.#element.id = `orchid-charts-tooltip-${chartId}`;
   }
@@ -88,8 +90,10 @@ export default class ChartTooltip {
   show(mark, dimensions) {
     const hostBox = this.#host.getBoundingClientRect();
     this.#renderContent(mark);
-    this.#element.hidden = false;
-    this.#element.style.transform = "none";
+    if (this.#element.hidden) {
+      this.#element.hidden = false;
+    }
+
     const bounds = this.#element.getBoundingClientRect();
 
     const size = {
@@ -99,8 +103,16 @@ export default class ChartTooltip {
 
     const anchor = this.#anchor(mark, dimensions, hostBox);
     const position = this.#position(anchor, size, hostBox);
-    this.#element.style.left = `${position.left}px`;
-    this.#element.style.top = `${position.top}px`;
+    const left = `${position.left}px`;
+    const top = `${position.top}px`;
+
+    if (this.#element.style.left !== left) {
+      this.#element.style.left = left;
+    }
+
+    if (this.#element.style.top !== top) {
+      this.#element.style.top = top;
+    }
   }
 
   /**
@@ -257,6 +269,12 @@ export default class ChartTooltip {
    */
   #renderContent(mark) {
     const content = chartMark(mark).tooltip;
+
+    if (content === this.#content) {
+      return;
+    }
+
+    this.#content = content;
     this.#element.classList.toggle("orchid-charts-tooltip-wrap", Boolean(content.wrapNames));
     const items = content.items;
     const headingText = content.heading;

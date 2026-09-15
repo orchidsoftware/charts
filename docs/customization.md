@@ -111,6 +111,26 @@ card, or chart host:
 This is usually enough for a dark card or branded product surface. Keep data
 colors in `colors()` so they remain explicit and readable.
 
+### Hover appearance
+
+Style temporary category and point inspection separately from keyboard focus and
+persistent selection. `--orchid-charts-hover-fill` accepts a CSS color, including
+its alpha; its default retains the blue accent at 8% opacity. Both pointer hover
+and touch inspection use it. Active selection and keyboard focus keep the focus
+color.
+
+```css
+.analytics-card {
+  --orchid-charts-hover-fill: rgb(237 238 240 / 50%);
+  --orchid-charts-hover-blend-mode: multiply;
+}
+```
+
+The blend mode defaults to `normal`. Use `multiply` on a light chart surface to
+keep a pale overlay from washing out the data beneath it. For a dark surface,
+use a suitable translucent light fill with `normal`. No component selectors or
+pointer media queries are needed in the consuming application.
+
 ## Change the Presentation
 
 Common chart-wide methods describe the result directly:

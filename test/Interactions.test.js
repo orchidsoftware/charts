@@ -55,7 +55,8 @@ describe("Interactions", () => {
     mark.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerType: "touch" }));
     mark.dispatchEvent(new PointerEvent("pointerleave", { pointerType: "touch" }));
     expect(mark).toHaveClass("is-hovered");
-    expect(getComputedStyle(mark).fillOpacity).toBe("0.08");
+    expect(getComputedStyle(mark).fillOpacity).toBe("1");
+    expect(getComputedStyle(mark).fill).toContain("/ 0.08");
     expect(tooltipFor(chart).hidden).toBe(false);
     chart.destroy();
   });

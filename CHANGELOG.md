@@ -6,6 +6,12 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ## Unreleased
 
+### Fixed
+
+- Reuse tooltip content while the pointer stays within the same category instead
+  of rebuilding its DOM on every mouse movement. Avoid redundant inline-style
+  writes while preserving positioning and updates when inspected data changes.
+
 ### Added
 
 - Configure category and point hover independently of focus and selection with

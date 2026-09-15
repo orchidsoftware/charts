@@ -55,6 +55,7 @@ const EXPORT_STYLE_PROPERTIES = Object.freeze([
   "font-style",
   "font-weight",
   "letter-spacing",
+  "mix-blend-mode",
   "opacity",
   "paint-order",
   "shape-rendering",

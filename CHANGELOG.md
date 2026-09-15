@@ -6,6 +6,12 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ## Unreleased
 
+### Added
+
+- Configure category and point hover independently of focus and selection with
+  `--orchid-charts-hover-fill` and `--orchid-charts-hover-blend-mode`, including
+  touch inspection and preservation of the blend mode in SVG exports.
+
 ## 0.0.7 - 2026-09-07
 
 ### Fixed

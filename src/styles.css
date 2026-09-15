@@ -11,6 +11,8 @@
   --orchid-charts-tooltip-bg: rgb(255 255 255 / 96%);
   --orchid-charts-tooltip-value: #1d1d1f;
   --orchid-charts-focus-ring: #007aff;
+  --orchid-charts-hover-fill: color-mix(in srgb, var(--orchid-charts-focus-ring) 8%, transparent);
+  --orchid-charts-hover-blend-mode: normal;
   --orchid-charts-mark-separator: #fff;
   --orchid-charts-point-fill: #fff;
 }
@@ -175,15 +177,9 @@
   vector-effect: non-scaling-stroke;
 }
 
-.orchid-charts-x-hit.is-hovered,
 .orchid-charts-x-hit.is-active {
   fill: var(--orchid-charts-focus-ring);
   fill-opacity: 0.08;
-
-  /*
-  stroke: var(--orchid-charts-focus-ring);
-  stroke-opacity: 0.4;
-   */
 }
 
 .orchid-charts-interactive-mark.is-hovered,
@@ -209,7 +205,6 @@
   vector-effect: non-scaling-stroke;
 }
 
-.orchid-charts-point-hit.is-hovered,
 .orchid-charts-point-hit.is-active {
   fill: var(--orchid-charts-focus-ring);
   fill-opacity: 0.08;
@@ -217,19 +212,31 @@
   stroke-opacity: 0.42;
 }
 
+.orchid-charts-x-hit.is-hovered:not(.is-active),
+.orchid-charts-point-hit.is-hovered:not(.is-active) {
+  mix-blend-mode: var(--orchid-charts-hover-blend-mode);
+  fill: var(--orchid-charts-hover-fill);
+  fill-opacity: 1;
+}
+
+.orchid-charts-point-hit.is-hovered:not(.is-active) {
+  stroke: currentcolor;
+  stroke-opacity: 0.42;
+}
+
 @media (hover: hover) and (pointer: fine) {
-  .orchid-charts-x-hit:hover {
-    fill: var(--orchid-charts-focus-ring);
-    fill-opacity: 0.08;
+  .orchid-charts-x-hit:hover:not(.is-active),
+  .orchid-charts-point-hit:hover:not(.is-active) {
+    mix-blend-mode: var(--orchid-charts-hover-blend-mode);
+    fill: var(--orchid-charts-hover-fill);
+    fill-opacity: 1;
   }
 
   .orchid-charts-previewable-mark:hover {
     filter: brightness(0.96) saturate(1.08);
   }
 
-  .orchid-charts-point-hit:hover {
-    fill: var(--orchid-charts-focus-ring);
-    fill-opacity: 0.08;
+  .orchid-charts-point-hit:hover:not(.is-active) {
     stroke: currentcolor;
     stroke-opacity: 0.42;
   }

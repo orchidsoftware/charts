@@ -15,15 +15,9 @@ function seriesMarkSnapshot(source) {
     label: source.label,
     x: source.point.x,
     y: source.point.y,
+    ...(source.point.r !== undefined && { r: source.point.r }),
+    ...(source.chartType !== undefined && { chartType: source.chartType }),
   };
-
-  if (source.point.r !== undefined) {
-    snapshot.r = source.point.r;
-  }
-
-  if (source.chartType !== undefined) {
-    snapshot.chartType = source.chartType;
-  }
 
   return Object.freeze(snapshot);
 }

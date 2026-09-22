@@ -235,25 +235,25 @@ function fixtureCalls(type, scenario) {
         labels,
       ],
     ],
+    ...(type === "mixed"
+      ? [
+          [
+            "bar",
+            [
+              "Columns",
+              values,
+            ],
+          ],
+          [
+            "line",
+            [
+              "Trend",
+              values,
+            ],
+          ],
+        ]
+      : []),
   ];
-  if (type === "mixed") {
-    calls.push(
-      [
-        "bar",
-        [
-          "Columns",
-          values,
-        ],
-      ],
-      [
-        "line",
-        [
-          "Trend",
-          values,
-        ],
-      ],
-    );
-  }
   if (type !== "mixed") {
     const coordinates = values.map((value) =>
       type === "bubble"

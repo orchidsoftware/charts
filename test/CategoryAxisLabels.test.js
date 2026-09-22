@@ -35,10 +35,11 @@ function expectReadable(chart, expected) {
     expect(label.querySelector("title")).toBeNull();
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(width);
-    if (index > 0) {
-      const previous = labels[index - 1].getBBox();
-      expect(box.x - previous.x - previous.width).toBeGreaterThanOrEqual(7);
+    if (index === 0) {
+      continue;
     }
+    const previous = labels[index - 1].getBBox();
+    expect(box.x - previous.x - previous.width).toBeGreaterThanOrEqual(7);
   }
 
   return labels.length;

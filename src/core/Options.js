@@ -330,11 +330,11 @@ function collectColors(input) {
     return [];
   }
 
-  const colors = [];
-
-  if (Array.isArray(input.colors)) {
-    colors.push(...input.colors);
-  }
+  const colors = Array.isArray(input.colors)
+    ? [
+        ...input.colors,
+      ]
+    : [];
 
   const hasData = input.data && typeof input.data === "object";
   const data = hasData ? input.data : input;

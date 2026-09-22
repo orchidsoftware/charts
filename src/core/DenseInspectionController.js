@@ -261,9 +261,11 @@ export default class DenseInspectionController {
       return;
     }
 
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      this.#select();
+    if (!(event.key === "Enter" || event.key === " ")) {
+      return;
     }
+
+    event.preventDefault();
+    this.#select();
   }
 }

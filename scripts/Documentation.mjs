@@ -289,10 +289,12 @@ export function documentationPlugin() {
       server.watcher.on("all", (_event, filename) => {
         const isDocumentation =
           filename.startsWith(directory) || /\/demo\/(?:index\.html|site\.css|docs\.css)$/.test(filename);
-        if (isDocumentation) {
-          cache.clear();
-          server.ws.send({ type: "full-reload" });
+        if (!isDocumentation) {
+          return;
         }
+
+        cache.clear();
+        server.ws.send({ type: "full-reload" });
       });
       server.middlewares.use(async (request, response, next) => {
         const pathname = new URL(request.url, "http://localhost").pathname;

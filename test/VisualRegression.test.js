@@ -207,10 +207,12 @@ function applyState(name, variant) {
   if (variant === "pressed") {
     expect(mark).toHaveClass("is-pressed");
   }
-  if (variant.endsWith("active")) {
-    expect(mark).toHaveClass("is-active");
-    expect(mark.getAttribute("aria-pressed")).toBe("true");
+  if (!variant.endsWith("active")) {
+    return;
   }
+
+  expect(mark).toHaveClass("is-active");
+  expect(mark.getAttribute("aria-pressed")).toBe("true");
 }
 
 beforeAll(async () => {

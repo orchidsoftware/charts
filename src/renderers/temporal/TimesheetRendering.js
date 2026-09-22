@@ -34,17 +34,19 @@ class TimesheetRenderer {
     const layout = new TimesheetLayout(this.#chart);
     this.#renderTicks(layout);
     this.#renderTasks(this.#chart.timesheet.tasks, layout);
-    if (this.#chart.options.axes) {
-      const { bottom, left, right } = layout.frame;
-      this.#surface.append("line", {
-        x1: left,
-        y1: bottom,
-        x2: right,
-        y2: bottom,
-        class: "orchid-charts-axis orchid-charts-x-axis",
-        "aria-hidden": "true",
-      });
+    if (!this.#chart.options.axes) {
+      return;
     }
+
+    const { bottom, left, right } = layout.frame;
+    this.#surface.append("line", {
+      x1: left,
+      y1: bottom,
+      x2: right,
+      y2: bottom,
+      class: "orchid-charts-axis orchid-charts-x-axis",
+      "aria-hidden": "true",
+    });
   }
 
   /**

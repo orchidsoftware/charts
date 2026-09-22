@@ -146,7 +146,7 @@
     "eslint-plugin-promise": "^7.3.0",
     "eslint-plugin-security": "^4.0.1",
     "eslint-plugin-sonarjs": "^4.2.0",
-    "eslint-plugin-unicorn": "^74.0.0",
+    "eslint-plugin-unicorn": "^75.0.0",
     "globals": "^17.11.0",
     "highlight.js": "^11.12.0",
     "markdown-it": "^15.0.1",

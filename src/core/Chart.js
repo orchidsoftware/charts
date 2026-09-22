@@ -121,10 +121,12 @@ export default class Chart {
     this.#commitHostPresentation(this.#element);
     this.#bindInteractions();
 
-    if (this.#autoWidth) {
-      this.#boundResize = this.#resize.bind(this);
-      this.#bindResponsiveWidth();
+    if (!this.#autoWidth) {
+      return;
     }
+
+    this.#boundResize = this.#resize.bind(this);
+    this.#bindResponsiveWidth();
   }
 
   /**
@@ -369,11 +371,13 @@ export default class Chart {
    */
   #bindResponsiveWidth() {
     window.addEventListener("resize", this.#boundResize);
-    if (typeof ResizeObserver === "function") {
-      const resize = this.#type === CHART_HEATMAP ? () => this.#scheduleResize() : this.#boundResize;
-      this.#resizeObserver = new ResizeObserver(resize);
-      this.#resizeObserver.observe(this.#host, { box: "content-box" });
+    if (typeof ResizeObserver !== "function") {
+      return;
     }
+
+    const resize = this.#type === CHART_HEATMAP ? () => this.#scheduleResize() : this.#boundResize;
+    this.#resizeObserver = new ResizeObserver(resize);
+    this.#resizeObserver.observe(this.#host, { box: "content-box" });
   }
 
   /**

@@ -25,11 +25,7 @@ const TOUCH_POINTER = "touch";
  * @returns {number} Valid selected index or `-1` when selection starts empty.
  */
 function initialSelection(items, activeIndex, selectable) {
-  if (!selectable || activeIndex < 0) {
-    return -1;
-  }
-
-  if (activeIndex >= items.length) {
+  if (!selectable || activeIndex < 0 || activeIndex >= items.length) {
     return -1;
   }
 
@@ -610,9 +606,11 @@ export default class InteractionController {
       return;
     }
 
-    if (event.key === "Escape") {
-      event.preventDefault();
-      this.dismiss();
+    if (event.key !== "Escape") {
+      return;
     }
+
+    event.preventDefault();
+    this.dismiss();
   }
 }

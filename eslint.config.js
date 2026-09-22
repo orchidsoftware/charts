@@ -47,11 +47,12 @@ function hasOneItemPerLine(sourceCode, containerNode, items) {
 function multilineContainerFixes(fixer, sourceCode, containerNode, items) {
   const openingToken = sourceCode.getFirstToken(containerNode);
   const closingToken = sourceCode.getLastToken(containerNode);
-  const fixes = [];
-
-  if (openingToken.loc.end.line === items[0].loc.start.line) {
-    fixes.push(fixer.insertTextAfter(openingToken, "\n"));
-  }
+  const fixes =
+    openingToken.loc.end.line === items[0].loc.start.line
+      ? [
+          fixer.insertTextAfter(openingToken, "\n"),
+        ]
+      : [];
 
   for (let index = 1; index < items.length; index += 1) {
     const previousItem = items[index - 1];
@@ -114,11 +115,10 @@ const multilineReturnObjectRule = {
       ReturnStatement(returnNode) {
         const objectNode = returnNode.argument;
 
-        if (objectNode?.type !== "ObjectExpression") {
-          return;
-        }
-
-        if (objectNode.properties.length < MINIMUM_MULTILINE_RETURN_PROPERTIES) {
+        if (
+          objectNode?.type !== "ObjectExpression" ||
+          objectNode.properties.length < MINIMUM_MULTILINE_RETURN_PROPERTIES
+        ) {
           return;
         }
 

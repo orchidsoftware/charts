@@ -45,17 +45,23 @@ function balancedPartition(words, lineCount, maxWidth) {
       const lines = [
         words.slice(0, first).join(" "),
         words.slice(first, second).join(" "),
+        ...(lineCount === MAXIMUM_BALANCED_LABEL_LINES
+          ? [
+              words.slice(second).join(" "),
+            ]
+          : []),
       ];
-
-      if (lineCount === MAXIMUM_BALANCED_LABEL_LINES) {
-        lines.push(words.slice(second).join(" "));
-      }
 
       const score = lineBalanceScore(lines, maxWidth);
 
       if (lines.every(Boolean) && score < bestScore) {
-        best = lines;
-        bestScore = score;
+        [
+          best,
+          bestScore,
+        ] = [
+          lines,
+          score,
+        ];
       }
     }
   }

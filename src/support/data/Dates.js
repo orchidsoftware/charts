@@ -21,7 +21,7 @@ const TIMEZONE_MINUTE_START = 4;
  */
 function normalizeDate(value, name) {
   const normalized = normalizeDateInput(value, name);
-  const date = value instanceof Date ? new Date(value.valueOf()) : new Date(normalized);
+  const date = new Date(value instanceof Date ? value.valueOf() : normalized);
 
   if (Number.isNaN(date.valueOf())) {
     throw new TypeError(`${name} must be a valid date`);

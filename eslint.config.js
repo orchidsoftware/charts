@@ -174,7 +174,7 @@ const correctnessRules = {
     },
   ],
   "no-debugger": "error",
-  "no-duplicate-imports": "on",
+  "no-duplicate-imports": "error",
   "no-floating-decimal": "error",
   "no-implicit-coercion": "error",
   "no-multi-assign": "error",

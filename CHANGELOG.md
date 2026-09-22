@@ -6,6 +6,17 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ## Unreleased
 
+## 0.0.9 - 2026-09-22
+
+### Fixed
+
+- Enable duplicate-import checking with a valid ESLint severity.
+- Adapt source, demo, and test helpers to ESLint Unicorn 75 rules while preserving chart behavior.
+
+### Changed
+
+- Update eight development dependencies, including Vitest 5.0.1, ESLint Unicorn 75, Prettier 3.9.8, and Sass 1.104.1.
+
 ## 0.0.8 - 2026-09-16
 
 ### Security

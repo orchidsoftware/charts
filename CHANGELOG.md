@@ -6,6 +6,21 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ## Unreleased
 
+## 0.0.10 - 2026-10-05
+
+### Fixed
+
+- Adapt tooltip builder option handling to ESLint Unicorn 76 while preserving callback and visibility behavior.
+
+### Changed
+
+- Update fourteen development dependencies, including Vitest 5.0.3, ESLint 10.11.0, ESLint Unicorn 76, and Vite 8.3.2.
+
+### Security
+
+- Update development-only `brace-expansion` to 5.0.12 and `fast-uri` to 3.1.8.
+- The development toolchain still includes the unpatched `braces` advisory GHSA-vfj7-8cjw-p6xm through Stylelint. The published package has no runtime dependencies, and its production dependency audit is clean.
+
 ## 0.0.9 - 2026-09-22
 
 ### Fixed

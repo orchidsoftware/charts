@@ -312,7 +312,7 @@ function builderTooltip(builder, value, Scope) {
     builderScope(builder, Scope, value);
   }
 
-  builderState(builder).explicitOption("tooltip", typeof value === "function" ? true : value);
+  builderState(builder).explicitOption("tooltip", typeof value === "function" || value);
 
   return builder;
 }

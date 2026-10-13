@@ -277,6 +277,7 @@ const correctnessRules = {
   "security/detect-object-injection": "off",
   "unicorn/consistent-class-member-order": "off",
   "unicorn/max-nested-calls": "off",
+  "unicorn/no-asterisk-prefix-in-documentation-comments": "off",
   "unicorn/prefer-iterator-to-array": "off",
   "unicorn/prefer-ternary": "off",
   "unicorn/prefer-scoped-selector": "off",

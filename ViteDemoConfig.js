@@ -6,7 +6,7 @@ import { documentationPlugin } from "./scripts/Documentation.mjs";
 
 const demoFile = (name) => fileURLToPath(new URL(`demo/${name}`, import.meta.url));
 
-export default defineConfig({
+const demoConfig = defineConfig({
   root: "demo",
   base: "/",
   plugins: [
@@ -23,3 +23,5 @@ export default defineConfig({
     },
   },
 });
+
+export default demoConfig;

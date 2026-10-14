@@ -66,30 +66,6 @@ async function startTouchPage() {
 }
 
 /**
- * Resolves a point inside the browser-rendered radar hit area.
- *
- * @param {import("playwright").Page} page - Touch-enabled browser page.
- * @param {number} index - Measure position.
- * @returns {Promise<{x: number, y: number}>} Viewport position to tap.
- */
-function measurePosition(page, index) {
-  return page
-    .locator(".orchid-charts-radar-axis")
-    .nth(index)
-    .evaluate((mark) => {
-      const line = mark.querySelector("line");
-      const x = (Number(line.getAttribute("x1")) + Number(line.getAttribute("x2"))) / 2;
-      const y = (Number(line.getAttribute("y1")) + Number(line.getAttribute("y2"))) / 2;
-      const point = new DOMPoint(x, y).matrixTransform(mark.ownerSVGElement.getScreenCTM());
-
-      return {
-        x: point.x,
-        y: point.y,
-      };
-    });
-}
-
-/**
  * Lets Chromium recognize a native scrolling gesture begun over the chart.
  *
  * @param {import("playwright").CDPSession} session - Chromium input connection.
@@ -149,17 +125,41 @@ async function verifyAccessibleData(page, session) {
 }
 
 const { server, browser, context, page } = await startTouchPage();
+
+/**
+ * Resolves a point inside the browser-rendered radar hit area.
+ *
+ * @param {number} index - Measure position.
+ * @returns {Promise<{x: number, y: number}>} Viewport position to tap.
+ */
+function measurePosition(index) {
+  return page
+    .locator(".orchid-charts-radar-axis")
+    .nth(index)
+    .evaluate((mark) => {
+      const line = mark.querySelector("line");
+      const x = (Number(line.getAttribute("x1")) + Number(line.getAttribute("x2"))) / 2;
+      const y = (Number(line.getAttribute("y1")) + Number(line.getAttribute("y2"))) / 2;
+      const point = new DOMPoint(x, y).matrixTransform(mark.ownerSVGElement.getScreenCTM());
+
+      return {
+        x: point.x,
+        y: point.y,
+      };
+    });
+}
+
 try {
-  const battery = await measurePosition(page, 1);
+  const battery = await measurePosition(1);
   await page.touchscreen.tap(battery.x, battery.y);
   assert.match(await page.locator(".orchid-charts-tooltip:not([hidden])").textContent(), /Battery/);
-  const camera = await measurePosition(page, 2);
+  const camera = await measurePosition(2);
   await page.touchscreen.tap(camera.x, camera.y);
   assert.match(await page.locator(".orchid-charts-tooltip:not([hidden])").textContent(), /Camera/);
   await page.locator("#outside").tap();
   await page.waitForFunction(() => document.querySelector(".orchid-charts-tooltip").hidden);
   const session = await context.newCDPSession(page);
-  await swipe(session, await measurePosition(page, 3));
+  await swipe(session, await measurePosition(3));
   await page.waitForFunction(
     () => window.scrollY > 0 && document.querySelector(".orchid-charts-tooltip").hidden,
   );

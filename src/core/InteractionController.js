@@ -256,12 +256,11 @@ export default class InteractionController {
    * Serializes a boolean into the string representation required by ARIA.
    *
    * @param {Element} element - DOM node that receives the accessibility attribute.
-   * @param {string} name - Boolean attribute name such as `aria-pressed`.
    * @param {boolean} value - State to serialize as `"true"` or `"false"`.
    * @returns {void} The supplied element is updated in place.
    */
-  static #reflectBoolean(element, name, value) {
-    element.setAttribute(name, value ? "true" : "false");
+  static #reflectBoolean(element, value) {
+    element.setAttribute(PRESSED_ATTRIBUTE, value ? "true" : "false");
   }
 
   /**
@@ -305,7 +304,7 @@ export default class InteractionController {
     ] of this.#items.entries()) {
       const isSelected = index === this.#selectedIndex;
       this.#toggleVisualState(item, ACTIVE_CLASS, isSelected);
-      InteractionController.#reflectBoolean(item, PRESSED_ATTRIBUTE, isSelected);
+      InteractionController.#reflectBoolean(item, isSelected);
     }
 
     this.#onActiveChange(
@@ -415,7 +414,7 @@ export default class InteractionController {
     item.setAttribute("tabindex", index === initialFocusIndex ? "0" : "-1");
     item.setAttribute("aria-label", label);
     if (this.#selectable) {
-      InteractionController.#reflectBoolean(item, PRESSED_ATTRIBUTE, index === this.#selectedIndex);
+      InteractionController.#reflectBoolean(item, index === this.#selectedIndex);
     }
 
     if (!this.#selectable) {

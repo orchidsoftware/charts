@@ -5,7 +5,7 @@ import { testProjects } from "./scripts/TestProjects.mjs";
 
 const isCompatibility = process.env.ORCHID_CHARTS_COMPATIBILITY === "1";
 
-export default defineConfig({
+const libraryConfig = defineConfig({
   plugins: [
     { ...documentationPlugin(), apply: "serve" },
   ],
@@ -53,3 +53,5 @@ export default defineConfig({
     },
   },
 });
+
+export default libraryConfig;

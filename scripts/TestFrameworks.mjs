@@ -39,11 +39,10 @@ function hostMarkup(value) {
  * Verifies visible content after a real Turbo morph with a preserved controller.
  *
  * @param {import("playwright").Page} page - Page containing the registered controller.
- * @param {number} value - Replacement server value.
  * @returns {Promise<void>} One connected chart shows the new value.
  */
-async function verifyMorph(page, value) {
-  const html = `<turbo-stream action="replace" method="morph" target="revenue"><template>${hostMarkup(value)}</template></turbo-stream>`;
+async function verifyMorph(page) {
+  const html = `<turbo-stream action="replace" method="morph" target="revenue"><template>${hostMarkup(99)}</template></turbo-stream>`;
   await page.evaluate((markup) => globalThis.Turbo.renderStreamMessage(markup), html);
   await page.waitForFunction((expected) => {
     const controller = globalThis.application.getControllerForElementAndIdentifier(
@@ -56,7 +55,7 @@ async function verifyMorph(page, value) {
       controller.chart?.element.isConnected &&
       controller.chart.point(0).values[0] === expected
     );
-  }, value);
+  }, 99);
   assert.equal(await page.locator("#revenue svg").count(), 1);
 }
 
@@ -95,8 +94,8 @@ try {
       ),
     });
   });
-  await verifyMorph(page, 99);
-  await verifyMorph(page, 99);
+  await verifyMorph(page);
+  await verifyMorph(page);
   await page.evaluate(() => document.dispatchEvent(new Event("turbo:before-cache")));
   assert.equal(await page.locator("#revenue svg").count(), 0);
   assert.deepEqual(errors, []);

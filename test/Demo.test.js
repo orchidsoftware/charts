@@ -308,32 +308,41 @@ describe("real-world demo", () => {
 });
 
 function overflowingCards(cards) {
-  return cards.flatMap((article) => {
-    const articleRight = article.getBoundingClientRect().right;
-    const visible = [
-      ...article.querySelectorAll(
-        "svg path, svg line, svg rect, svg circle, svg polygon, svg polyline, svg text",
-      ),
-    ].filter((element) => {
-      const style = getComputedStyle(element);
-      return (
-        style.display !== "none" &&
-        style.visibility !== "hidden" &&
-        Number(style.opacity) !== 0 &&
-        element.getAttribute("fill") !== "transparent"
+  return cards
+    .map((article) => {
+      const articleRight = article.getBoundingClientRect().right;
+      const visible = [
+        ...article.querySelectorAll(
+          "svg path, svg line, svg rect, svg circle, svg polygon, svg polyline, svg text",
+        ),
+      ].filter((element) => {
+        const style = getComputedStyle(element);
+        return (
+          style.display !== "none" &&
+          style.visibility !== "hidden" &&
+          Number(style.opacity) !== 0 &&
+          element.getAttribute("fill") !== "transparent"
+        );
+      });
+      const visibleRight = Math.max(
+        article.getBoundingClientRect().left,
+        ...visible.map((element) => {
+          const bounds = element.getBoundingClientRect();
+          return bounds.right;
+        }),
       );
-    });
-    const visibleRight = Math.max(
-      article.getBoundingClientRect().left,
-      ...visible.map((element) => {
-        const bounds = element.getBoundingClientRect();
-        return bounds.right;
-      }),
-    );
-    return visibleRight <= articleRight + 0.5
-      ? []
-      : [{ id: article.querySelector("div").id, visibleRight, articleRight }];
-  });
+      return {
+        article,
+        articleRight,
+        visibleRight,
+      };
+    })
+    .filter(({ articleRight, visibleRight }) => visibleRight > articleRight + 0.5)
+    .map(({ article, articleRight, visibleRight }) => ({
+      id: article.querySelector("div").id,
+      visibleRight,
+      articleRight,
+    }));
 }
 
 async function renderExamples(...ids) {

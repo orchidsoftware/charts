@@ -227,7 +227,7 @@ describe("QA chart laboratory", () => {
       expect(style.opacity).toBe("1");
       expect(style.stroke).toBe(getComputedStyle(fixture).backgroundColor);
       expect(style.paintOrder).toBe("stroke");
-      expect(style.fontWeight).toBe("500");
+      expect(style.fontWeight).toBe("400");
     }
     expect(fixture.querySelectorAll(".orchid-charts-annotation-sample")).toHaveLength(0);
   });

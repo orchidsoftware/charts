@@ -6,6 +6,14 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ## Unreleased
 
+## 0.0.12 - 2026-10-21
+
+### Fixed
+
+- Render marker and region labels as regular text without an outline by default.
+  Keep `--orchid-charts-annotation-halo` available for opt-in outlines and preserve
+  high-contrast and forced-colors support.
+
 ## 0.0.11 - 2026-10-21
 
 ### Fixed

@@ -151,7 +151,7 @@ describe("real-world demo", () => {
     expect(document.querySelectorAll(".orchid-charts-annotation-background")).toHaveLength(0);
     expect(
       getComputedStyle(document.querySelector("#line-marker .orchid-charts-annotation")).fontWeight,
-    ).toBe("500");
+    ).toBe("400");
     expect(getComputedStyle(document.querySelector("#line-region .orchid-charts-annotation")).fontSize).toBe(
       "12px",
     );

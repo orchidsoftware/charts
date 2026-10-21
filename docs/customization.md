@@ -233,12 +233,18 @@ LineChart.make("#response-time")
 ```
 
 Line, bar, scatter, bubble, and mixed charts support markers and regions.
-Their labels use the secondary text color at full opacity, with a thin outline
-that separates letters from data. Region opacity affects the band, not its label.
-The outline follows `--orchid-charts-mark-separator`, so existing surface themes apply.
-Override `--orchid-charts-annotation-halo` on the host when annotation outlines need a
-different surface color. Use the existing `labelColor()` scope method to override
-one annotation's text color.
+Their labels use regular text in the secondary text color at full opacity,
+without an outline by default. Region opacity affects the band, not its label.
+Set `--orchid-charts-annotation-halo` on the host to add an outline in that color:
+
+```css
+#response-time {
+	--orchid-charts-annotation-halo: var(--orchid-charts-mark-separator);
+}
+```
+
+Use the `labelColor()` scope method to override one annotation's text color.
+High-contrast and forced-colors modes retain their accessibility styles.
 
 ## Customize One Dataset
 

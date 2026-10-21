@@ -91,11 +91,11 @@
 
 .orchid-charts-annotation {
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
   pointer-events: none;
   opacity: 1;
-  stroke: var(--orchid-charts-annotation-halo, var(--orchid-charts-mark-separator));
+  stroke: var(--orchid-charts-annotation-halo, none);
   stroke-width: 2px;
   stroke-linejoin: round;
   paint-order: stroke fill;

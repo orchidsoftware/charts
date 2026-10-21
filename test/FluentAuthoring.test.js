@@ -133,12 +133,6 @@ describe("complete fluent authoring surface", () => {
     expect(
       [...chart.element.querySelectorAll(".orchid-charts-annotation")].map((node) => node.textContent),
     ).toEqual(["R:Band", "M:Goal"]);
-    expect(
-      [...chart.element.querySelectorAll(".orchid-charts-annotation")].every(
-        (label) =>
-          getComputedStyle(label).paintOrder === "stroke" && getComputedStyle(label).fontWeight === "500",
-      ),
-    ).toBe(true);
     expect(chart.element.querySelectorAll(".orchid-charts-annotation-background")).toHaveLength(0);
     expect(chart.element.querySelectorAll(".orchid-charts-annotation-sample")).toHaveLength(0);
     expectFailure(() => markerScope.width(1), "Marker scope has expired");

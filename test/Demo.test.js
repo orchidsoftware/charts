@@ -151,7 +151,7 @@ describe("real-world demo", () => {
     expect(document.querySelectorAll(".orchid-charts-annotation-background")).toHaveLength(0);
     expect(
       getComputedStyle(document.querySelector("#line-marker .orchid-charts-annotation")).fontWeight,
-    ).toBe("500");
+    ).toBe("400");
     expect(getComputedStyle(document.querySelector("#line-region .orchid-charts-annotation")).fontSize).toBe(
       "12px",
     );
@@ -163,7 +163,7 @@ describe("real-world demo", () => {
 
     expect(regionLabelBounds.y).toBeGreaterThan(region.y);
     expect(regionLabelBounds.y + regionLabelBounds.height).toBeLessThan(region.y + region.height);
-    expect(Number(markerLabel.getAttribute("y"))).toBeLessThan(Number(marker.getAttribute("y1")));
+    expect(markerLabel.getBBox().x).toBeGreaterThan(Number(marker.getAttribute("x2")));
     expect(markerLabel.getAttribute("text-anchor")).toBe("start");
     expect(getComputedStyle(regionLabel).fillOpacity).toBe("1");
     expect(getComputedStyle(regionLabel).opacity).toBe("1");

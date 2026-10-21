@@ -7,6 +7,7 @@ import {
   MAX_INDIVIDUAL_LINE_POINTS,
   MAX_X_INSPECTOR_POINTS,
   Y_AXIS_RIGHT,
+  VALUE_LABEL_GAP,
 } from "../../support/Constants.js";
 import { extent, niceValueScale, scale } from "../../support/geometry/Math.js";
 import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
@@ -15,6 +16,8 @@ import {
   seriesContentLayout,
   verticalValuePadding,
 } from "../../support/presentation/Presentation.js";
+
+import CartesianMarkerLayout from "./CartesianMarkerLayout.js";
 
 const BAR_SLOT_RATIO = 0.64;
 const PENULTIMATE_INDEX = -2;
@@ -117,6 +120,10 @@ export default class CartesianLayout {
     this.categories = Object.freeze({ labels: state.labels, count: state.count, gutter: state.gutter });
     this.values = Object.freeze(state.values);
     this.bars = Object.freeze({ datasets: state.barDatasets, isStacked: state.isStacked });
+    this.content = Object.freeze(state.content);
+    this.dimensions = Object.freeze(state.dimensions);
+    this.markerLines = Object.freeze(state.markers.markers.map(({ marker }) => marker));
+    this.markerLabels = state.markers.placements(this);
     Object.freeze(this);
   }
 
@@ -256,6 +263,8 @@ export default class CartesianLayout {
       left: presentation.isYAxisRight ? 0 : data.gutter,
     };
 
+    const markerState = this.#markerState({ frame, presentation, data, content });
+
     const usesInspector =
       this.#supportsInspector(type) &&
       (data.count <= MAX_X_INSPECTOR_POINTS ||
@@ -265,13 +274,102 @@ export default class CartesianLayout {
           CHART_AXIS_MIXED,
         ].includes(type));
 
+    return Object.assign({ orientation, type, frame, usesInspector }, presentation, data, markerState);
+  }
+
+  /**
+   * Reserves measured marker labels before scales bind to the final frame.
+   *
+   * @param {object} state - Initial frame, presentation, data, and content bounds.
+   * @param {object} state.frame - Initial plot boundaries.
+   * @param {object} state.presentation - Axis direction and frame policy.
+   * @param {object} state.data - Resolved values and category geometry.
+   * @param {object} state.content - Initial content and legend bounds.
+   * @returns {object} Marker placements and effective chart dimensions.
+   */
+  #markerState({ frame: initialFrame, presentation, data, content }) {
+    const frame = { ...initialFrame };
+    const markers = new CartesianMarkerLayout(this.#chart, { ...presentation, ...data });
+    const gutter = this.#markerAxisGutter(data, markers, presentation);
+    const extraGutter = gutter - data.gutter;
+    frame.left += presentation.isYAxisRight ? 0 : extraGutter;
+    frame.right -= presentation.isYAxisRight ? extraGutter : 0;
+    const minimumPlotHeight = markers.reserve(frame, data.values.domain);
+    frame.right += markers.width - this.#chart.options.width;
+    const railHeight = presentation.isHorizontal ? markers.rails.start + markers.rails.end : 0;
+    const growth = Math.max(0, minimumPlotHeight + railHeight - (frame.bottom - frame.top));
+    frame.bottom += growth;
+    const finalFrame = this.#insetMarkerRails(frame, markers.rails, presentation.isHorizontal);
+
+    const dimensions = {
+      width: markers.width,
+      height: this.#chart.options.height + growth,
+    };
+
+    const finalContent = {
+      ...content,
+      contentHeight: content.contentHeight + growth,
+      legendBaseline: content.legendBaseline === null ? null : content.legendBaseline + growth,
+    };
+
     return {
-      orientation,
-      type,
-      ...presentation,
-      ...data,
-      frame,
-      usesInspector,
+      markers,
+      gutter,
+      dimensions,
+      content: finalContent,
+      frame: finalFrame,
+    };
+  }
+
+  /**
+   * Clears the actual numeric axis typography next to outside labels.
+   *
+   * @param {object} data - Numeric ticks and existing gutter.
+   * @param {object} markers - Measured visible reference labels.
+   * @param {object} presentation - Axis orientation.
+   * @returns {number} Numeric gutter retaining caller CSS font metrics.
+   */
+  #markerAxisGutter(data, markers, presentation) {
+    const hasOutsideLabels = markers.markers.some(
+      ({ marker, label }) => label && marker.labelPosition !== "center",
+    );
+
+    if (!hasOutsideLabels || presentation.isHorizontal || !this.#chart.options.valueLabels) {
+      return data.gutter;
+    }
+
+    const widths = [
+      ...data.values.labels.values(),
+    ].map((label) => {
+      const metrics = this.#chart.axisTypography.measure(label);
+
+      return Math.max(metrics.width, metrics.x + metrics.width);
+    });
+
+    return Math.max(data.gutter, Math.ceil(Math.max(0, ...widths) + VALUE_LABEL_GAP));
+  }
+
+  /**
+   * Separates marker rails from the data and axis area.
+   *
+   * @param {object} frame - Mutable plot boundaries.
+   * @param {object} rails - Measured start and end clearances.
+   * @param {boolean} isHorizontal - Whether values run along the x axis.
+   * @returns {object} Plot boundaries inset by the marker rails.
+   */
+  #insetMarkerRails(frame, rails, isHorizontal) {
+    if (isHorizontal) {
+      return {
+        ...frame,
+        top: frame.top + rails.end,
+        bottom: frame.bottom - rails.start,
+      };
+    }
+
+    return {
+      ...frame,
+      left: frame.left + rails.start,
+      right: frame.right - rails.end,
     };
   }
 

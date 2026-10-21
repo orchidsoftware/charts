@@ -151,6 +151,12 @@
   grid-column: 1 / -1;
 }
 
+[data-fixture="annotation-collision"] .orchid-charts-region-label,
+[data-fixture="annotation-bars-vertical"] .orchid-charts-region-label,
+[data-fixture="annotation-bars-horizontal"] .orchid-charts-region-label {
+  --orchid-charts-annotation-halo: var(--orchid-charts-demo-elevated);
+}
+
 .lab-fixture header {
   gap: 16px;
 }

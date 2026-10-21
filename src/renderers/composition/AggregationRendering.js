@@ -74,6 +74,7 @@ class AggregationRenderer {
       height,
       items: legendItems,
       legend: this.#chart.options.legend,
+      typography: this.#chart.legendTypography,
     });
 
     renderLegend({ chart: this.#chart, surface: this.#surface }, layout);

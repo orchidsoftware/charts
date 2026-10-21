@@ -13,8 +13,8 @@ function renderChart(snapshot, render) {
     throw new TypeError("Chart render implementation must be a function");
   }
 
-  const { element, data, options, id } = snapshot;
-  const chart = Object.freeze({ ...data, options, id });
+  const { element, data, options, id, legendTypography } = snapshot;
+  const chart = Object.freeze({ ...data, options, id, legendTypography });
   const surface = new SvgSurface(element);
 
   const dimensions = render({ chart, surface }) ?? { width: options.width, height: options.height };

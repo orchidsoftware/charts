@@ -35,7 +35,7 @@ function renderLegend({ chart, surface }, layout = seriesContentLayout(chart)) {
       labelElement({
         value: item.label,
         attributes: { x: x + LEGEND_LABEL_OFFSET, y, class: "orchid-charts-legend" },
-        measurement: { maxWidth: labelMaxWidth },
+        measurement: { maxWidth: labelMaxWidth, widthOf: chart.legendTypography.widthOf },
       }),
     );
   }

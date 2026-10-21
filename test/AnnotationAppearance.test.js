@@ -3,7 +3,7 @@ import { expect, it } from "vitest";
 import { BarChart } from "../src/index.js";
 import "../src/styles.css";
 
-it("preserves auxiliary label themes and explicit colors in standalone SVG", () => {
+it("renders unoutlined auxiliary labels and preserves explicit colors and halos in standalone SVG", () => {
   const host = document.createElement("div");
   host.style.width = "360px";
   document.body.append(host);
@@ -26,9 +26,11 @@ it("preserves auxiliary label themes and explicit colors in standalone SVG", () 
 
     expect(appearance.opacity).toBe("1");
     expect(appearance.fill).toBe(expectedText);
-    expect(appearance.stroke).not.toBe("none");
+    expect(appearance.stroke).toBe("none");
+    expect(appearance.fontWeight).toBe("400");
     expect(exportedLabel.style.stroke).toBe(appearance.stroke);
     expect(exportedLabel.style.fill).toBe(appearance.fill);
+    expect(exportedLabel.style.fontWeight).toBe("400");
     expect(exportedLabel.style.paintOrder).toBe("stroke");
     expect(exportedLabel.style.opacity).toBe("1");
     expect(getComputedStyle(host.querySelector(".orchid-charts-region")).opacity).toBe("0.18");
@@ -48,6 +50,12 @@ it("preserves auxiliary label themes and explicit colors in standalone SVG", () 
   const appearance = getComputedStyle(host.querySelector(".orchid-charts-marker-label"));
   expect(appearance.fill).toBe("rgb(255, 204, 0)");
   expect(appearance.stroke).toBe("rgb(36, 56, 68)");
+  const exported = new DOMParser().parseFromString(chart.toSvg(), "image/svg+xml");
+  const exportedLabel = exported.querySelector(".orchid-charts-marker-label");
+  expect(exportedLabel.style.fill).toBe(appearance.fill);
+  expect(exportedLabel.style.stroke).toBe(appearance.stroke);
+  expect(exportedLabel.style.strokeWidth).toBe("2px");
+  expect(exportedLabel.style.paintOrder).toBe("stroke");
   chart.destroy();
   host.remove();
 });

@@ -211,9 +211,10 @@ describe("TooltipLayout", () => {
     expect(categories).toHaveLength(labels.length);
     expect(categoryLabels.map((label) => label.textContent)).toEqual(labels);
     for (const [index, category] of categories.entries()) {
-      expect(Number(categoryLabels[index].getAttribute("x"))).toBeCloseTo(
+      const glyphs = categoryLabels[index].getBBox();
+      expect(glyphs.x + glyphs.width / 2).toBeCloseTo(
         Number(category.getAttribute("x")) + Number(category.getAttribute("width")) / 2,
-        8,
+        3,
       );
       category.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
       expect(tooltipFor(chart).querySelector(".orchid-charts-tooltip-heading").textContent).toBe(

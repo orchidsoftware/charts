@@ -18,7 +18,7 @@ import {
  * @param {object} snapshot.chart - Normalized chart data.
  * @param {object} snapshot.surface - Owned SVG surface.
  * @param {(rendering: object) => void} renderSeries - Family series renderer.
- * @returns {object} Effective chart dimensions after intrinsic reference label layout.
+ * @returns {void} Complete Cartesian content is appended to the surface.
  */
 function renderCartesianChart({ chart, surface }, renderSeries) {
   const layout = new CartesianLayout(chart);
@@ -37,49 +37,47 @@ function renderCartesianChart({ chart, surface }, renderSeries) {
     new CartesianInspectorRenderer(rendering).render();
   }
 
-  renderLegend(rendering, layout.content);
-
-  return layout.dimensions;
+  renderLegend(rendering);
 }
 
 /**
  * Renders one line chart.
  *
  * @param {object} rendering - Frozen chart snapshot and owned SVG surface.
- * @returns {object} Effective chart dimensions.
+ * @returns {void} Line content is appended to the chart SVG.
  */
 function renderLineChart(rendering) {
-  return renderCartesianChart(rendering, renderLineSeries);
+  renderCartesianChart(rendering, renderLineSeries);
 }
 
 /**
  * Renders one bar chart.
  *
  * @param {object} rendering - Frozen chart snapshot and owned SVG surface.
- * @returns {object} Effective chart dimensions.
+ * @returns {void} Bar content is appended to the chart SVG.
  */
 function renderBarChart(rendering) {
-  return renderCartesianChart(rendering, renderBarSeries);
+  renderCartesianChart(rendering, renderBarSeries);
 }
 
 /**
  * Renders one point chart.
  *
  * @param {object} rendering - Frozen chart snapshot and owned SVG surface.
- * @returns {object} Effective chart dimensions.
+ * @returns {void} Point content is appended to the chart SVG.
  */
 function renderPointChart(rendering) {
-  return renderCartesianChart(rendering, renderPointSeries);
+  renderCartesianChart(rendering, renderPointSeries);
 }
 
 /**
  * Renders one mixed chart.
  *
  * @param {object} rendering - Frozen chart snapshot and owned SVG surface.
- * @returns {object} Effective chart dimensions.
+ * @returns {void} Mixed content is appended to the chart SVG.
  */
 function renderMixedChart(rendering) {
-  return renderCartesianChart(rendering, renderMixedSeries);
+  renderCartesianChart(rendering, renderMixedSeries);
 }
 
 export { renderBarChart, renderLineChart, renderMixedChart, renderPointChart };

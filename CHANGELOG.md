@@ -4,7 +4,22 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and releases follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 0.0.13 - 2026-10-22
+
+### Fixed
+
+- Measure axes, category labels, annotations, radial labels, timesheet labels,
+  heatmap legends, direct totals, and chart titles with their rendered SVG font metrics. Respect consumer CSS
+  font size, family, weight, letter spacing, and line height when reserving space,
+  sampling ticks, wrapping, and truncating text. Recalculate metrics on each render.
+- Restore marker labels inside the plot beside their reference line. Preserve
+  the original plot size and use the primary text color for readable contrast
+  without a default outline or a separate label container.
+
+### Changed
+
+- Reduce the per-chart bundle budget from 26 to 25 kB gzip after removing external
+  marker layout. The budget includes shared CSS-aware typography for chart text.
 
 ## 0.0.12 - 2026-10-22
 

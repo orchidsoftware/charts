@@ -212,7 +212,7 @@ describe("QA chart laboratory", () => {
     expect(cells.every((cell) => cell.getAttribute("width") === cell.getAttribute("height"))).toBe(true);
   });
 
-  it("keeps marker labels outside crossed data and region labels readable", () => {
+  it("keeps inline annotation labels readable across deliberately crossed data", () => {
     const fixture = document.querySelector('[data-fixture="annotation-collision"]');
     const labels = [...fixture.querySelectorAll(".orchid-charts-annotation")];
     const points = [...fixture.querySelectorAll(".orchid-charts-point")];
@@ -222,18 +222,14 @@ describe("QA chart laboratory", () => {
     const markerLabel = fixture.querySelector(".orchid-charts-marker-label");
     expect(points.some((point) => intersects(regionLabel, point))).toBe(true);
     expect(bars.some((bar) => intersects(regionLabel, bar))).toBe(true);
-    expect(points.some((point) => intersects(markerLabel, point))).toBe(false);
-    expect(bars.some((bar) => intersects(markerLabel, bar))).toBe(false);
+    expect(points.some((point) => intersects(markerLabel, point))).toBe(true);
+    expect(bars.some((bar) => intersects(markerLabel, bar))).toBe(true);
     for (const label of fixture.querySelectorAll(".orchid-charts-annotation")) {
       const style = getComputedStyle(label);
 
       expect(style.fillOpacity).toBe("1");
       expect(style.opacity).toBe("1");
-      expect(style.stroke).toBe(
-        label.classList.contains("orchid-charts-region-label")
-          ? getComputedStyle(fixture).backgroundColor
-          : "none",
-      );
+      expect(style.stroke).toBe(getComputedStyle(fixture).backgroundColor);
       expect(style.paintOrder).toBe("stroke");
       expect(style.fontWeight).toBe("400");
     }
@@ -254,7 +250,7 @@ describe("QA chart laboratory", () => {
         true,
       );
       expect(bars.some((bar) => intersects(fixture.querySelector(".orchid-charts-marker-label"), bar))).toBe(
-        false,
+        true,
       );
     }
 

@@ -2,7 +2,7 @@ import { HEATMAP_MIN_CELL_WIDTH } from "../../support/Constants.js";
 import { svg } from "../../support/Dom.js";
 import { formatContext, formatterText } from "../../support/presentation/Formatting.js";
 import { formatNumber } from "../../support/presentation/NumberFormatting.js";
-import { measuredTextWidth } from "../../support/presentation/TextLayout.js";
+import { labelElement } from "../../support/presentation/TextLayout.js";
 
 const PREFERRED_CELL_GAP = 3;
 const MAXIMUM_CELL_SIZE = 32;
@@ -11,12 +11,15 @@ const DAYS_PER_WEEK = 7;
 const MONDAY_FIRST_OFFSET = 6;
 const LEGEND_TOP_GAP = 12;
 const LEGEND_BOTTOM_GAP = 2;
-const LEGEND_BASELINE_OFFSET = 10;
 const LEGEND_LABEL_GAP = 8;
 const DESIRED_SWATCH_WIDTH = 11;
 const DESIRED_SWATCH_GAP = 3;
 const MINIMUM_SWATCH_WIDTH = 5;
 const MINIMUM_SWATCH_GAP = 2;
+const LEGEND_GROUP_CLASS = "orchid-charts-heat-legend";
+const LESS_CLASS = "orchid-charts-legend orchid-charts-heat-legend-less";
+const MORE_CLASS = "orchid-charts-legend orchid-charts-heat-legend-more";
+const LABEL_GAP_COUNT = 3;
 
 /**
  * Converts the native Sunday-first weekday to a Monday-first calendar row.
@@ -159,8 +162,17 @@ class HeatmapRenderer {
     const geometry = heatmapGeometry(this.#chart.options.width, this.#chart.heatmap);
     const palette = this.#chart.palette;
 
+    const labels = [
+      this.#chart.typography.forClass(LESS_CLASS, LEGEND_GROUP_CLASS),
+      this.#chart.typography.forClass(MORE_CLASS, LEGEND_GROUP_CLASS),
+    ];
+
+    const legendHeight = Math.max(LEGEND_HEIGHT, ...labels.map((typography) => typography.lineHeight));
+
     const layout = Object.freeze({
       ...geometry,
+      height: geometry.height + legendHeight - LEGEND_HEIGHT,
+      legendHeight,
       ...palette,
     });
 
@@ -231,29 +243,35 @@ class HeatmapRenderer {
     const geometry = this.#legendGeometry(layout);
 
     const legend = svg("g", {
-      class: "orchid-charts-heat-legend",
+      class: LEGEND_GROUP_CLASS,
       "aria-label": "Heatmap intensity: Less to More",
     });
 
-    const less = svg("text", {
-      x: 0,
-      y: geometry.baseline,
-      class: "orchid-charts-legend orchid-charts-heat-legend-less",
-    });
-
-    less.textContent = "Less";
-    legend.append(less);
+    legend.append(
+      labelElement({
+        value: "Less",
+        attributes: {
+          x: geometry.lessX,
+          y: geometry.lessBaseline,
+          class: LESS_CLASS,
+        },
+        measurement: { maxWidth: geometry.lessWidth, widthOf: geometry.lessTypography.widthOf },
+      }),
+    );
 
     this.#appendLegendSwatches(legend, layout.colors, geometry);
 
-    const more = svg("text", {
-      x: geometry.scaleX + geometry.scaleWidth + LEGEND_LABEL_GAP,
-      y: geometry.baseline,
-      class: "orchid-charts-legend orchid-charts-heat-legend-more",
-    });
-
-    more.textContent = "More";
-    legend.append(more);
+    legend.append(
+      labelElement({
+        value: "More",
+        attributes: {
+          x: geometry.scaleX + geometry.scaleWidth + LEGEND_LABEL_GAP,
+          y: geometry.moreBaseline,
+          class: MORE_CLASS,
+        },
+        measurement: { maxWidth: geometry.moreWidth, widthOf: geometry.moreTypography.widthOf },
+      }),
+    );
     this.#surface.append(legend);
   }
 
@@ -265,9 +283,9 @@ class HeatmapRenderer {
    */
   #legendGeometry(layout) {
     const vertical = { top: layout.gridBottom + LEGEND_TOP_GAP };
-    const labelWidths = { less: measuredTextWidth("Less"), more: measuredTextWidth("More") };
-    const scaleX = labelWidths.less + LEGEND_LABEL_GAP;
-    const scaleWidth = this.#legendScaleWidth(layout, scaleX, labelWidths.more);
+    const labels = this.#legendLabels(layout);
+    const scaleX = labels.lessX + labels.lessWidth + LEGEND_LABEL_GAP;
+    const scaleWidth = this.#legendScaleWidth(layout, scaleX, labels.moreWidth);
 
     const minimumGappedWidth =
       layout.colors.length * MINIMUM_SWATCH_WIDTH +
@@ -276,14 +294,42 @@ class HeatmapRenderer {
     const swatchGap = scaleWidth >= minimumGappedWidth ? MINIMUM_SWATCH_GAP : 0;
     const swatchWidth = (scaleWidth - swatchGap * (layout.colors.length - 1)) / layout.colors.length;
 
-    return {
-      top: vertical.top,
-      baseline: vertical.top + LEGEND_BASELINE_OFFSET,
+    const geometry = {
+      top: vertical.top + (layout.legendHeight - LEGEND_HEIGHT) / 2,
+      ...labels,
+      lessBaseline: vertical.top + (layout.legendHeight - labels.lessBounds.height) / 2 - labels.lessBounds.y,
+      moreBaseline: vertical.top + (layout.legendHeight - labels.moreBounds.height) / 2 - labels.moreBounds.y,
       scaleX,
       scaleWidth,
       swatchGap,
       swatchWidth,
     };
+
+    return geometry;
+  }
+
+  /**
+   * Measures both legend roles in their actual group context.
+   *
+   * @param {object} layout - Available legend viewport.
+   * @returns {object} Text metrics and bounded width budgets.
+   */
+  #legendLabels(layout) {
+    const lessTypography = this.#chart.typography.forClass(LESS_CLASS, LEGEND_GROUP_CLASS);
+    const moreTypography = this.#chart.typography.forClass(MORE_CLASS, LEGEND_GROUP_CLASS);
+    const budget = Math.max(1, (layout.layoutWidth - LABEL_GAP_COUNT * LEGEND_LABEL_GAP) / 2);
+
+    const labels = {
+      lessTypography,
+      moreTypography,
+      lessBounds: lessTypography.boundsOf("Less"),
+      moreBounds: moreTypography.boundsOf("More"),
+      lessWidth: Math.min(budget, lessTypography.widthOf("Less")),
+      moreWidth: Math.min(budget, moreTypography.widthOf("More")),
+      lessX: -lessTypography.boundsOf("Less").x,
+    };
+
+    return labels;
   }
 
   /**

@@ -21,6 +21,30 @@ LineChart.make("#revenue")
 Heatmaps calculate their height automatically to keep day cells square and do
 not support `height()`.
 
+## Set chart typography
+
+Override chart text with CSS. Layout measures the rendered SVG text, so the
+package's default font sizes are optional.
+
+```css
+.analytics-card .orchid-charts-label,
+.analytics-card .orchid-charts-legend {
+  font-size: 14px;
+}
+
+.analytics-card .orchid-charts-annotation {
+  font: 400 14px/1.4 system-ui;
+}
+```
+
+Axes reserve space for their actual text and sample labels when needed. Wrapped
+labels use the computed line height. Radial and temporal labels truncate to their
+available width and retain their full accessible text. Timesheets can grow taller
+when larger task labels need more row space. A visible chart title gets its own
+measured band above the plot. After changing CSS, call `update()`
+or resize the chart to recalculate its layout. Load custom web fonts before the
+first render, or update the chart after those fonts finish loading.
+
 ## Choose Chart Colors
 
 Pass colors in the order they should be used. The palette repeats when there
@@ -233,21 +257,8 @@ LineChart.make("#response-time")
 ```
 
 Line, bar, scatter, bubble, and mixed charts support markers and regions.
-Marker labels reserve space beyond the data area. The default `end` position uses
-the right edge, or the top edge for horizontal bars. `start` uses the opposite
-edge. `center` explicitly places a label inside the plot. Region labels retain
-their positions inside their bands.
-
-The layout measures the label's actual CSS font. Nearby marker labels are spaced
-apart and connected to their reference lines when displaced. Long endpoint labels
-are shortened visually, with their full text retained for assistive technology and
-SVG export. Crowded labels can increase the chart's intrinsic height; the legend
-moves with the resulting content bounds. If a narrow chart cannot fit even an
-ellipsis beside a positive-width plot, its intrinsic width also increases. The
-responsive SVG can then scale down to the host width; use a wider host when the
-physical text size must stay unchanged.
-
-Their labels use regular text in the secondary text color at full opacity,
+Marker labels use the primary text color at full opacity. Region labels use the
+secondary text color. Both use regular text,
 without an outline by default. Region opacity affects the band, not its label.
 Set `--orchid-charts-annotation-halo` on the host to add an outline in that color:
 

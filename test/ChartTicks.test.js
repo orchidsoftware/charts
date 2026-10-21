@@ -20,9 +20,10 @@ describe("ChartTicks", () => {
     expect(integer.element.querySelectorAll(".orchid-charts-grid-horizontal")).toHaveLength(6);
     const integerLabels = [...integer.element.querySelectorAll(".orchid-charts-value-label")];
     for (const [index, label] of integerLabels.entries()) {
-      expect(Number(label.getAttribute("y")) - 3).toBeCloseTo(
+      const bounds = label.getBBox();
+      expect(bounds.y + bounds.height / 2).toBeCloseTo(
         Number(integer.element.querySelectorAll(".orchid-charts-grid-horizontal")[index].getAttribute("y1")),
-        8,
+        4,
       );
     }
     expect(integerLabels.map((label) => Number(label.getAttribute("y")))).toEqual(

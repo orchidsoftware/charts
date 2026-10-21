@@ -6,7 +6,7 @@ import {
 } from "../Constants.js";
 
 import { formatLabel, formatValue } from "./Formatting.js";
-import { truncateText, measuredTextWidth } from "./TextLayout.js";
+import { truncateText } from "./TextLayout.js";
 
 const MINIMUM_CONTENT_HEIGHT = 8;
 const HORIZONTAL_LABEL_MAXIMUM_PADDING = 176;
@@ -21,9 +21,10 @@ const LEGEND_MAXIMUM_LABEL_WIDTH = 160;
  *
  * @param {Array<string | string[]>} labels - Formatted labels that appear beside bars.
  * @param {number} width - Total chart width in pixels.
+ * @param {(value: unknown) => number} widthOf - Contextual category text measurement.
  * @returns {number} Clamped left padding required by the widest visible label.
  */
-function horizontalCategoryPadding(labels, width) {
+function horizontalCategoryPadding(labels, width, widthOf) {
   const widthRatio = labels.some((label) => Array.isArray(label))
     ? HORIZONTAL_MULTILINE_LABEL_WIDTH_RATIO
     : HORIZONTAL_LABEL_WIDTH_RATIO;
@@ -45,7 +46,7 @@ function horizontalCategoryPadding(labels, width) {
         ];
 
     for (const line of lines) {
-      widest = Math.max(widest, Math.min(maximumLabelWidth, Math.ceil(measuredTextWidth(line.trim()))));
+      widest = Math.max(widest, Math.min(maximumLabelWidth, Math.ceil(widthOf(line.trim()))));
     }
   }
 
@@ -59,10 +60,11 @@ function horizontalCategoryPadding(labels, width) {
  * Expands value-axis padding to prevent formatted ticks from clipping.
  *
  * @param {string[]} labels - Values rendered along the vertical axis.
+ * @param {(value: unknown) => number} widthOf - Contextual value text measurement.
  * @returns {number} Pixel padding large enough for the widest tick label.
  */
-function verticalValuePadding(labels) {
-  const maximumLabelWidth = Math.max(0, ...labels.map((label) => measuredTextWidth(label)));
+function verticalValuePadding(labels, widthOf) {
+  const maximumLabelWidth = Math.max(0, ...labels.map((label) => widthOf(label)));
 
   return Math.ceil(maximumLabelWidth + VALUE_LABEL_GAP);
 }
@@ -132,7 +134,7 @@ function seriesContentLayout(chart) {
     height: chart.options.height,
     items: chart.datasets,
     legend: chart.options.legend && chart.datasets.length > 1,
-    typography: chart.legendTypography,
+    typography: chart.typography.forClass("orchid-charts-legend", "orchid-charts-legend-group"),
   });
 }
 

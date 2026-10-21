@@ -1,22 +1,20 @@
-import { MULTILINE_LABEL_HEIGHT } from "../Constants.js";
 import { svg } from "../Dom.js";
 
-const DEFAULT_LABEL_FONT_SIZE = 11;
 const BALANCE_OVERFLOW_WEIGHT = 10_000;
 const MINIMUM_BALANCED_LABEL_LINES = 2;
 const MAXIMUM_BALANCED_LABEL_LINES = 3;
 const MAXIMUM_BALANCED_WORDS = 24;
-const measurementSurface = { context: null };
 
 /**
  * Scores a contiguous line partition by overflow first and raggedness second.
  *
  * @param {string[]} lines - Candidate text lines.
  * @param {number} maxWidth - Available width for every line.
+ * @param {(value: unknown) => number} widthOf - Contextual text measurement.
  * @returns {number} Lower scores represent a better balanced partition.
  */
-function lineBalanceScore(lines, maxWidth) {
-  const widths = lines.map((line) => measuredTextWidth(line));
+function lineBalanceScore(lines, maxWidth, widthOf) {
+  const widths = lines.map((line) => widthOf(line));
   const overflow = widths.reduce((sum, width) => sum + Math.max(0, width - maxWidth), 0);
   const widest = Math.max(...widths);
   const narrowest = Math.min(...widths);
@@ -28,11 +26,13 @@ function lineBalanceScore(lines, maxWidth) {
  * Finds the best two- or three-line contiguous partition for a word sequence.
  *
  * @param {string[]} words - Ordered label words.
- * @param {number} lineCount - Requested line count.
- * @param {number} maxWidth - Available width for every line.
+ * @param {object} specification - Requested lines, available width and SVG typography.
+ * @param {number} specification.lineCount - Requested line count.
+ * @param {number} specification.maxWidth - Available width for every line.
+ * @param {(value: unknown) => number} specification.widthOf - Contextual text measurement.
  * @returns {string[]} Best balanced lines for the requested count.
  */
-function balancedPartition(words, lineCount, maxWidth) {
+function balancedPartition(words, { lineCount, maxWidth, widthOf }) {
   let best = [
     words.join(" "),
   ];
@@ -52,7 +52,7 @@ function balancedPartition(words, lineCount, maxWidth) {
           : []),
       ];
 
-      const score = lineBalanceScore(lines, maxWidth);
+      const score = lineBalanceScore(lines, maxWidth, widthOf);
 
       if (lines.every(Boolean) && score < bestScore) {
         [
@@ -74,9 +74,10 @@ function balancedPartition(words, lineCount, maxWidth) {
  *
  * @param {string[]} words - Original words in reading order.
  * @param {number} maxWidth - Available width per line.
+ * @param {(value: unknown) => number} widthOf - Contextual text measurement.
  * @returns {string[]} At most three lines containing the complete source text.
  */
-function greedyTextLines(words, maxWidth) {
+function greedyTextLines(words, maxWidth, widthOf) {
   const lines = [];
   let start = 0;
   let end = 1;
@@ -84,7 +85,7 @@ function greedyTextLines(words, maxWidth) {
   while (end < words.length && lines.length < MAXIMUM_BALANCED_LABEL_LINES - 1) {
     const candidate = words.slice(start, end + 1).join(" ");
 
-    if (measuredTextWidth(candidate) > maxWidth) {
+    if (widthOf(candidate) > maxWidth) {
       lines.push(words.slice(start, end).join(" "));
       start = end;
     }
@@ -102,12 +103,13 @@ function greedyTextLines(words, maxWidth) {
  *
  * @param {string} value - Plain category label.
  * @param {number} maxWidth - Available width for every line.
+ * @param {(value: unknown) => number} widthOf - Contextual text measurement.
  * @returns {string[]} One to three deterministic display lines.
  */
-function balancedTextLines(value, maxWidth) {
+function balancedTextLines(value, maxWidth, widthOf) {
   const text = value.trim();
 
-  if (measuredTextWidth(text) <= maxWidth) {
+  if (widthOf(text) <= maxWidth) {
     return [
       text,
     ];
@@ -122,7 +124,7 @@ function balancedTextLines(value, maxWidth) {
   }
 
   if (words.length > MAXIMUM_BALANCED_WORDS) {
-    return greedyTextLines(words, maxWidth);
+    return greedyTextLines(words, maxWidth, widthOf);
   }
 
   let lines;
@@ -132,9 +134,9 @@ function balancedTextLines(value, maxWidth) {
     lineCount <= Math.min(MAXIMUM_BALANCED_LABEL_LINES, words.length);
     lineCount += 1
   ) {
-    lines = balancedPartition(words, lineCount, maxWidth);
+    lines = balancedPartition(words, { lineCount, maxWidth, widthOf });
 
-    if (lines.every((line) => measuredTextWidth(line) <= maxWidth)) {
+    if (lines.every((line) => widthOf(line) <= maxWidth)) {
       return lines;
     }
   }
@@ -147,20 +149,21 @@ function balancedTextLines(value, maxWidth) {
  *
  * @param {unknown} value - Value converted to text before measurement.
  * @param {number} maxWidth - Maximum permitted rendered width in pixels.
- * @param {number | ((value: unknown) => number)} [measurement=11] - Font size or contextual width measurement.
+ * @param {(value: unknown) => number} widthOf - Contextual SVG width measurement.
  * @returns {string} Original text or the longest fitting ellipsized prefix.
  */
-function truncateText(value, maxWidth, measurement = 11) {
-  const widthOf =
-    typeof measurement === "function" ? measurement : (label) => measuredTextWidth(label, measurement);
-
+function truncateText(value, maxWidth, widthOf) {
   const text = String(value);
 
   if (widthOf(text) <= maxWidth) {
     return text;
   }
 
-  let low = 1;
+  if (widthOf("…") > maxWidth) {
+    return "";
+  }
+
+  let low = 0;
   let high = text.length;
 
   while (low < high) {
@@ -192,13 +195,9 @@ function truncateText(value, maxWidth, measurement = 11) {
 function labelElement({ value, attributes, measurement, originalValue = value }) {
   const element = svg("text", attributes);
 
-  const visible = truncateText(
-    value,
-    measurement.maxWidth,
-    measurement.widthOf ?? measurement.fontSize ?? DEFAULT_LABEL_FONT_SIZE,
-  );
+  const visible = truncateText(value, measurement.maxWidth, measurement.widthOf);
 
-  element.textContent = visible;
+  element.append(document.createTextNode(visible));
   if (visible !== String(value)) {
     const title = svg("title");
     title.textContent = String(value);
@@ -213,38 +212,26 @@ function labelElement({ value, attributes, measurement, originalValue = value })
 }
 
 /**
- * Measures text using the same platform font stack as chart labels.
- *
- * @param {unknown} value - Value converted to text before measurement.
- * @param {number} [fontSize=11] - Font size used by the canvas context.
- * @returns {number} Measured text width in CSS pixels.
- */
-function measuredTextWidth(value, fontSize = 11) {
-  measurementSurface.context ??= document.createElement("canvas").getContext("2d");
-  const context = measurementSurface.context;
-  context.font = `${fontSize}px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`;
-
-  return context.measureText(String(value)).width;
-}
-
-/**
  * Creates a vertically centered multi-line SVG label with accessible source text.
  *
  * @param {object} specification - Content and presentation values for one multi-line label.
  * @param {string | string[]} specification.value - One or more requested display lines.
  * @param {Record<string, string | number>} specification.attributes - SVG positioning and presentation attributes.
  * @param {number} specification.maxWidth - Maximum permitted width for each rendered line.
+ * @param {object} specification.typography - Contextual width and line-height measurements.
  * @param {unknown} [specification.originalValue=specification.value] - Unformatted value exposed to assistive technology.
  * @returns {SVGElement} Detached SVG text element containing positioned tspan children.
  */
-function wrappedLabelElement({ value, attributes, maxWidth, originalValue = value }) {
+function wrappedLabelElement(specification) {
+  const { value, attributes, maxWidth, typography, originalValue = value } = specification;
+
   const lines = Array.isArray(value)
     ? value.map((line) => line.trim())
-    : balancedTextLines(String(value), maxWidth);
+    : balancedTextLines(String(value), maxWidth, typography.widthOf);
 
   const text = lines.join(" ");
 
-  const visibleLines = lines.map((line) => truncateText(line, maxWidth));
+  const visibleLines = lines.map((line) => truncateText(line, maxWidth, typography.widthOf));
   const element = svg("text", { ...attributes, class: `${attributes.class} orchid-charts-multiline-label` });
 
   for (const [
@@ -253,7 +240,7 @@ function wrappedLabelElement({ value, attributes, maxWidth, originalValue = valu
   ] of visibleLines.entries()) {
     const tspan = svg("tspan", {
       x: attributes.x,
-      dy: index === 0 ? (-MULTILINE_LABEL_HEIGHT * (visibleLines.length - 1)) / 2 : MULTILINE_LABEL_HEIGHT,
+      dy: index === 0 ? (-typography.lineHeight * (visibleLines.length - 1)) / 2 : typography.lineHeight,
     });
 
     tspan.textContent = line;
@@ -277,4 +264,4 @@ function wrappedLabelElement({ value, attributes, maxWidth, originalValue = valu
   return element;
 }
 
-export { truncateText, labelElement, measuredTextWidth, wrappedLabelElement };
+export { truncateText, labelElement, wrappedLabelElement };

@@ -7,11 +7,11 @@ import { labelElement, wrappedLabelElement } from "../../support/presentation/Te
 
 import { categoryAxisLabels } from "./CategoryAxisLabels.js";
 
-const VALUE_LABEL_BASELINE_OFFSET = 7;
-const VALUE_LABEL_CENTER_OFFSET = 3;
 const CATEGORY_MIDPOINT = 0.5;
-const CATEGORY_LABEL_BASELINE_OFFSET = 3;
-const CATEGORY_LABEL_BOTTOM_OFFSET = 7;
+const AXIS_LABEL_GAP = 7;
+const CATEGORY_CLASS = "orchid-charts-label";
+const WRAPPED_CLASS = "orchid-charts-label orchid-charts-multiline-label";
+const VALUE_CLASS = "orchid-charts-label orchid-charts-value-label";
 
 /**
  * Renders Cartesian axes, grid lines, and labels.
@@ -75,6 +75,24 @@ export default class CartesianAxesRenderer {
   }
 
   /**
+   * Contains endpoint glyph overhangs without changing a tick's logical anchor.
+   *
+   * @param {number} position - Numeric tick position.
+   * @param {object} bounds - Actual value label glyph bounds.
+   * @returns {number} Bounded native SVG anchor coordinate.
+   */
+  #valueLabelX(position, bounds) {
+    const anchor = this.#valueLabelAnchor(position);
+    const offsets = { start: 0, middle: bounds.advance / 2, end: bounds.advance };
+    const offset = offsets[anchor];
+
+    return Math.max(
+      this.#layout.frame.left - bounds.x + offset,
+      Math.min(position, this.#layout.frame.right - bounds.x - bounds.width + offset),
+    );
+  }
+
+  /**
    * Places formatted numeric labels along the active value axis.
    *
    * @returns {void} Tick labels are appended to the chart SVG.
@@ -82,27 +100,53 @@ export default class CartesianAxesRenderer {
   #renderValueLabels() {
     const { bottom, left, right } = this.#layout.frame;
     const scaleValues = this.#layout.values;
-    const values = this.#layout.isHorizontal ? scaleValues.ticks : scaleValues.ticks.toReversed();
+    const values = this.#visibleValueTicks();
 
     for (const value of values) {
       const position = this.#layout.valueAt(value);
+      const label = scaleValues.labels.get(value);
+
+      const bounds = this.#chart.typography
+        .forClass("orchid-charts-label orchid-charts-value-label")
+        .boundsOf(label);
 
       const attributes = this.#layout.isHorizontal
         ? {
-            x: position,
-            y: bottom + this.#layout.frame.padding - VALUE_LABEL_BASELINE_OFFSET,
-            class: "orchid-charts-label orchid-charts-value-label",
+            x: this.#valueLabelX(position, bounds),
+            y: bottom + AXIS_LABEL_GAP - bounds.y,
+            class: VALUE_CLASS,
             "text-anchor": this.#valueLabelAnchor(position),
           }
         : {
             x: this.#layout.isYAxisRight ? right + VALUE_LABEL_GAP : left - VALUE_LABEL_GAP,
-            y: position + VALUE_LABEL_CENTER_OFFSET,
-            class: "orchid-charts-label orchid-charts-value-label",
+            y: position - bounds.y - bounds.height / 2,
+            class: VALUE_CLASS,
             "text-anchor": this.#layout.isYAxisRight ? "start" : "end",
           };
 
       this.#surface.text(scaleValues.labels.get(value), attributes);
     }
+  }
+
+  /**
+   * Samples horizontal tick labels without changing their scale or grid.
+   *
+   * @returns {number[]} Numeric ticks whose formatted text fits the axis.
+   */
+  #visibleValueTicks() {
+    const { ticks, labels } = this.#layout.values;
+    const typography = this.#chart.typography.forClass(VALUE_CLASS);
+    const ordered = this.#layout.isHorizontal ? ticks : ticks.toReversed();
+    const frame = this.#layout.frame;
+    const verticalInset = typography.lineHeight / 2;
+
+    return categoryAxisLabels({
+      labels: ordered.map((tick) => labels.get(tick)),
+      positionAt: (index) => this.#layout.valueAt(ordered[index]),
+      left: this.#layout.isHorizontal ? frame.left : frame.top - verticalInset,
+      right: this.#layout.isHorizontal ? frame.right : frame.bottom + verticalInset,
+      widthOf: this.#layout.isHorizontal ? typography.widthOf : (label) => typography.boundsOf(label).height,
+    }).map(({ index }) => ordered[index]);
   }
 
   /**
@@ -189,27 +233,74 @@ export default class CartesianAxesRenderer {
    * @returns {void} Horizontal category labels are appended to the chart SVG.
    */
   #renderHorizontalLabels() {
-    const { bottom, left, right, top } = this.#layout.frame;
+    const { bottom, top } = this.#layout.frame;
+    const typography = this.#chart.typography.forClass(WRAPPED_CLASS);
     const step = (bottom - top) / this.#chart.labels.length;
 
-    for (const [
-      index,
-      value,
-    ] of this.#layout.categories.labels.entries()) {
-      const text = wrappedLabelElement({
-        value,
-        attributes: {
-          x: this.#layout.isYAxisRight ? right + HORIZONTAL_LABEL_GAP : left - HORIZONTAL_LABEL_GAP,
-          y: top + (index + CATEGORY_MIDPOINT) * step + CATEGORY_LABEL_BASELINE_OFFSET,
-          class: "orchid-charts-label",
-          "text-anchor": this.#layout.isYAxisRight ? "start" : "end",
-        },
-        maxWidth: this.#layout.categories.gutter - HORIZONTAL_LABEL_EDGE_INSET - HORIZONTAL_LABEL_GAP,
-        originalValue: this.#chart.labels[index],
-      });
+    const visible = categoryAxisLabels({
+      labels: this.#layout.categories.labels,
+      positionAt: (index) => top + (index + CATEGORY_MIDPOINT) * step,
+      left: top,
+      right: bottom,
+      widthOf: (value) => typography.boundsOf(value).height,
+    });
 
-      this.#surface.append(text);
+    let previousBottom = -Infinity;
+
+    for (const { index } of visible) {
+      const candidate = this.#horizontalLabel(index, typography);
+
+      if (candidate.top < Math.max(top, previousBottom + AXIS_LABEL_GAP) || candidate.bottom > bottom) {
+        continue;
+      }
+
+      this.#surface.append(candidate.element);
+      previousBottom = candidate.bottom;
     }
+  }
+
+  /**
+   * Measures wrapped row labels before deciding which rows can display text.
+   *
+   * @param {number} index - Original row position.
+   * @param {object} typography - Actual category CSS typography.
+   * @returns {object} Detached label and its visual vertical interval.
+   */
+  #horizontalLabel(index, typography) {
+    const { bottom, left, right, top } = this.#layout.frame;
+    const step = (bottom - top) / this.#chart.labels.length;
+    const value = this.#layout.categories.labels[index];
+    const bounds = typography.boundsOf(Array.isArray(value) ? value.join(" ") : value);
+    const y = top + (index + CATEGORY_MIDPOINT) * step - bounds.y - bounds.height / 2;
+
+    const element = wrappedLabelElement({
+      value,
+      attributes: {
+        x: this.#layout.isYAxisRight ? right + HORIZONTAL_LABEL_GAP : left - HORIZONTAL_LABEL_GAP,
+        y,
+        class: CATEGORY_CLASS,
+        "text-anchor": this.#layout.isYAxisRight ? "start" : "end",
+      },
+      typography,
+      maxWidth: this.#layout.categories.gutter - HORIZONTAL_LABEL_EDGE_INSET - HORIZONTAL_LABEL_GAP,
+      originalValue: this.#chart.labels[index],
+    });
+
+    const lines = [
+      ...element.querySelectorAll("tspan"),
+    ];
+
+    const halfSpacing = (typography.lineHeight * (lines.length - 1)) / 2;
+
+    return {
+      element,
+      top: y - halfSpacing + typography.boundsOf(lines[0].textContent).y,
+      bottom:
+        y +
+        halfSpacing +
+        typography.boundsOf(lines.at(-1).textContent).y +
+        typography.boundsOf(lines.at(-1).textContent).height,
+    };
   }
 
   /**
@@ -218,25 +309,28 @@ export default class CartesianAxesRenderer {
    * @returns {void} Vertical category labels are appended to the chart SVG.
    */
   #renderVerticalLabels() {
-    const { bottom, padding, left, right } = this.#layout.frame;
+    const { bottom, left, right } = this.#layout.frame;
+    const typography = this.#chart.typography.forClass(CATEGORY_CLASS);
 
     const labels = categoryAxisLabels({
       labels: this.#layout.categories.labels,
       positionAt: (index) => this.#layout.categoryAt(index),
+      widthOf: typography.widthOf,
+      boundsOf: typography.boundsOf,
       left,
       right,
     });
 
-    for (const { index, value, x, anchor, width } of labels) {
+    for (const { index, value, x, anchor } of labels) {
       const text = labelElement({
         value,
         attributes: {
           x,
-          y: bottom + padding - CATEGORY_LABEL_BOTTOM_OFFSET,
-          class: "orchid-charts-label",
+          y: bottom + AXIS_LABEL_GAP - typography.boundsOf(value).y,
+          class: CATEGORY_CLASS,
           "text-anchor": anchor,
         },
-        measurement: { maxWidth: width },
+        measurement: { maxWidth: Math.max(0, right - left), widthOf: typography.widthOf },
         originalValue: this.#chart.labels[index],
       });
 

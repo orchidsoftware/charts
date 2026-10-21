@@ -163,8 +163,10 @@ describe("real-world demo", () => {
 
     expect(regionLabelBounds.y).toBeGreaterThan(region.y);
     expect(regionLabelBounds.y + regionLabelBounds.height).toBeLessThan(region.y + region.height);
-    expect(markerLabel.getBBox().x).toBeGreaterThan(Number(marker.getAttribute("x2")));
-    expect(markerLabel.getAttribute("text-anchor")).toBe("start");
+    expect(markerLabel.getBBox().x + markerLabel.getBBox().width).toBeLessThan(
+      Number(marker.getAttribute("x2")),
+    );
+    expect(markerLabel.getAttribute("text-anchor")).toBe("end");
     expect(getComputedStyle(regionLabel).fillOpacity).toBe("1");
     expect(getComputedStyle(regionLabel).opacity).toBe("1");
     expect(getComputedStyle(regionLabel).paintOrder).toBe("stroke");

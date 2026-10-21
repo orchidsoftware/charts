@@ -3,7 +3,6 @@ import { labelElement } from "../../support/presentation/TextLayout.js";
 import TimesheetLayout from "./TimesheetLayout.js";
 
 const AXIS_LABEL_OFFSET = 8;
-const TASK_LABEL_BASELINE_OFFSET = 4;
 const TASK_LABEL_GAP = 8;
 
 /**
@@ -28,14 +27,17 @@ class TimesheetRenderer {
   /**
    * Renders time-bounded tasks as grouped rows on a shared temporal axis.
    *
-   * @returns {void} Axis ticks, row labels, and interactive task bars are appended.
+   * @returns {object} Actual width and height after reserving task text.
    */
   render() {
     const layout = new TimesheetLayout(this.#chart);
     this.#renderTicks(layout);
     this.#renderTasks(this.#chart.timesheet.tasks, layout);
     if (!this.#chart.options.axes) {
-      return;
+      return {
+        width: layout.frame.width,
+        height: layout.frame.height,
+      };
     }
 
     const { bottom, left, right } = layout.frame;
@@ -47,6 +49,11 @@ class TimesheetRenderer {
       class: "orchid-charts-axis orchid-charts-x-axis",
       "aria-hidden": "true",
     });
+
+    return {
+      width: layout.frame.width,
+      height: layout.frame.height,
+    };
   }
 
   /**
@@ -76,20 +83,32 @@ class TimesheetRenderer {
       }
 
       if (this.#chart.options.valueLabels) {
-        this.#surface.append(
-          labelElement({
-            value: tick.label,
-            attributes: {
-              x: tick.labelX,
-              y: height - AXIS_LABEL_OFFSET,
-              "text-anchor": tick.anchor,
-              class: "orchid-charts-label orchid-charts-timesheet-tick",
-            },
-            measurement: { maxWidth: tick.maxWidth },
-          }),
-        );
+        this.#surface.append(this.#tickLabel(tick, height));
       }
     }
+  }
+
+  /**
+   * Creates a temporal tick within its measured axis band.
+   *
+   * @param {object} tick - Formatted tick placement.
+   * @param {number} height - Chart viewport height.
+   * @returns {SVGElement} Measured tick label.
+   */
+  #tickLabel(tick, height) {
+    const typography = this.#chart.typography.forClass("orchid-charts-label orchid-charts-timesheet-tick");
+    const bounds = typography.boundsOf(tick.label);
+
+    return labelElement({
+      value: tick.label,
+      attributes: {
+        x: tick.labelX,
+        y: height - AXIS_LABEL_OFFSET - Math.max(0, bounds.y + bounds.height),
+        "text-anchor": tick.anchor,
+        class: "orchid-charts-label orchid-charts-timesheet-tick",
+      },
+      measurement: { maxWidth: tick.maxWidth, widthOf: typography.widthOf },
+    });
   }
 
   /**
@@ -163,16 +182,22 @@ class TimesheetRenderer {
       return;
     }
 
+    const typography = this.#chart.typography.forClass(
+      "orchid-charts-label orchid-charts-timesheet-task-label",
+    );
+
+    const bounds = typography.boundsOf(task.label);
+
     this.#surface.append(
       labelElement({
         value: task.label,
         attributes: {
           x: frame.left - TASK_LABEL_GAP,
-          y: row.centerY + TASK_LABEL_BASELINE_OFFSET,
+          y: row.centerY - bounds.y - bounds.height / 2,
           "text-anchor": "end",
           class: "orchid-charts-label orchid-charts-timesheet-task-label",
         },
-        measurement: { maxWidth: frame.labelWidth - TASK_LABEL_GAP },
+        measurement: { maxWidth: frame.labelWidth - TASK_LABEL_GAP, widthOf: typography.widthOf },
       }),
     );
   }
@@ -240,10 +265,10 @@ class TimesheetRenderer {
  * Renders one timesheet through its family renderer.
  *
  * @param {object} rendering - Frozen chart snapshot and owned SVG surface.
- * @returns {void} Timesheet content is appended to the chart SVG.
+ * @returns {object} Actual dimensions of the rendered timesheet.
  */
 function renderTimesheetChart(rendering) {
-  new TimesheetRenderer(rendering).render();
+  return new TimesheetRenderer(rendering).render();
 }
 
 export { renderTimesheetChart };

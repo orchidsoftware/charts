@@ -1,6 +1,5 @@
 import { DEFAULT_BAR_RADIUS } from "../../support/Constants.js";
 import { scale } from "../../support/geometry/Math.js";
-import { measuredTextWidth } from "../../support/presentation/TextLayout.js";
 import {
   formatTimeTick,
   formatTimesheetDate,
@@ -11,6 +10,8 @@ import {
 const FRAME_INSET = 0;
 const FRAME_TOP = 0;
 const AXIS_HEIGHT = 28;
+const AXIS_TEXT_GAP = 12;
+const ROW_TEXT_GAP = 4;
 const MINIMUM_LABEL_WIDTH = 52;
 const MAXIMUM_LABEL_WIDTH = 160;
 const LABEL_WIDTH_RATIO = 0.36;
@@ -21,7 +22,6 @@ const MAXIMUM_BAR_HEIGHT = 18;
 const BAR_HEIGHT_RATIO = 0.5;
 const MAXIMUM_TICKS = 7;
 const PIXELS_PER_TICK = 68;
-const MINIMUM_TICK_LABEL_WIDTH = 32;
 const TICK_LABEL_GAP = 4;
 
 /**
@@ -38,10 +38,11 @@ function availableTaskLabelWidth(width) {
  * Measures the widest normalized task label with its trailing padding.
  *
  * @param {Array<object>} tasks - Normalized timesheet tasks.
+ * @param {object} typography - Actual task-label text metrics.
  * @returns {number} Required label-column width.
  */
-function measuredTaskLabelWidth(tasks) {
-  return Math.ceil(Math.max(...tasks.map((task) => measuredTextWidth(task.label))) + LABEL_PADDING);
+function measuredTaskLabelWidth(tasks, typography) {
+  return Math.ceil(Math.max(...tasks.map((task) => typography.widthOf(task.label))) + LABEL_PADDING);
 }
 
 /**
@@ -52,11 +53,26 @@ function measuredTaskLabelWidth(tasks) {
  * @returns {object} Bottom edge and row height.
  */
 function timesheetVerticalFrame(chart, height) {
-  const axisHeight = chart.options.valueLabels ? AXIS_HEIGHT : 0;
+  const typography = chart.typography.forClass("orchid-charts-label orchid-charts-timesheet-tick");
+
+  const axisHeight = chart.options.valueLabels
+    ? Math.max(AXIS_HEIGHT, typography.lineHeight + AXIS_TEXT_GAP)
+    : 0;
+
+  const taskTypography = chart.typography.forClass("orchid-charts-label orchid-charts-timesheet-task-label");
+  const minimumRowHeight = chart.options.valueLabels ? taskTypography.lineHeight + ROW_TEXT_GAP : 0;
+
+  const rowHeight = Math.max(
+    minimumRowHeight,
+    (height - axisHeight - FRAME_TOP) / chart.timesheet.tasks.length,
+  );
+
+  const bottom = FRAME_TOP + rowHeight * chart.timesheet.tasks.length;
 
   return {
-    bottom: height - axisHeight,
-    rowHeight: (height - axisHeight - FRAME_TOP) / chart.timesheet.tasks.length,
+    bottom,
+    rowHeight,
+    height: bottom + axisHeight,
   };
 }
 
@@ -93,7 +109,11 @@ function taskLabelWidth(chart) {
   }
 
   const available = availableTaskLabelWidth(chart.options.width);
-  const measured = measuredTaskLabelWidth(chart.timesheet.tasks);
+
+  const measured = measuredTaskLabelWidth(
+    chart.timesheet.tasks,
+    chart.typography.forClass("orchid-charts-label orchid-charts-timesheet-task-label"),
+  );
 
   return Math.min(available, Math.max(MINIMUM_LABEL_WIDTH, measured));
 }
@@ -120,7 +140,6 @@ function timesheetGeometry(chart) {
 
   const frame = Object.freeze({
     width,
-    height,
     inset: FRAME_INSET,
     top: FRAME_TOP,
     ...horizontal,
@@ -204,15 +223,18 @@ export default class TimesheetLayout {
       anchor = "end";
     }
 
+    const isEdge = isFirst || isLast;
+    const widthDivisor = isEdge ? 2 : 1;
+    const previous = index > 0 ? position - this.#x(this.ticks[index - 1]) : Infinity;
+    const next = index < this.ticks.length - 1 ? this.#x(this.ticks[index + 1]) - position : Infinity;
+    const spacing = Math.min(previous, next);
+
     return {
       position,
       label: formatTimeTick(tick, this.frame.span, this.#tickFormatter),
       labelX,
       anchor,
-      maxWidth: Math.max(
-        MINIMUM_TICK_LABEL_WIDTH,
-        this.frame.plotWidth / Math.max(1, this.ticks.length - 1) - TICK_LABEL_GAP,
-      ),
+      maxWidth: Math.max(1, spacing / widthDivisor - TICK_LABEL_GAP),
     };
   }
 

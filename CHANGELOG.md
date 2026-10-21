@@ -6,13 +6,24 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ## Unreleased
 
-## 0.0.12 - 2026-10-21
+## 0.0.12 - 2026-10-22
 
 ### Fixed
 
+- Reserve measured space for marker endpoint labels before calculating the plot.
+  Keep labels outside data and axis gutters, pack nearby labels without overlap,
+  and connect displaced labels to their reference lines. Respect host CSS fonts,
+  retain complete accessible text for shortened labels, and grow intrinsic chart
+  size with the legend when crowded labels need more room.
 - Render marker and region labels as regular text without an outline by default.
   Keep `--orchid-charts-annotation-halo` available for opt-in outlines and preserve
   high-contrast and forced-colors support.
+
+### Changed
+
+- Raise the single-chart bundle budget to 26 kB gzip for measured marker layout,
+  collision packing, and contextual axis clearance. The largest chart import
+  measures about 25.5 kB gzip with CSS.
 
 ## 0.0.11 - 2026-10-21
 

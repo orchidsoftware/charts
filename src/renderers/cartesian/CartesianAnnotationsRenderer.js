@@ -1,8 +1,8 @@
+import { svg } from "../../support/Dom.js";
 import { formatContext, formatterText } from "../../support/presentation/Formatting.js";
 import { measuredTextWidth } from "../../support/presentation/TextLayout.js";
 
 const ANNOTATION_EDGE_INSET = 8;
-const ANNOTATION_MARKER_GAP = 6;
 const ANNOTATION_FONT_SIZE = 12;
 const ANNOTATION_TAG_HEIGHT = 18;
 
@@ -105,14 +105,10 @@ export default class CartesianAnnotationsRenderer {
    */
   #renderMarkerLines() {
     const { bottom, left, right, top } = this.#layout.frame;
-    const markers = this.#chart.source.yMarkers;
+    const markers = this.#layout.markerLines;
 
     for (const marker of markers) {
       const position = this.#layout.valueAt(marker.value);
-
-      if (!marker.includeInDomain && !this.#insidePlot(position)) {
-        continue;
-      }
 
       const attributes = this.#layout.isHorizontal
         ? { x1: position, y1: top, x2: position, y2: bottom }
@@ -161,46 +157,47 @@ export default class CartesianAnnotationsRenderer {
       this.#renderAnnotationLabel({
         kind: "region",
         label,
-        placement: this.#annotationLabelAttributes("region", region.labelPosition, positions),
+        placement: this.#regionLabelAttributes(region.labelPosition, positions),
         annotation: region,
       });
     }
   }
 
   /**
-   * Renders marker labels after region labels in stable call order.
+   * Draws measured marker labels after region labels.
    *
-   * @returns {void} Visible marker labels remain inside the plot.
+   * @returns {void} Labels use the final measured placements from Cartesian layout.
    */
   #renderMarkerLabels() {
-    const markers = this.#chart.source.yMarkers;
+    for (const placement of this.#layout.markerLabels) {
+      if (placement.leader) {
+        this.#surface.append("path", {
+          d: placement.leader,
+          fill: "none",
+          stroke: placement.marker.color,
+          opacity: placement.marker.opacity,
+          "stroke-width": 1,
+          class: "orchid-charts-marker-leader",
+          "aria-hidden": "true",
+        });
+      }
 
-    for (const marker of markers) {
-      const position = this.#layout.valueAt(marker.value);
+      const element = this.#surface.text(placement.visible, {
+        x: placement.x,
+        y: placement.y,
+        "text-anchor": "start",
+        style: `fill: ${placement.marker.labelColor}`,
+        class: "orchid-charts-annotation orchid-charts-marker-label",
+      });
 
-      if (!marker.includeInDomain && !this.#insidePlot(position)) {
+      if (placement.visible === placement.label) {
         continue;
       }
 
-      const label = marker.formatLabel
-        ? formatterText(
-            marker.formatLabel(
-              marker.label,
-              marker.value,
-              formatContext(this.#chart.options, "accessibility"),
-            ),
-            "Marker label",
-          )
-        : marker.label;
-
-      this.#renderAnnotationLabel({
-        kind: "marker",
-        label,
-        placement: this.#annotationLabelAttributes("marker", marker.labelPosition, [
-          position,
-        ]),
-        annotation: marker,
-      });
+      const title = svg("title");
+      title.textContent = placement.label;
+      element.append(title);
+      element.setAttribute("aria-label", placement.label);
     }
   }
 
@@ -247,13 +244,12 @@ export default class CartesianAnnotationsRenderer {
   /**
    * Resolves one logical annotation-label position for either orientation.
    *
-   * @param {"marker" | "region"} kind - Annotation semantic controlling value-axis placement.
    * @param {"start" | "center" | "end"} placement - Logical category-axis placement.
-   * @param {number[]} values - One marker coordinate or two region coordinates.
+   * @param {number[]} values - Two region endpoint coordinates.
    * @returns {object} Bounded SVG text attributes.
    */
   // eslint-disable-next-line max-lines-per-function -- Array layout lines do not add behavior.
-  #annotationLabelAttributes(kind, placement, values) {
+  #regionLabelAttributes(placement, values) {
     const { bottom, left, right, top } = this.#layout.frame;
     const boundedValues = values.map((value) => this.#boundedValuePosition(value));
     const value = boundedValues.reduce((sum, item) => sum + item, 0) / boundedValues.length;
@@ -268,20 +264,10 @@ export default class CartesianAnnotationsRenderer {
         placement,
       );
 
-      if (kind === "region") {
-        return {
-          x: value,
-          y,
-          anchor: "middle",
-        };
-      }
-
-      const isNearRightEdge = value > (left + right) / 2;
-
       return {
-        x: value + (isNearRightEdge ? -ANNOTATION_MARKER_GAP : ANNOTATION_MARKER_GAP),
+        x: value,
         y,
-        anchor: isNearRightEdge ? "end" : "start",
+        anchor: "middle",
       };
     }
 
@@ -303,17 +289,9 @@ export default class CartesianAnnotationsRenderer {
       placement,
     );
 
-    if (kind === "region") {
-      return {
-        x,
-        y: value,
-        anchor,
-      };
-    }
-
     return {
       x,
-      y: Math.max(top + ANNOTATION_TAG_HEIGHT / 2, value - ANNOTATION_MARKER_GAP - ANNOTATION_TAG_HEIGHT / 2),
+      y: value,
       anchor,
     };
   }
@@ -338,18 +316,6 @@ export default class CartesianAnnotationsRenderer {
     }
 
     return placement === "center" ? center : end;
-  }
-
-  /**
-   * Tests a value-axis coordinate against the current plot bounds.
-   *
-   * @param {number} position - Scaled value-axis position.
-   * @returns {boolean} Whether the position falls inside the plot.
-   */
-  #insidePlot(position) {
-    const { maximum, minimum } = this.#valueAxisBounds();
-
-    return position >= minimum && position <= maximum;
   }
 
   /**

@@ -233,6 +233,20 @@ LineChart.make("#response-time")
 ```
 
 Line, bar, scatter, bubble, and mixed charts support markers and regions.
+Marker labels reserve space beyond the data area. The default `end` position uses
+the right edge, or the top edge for horizontal bars. `start` uses the opposite
+edge. `center` explicitly places a label inside the plot. Region labels retain
+their positions inside their bands.
+
+The layout measures the label's actual CSS font. Nearby marker labels are spaced
+apart and connected to their reference lines when displaced. Long endpoint labels
+are shortened visually, with their full text retained for assistive technology and
+SVG export. Crowded labels can increase the chart's intrinsic height; the legend
+moves with the resulting content bounds. If a narrow chart cannot fit even an
+ellipsis beside a positive-width plot, its intrinsic width also increases. The
+responsive SVG can then scale down to the host width; use a wider host when the
+physical text size must stay unchanged.
+
 Their labels use regular text in the secondary text color at full opacity,
 without an outline by default. Region opacity affects the band, not its label.
 Set `--orchid-charts-annotation-halo` on the host to add an outline in that color:

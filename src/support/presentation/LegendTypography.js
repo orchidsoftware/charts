@@ -6,20 +6,22 @@ const LEGEND_LINE_GAP = 6;
 const LEGEND_TOP_GAP = 8;
 
 /**
- * Measures legend text in its host's CSS context for one atomic render.
+ * Measures legend and reference text in its host's CSS context for one atomic render.
  *
  * @param {HTMLElement} host - Chart container providing inherited and scoped styles.
  * @param {SVGSVGElement} element - Candidate surface whose classes establish typography.
  * @param {(typography: object) => object} render - Render callback using the measured typography.
  * @returns {object} Result of the completed detached render.
  */
-function withLegendTypography(host, element, render) {
+function withChartTypography(host, element, render) {
   const probe = element.cloneNode(false);
   const group = svg("g", { class: "orchid-charts-legend-group" });
   const text = svg("text", { class: "orchid-charts-legend" });
+  const marker = svg("text", { class: "orchid-charts-annotation orchid-charts-marker-label" });
+  const valueAxis = svg("text", { class: "orchid-charts-label orchid-charts-value-label" });
   const hadHostClass = host.classList.contains(HOST_CLASS);
   group.append(text);
-  probe.append(group);
+  probe.append(group, marker, valueAxis);
   probe.setAttribute("aria-hidden", "true");
   probe.style.position = "absolute";
   probe.style.visibility = "hidden";
@@ -28,9 +30,19 @@ function withLegendTypography(host, element, render) {
   host.append(probe);
 
   try {
-    exposeHiddenProbe(probe, text);
+    exposeHiddenProbe(probe, [
+      text,
+      marker,
+      valueAxis,
+    ]);
 
-    return render(legendTypography(text));
+    return render(
+      Object.freeze({
+        legendTypography: legendTypography(text),
+        markerTypography: legendTypography(marker),
+        axisTypography: legendTypography(valueAxis),
+      }),
+    );
   } finally {
     probe.remove();
     host.classList.toggle(HOST_CLASS, hadHostClass);
@@ -41,18 +53,20 @@ function withLegendTypography(host, element, render) {
  * Makes SVG glyph measurement available when the chart's ancestors are hidden.
  *
  * @param {SVGSVGElement} probe - Invisible temporary chart surface.
- * @param {SVGTextElement} text - Legend node whose computed font comes from the host.
+ * @param {SVGTextElement[]} texts - Text nodes whose computed fonts come from the host.
  * @returns {void} Hidden-host typography is preserved before measuring outside that subtree.
  */
-function exposeHiddenProbe(probe, text) {
+function exposeHiddenProbe(probe, texts) {
   if (probe.getClientRects().length > 0) {
     return;
   }
 
-  const computed = getComputedStyle(text);
+  for (const text of texts) {
+    const computed = getComputedStyle(text);
 
-  for (const property of computed) {
-    text.style.setProperty(property, computed.getPropertyValue(property));
+    for (const property of computed) {
+      text.style.setProperty(property, computed.getPropertyValue(property));
+    }
   }
 
   probe.style.setProperty("display", "block");
@@ -75,15 +89,27 @@ function legendTypography(text) {
     if (!measurements.has(label)) {
       node.textContent = label;
       const bounds = node.getBBox();
-      bounds.width = node.getComputedTextLength();
-      measurements.set(label, bounds);
+      measurements.set(label, {
+        x: bounds.x,
+        y: bounds.y,
+        width: bounds.width,
+        height: bounds.height,
+        advance: node.getComputedTextLength(),
+      });
     }
 
     return measurements.get(label);
   };
 
   return Object.freeze({
-    widthOf: (value) => measure(value).width,
+    measure: (value) =>
+      Object.freeze({
+        x: measure(value).x,
+        y: measure(value).y,
+        width: measure(value).width,
+        height: measure(value).height,
+      }),
+    widthOf: (value) => measure(value).advance,
     metricsFor: (labels) => legendMetrics(labels.map((label) => measure(label))),
   });
 }
@@ -105,4 +131,4 @@ function legendMetrics(measurements) {
   });
 }
 
-export { withLegendTypography };
+export { withChartTypography };

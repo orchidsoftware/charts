@@ -3,9 +3,6 @@ import {
   HORIZONTAL_LABEL_GAP,
   VALUE_LABEL_GAP,
   LEGEND_LABEL_OFFSET,
-  LEGEND_ROW_HEIGHT,
-  LEGEND_BASELINE_INSET,
-  LEGEND_CONTENT_GAP,
 } from "../Constants.js";
 
 import { formatLabel, formatValue } from "./Formatting.js";
@@ -78,31 +75,43 @@ function verticalValuePadding(labels) {
  * @param {number} specification.height - Available chart height in pixels.
  * @param {Array<{label: string}>} specification.items - Legend entries used to calculate row count.
  * @param {boolean} specification.legend - Whether layout must reserve legend space.
+ * @param {object} specification.typography - Contextual legend width and vertical metrics.
  * @returns {object} Content bounds and a measured bottom legend shared with the renderer.
  */
-function chartContentLayout({ width, height, items, legend }) {
+function chartContentLayout(specification) {
+  const { width, height, items, legend, typography } = specification;
+
+  if (!legend) {
+    return {
+      items: [],
+      legendBaseline: null,
+      contentHeight: Math.max(MINIMUM_CONTENT_HEIGHT, height),
+    };
+  }
+
+  const metrics = typography.metricsFor(items.map((item) => item.label ?? item.name));
   const labelMaxWidth = Math.max(1, Math.min(LEGEND_MAXIMUM_LABEL_WIDTH, width - LEGEND_LABEL_OFFSET));
   let x = 0;
   let rows = 1;
 
   const entries = items.map((item) => {
     const label = item.label ?? item.name;
-    const visibleLabel = truncateText(label, labelMaxWidth);
-    const itemWidth = LEGEND_LABEL_OFFSET + measuredTextWidth(visibleLabel);
+    const visibleLabel = truncateText(label, labelMaxWidth, typography.widthOf);
+    const itemWidth = LEGEND_LABEL_OFFSET + typography.widthOf(visibleLabel);
 
     if (x + itemWidth > width && x > 0) {
       x = 0;
       rows += 1;
     }
 
-    const position = { label, color: item.color, labelMaxWidth, x, yOffset: (rows - 1) * LEGEND_ROW_HEIGHT };
+    const position = { label, color: item.color, labelMaxWidth, x, yOffset: (rows - 1) * metrics.rowHeight };
     x += itemWidth + LEGEND_ITEM_GAP;
 
     return position;
   });
 
-  const legendBaseline = legend ? height - LEGEND_BASELINE_INSET - (rows - 1) * LEGEND_ROW_HEIGHT : null;
-  const requestedBottom = legendBaseline === null ? height : legendBaseline - LEGEND_CONTENT_GAP;
+  const legendBaseline = height - metrics.baselineInset - (rows - 1) * metrics.rowHeight;
+  const requestedBottom = legendBaseline - metrics.contentGap;
 
   return {
     items: entries,
@@ -123,6 +132,7 @@ function seriesContentLayout(chart) {
     height: chart.options.height,
     items: chart.datasets,
     legend: chart.options.legend && chart.datasets.length > 1,
+    typography: chart.legendTypography,
   });
 }
 

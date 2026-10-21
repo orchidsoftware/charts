@@ -8,6 +8,7 @@ import {
   CHART_TIMESHEET,
 } from "../support/Constants.js";
 import { measureParentWidth, resolveParent, svg } from "../support/Dom.js";
+import { withLegendTypography } from "../support/presentation/LegendTypography.js";
 
 import ChartTooltip from "./ChartTooltip.js";
 import DenseInspectionController from "./DenseInspectionController.js";
@@ -402,9 +403,11 @@ export default class Chart {
       element.append(title);
     }
 
-    return renderChart(
-      { element, options, data: model.renderData, id: this.#id },
-      this.#implementation.render,
+    return withLegendTypography(this.#host, element, (legendTypography) =>
+      renderChart(
+        { element, options, data: model.renderData, id: this.#id, legendTypography },
+        this.#implementation.render,
+      ),
     );
   }
 

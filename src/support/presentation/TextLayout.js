@@ -147,13 +147,16 @@ function balancedTextLines(value, maxWidth) {
  *
  * @param {unknown} value - Value converted to text before measurement.
  * @param {number} maxWidth - Maximum permitted rendered width in pixels.
- * @param {number} [fontSize=11] - Font size used by the measurement context.
+ * @param {number | ((value: unknown) => number)} [measurement=11] - Font size or contextual width measurement.
  * @returns {string} Original text or the longest fitting ellipsized prefix.
  */
-function truncateText(value, maxWidth, fontSize = 11) {
+function truncateText(value, maxWidth, measurement = 11) {
+  const widthOf =
+    typeof measurement === "function" ? measurement : (label) => measuredTextWidth(label, measurement);
+
   const text = String(value);
 
-  if (measuredTextWidth(text, fontSize) <= maxWidth) {
+  if (widthOf(text) <= maxWidth) {
     return text;
   }
 
@@ -164,7 +167,7 @@ function truncateText(value, maxWidth, fontSize = 11) {
     const middle = Math.ceil((low + high) / 2);
     const candidate = `${text.slice(0, middle).trimEnd()}…`;
 
-    if (measuredTextWidth(candidate, fontSize) <= maxWidth) {
+    if (widthOf(candidate) <= maxWidth) {
       low = middle;
 
       continue;
@@ -188,7 +191,13 @@ function truncateText(value, maxWidth, fontSize = 11) {
  */
 function labelElement({ value, attributes, measurement, originalValue = value }) {
   const element = svg("text", attributes);
-  const visible = truncateText(value, measurement.maxWidth, measurement.fontSize ?? DEFAULT_LABEL_FONT_SIZE);
+
+  const visible = truncateText(
+    value,
+    measurement.maxWidth,
+    measurement.widthOf ?? measurement.fontSize ?? DEFAULT_LABEL_FONT_SIZE,
+  );
+
   element.textContent = visible;
   if (visible !== String(value)) {
     const title = svg("title");

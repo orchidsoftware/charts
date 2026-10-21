@@ -6,6 +6,19 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 
 ## Unreleased
 
+## 0.0.11 - 2026-10-21
+
+### Fixed
+
+- Measure legend labels with their rendered SVG text metrics so host CSS fonts
+  do not cause overlapping labels. Reserve taller rows when larger fonts need
+  more vertical space.
+
+### Changed
+
+- Raise the single-chart bundle budget to 24 kB gzip to include CSS-aware legend
+  measurement and hidden-container handling.
+
 ## 0.0.10 - 2026-10-05
 
 ### Fixed

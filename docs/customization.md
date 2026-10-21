@@ -199,6 +199,10 @@ LineChart.make("#revenue")
 Categorical legends sit below the plot, with a color dot beside each label.
 Items fit their text and wrap together on narrow containers.
 
+Legend layout respects CSS overrides to font size, family, and weight when
+`render()` or `update()` runs. Load custom fonts before calling these methods
+so the layout uses the intended font metrics.
+
 Pass `false` to `tooltip()` or `legend()` when that layer does not help the
 reader.
 

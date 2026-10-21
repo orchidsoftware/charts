@@ -1030,14 +1030,12 @@ article header strong {
   container-type: inline-size;
 }
 
-/* The 2026 calendar has 53 weeks. Match its balanced bands of 16px cells
-   with 3px gaps, seven day rows per band, and 25px for the legend. */
 #heatmap::before {
   --calendar-columns: 9;
   --calendar-rows: 42;
 
   display: block;
-  height: calc(var(--calendar-rows) * min(35px, (100cqw + 3px) / var(--calendar-columns)) + 22px);
+  height: calc(var(--calendar-rows) * min(35px, (100cqw + 3px) / var(--calendar-columns)) + 24.75px);
   content: "";
 }
 

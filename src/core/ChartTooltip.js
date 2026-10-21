@@ -133,7 +133,7 @@ export default class ChartTooltip {
     if (anchor) {
       const project = (point) => ({
         left: left + (point.x / dimensions.width) * box.width,
-        top: top + (point.y / dimensions.height) * box.height,
+        top: top + ((point.y - this.#svg.viewBox.baseVal.y) / dimensions.height) * box.height,
         placement: point.placement ?? "top",
       });
 
@@ -142,7 +142,7 @@ export default class ChartTooltip {
         contentHeight:
           anchor.contentHeight === undefined
             ? hostBox.height
-            : (anchor.contentHeight / dimensions.height) * box.height,
+            : ((anchor.contentHeight - this.#svg.viewBox.baseVal.y) / dimensions.height) * box.height,
         fallback: anchor.fallback && project(anchor.fallback),
       };
     }

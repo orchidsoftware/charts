@@ -7,7 +7,6 @@ import {
   MAX_INDIVIDUAL_LINE_POINTS,
   MAX_X_INSPECTOR_POINTS,
   Y_AXIS_RIGHT,
-  VALUE_LABEL_GAP,
 } from "../../support/Constants.js";
 import { extent, niceValueScale, scale } from "../../support/geometry/Math.js";
 import { formatLabel, formatValue } from "../../support/presentation/Formatting.js";
@@ -17,12 +16,10 @@ import {
   verticalValuePadding,
 } from "../../support/presentation/Presentation.js";
 
-import CartesianMarkerLayout from "./CartesianMarkerLayout.js";
-
 const BAR_SLOT_RATIO = 0.64;
 const PENULTIMATE_INDEX = -2;
 const STANDARD_FRAME_PADDING = 28;
-const VALUE_LABEL_TOP_CLEARANCE = 8;
+const AXIS_LABEL_CLEARANCE = 14;
 const SLOT_MIDPOINT = 0.5;
 
 /**
@@ -120,10 +117,6 @@ export default class CartesianLayout {
     this.categories = Object.freeze({ labels: state.labels, count: state.count, gutter: state.gutter });
     this.values = Object.freeze(state.values);
     this.bars = Object.freeze({ datasets: state.barDatasets, isStacked: state.isStacked });
-    this.content = Object.freeze(state.content);
-    this.dimensions = Object.freeze(state.dimensions);
-    this.markerLines = Object.freeze(state.markers.markers.map(({ marker }) => marker));
-    this.markerLabels = state.markers.placements(this);
     Object.freeze(this);
   }
 
@@ -263,8 +256,6 @@ export default class CartesianLayout {
       left: presentation.isYAxisRight ? 0 : data.gutter,
     };
 
-    const markerState = this.#markerState({ frame, presentation, data, content });
-
     const usesInspector =
       this.#supportsInspector(type) &&
       (data.count <= MAX_X_INSPECTOR_POINTS ||
@@ -274,102 +265,13 @@ export default class CartesianLayout {
           CHART_AXIS_MIXED,
         ].includes(type));
 
-    return Object.assign({ orientation, type, frame, usesInspector }, presentation, data, markerState);
-  }
-
-  /**
-   * Reserves measured marker labels before scales bind to the final frame.
-   *
-   * @param {object} state - Initial frame, presentation, data, and content bounds.
-   * @param {object} state.frame - Initial plot boundaries.
-   * @param {object} state.presentation - Axis direction and frame policy.
-   * @param {object} state.data - Resolved values and category geometry.
-   * @param {object} state.content - Initial content and legend bounds.
-   * @returns {object} Marker placements and effective chart dimensions.
-   */
-  #markerState({ frame: initialFrame, presentation, data, content }) {
-    const frame = { ...initialFrame };
-    const markers = new CartesianMarkerLayout(this.#chart, { ...presentation, ...data });
-    const gutter = this.#markerAxisGutter(data, markers, presentation);
-    const extraGutter = gutter - data.gutter;
-    frame.left += presentation.isYAxisRight ? 0 : extraGutter;
-    frame.right -= presentation.isYAxisRight ? extraGutter : 0;
-    const minimumPlotHeight = markers.reserve(frame, data.values.domain);
-    frame.right += markers.width - this.#chart.options.width;
-    const railHeight = presentation.isHorizontal ? markers.rails.start + markers.rails.end : 0;
-    const growth = Math.max(0, minimumPlotHeight + railHeight - (frame.bottom - frame.top));
-    frame.bottom += growth;
-    const finalFrame = this.#insetMarkerRails(frame, markers.rails, presentation.isHorizontal);
-
-    const dimensions = {
-      width: markers.width,
-      height: this.#chart.options.height + growth,
-    };
-
-    const finalContent = {
-      ...content,
-      contentHeight: content.contentHeight + growth,
-      legendBaseline: content.legendBaseline === null ? null : content.legendBaseline + growth,
-    };
-
     return {
-      markers,
-      gutter,
-      dimensions,
-      content: finalContent,
-      frame: finalFrame,
-    };
-  }
-
-  /**
-   * Clears the actual numeric axis typography next to outside labels.
-   *
-   * @param {object} data - Numeric ticks and existing gutter.
-   * @param {object} markers - Measured visible reference labels.
-   * @param {object} presentation - Axis orientation.
-   * @returns {number} Numeric gutter retaining caller CSS font metrics.
-   */
-  #markerAxisGutter(data, markers, presentation) {
-    const hasOutsideLabels = markers.markers.some(
-      ({ marker, label }) => label && marker.labelPosition !== "center",
-    );
-
-    if (!hasOutsideLabels || presentation.isHorizontal || !this.#chart.options.valueLabels) {
-      return data.gutter;
-    }
-
-    const widths = [
-      ...data.values.labels.values(),
-    ].map((label) => {
-      const metrics = this.#chart.axisTypography.measure(label);
-
-      return Math.max(metrics.width, metrics.x + metrics.width);
-    });
-
-    return Math.max(data.gutter, Math.ceil(Math.max(0, ...widths) + VALUE_LABEL_GAP));
-  }
-
-  /**
-   * Separates marker rails from the data and axis area.
-   *
-   * @param {object} frame - Mutable plot boundaries.
-   * @param {object} rails - Measured start and end clearances.
-   * @param {boolean} isHorizontal - Whether values run along the x axis.
-   * @returns {object} Plot boundaries inset by the marker rails.
-   */
-  #insetMarkerRails(frame, rails, isHorizontal) {
-    if (isHorizontal) {
-      return {
-        ...frame,
-        top: frame.top + rails.end,
-        bottom: frame.bottom - rails.start,
-      };
-    }
-
-    return {
-      ...frame,
-      left: frame.left + rails.start,
-      right: frame.right - rails.end,
+      orientation,
+      type,
+      ...presentation,
+      ...data,
+      frame,
+      usesInspector,
     };
   }
 
@@ -385,13 +287,8 @@ export default class CartesianLayout {
     const isFrameless =
       !this.#chart.options.axes && !this.#chart.options.grid && !this.#chart.options.valueLabels;
 
-    const framelessPadding = type === CHART_BAR ? 0 : Math.max(this.#chart.options.strokeWidth, 1);
-    const padding = isFrameless ? framelessPadding : STANDARD_FRAME_PADDING;
     const isHorizontal = type === CHART_BAR && orientation === ORIENTATION_HORIZONTAL;
-
-    const hasVerticalLabels = this.#chart.options.valueLabels && !isHorizontal;
-    const labelClearance = hasVerticalLabels ? VALUE_LABEL_TOP_CLEARANCE : 0;
-    const top = Math.max(isFrameless ? padding : 0, labelClearance);
+    const { padding, top } = this.#frameSpacing({ isFrameless, isHorizontal, type });
 
     const labels = this.#chart.labels.map((label, index) =>
       formatLabel(this.#chart.options, label, { target: "axis", index }),
@@ -404,6 +301,42 @@ export default class CartesianLayout {
       isHorizontal,
       labels,
       isYAxisRight: this.#chart.options.yAxisPosition === Y_AXIS_RIGHT,
+    };
+  }
+
+  /**
+   * Reserves axis clearance from the same CSS text used by the renderer.
+   *
+   * @param {object} state - Frame visibility, orientation, and chart family.
+   * @param {boolean} state.isFrameless - Whether all frame presentation is hidden.
+   * @param {boolean} state.isHorizontal - Whether numeric values use the horizontal axis.
+   * @param {string} state.type - Current chart family.
+   * @returns {{padding: number, top: number}} Clearances in SVG pixels.
+   */
+  #frameSpacing({ isFrameless, isHorizontal, type }) {
+    if (isFrameless) {
+      const padding = type === CHART_BAR ? 0 : Math.max(this.#chart.options.strokeWidth, 1);
+
+      return {
+        padding,
+        top: padding,
+      };
+    }
+
+    if (!this.#chart.options.valueLabels) {
+      return {
+        padding: STANDARD_FRAME_PADDING,
+        top: 0,
+      };
+    }
+
+    const category = this.#chart.typography.forClass("orchid-charts-label");
+    const value = this.#chart.typography.forClass("orchid-charts-label orchid-charts-value-label");
+    const horizontal = isHorizontal ? value : category;
+
+    return {
+      padding: Math.max(STANDARD_FRAME_PADDING, horizontal.lineHeight + AXIS_LABEL_CLEARANCE),
+      top: isHorizontal ? 0 : value.lineHeight / 2,
     };
   }
 
@@ -584,12 +517,19 @@ export default class CartesianLayout {
     }
 
     if (presentation.isHorizontal) {
-      return horizontalCategoryPadding(labels, presentation.width);
+      return horizontalCategoryPadding(
+        labels,
+        presentation.width,
+        this.#chart.typography.forClass("orchid-charts-label orchid-charts-multiline-label").widthOf,
+      );
     }
 
-    return verticalValuePadding([
-      ...values.labels.values(),
-    ]);
+    return verticalValuePadding(
+      [
+        ...values.labels.values(),
+      ],
+      this.#chart.typography.forClass("orchid-charts-label orchid-charts-value-label").widthOf,
+    );
   }
 
   /**

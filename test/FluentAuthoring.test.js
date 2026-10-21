@@ -70,7 +70,9 @@ describe("complete fluent authoring surface", () => {
       .onSelect(vi.fn())
       .render();
     expect(chart.element.getAttribute("aria-label")).toBe("Revenue chart");
-    expect(chart.element.getAttribute("viewBox")).toBe("0 0 600 280");
+    expect(chart.element.viewBox.baseVal.width).toBe(600);
+    expect(chart.element.viewBox.baseVal.height).toBe(280);
+    expect(chart.element.viewBox.baseVal.y).toBeLessThan(0);
     expectFailure(() => tooltipScope.formatValue(String), "Tooltip scope has expired");
     expectFailure(() => axisScope.position("left"), "Y-axis scope has expired");
     expectFailure(() => datasetScopeMethod(tooltipScope, {}), "Builder scope has expired");

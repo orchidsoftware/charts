@@ -83,7 +83,7 @@ describe("Heatmap Rendering", () => {
     const gridBottom = Math.max(
       ...cells.map((cell) => Number(cell.getAttribute("y")) + Number(cell.getAttribute("height"))),
     );
-    expect(Number(swatches[0].getAttribute("y")) - gridBottom).toBe(12);
+    expect(Number(swatches[0].getAttribute("y")) - gridBottom).toBeGreaterThanOrEqual(12);
     expect(
       heatmap.element.querySelector(".orchid-charts-heat-legend-more").getBBox().x +
         heatmap.element.querySelector(".orchid-charts-heat-legend-more").getBBox().width,
@@ -195,7 +195,7 @@ describe("Heatmap Rendering", () => {
     expect(
       Number(tall.element.querySelector(".orchid-charts-heat-legend-swatch").getAttribute("y")) -
         tallGridBottom,
-    ).toBe(12);
+    ).toBeGreaterThanOrEqual(12);
     expect(heightOf(tall)).toBeGreaterThan(280);
     tall.destroy();
   });

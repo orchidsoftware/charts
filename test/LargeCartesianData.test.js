@@ -29,6 +29,7 @@ it.each([
 ])("calculates a large $orientation bar layout with stacked=$stacked", ({ orientation, stacked }) => {
   const points = Array.from({ length: 150_000 }, (_, x) => ({ x, y: x % 2 ? -42 : 108 }));
   const layout = new CartesianLayout({
+    typography: { forClass: () => ({ widthOf: (value) => String(value).length * 8, lineHeight: 14 }) },
     labels: points.map(({ x }) => String(x + 1)),
     datasets: [{ name: "Values", points }],
     source: { yMarkers: [], yRegions: [] },
@@ -56,10 +57,12 @@ it.each([
 it("bounds axis measurement by available space while keeping the original endpoint indices", () => {
   const labels = Array.from({ length: 150_000 }, (_, index) => String(index + 1));
   const positionAt = vi.fn((index) => (index * 640) / (labels.length - 1));
-  const visible = categoryAxisLabels({ labels, positionAt, left: 0, right: 640 });
+  const widthOf = vi.fn((value) => value.length * 8);
+  const visible = categoryAxisLabels({ labels, positionAt, left: 0, right: 640, widthOf });
   expect(visible[0].index).toBe(0);
   expect(visible.at(-1).index).toBe(149_999);
   expect(positionAt.mock.calls.length).toBeLessThan(4096);
+  expect(widthOf.mock.calls.length).toBeLessThan(4096);
   for (const [index, label] of visible.slice(1).entries()) {
     expect(label.start - visible[index].start - visible[index].width).toBeGreaterThanOrEqual(8);
   }

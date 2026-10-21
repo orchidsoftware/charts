@@ -2,6 +2,7 @@ import { CHART_DONUT, CHART_PERCENTAGE, DEFAULT_PERCENTAGE_RADIUS } from "../../
 import { svg } from "../../support/Dom.js";
 import { formatLabel, formatValue, seriesContext } from "../../support/presentation/Formatting.js";
 import { chartContentLayout, tooltipContent } from "../../support/presentation/Presentation.js";
+import { labelElement } from "../../support/presentation/TextLayout.js";
 import { renderLegend } from "../LegendRendering.js";
 
 import Composition from "./Composition.js";
@@ -9,7 +10,7 @@ import Composition from "./Composition.js";
 const FULL_PERCENTAGE = 100;
 const MINIMUM_SECTOR_RADIUS = 8;
 const SECTOR_RADIUS_RATIO = 0.5;
-const DONUT_LABEL_OFFSET = 5;
+const DONUT_TEXT_WIDTH_RATIO = 0.8;
 const VALUE_LABEL_TARGET = "value-label";
 
 /**
@@ -74,7 +75,7 @@ class AggregationRenderer {
       height,
       items: legendItems,
       legend: this.#chart.options.legend,
-      typography: this.#chart.legendTypography,
+      typography: this.#chart.typography.forClass("orchid-charts-legend", "orchid-charts-legend-group"),
     });
 
     renderLegend({ chart: this.#chart, surface: this.#surface }, layout);
@@ -206,17 +207,25 @@ class AggregationRenderer {
       this.#appendSector(composition, sector, type);
     }
 
-    if (type === CHART_DONUT) {
-      this.#surface.text(
-        formatValue(this.#chart.options, composition.total, { target: VALUE_LABEL_TARGET }),
-        {
+    if (type !== CHART_DONUT) {
+      return;
+    }
+
+    const value = formatValue(this.#chart.options, composition.total, { target: VALUE_LABEL_TARGET });
+    const typography = this.#chart.typography.forClass("orchid-charts-direct-value");
+    const bounds = typography.boundsOf(value);
+    this.#surface.append(
+      labelElement({
+        value,
+        attributes: {
           x: cx,
-          y: cy + DONUT_LABEL_OFFSET,
+          y: cy - bounds.y - bounds.height / 2,
           class: "orchid-charts-direct-value",
           "text-anchor": "middle",
         },
-      );
-    }
+        measurement: { maxWidth: radius * DONUT_TEXT_WIDTH_RATIO, widthOf: typography.widthOf },
+      }),
+    );
   }
 
   /**

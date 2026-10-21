@@ -10,6 +10,7 @@ const DEFAULT_RADAR_OPACITY = 0.28;
 const RADAR_RADIUS_RATIO = 0.38;
 const LABEL_OFFSET = 12;
 const LABEL_EDGE_GAP = 4;
+const LABEL_CLASS = "orchid-charts-label";
 
 /**
  * Resolves the text anchor for one radar label direction.
@@ -72,7 +73,13 @@ class RadarRenderer {
     const center = { x: width / 2, y: contentHeight / 2 };
 
     const scale = {
-      radius: Math.min(width, contentHeight) * RADAR_RADIUS_RATIO,
+      radius: Math.max(
+        1,
+        Math.min(
+          Math.min(width, contentHeight) * RADAR_RADIUS_RATIO,
+          contentHeight / 2 - LABEL_OFFSET - this.#chart.typography.forClass(LABEL_CLASS).lineHeight,
+        ),
+      ),
       count: this.#chart.datasets[0].points.length,
       maximum: Math.max(
         ...this.#chart.datasets.flatMap((dataset) => dataset.points.map((point) => point.y)),
@@ -91,7 +98,7 @@ class RadarRenderer {
 
     this.#renderFrame({ frame, centerX: center.x, centerY: center.y });
     this.#renderDatasets(center, scale);
-    this.#renderLabels({ frame, centerX: center.x, centerY: center.y, width });
+    this.#renderLabels({ frame, center, viewport: { width, height: contentHeight } });
     new RadarInspectorRenderer({ chart: this.#chart, surface: this.#surface }).render(center, scale);
   }
 
@@ -156,34 +163,46 @@ class RadarRenderer {
    *
    * @param {object} geometry - Frame and viewport geometry used for label placement.
    * @param {Array<{x: number, y: number}>} geometry.frame - Outer radar vertices.
-   * @param {number} geometry.centerX - Horizontal radial center.
-   * @param {number} geometry.centerY - Vertical radial center.
-   * @param {number} geometry.width - Total chart width.
+   * @param {object} geometry.center - Radial center.
+   * @param {object} geometry.viewport - Available width and height.
    * @returns {void} Category labels are appended when present.
    */
-  #renderLabels({ frame, centerX, centerY, width }) {
+  #renderLabels({ frame, center, viewport }) {
+    const { width, height } = viewport;
+    const typography = this.#chart.typography.forClass(LABEL_CLASS);
+
     for (const [
       index,
       point,
     ] of frame.slice(0, this.#chart.labels.length).entries()) {
-      const directionX = point.x - centerX;
-      const directionY = point.y - centerY;
+      const directionX = point.x - center.x;
+      const directionY = point.y - center.y;
       const length = Math.hypot(directionX, directionY);
       const x = point.x + (directionX / length) * LABEL_OFFSET;
       const anchor = radarAnchor(directionX);
+
+      const value = formatLabel(this.#chart.options, this.#chart.labels[index], {
+        target: "value-label",
+        index,
+      });
+
+      const bounds = typography.boundsOf(value);
+
+      const y = Math.min(
+        height - LABEL_EDGE_GAP - bounds.y - bounds.height,
+        Math.max(LABEL_EDGE_GAP - bounds.y, point.y + (directionY / length) * LABEL_OFFSET),
+      );
+
       this.#surface.append(
         labelElement({
-          value: formatLabel(this.#chart.options, this.#chart.labels[index], {
-            target: "value-label",
-            index,
-          }),
+          value,
           attributes: {
             x,
-            y: point.y + (directionY / length) * LABEL_OFFSET,
-            class: "orchid-charts-label",
+            y,
+            class: LABEL_CLASS,
             "text-anchor": anchor,
           },
-          measurement: { maxWidth: radarLabelWidth({ x, anchor, width }) },
+          measurement: { maxWidth: radarLabelWidth({ x, anchor, width }), widthOf: typography.widthOf },
         }),
       );
     }

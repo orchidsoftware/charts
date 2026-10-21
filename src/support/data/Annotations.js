@@ -31,6 +31,7 @@ const DASHED_LENGTH = 4;
 const DASHED_GAP = 3;
 const DOTTED_LENGTH = 1;
 const DEFAULT_REGION_OPACITY = 0.08;
+const PRIMARY_LABEL_COLOR = "var(--orchid-charts-label-color, #3a3a3c)";
 const SECONDARY_LABEL_COLOR = "var(--orchid-charts-secondary-label-color, #6e6e73)";
 
 const DASH_PATTERNS = Object.freeze({
@@ -61,7 +62,7 @@ function normalizedMarker(marker) {
       ...(marker.dash ?? DASH_PATTERNS[marker.lineStyle ?? "dashed"]),
     ],
     labelPosition: marker.labelPosition ?? "end",
-    labelColor: marker.labelColor ?? SECONDARY_LABEL_COLOR,
+    labelColor: marker.labelColor ?? PRIMARY_LABEL_COLOR,
     includeInDomain: marker.includeInDomain ?? true,
   });
 }

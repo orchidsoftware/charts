@@ -13,6 +13,7 @@ import { renderLegend } from "../LegendRendering.js";
 
 const MINIMUM_POLAR_RADIUS = 8;
 const POLAR_RADIUS_RATIO = 0.42;
+const LABEL_CLASS = "orchid-charts-label orchid-charts-polar-label";
 
 /**
  * Chooses text alignment from a label's position relative to the radial center.
@@ -65,9 +66,11 @@ function polarAreaLayout(chart) {
   const height = seriesContentLayout(chart).contentHeight;
   const values = chart.datasets[0].points;
 
+  const typography = chart.typography.forClass(LABEL_CLASS);
+
   const radiusLimits = {
     horizontal: width / 2 - POLAR_LABEL_EDGE_INSET - POLAR_LABEL_GAP - POLAR_LABEL_MIN_WIDTH,
-    vertical: height / 2 - POLAR_LABEL_EDGE_INSET - POLAR_LABEL_GAP,
+    vertical: height / 2 - POLAR_LABEL_EDGE_INSET - POLAR_LABEL_GAP - typography.lineHeight / 2,
   };
 
   return Object.freeze({
@@ -201,22 +204,34 @@ class PolarAreaRenderer {
 
     const labelX = Math.min(layout.width - POLAR_LABEL_EDGE_INSET, Math.max(POLAR_LABEL_EDGE_INSET, point.x));
 
+    const typography = this.#chart.typography.forClass(LABEL_CLASS);
+
+    const value = formatLabel(this.#chart.options, this.#chart.labels[index], {
+      target: "value-label",
+      index,
+    });
+
+    const bounds = typography.boundsOf(value);
+
     const labelY = Math.min(
-      layout.height - POLAR_LABEL_EDGE_INSET,
-      Math.max(POLAR_LABEL_EDGE_INSET, point.y),
+      layout.height - POLAR_LABEL_EDGE_INSET - bounds.y - bounds.height,
+      Math.max(POLAR_LABEL_EDGE_INSET - bounds.y, point.y),
     );
 
     const anchor = radialAnchor(labelX, layout.center.x);
     this.#surface.append(
       labelElement({
-        value: formatLabel(this.#chart.options, this.#chart.labels[index], { target: "value-label", index }),
+        value,
         attributes: {
           x: labelX,
           y: labelY,
-          class: "orchid-charts-label orchid-charts-polar-label",
+          class: LABEL_CLASS,
           "text-anchor": anchor,
         },
-        measurement: { maxWidth: Math.max(1, polarLabelWidth({ labelX, anchor, width: layout.width })) },
+        measurement: {
+          maxWidth: Math.max(1, polarLabelWidth({ labelX, anchor, width: layout.width })),
+          widthOf: typography.widthOf,
+        },
       }),
     );
   }

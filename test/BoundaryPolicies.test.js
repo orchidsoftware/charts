@@ -87,12 +87,14 @@ describe("Boundary Policies", () => {
       value: ["One", "Two"],
       attributes: { x: 10, y: 10, class: "label" },
       maxWidth: 100,
+      typography: { widthOf: (value) => String(value).length * 7, lineHeight: 14 },
     });
     expect(wrapped.querySelectorAll("tspan")).toHaveLength(2);
     const truncatedWord = wrappedLabelElement({
       value: "Supercalifragilisticexpialidocious",
       attributes: { x: 10, y: 10, class: "label" },
       maxWidth: 8,
+      typography: { widthOf: (value) => String(value).length * 7, lineHeight: 14 },
     });
     expect(truncatedWord.querySelector("title").textContent).toBe("Supercalifragilisticexpialidocious");
     const chart = LineChart.make("#chart").dataset([2]).render();

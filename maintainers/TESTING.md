@@ -129,6 +129,7 @@ fails or is cancelled. Local `check` remains a sequential equivalent for the
 mandatory quality checks, including an audit of all production and development
 dependencies at every severity. CI also inspects the package archive.
 
+Installs use strict peer dependency resolution from `.npmrc`.
 The development toolchain shares TypeScript 6.0.3 because the current
 `@typescript-eslint` packages and SonarJS require TypeScript below 6.1. Remove
 that constraint when those upstream ranges support TypeScript 7. The `minimatch`

@@ -125,11 +125,11 @@ class SeriesChartBuilder extends CommonChartBuilder {
   /**
    * Chooses legend visibility instead of the dataset-count convention.
    *
-   * @param {boolean} visible - Whether the legend is displayed.
+   * @param {boolean} isVisible - Whether the legend is displayed.
    * @returns {this} Current builder.
    */
-  legend(visible) {
-    builderState(this).explicitOption("legend", visible);
+  legend(isVisible) {
+    builderState(this).explicitOption("legend", isVisible);
 
     return this;
   }
@@ -174,11 +174,11 @@ class CartesianChartBuilder extends SeriesChartBuilder {
   /**
    * Chooses axes visibility.
    *
-   * @param {boolean} visible - Whether axes are displayed.
+   * @param {boolean} isVisible - Whether axes are displayed.
    * @returns {this} Current builder.
    */
-  axes(visible) {
-    builderState(this).explicitOption("axes", visible);
+  axes(isVisible) {
+    builderState(this).explicitOption("axes", isVisible);
 
     return this;
   }
@@ -186,11 +186,11 @@ class CartesianChartBuilder extends SeriesChartBuilder {
   /**
    * Chooses grid visibility.
    *
-   * @param {boolean} visible - Whether grid lines are displayed.
+   * @param {boolean} isVisible - Whether grid lines are displayed.
    * @returns {this} Current builder.
    */
-  grid(visible) {
-    builderState(this).explicitOption("grid", visible);
+  grid(isVisible) {
+    builderState(this).explicitOption("grid", isVisible);
 
     return this;
   }
@@ -198,11 +198,11 @@ class CartesianChartBuilder extends SeriesChartBuilder {
   /**
    * Chooses visible value-label presentation.
    *
-   * @param {boolean} visible - Whether value labels are displayed.
+   * @param {boolean} isVisible - Whether value labels are displayed.
    * @returns {this} Current builder.
    */
-  valueLabels(visible) {
-    builderState(this).explicitOption("valueLabels", visible);
+  valueLabels(isVisible) {
+    builderState(this).explicitOption("valueLabels", isVisible);
 
     return this;
   }
@@ -287,11 +287,11 @@ class LineChartBuilder extends CartesianChartBuilder {
   /**
    * Chooses point visibility for every line dataset.
    *
-   * @param {boolean} visible - Whether points are displayed.
+   * @param {boolean} isVisible - Whether points are displayed.
    * @returns {this} Current builder.
    */
-  dots(visible) {
-    builderState(this).explicitOption("dots", visible);
+  dots(isVisible) {
+    builderState(this).explicitOption("dots", isVisible);
 
     return this;
   }
@@ -309,11 +309,11 @@ class LineChartBuilder extends CartesianChartBuilder {
   /**
    * Chooses stroke visibility for every line dataset.
    *
-   * @param {boolean} visible - Whether line strokes are displayed.
+   * @param {boolean} isVisible - Whether line strokes are displayed.
    * @returns {this} Current builder.
    */
-  line(visible) {
-    return builderOption(this, "line", visible);
+  line(isVisible) {
+    return builderOption(this, "line", isVisible);
   }
 
   /**

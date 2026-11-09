@@ -21,11 +21,11 @@ const TOUCH_POINTER = "touch";
  *
  * @param {Element[]} items - Ordered interactive marks.
  * @param {number} activeIndex - Requested active mark index.
- * @param {boolean} selectable - Whether persistent selection is enabled.
+ * @param {boolean} isSelectable - Whether persistent selection is enabled.
  * @returns {number} Valid selected index or `-1` when selection starts empty.
  */
-function initialSelection(items, activeIndex, selectable) {
-  if (!selectable || activeIndex < 0 || activeIndex >= items.length) {
+function initialSelection(items, activeIndex, isSelectable) {
+  if (!isSelectable || activeIndex < 0 || activeIndex >= items.length) {
     return -1;
   }
 
@@ -256,11 +256,11 @@ export default class InteractionController {
    * Serializes a boolean into the string representation required by ARIA.
    *
    * @param {Element} element - DOM node that receives the accessibility attribute.
-   * @param {boolean} value - State to serialize as `"true"` or `"false"`.
+   * @param {boolean} isEnabled - State to serialize as `"true"` or `"false"`.
    * @returns {void} The supplied element is updated in place.
    */
-  static #reflectBoolean(element, value) {
-    element.setAttribute(PRESSED_ATTRIBUTE, value ? "true" : "false");
+  static #reflectBoolean(element, isEnabled) {
+    element.setAttribute(PRESSED_ATTRIBUTE, isEnabled ? "true" : "false");
   }
 
   /**
@@ -278,12 +278,12 @@ export default class InteractionController {
    *
    * @param {Element} item - Interactive mark receiving state.
    * @param {string} className - CSS state class.
-   * @param {boolean} active - Whether the state is enabled.
+   * @param {boolean} isActive - Whether the state is enabled.
    * @returns {void} The hit target and visible mark stay visually synchronized.
    */
-  #toggleVisualState(item, className, active) {
-    item.classList.toggle(className, active);
-    this.#visualItem(item).classList.toggle(className, active);
+  #toggleVisualState(item, className, isActive) {
+    item.classList.toggle(className, isActive);
+    this.#visualItem(item).classList.toggle(className, isActive);
   }
 
   /**

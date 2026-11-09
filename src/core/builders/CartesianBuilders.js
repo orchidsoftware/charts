@@ -94,11 +94,11 @@ class ScatterChartBuilder extends CartesianChartBuilder {
   /**
    * Chooses scatter-dot visibility.
    *
-   * @param {boolean} visible - Whether scatter marks are displayed.
+   * @param {boolean} isVisible - Whether scatter marks are displayed.
    * @returns {this} Current builder.
    */
-  dots(visible) {
-    builderState(this).explicitOption("dots", visible);
+  dots(isVisible) {
+    builderState(this).explicitOption("dots", isVisible);
 
     return this;
   }

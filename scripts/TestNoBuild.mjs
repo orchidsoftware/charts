@@ -28,8 +28,7 @@ async function serveAsset(request, response) {
     return;
   }
 
-  const filename =
-    pathname === "/style.css" ? path.resolve(root, "src/styles.css") : path.resolve(root, `.${pathname}`);
+  const filename = path.resolve(root, pathname === "/style.css" ? "src/styles.css" : `.${pathname}`);
   const isBuiltModule = filename.startsWith(`${distributionRoot}${path.sep}`) && filename.endsWith(".js");
 
   if (pathname !== "/style.css" && !isBuiltModule) {
@@ -156,7 +155,7 @@ async function testBrowser(name, browserType, origin) {
       marks: 2,
       rendered: true,
     };
-    const matches =
+    const isMatch =
       Object.keys(result).length === Object.keys(expected).length &&
       Object.entries(expected).every(
         ([
@@ -165,7 +164,7 @@ async function testBrowser(name, browserType, origin) {
         ]) => JSON.stringify(result[key]) === JSON.stringify(value),
       );
 
-    if (!matches) {
+    if (!isMatch) {
       throw new Error(`${name} returned an unexpected no-build result: ${JSON.stringify(result)}`);
     }
 

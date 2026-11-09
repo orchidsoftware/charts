@@ -364,7 +364,7 @@ function validateCssColor(host, value) {
   }
 
   const color = resolvedColor(host, value.trim());
-  const isSupported = globalThis.CSS?.supports?.("color", color) ?? supportsStyleColor(color);
+  const isSupported = globalThis.CSS?.supports?.("color", color) ?? isStyleColorSupported(color);
 
   if (!isSupported) {
     throw new TypeError(`Unsupported CSS color: ${value}`);
@@ -407,7 +407,7 @@ function resolvedColor(host, value) {
  * @param {string} color - Resolved candidate color.
  * @returns {boolean} Whether the browser accepts the declaration.
  */
-function supportsStyleColor(color) {
+function isStyleColorSupported(color) {
   const probe = document.createElement("span");
   probe.style.color = color;
 

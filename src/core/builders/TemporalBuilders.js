@@ -113,31 +113,31 @@ class TimesheetChartBuilder extends RangedChartBuilder {
   /**
    * Chooses axis visibility.
    *
-   * @param {boolean} visible - Whether the time axis is displayed.
+   * @param {boolean} isVisible - Whether the time axis is displayed.
    * @returns {this} Current builder.
    */
-  axes(visible) {
-    return builderOption(this, "axes", visible);
+  axes(isVisible) {
+    return builderOption(this, "axes", isVisible);
   }
 
   /**
    * Chooses timeline-grid visibility.
    *
-   * @param {boolean} visible - Whether time and row guides are displayed.
+   * @param {boolean} isVisible - Whether time and row guides are displayed.
    * @returns {this} Current builder.
    */
-  grid(visible) {
-    return builderOption(this, "grid", visible);
+  grid(isVisible) {
+    return builderOption(this, "grid", isVisible);
   }
 
   /**
    * Chooses task-label visibility.
    *
-   * @param {boolean} visible - Whether task labels are displayed.
+   * @param {boolean} isVisible - Whether task labels are displayed.
    * @returns {this} Current builder.
    */
-  valueLabels(visible) {
-    return builderOption(this, "valueLabels", visible);
+  valueLabels(isVisible) {
+    return builderOption(this, "valueLabels", isVisible);
   }
 
   /**

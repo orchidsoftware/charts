@@ -153,12 +153,12 @@ async function consumerSize(definitions) {
 /**
  * Records one failed release constraint without hiding the remaining report.
  *
- * @param {boolean} condition - Whether the release constraint is satisfied.
+ * @param {boolean} isSatisfied - Whether the release constraint is satisfied.
  * @param {string} message - Actionable failure description.
  * @returns {void} The process exit status is marked only outside reporting mode.
  */
-function enforce(condition, message) {
-  if (condition || isReportOnly) {
+function enforce(isSatisfied, message) {
+  if (isSatisfied || isReportOnly) {
     return;
   }
 

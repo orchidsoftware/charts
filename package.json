@@ -93,12 +93,6 @@
   "overrides": {
     "eslint-plugin-sonarjs": {
       "typescript": "5.9.3"
-    },
-    "@typescript-eslint/utils": {
-      "typescript": "5.9.3"
-    },
-    "ts-api-utils": {
-      "typescript": "5.9.3"
     }
   },
   "keywords": [
@@ -154,11 +148,11 @@
     "prettier": "^3.9.6",
     "prettier-plugin-multiline-arrays": "^4.1.11",
     "sass": "^1.103.1",
-    "stylelint": "^18.0.0",
+    "stylelint": "^17.16.0",
     "stylelint-config-recess-order": "^7.8.0",
-    "stylelint-config-standard": "^41.0.0",
+    "stylelint-config-standard": "^40.0.0",
     "terser": "^5.51.2",
-    "typescript": "^7.0.2",
+    "typescript": "~6.0.3",
     "vite": "^8.2.2",
     "vitest": "^5.0.0"
   }

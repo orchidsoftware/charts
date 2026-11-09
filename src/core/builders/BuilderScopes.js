@@ -148,12 +148,12 @@ class LineDatasetBuilder extends DatasetBuilder {
   /**
    * Chooses dot visibility for this dataset.
    *
-   * @param {boolean} visible - Whether points are drawn.
+   * @param {boolean} isVisible - Whether points are drawn.
    * @returns {this} Active line dataset scope.
    */
-  dots(visible) {
-    validateBoolean(visible, "dots");
-    writeScopeValue(this, "dots", visible);
+  dots(isVisible) {
+    validateBoolean(isVisible, "dots");
+    writeScopeValue(this, "dots", isVisible);
 
     return this;
   }
@@ -174,12 +174,12 @@ class LineDatasetBuilder extends DatasetBuilder {
   /**
    * Chooses line visibility while retaining other marks.
    *
-   * @param {boolean} visible - Whether the line stroke is drawn.
+   * @param {boolean} isVisible - Whether the line stroke is drawn.
    * @returns {this} Active line dataset scope.
    */
-  line(visible) {
-    validateBoolean(visible, "line");
-    writeScopeValue(this, "line", visible);
+  line(isVisible) {
+    validateBoolean(isVisible, "line");
+    writeScopeValue(this, "line", isVisible);
 
     return this;
   }

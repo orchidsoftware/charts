@@ -66,10 +66,10 @@ function niceFactor(error) {
  * Chooses a human-readable grid step near the requested division count.
  *
  * @param {number} span - Positive numeric distance covered by the axis.
- * @param {boolean} integerValues - Whether every source value is an integer.
+ * @param {boolean} hasIntegerValues - Whether every source value is an integer.
  * @returns {number} Positive step rounded to a 1, 2, 5, or 10 progression.
  */
-function niceStep(span, integerValues) {
+function niceStep(span, hasIntegerValues) {
   const roughStep = span / MAJOR_GRID_DIVISIONS;
 
   if (!Number.isFinite(span) || roughStep < Number.MIN_VALUE * DECIMAL_BASE) {
@@ -79,23 +79,23 @@ function niceStep(span, integerValues) {
   const power = DECIMAL_BASE ** Math.floor(Math.log10(roughStep));
   const step = niceFactor(roughStep / power) * power;
 
-  return integerValues ? Math.max(1, step) : step;
+  return hasIntegerValues ? Math.max(1, step) : step;
 }
 
 /**
  * Rounds a non-degenerate domain and enumerates its major ticks.
  *
  * @param {number[]} values - Finite non-degenerate bounds produced by extent.
- * @param {boolean} integerValues - Whether source values require whole-number ticks.
+ * @param {boolean} hasIntegerValues - Whether source values require whole-number ticks.
  * @returns {{domain: [number, number], ticks: number[]}} Rounded domain and inclusive tick sequence.
  */
-function niceValueScale(values, integerValues) {
+function niceValueScale(values, hasIntegerValues) {
   const [
     minimum,
     maximum,
   ] = values;
 
-  const step = niceStep(maximum - minimum, integerValues);
+  const step = niceStep(maximum - minimum, hasIntegerValues);
   const niceMinimum = Math.floor(minimum / step) * step;
   const niceMaximum = Math.ceil(maximum / step) * step;
 

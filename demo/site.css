@@ -131,10 +131,10 @@ h3 {
 .site-header .header-cta {
   min-height: 40px;
   padding: 10px 15px;
+  border-radius: 9px;
   font-weight: 650;
   color: #fff;
   background: var(--orchid-charts-demo-blue);
-  border-radius: 9px;
   box-shadow: 0 4px 12px rgb(28 34 38 / 16%);
 }
 
@@ -150,11 +150,11 @@ h3 {
   align-items: center;
   justify-content: space-between;
   width: min(1180px, calc(100% - 48px));
-  padding: 24px 0 36px;
   margin: auto;
+  padding: 24px 0 36px;
+  border-top: 1px solid var(--orchid-charts-demo-border);
   font-size: 12px;
   color: var(--orchid-charts-demo-muted);
-  border-top: 1px solid var(--orchid-charts-demo-border);
 }
 
 .site-footer nav {
@@ -264,15 +264,15 @@ code {
 }
 
 pre {
+  overflow-x: auto;
   width: 100%;
   max-width: 100%;
-  padding: 24px;
   margin: 0;
-  overflow-x: auto;
-  color: var(--orchid-charts-demo-ink);
-  background: var(--orchid-charts-demo-surface);
+  padding: 24px;
   border: 1px solid var(--orchid-charts-demo-border);
   border-radius: 12px;
+  color: var(--orchid-charts-demo-ink);
+  background: var(--orchid-charts-demo-surface);
 }
 
 pre code {
@@ -392,9 +392,9 @@ pre code {
 :is(.support-types, .docs-nav-group) .support-guide-ring,
 :is(.support-types, .docs-nav-group) .support-primary-ring,
 :is(.support-types, .docs-nav-group) .support-secondary-ring {
-  fill: none;
-  transform: rotate(-90deg);
   transform-origin: center;
+  transform: rotate(-90deg);
+  fill: none;
 }
 
 :is(.support-types, .docs-nav-group) .support-guide-ring {
@@ -404,15 +404,15 @@ pre code {
 
 :is(.support-types, .docs-nav-group) .support-primary-ring {
   stroke: var(--orchid-charts-demo-blue);
-  stroke-width: 6;
   stroke-dasharray: 56 44;
+  stroke-width: 6;
 }
 
 :is(.support-types, .docs-nav-group) .support-secondary-ring {
   stroke: var(--orchid-charts-demo-purple);
-  stroke-width: 6;
   stroke-dasharray: 23 77;
   stroke-dashoffset: -59;
+  stroke-width: 6;
 }
 
 :is(.support-types, .docs-nav-group) .support-thin-ring {

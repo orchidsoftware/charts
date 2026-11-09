@@ -31,8 +31,8 @@ jobs:
         run: npx playwright install --with-deps chromium firefox webkit
       - name: Verify source, policies, types, bundle size and distribution
         run: npm run format:check && npm run lint && npm run test:policies && npm run typecheck && npm run build && npm run test:dist
-      - name: Audit the published dependency graph
-        run: npm audit --omit=dev --audit-level=high
+      - name: Audit all dependencies
+        run: npm run audit
       - name: Inspect the package archive
         run: npm run pack:check
 

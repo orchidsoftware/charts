@@ -126,8 +126,14 @@ Static/package checks, coverage, performance and three-browser compatibility run
 as independent CI jobs. The existing named complete quality gate aggregates all
 of them, including Node 26 toolchain compatibility, and fails if any dependency
 fails or is cancelled. Local `check` remains a sequential equivalent for the
-mandatory quality checks. CI additionally audits production dependencies and
-inspects the package archive.
+mandatory quality checks, including an audit of all production and development
+dependencies at every severity. CI also inspects the package archive.
+
+The development toolchain shares TypeScript 6.0.3 because the current
+`@typescript-eslint` packages and SonarJS require TypeScript below 6.1. Remove
+that constraint when those upstream ranges support TypeScript 7. The `minimatch`
+override requires the patched 11.x line until ESLint and its plugins update their
+own dependency ranges; the full lint and package checks exercise that override.
 
 The package job installs all three browsers because `test:dist` exercises native
 import maps in real browsers as well as the browser-free SSR import.

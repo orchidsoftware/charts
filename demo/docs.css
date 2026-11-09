@@ -10,12 +10,12 @@
 
 .skip-link {
   position: fixed;
+  z-index: 3;
   top: 12px;
   left: 16px;
-  z-index: 3;
+  transform: translateY(-160%);
   padding: 12px;
   background: var(--orchid-charts-demo-elevated);
-  transform: translateY(-160%);
 }
 
 .skip-link:focus {
@@ -38,10 +38,10 @@
 .docs-sidebar {
   position: sticky;
   top: 0;
+  overflow-y: auto;
   align-self: start;
   max-height: 100dvh;
   padding: 32px 20px 32px 0;
-  overflow-y: auto;
 }
 
 .docs-nav-group + .docs-nav-group {
@@ -49,8 +49,8 @@
 }
 
 .docs-nav-group h2 {
-  padding: 0 12px;
   margin: 0 0 8px;
+  padding: 0 12px;
   font-family: inherit;
   font-size: 13px;
   font-weight: 650;
@@ -62,12 +62,12 @@
   gap: 8px;
   align-items: center;
   padding: 7px 12px;
+  border-inline-start: 2px solid transparent;
+  border-radius: 0 6px 6px 0;
   font-size: 14px;
   line-height: 1.5;
   color: var(--orchid-charts-demo-muted);
   text-decoration: none;
-  border-inline-start: 2px solid transparent;
-  border-radius: 0 6px 6px 0;
 }
 
 .docs-nav-group svg {
@@ -85,10 +85,10 @@
 }
 
 .docs-nav-group a[aria-current="page"] {
+  border-inline-start-color: var(--orchid-charts-demo-purple);
   font-weight: 600;
   color: var(--orchid-charts-demo-ink);
   background: var(--orchid-charts-demo-elevated);
-  border-inline-start-color: var(--orchid-charts-demo-purple);
 }
 
 .docs-mobile-nav {
@@ -98,13 +98,13 @@
 .docs-content {
   width: 100%;
   min-width: 0;
-  padding: 44px clamp(28px, 5vw, 64px) 56px;
   margin: 0;
+  padding: 44px clamp(28px, 5vw, 64px) 56px;
+  border-inline-start: 1px solid var(--orchid-charts-demo-border);
   font-size: 17px;
   line-height: 1.75;
   overflow-wrap: break-word;
   background: var(--orchid-charts-demo-elevated);
-  border-inline-start: 1px solid var(--orchid-charts-demo-border);
 }
 
 .docs-content article {
@@ -113,9 +113,9 @@
 }
 
 .docs-content :is(h1, h2, h3) {
+  scroll-margin-top: 24px;
   font-family: inherit;
   font-weight: 650;
-  scroll-margin-top: 24px;
 }
 
 .docs-content h1 {
@@ -145,13 +145,13 @@
 
 .docs-content :is(p, li, dt, dd, h1, h2, h3) code:not(pre code) {
   padding: 1px 5px;
+  border-radius: 4px;
   font-family: inherit;
   font-size: 1em;
   font-weight: inherit;
   line-height: inherit;
   color: inherit;
   background: color-mix(in srgb, var(--orchid-charts-demo-ink) 4%, transparent);
-  border-radius: 4px;
   box-decoration-break: clone;
 }
 
@@ -167,15 +167,15 @@
 
 .docs-content ul,
 .docs-content ol {
-  padding-inline-start: 24px;
   margin-block: 16px 24px;
+  padding-inline-start: 24px;
 }
 
 .docs-code {
   margin: 20px 0 24px;
-  background: var(--orchid-charts-demo-surface);
   border: 1px solid var(--orchid-charts-demo-border);
   border-radius: 12px;
+  background: var(--orchid-charts-demo-surface);
 }
 
 .docs-code figcaption {
@@ -186,23 +186,23 @@
 }
 
 .docs-content pre {
-  width: 100%;
-  padding: 14px 18px 18px;
-  margin: 0;
   overflow-x: auto;
+  width: 100%;
+  margin: 0;
+  padding: 14px 18px 18px;
+  border: 0;
+  border-radius: 12px;
   line-height: 1.7;
   color: var(--orchid-charts-demo-ink);
   background: transparent;
-  border: 0;
-  border-radius: 12px;
   box-shadow: none;
 }
 
 .docs-content blockquote {
-  padding-inline-start: 20px;
   margin-inline: 0;
-  color: var(--orchid-charts-demo-muted);
+  padding-inline-start: 20px;
   border-inline-start: 3px solid var(--orchid-charts-demo-border);
+  color: var(--orchid-charts-demo-muted);
 }
 
 .docs-content img {
@@ -210,14 +210,14 @@
 }
 
 .docs-table {
-  margin: 20px 0 28px;
   overflow-x: auto;
+  margin: 20px 0 28px;
 }
 
 .docs-table table {
+  border-collapse: collapse;
   width: 100%;
   font-size: 16px;
-  border-collapse: collapse;
 }
 
 .docs-table code {
@@ -227,9 +227,9 @@
 .docs-table th,
 .docs-table td {
   padding: 12px;
-  vertical-align: top;
-  text-align: start;
   border-bottom: 1px solid var(--orchid-charts-demo-border);
+  text-align: start;
+  vertical-align: top;
 }
 
 .docs-table th {
@@ -271,11 +271,11 @@
   }
 
   .docs-mobile-nav summary {
+    cursor: pointer;
     min-height: 48px;
     padding-block: 12px;
     font-size: 14px;
     font-weight: 600;
-    cursor: pointer;
   }
 
   .docs-mobile-nav nav {

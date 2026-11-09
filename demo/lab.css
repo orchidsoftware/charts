@@ -41,11 +41,11 @@
 }
 
 .lab-intro-copy button {
-  color: #fff;
   cursor: pointer;
-  background: var(--orchid-charts-demo-blue);
   border: 1px solid rgb(28 34 38 / 16%);
   border-radius: 10px;
+  color: #fff;
+  background: var(--orchid-charts-demo-blue);
   box-shadow: 0 4px 12px rgb(28 34 38 / 16%);
 }
 
@@ -54,13 +54,13 @@
 }
 
 .lab-index {
+  overflow: hidden;
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   margin-bottom: 88px;
-  overflow: hidden;
-  background: var(--orchid-charts-demo-elevated);
   border: 1px solid var(--orchid-charts-demo-border);
   border-radius: 14px;
+  background: var(--orchid-charts-demo-elevated);
   box-shadow: 0 8px 30px rgb(28 34 38 / 5%);
 }
 
@@ -103,14 +103,14 @@
 
 .lab-index span {
   overflow: hidden;
-  text-overflow: ellipsis;
   font-size: 11px;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .lab-group {
-  padding: 72px 0 96px;
   scroll-margin-top: 24px;
+  padding: 72px 0 96px;
   border-top: 1px solid var(--orchid-charts-demo-border);
 }
 
@@ -170,11 +170,11 @@
 .lab-fixture .example-code-actions > code {
   flex: 0 0 auto;
   padding: 4px 6px;
+  border: 1px solid var(--orchid-charts-demo-border);
+  border-radius: 5px;
   font-size: 9px;
   color: var(--orchid-charts-demo-muted);
   background: var(--orchid-charts-demo-surface);
-  border: 1px solid var(--orchid-charts-demo-border);
-  border-radius: 5px;
 }
 
 .lab-fixture-compact {
@@ -187,8 +187,8 @@
 
 .lab-boundary {
   padding: 0;
-  background: var(--orchid-charts-demo-background);
   border-radius: 4px;
+  background: var(--orchid-charts-demo-background);
 
   --orchid-charts-label-color: #1c2226;
   --orchid-charts-secondary-label-color: #4f5d69;
@@ -298,14 +298,14 @@
 }
 
 .lab-stress-run {
-  padding: 10px 16px;
-  margin-bottom: 16px;
-  font: inherit;
-  color: var(--orchid-charts-demo-ink);
   cursor: pointer;
-  background: var(--orchid-charts-demo-surface);
+  margin-bottom: 16px;
+  padding: 10px 16px;
   border: 1px solid var(--orchid-charts-demo-border);
   border-radius: 8px;
+  font: inherit;
+  color: var(--orchid-charts-demo-ink);
+  background: var(--orchid-charts-demo-surface);
 }
 
 .lab-stress-run:disabled {
@@ -316,10 +316,10 @@
 .lab-fixture-error {
   min-height: 180px;
   padding: 20px;
-  overflow-wrap: anywhere;
-  background: var(--orchid-charts-demo-surface);
   border: 1px dashed var(--orchid-charts-demo-border);
   border-radius: 8px;
+  overflow-wrap: anywhere;
+  background: var(--orchid-charts-demo-surface);
 }
 
 #extreme-fixtures .lab-fixture > [id] {

@@ -4,6 +4,18 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and releases follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Security
+
+- Require patched `minimatch` 11.0.1 throughout the development toolchain and audit all dependencies at every severity in local checks and CI.
+
+### Changed
+
+- Update to Stylelint 18 and replace the incompatible Recess ordering configuration with Clean Order 10 and Stylelint Order 8.
+- Remove the obsolete TypeScript 5 override; all lint tools now share supported TypeScript 6.
+- Update ESLint Import X, ESLint JSDoc, and Sass to current releases.
+
 ## 0.0.14 - 2026-11-09
 
 ### Fixed

@@ -3,9 +3,9 @@
 
 /* Reserve chart content before the rendering module loads. */
 .demo-chart::before {
+  content: "";
   display: block;
   height: var(--demo-chart-height);
-  content: "";
 }
 
 .demo-chart:has(> svg)::before {
@@ -14,16 +14,16 @@
 
 .gallery > article > header:not(:has(.example-code-actions))::after,
 .spark-grid > article > header:not(:has(.example-code-actions))::after {
+  content: "";
   flex: 0 0 28px;
   width: 28px;
   height: 28px;
   margin-left: 12px;
-  content: "";
 }
 
 .spark-grid > article > header:not(:has(.example-code-actions))::after {
-  grid-row: 1;
   grid-column: 2;
+  grid-row: 1;
   margin-left: 0;
 }
 
@@ -93,32 +93,32 @@ button {
 .primary-action {
   display: inline-flex;
   align-items: center;
+  border: 1px solid rgb(28 34 38 / 16%);
+  border-radius: 11px;
   color: #fff;
   text-decoration: none;
   background: var(--orchid-charts-demo-blue);
-  border: 1px solid rgb(28 34 38 / 16%);
-  border-radius: 11px;
   box-shadow: 0 4px 12px rgb(28 34 38 / 18%);
 }
 
 .primary-action:hover {
-  background: var(--orchid-charts-demo-blue-hover);
   transform: translateY(-1px);
+  background: var(--orchid-charts-demo-blue-hover);
 }
 
 .text-action {
-  padding: 8px 0;
-  color: var(--orchid-charts-demo-muted);
   cursor: pointer;
-  background: transparent;
+  padding: 8px 0;
   border: 0;
+  color: var(--orchid-charts-demo-muted);
+  background: transparent;
   box-shadow: none;
 }
 
 .text-action:hover {
+  transform: none;
   color: var(--orchid-charts-demo-blue);
   background: transparent;
-  transform: none;
 }
 
 button:focus-visible {
@@ -129,11 +129,11 @@ button:focus-visible {
 /* Live product preview */
 
 .hero-preview {
-  min-width: 0;
   overflow: hidden;
-  background: var(--orchid-charts-demo-elevated);
+  min-width: 0;
   border: 1px solid var(--orchid-charts-demo-border);
   border-radius: 18px;
+  background: var(--orchid-charts-demo-elevated);
   box-shadow: var(--orchid-charts-demo-shadow);
 }
 
@@ -148,9 +148,9 @@ button:focus-visible {
   gap: 12px;
   min-height: 48px;
   padding: 0 16px;
+  border-bottom: 1px solid var(--orchid-charts-demo-border);
   font-size: 12px;
   background: var(--orchid-charts-demo-elevated);
-  border-bottom: 1px solid var(--orchid-charts-demo-border);
 }
 
 .preview-toolbar > strong {
@@ -165,8 +165,8 @@ button:focus-visible {
 .preview-dots i {
   width: 8px;
   height: 8px;
-  background: #d7d2cb;
   border-radius: 50%;
+  background: #d7d2cb;
 }
 
 .preview-dots i:first-child {
@@ -182,15 +182,15 @@ button:focus-visible {
 }
 
 .preview-live {
-  padding: 4px 8px;
   margin-left: auto;
+  padding: 4px 8px;
+  border-radius: 999px;
   font-size: 10px;
   font-weight: 700;
   color: #287450;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   background: #e4f3e9;
-  border-radius: 999px;
 }
 
 .preview-workspace {
@@ -204,10 +204,10 @@ button:focus-visible {
   flex-direction: column;
   gap: 4px;
   padding: 22px 12px;
+  border-right: 1px solid var(--orchid-charts-demo-border);
   font-size: 11px;
   color: #74808b;
   background: var(--orchid-charts-demo-surface);
-  border-right: 1px solid var(--orchid-charts-demo-border);
 }
 
 .preview-sidebar strong {
@@ -227,8 +227,8 @@ button:focus-visible {
 .preview-sidebar span i {
   width: 8px;
   height: 8px;
-  background: #c7d0da;
   border-radius: 2px;
+  background: #c7d0da;
 }
 
 .preview-sidebar span.is-active {
@@ -281,11 +281,11 @@ button:focus-visible {
 
 .preview-heading > span {
   padding: 7px 9px;
+  border: 1px solid var(--orchid-charts-demo-border);
+  border-radius: 7px;
   font-size: 9px;
   color: var(--orchid-charts-demo-muted);
   background: var(--orchid-charts-demo-elevated);
-  border: 1px solid var(--orchid-charts-demo-border);
-  border-radius: 7px;
 }
 
 .preview-summary {
@@ -311,18 +311,18 @@ button:focus-visible {
 
 .preview-summary small {
   padding: 6px 9px;
+  border-radius: 999px;
   font-size: 11px;
   font-weight: 650;
   color: #287450;
   background: #e4f3e9;
-  border-radius: 999px;
 }
 
 .preview-chart-card {
   padding: 16px;
-  background: var(--orchid-charts-demo-elevated);
   border: 1px solid var(--orchid-charts-demo-border);
   border-radius: 12px;
+  background: var(--orchid-charts-demo-elevated);
 }
 
 .preview-chart-title {
@@ -347,9 +347,9 @@ button:focus-visible {
 .preview-footer {
   gap: 14px;
   padding: 8px 2px 0;
+  border-top: 1px solid var(--orchid-charts-demo-border);
   font-size: 11px;
   color: var(--orchid-charts-demo-muted);
-  border-top: 1px solid var(--orchid-charts-demo-border);
 }
 
 .preview-insights {
@@ -361,9 +361,9 @@ button:focus-visible {
 
 .preview-insights div {
   padding: 12px;
-  background: var(--orchid-charts-demo-elevated);
   border: 1px solid var(--orchid-charts-demo-border);
   border-radius: 10px;
+  background: var(--orchid-charts-demo-elevated);
 }
 
 .preview-insights span,
@@ -388,15 +388,15 @@ button:focus-visible {
 }
 
 .preview-library {
+  overflow: hidden;
   display: grid;
   grid-template-columns: 1.45fr repeat(3, 0.72fr) 1.35fr;
   align-items: center;
   margin-top: 10px;
-  overflow: hidden;
-  color: var(--orchid-charts-demo-muted);
-  background: color-mix(in srgb, var(--orchid-charts-demo-elevated) 64%, transparent);
   border: 1px solid var(--orchid-charts-demo-border);
   border-radius: 8px;
+  color: var(--orchid-charts-demo-muted);
+  background: color-mix(in srgb, var(--orchid-charts-demo-elevated) 64%, transparent);
 }
 
 .preview-library > * {
@@ -469,17 +469,17 @@ button:focus-visible {
 /* Try the same public API with your own data. */
 
 .try-section {
-  padding-bottom: 88px;
   scroll-margin-top: 24px;
+  padding-bottom: 88px;
 }
 
 .try-workspace {
+  overflow: hidden;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  overflow: hidden;
-  background: var(--orchid-charts-demo-elevated);
   border: 1px solid var(--orchid-charts-demo-border);
   border-radius: 16px;
+  background: var(--orchid-charts-demo-elevated);
 }
 
 .try-result,
@@ -489,14 +489,14 @@ button:focus-visible {
 }
 
 .try-code {
-  background: var(--orchid-charts-demo-surface);
   border-left: 1px solid var(--orchid-charts-demo-border);
+  background: var(--orchid-charts-demo-surface);
 }
 
 .try-section fieldset {
   min-width: 0;
-  padding: 0;
   margin: 0;
+  padding: 0;
   border: 0;
 }
 
@@ -524,12 +524,12 @@ button:focus-visible {
   min-width: 0;
   min-height: 44px;
   padding: 10px;
+  border: 1px solid var(--orchid-charts-demo-border);
+  border-radius: 8px;
   font: inherit;
   font-size: 16px;
   color: var(--orchid-charts-demo-ink);
   background: var(--orchid-charts-demo-elevated);
-  border: 1px solid var(--orchid-charts-demo-border);
-  border-radius: 8px;
 }
 
 .try-section p,
@@ -545,12 +545,12 @@ button:focus-visible {
 }
 
 .try-data button {
-  flex-shrink: 0;
-  color: var(--orchid-charts-demo-elevated);
   cursor: pointer;
-  background: var(--orchid-charts-demo-ink);
+  flex-shrink: 0;
   border: 0;
   border-radius: 8px;
+  color: var(--orchid-charts-demo-elevated);
+  background: var(--orchid-charts-demo-ink);
 }
 
 #try-error {
@@ -563,8 +563,8 @@ button:focus-visible {
 }
 
 .try-surface {
-  margin-top: 24px;
   overflow: hidden;
+  margin-top: 24px;
   border: 1px solid var(--orchid-charts-demo-border);
   border-radius: 10px;
 }
@@ -589,9 +589,9 @@ button:focus-visible {
 
 .try-code pre {
   padding: 16px 0;
-  background: transparent;
   border: 0;
   border-radius: 0;
+  background: transparent;
 }
 
 .try-code pre code {
@@ -606,9 +606,9 @@ button:focus-visible {
 }
 
 .try-theme-code summary {
+  cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
 }
 
 .try-code .try-note {
@@ -662,8 +662,8 @@ button:focus-visible {
 /* Supported chart families */
 
 .support-overview {
-  padding: 0 0 88px;
   scroll-margin-top: 24px;
+  padding: 0 0 88px;
 }
 
 .support-overview-header {
@@ -695,12 +695,12 @@ button:focus-visible {
 }
 
 .support-families {
+  overflow: hidden;
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(0, 5fr) minmax(104px, 1.7fr) minmax(104px, 1.7fr);
-  overflow: hidden;
-  background: var(--orchid-charts-demo-elevated);
   border: 1px solid var(--orchid-charts-demo-border);
   border-radius: 16px;
+  background: var(--orchid-charts-demo-elevated);
   box-shadow: 0 10px 36px rgb(50 72 94 / 5%);
 }
 
@@ -749,19 +749,19 @@ button:focus-visible {
 .support-types a {
   min-width: 0;
   padding: 9px 3px 7px;
+  border-radius: 12px;
   color: var(--orchid-charts-demo-muted);
   text-align: center;
   text-decoration: none;
-  border-radius: 12px;
   transition:
     color 140ms ease,
     transform 140ms ease;
 }
 
 .support-types a:hover {
+  transform: translateY(-1px);
   color: var(--orchid-charts-demo-blue);
   background: var(--orchid-charts-demo-blue-soft);
-  transform: translateY(-1px);
 }
 
 .support-types a:focus-visible {
@@ -770,12 +770,12 @@ button:focus-visible {
 }
 
 .support-types svg {
+  overflow: visible;
   display: block;
   width: 54px;
   max-width: 100%;
   height: 34px;
   margin: 0 auto 8px;
-  overflow: visible;
   fill: none;
   stroke: none;
   stroke-linecap: round;
@@ -834,9 +834,9 @@ button:focus-visible {
 article {
   min-width: 0;
   padding: 26px;
-  background: var(--orchid-charts-demo-elevated);
   border: 1px solid var(--orchid-charts-demo-border);
   border-radius: 16px;
+  background: var(--orchid-charts-demo-elevated);
   box-shadow: 0 2px 12px rgb(28 34 38 / 6%);
 }
 
@@ -965,10 +965,10 @@ article header strong {
   display: grid;
   grid-template-columns: minmax(112px, 0.8fr) minmax(0, 3fr);
   gap: 24px;
-  padding-top: 16px;
   margin-top: 12px;
-  color: var(--orchid-charts-demo-ink);
+  padding-top: 16px;
   border-top: 1px solid var(--orchid-charts-demo-border);
+  color: var(--orchid-charts-demo-ink);
 }
 
 .selection-status-label,
@@ -1025,18 +1025,18 @@ article header strong {
 }
 
 #heatmap {
+  container-type: inline-size;
   width: 100%;
   max-width: 100%;
-  container-type: inline-size;
 }
 
 #heatmap::before {
   --calendar-columns: 9;
   --calendar-rows: 42;
 
+  content: "";
   display: block;
   height: calc(var(--calendar-rows) * min(35px, (100cqw + 3px) / var(--calendar-columns)) + 24.75px);
-  content: "";
 }
 
 #heatmap:has(> svg)::before {
@@ -1111,15 +1111,15 @@ article header strong {
 
 .spark-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   grid-column: 5 / 13;
+  grid-template-columns: repeat(3, 1fr);
   gap: 18px;
   align-items: start;
 }
 
 .spark-grid article {
-  padding: 0;
   overflow: hidden;
+  padding: 0;
 }
 
 .spark-grid article:nth-child(2) {
@@ -1146,8 +1146,8 @@ article header strong {
 }
 
 .spark-grid article strong {
-  grid-row: 2;
   grid-column: 1 / -1;
+  grid-row: 2;
   font-size: 28px;
   line-height: 1.1;
   color: var(--orchid-charts-demo-ink);
@@ -1160,8 +1160,8 @@ article header strong {
 }
 
 .spark-grid .example-code-actions {
-  grid-row: 1;
   grid-column: 2;
+  grid-row: 1;
   margin-left: 0;
 }
 
@@ -1409,8 +1409,8 @@ article header strong {
   }
 
   .preview-library-bundle {
-    grid-row: 1;
     grid-column: 3;
+    grid-row: 1;
     border-top: 0;
   }
 
@@ -1490,6 +1490,7 @@ article header strong {
 }
 
 .example-code-copy {
+  cursor: pointer;
   display: inline-grid;
   place-items: center;
   width: 28px;
@@ -1497,12 +1498,11 @@ article header strong {
   height: 28px;
   min-height: 28px;
   padding: 0;
-  color: var(--orchid-charts-demo-muted);
-  cursor: pointer;
-  background: transparent;
   border: 1px solid transparent;
   border-radius: 6px;
+  color: var(--orchid-charts-demo-muted);
   opacity: 0.55;
+  background: transparent;
   transition:
     color 140ms ease,
     background 140ms ease,
@@ -1515,16 +1515,16 @@ article header strong {
   height: 15px;
   fill: none;
   stroke: currentcolor;
-  stroke-width: 1.7;
   stroke-linecap: round;
   stroke-linejoin: round;
+  stroke-width: 1.7;
 }
 
 .example-code-copy:hover {
-  color: var(--orchid-charts-demo-ink);
-  background: color-mix(in srgb, var(--orchid-charts-demo-surface) 72%, transparent);
   border-color: color-mix(in srgb, var(--orchid-charts-demo-border) 65%, transparent);
+  color: var(--orchid-charts-demo-ink);
   opacity: 1;
+  background: color-mix(in srgb, var(--orchid-charts-demo-surface) 72%, transparent);
 }
 
 .example-code-copy.is-copied {
@@ -1533,7 +1533,7 @@ article header strong {
 }
 
 .example-code-copy:focus-visible {
+  opacity: 1;
   outline: 3px solid color-mix(in srgb, var(--orchid-charts-demo-blue) 28%, transparent);
   outline-offset: 2px;
-  opacity: 1;
 }

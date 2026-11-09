@@ -6,7 +6,7 @@ on:
       version:
         description: Version from package.json without the v prefix
         required: true
-        default: 0.0.13
+        default: 0.0.14
         type: string
 
 permissions:

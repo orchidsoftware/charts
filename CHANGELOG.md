@@ -4,6 +4,18 @@ All notable changes to Orchid Charts are documented in this file. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and releases follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.0.14 - 2026-11-09
+
+### Fixed
+
+- Restore clean dependency installation by using TypeScript 6.0.3, compatible with the ESLint plugins, and removing obsolete TypeScript peer overrides.
+- Keep Stylelint 17 and its standard configuration compatible with the existing CSS ordering configuration.
+- Adapt boolean names and the distribution smoke test to ESLint Unicorn 79 without changing the public API or chart behavior.
+
+### Changed
+
+- Update development dependencies, including Vitest 5.1, Playwright 1.65, and ESLint Unicorn 79.
+
 ## 0.0.13 - 2026-10-22
 
 ### Fixed
